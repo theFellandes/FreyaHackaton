@@ -230,7 +230,16 @@ def _split_noted_intents(data: dict[str, Any], log: list[str]) -> None:
     taken = {(i.get("key"), i.get("scope")) for i in intents if isinstance(i, dict)}
     out: list[Any] = []
     split: list[str] = []
+    dropped: list[str] = []
     for intent in intents:
+        if (
+            isinstance(intent, dict)
+            and intent.get("scope") == "before_verification"
+            and intent.get("note_reason")
+            and intent.get("outcome")
+        ):  # a note cannot be taken before verification; the outcome is what the agent can do
+            intent = {k: v for k, v in intent.items() if k != "note_reason"}
+            dropped.append(str(intent.get("key")))
         if (
             isinstance(intent, dict)
             and intent.get("scope", "any") == "any"
@@ -246,9 +255,12 @@ def _split_noted_intents(data: dict[str, Any], log: list[str]) -> None:
             split.append(str(intent.get("key")))
         else:
             out.append(intent)
-    if split:
+    if split or dropped:
         data["intents"] = out
+    if split:
         log.append("intents split into before/after verification (the note exists only after it): " + ", ".join(split))
+    if dropped:
+        log.append("note_reason dropped from before-verification intents (no note tool exists yet): " + ", ".join(dropped))
 
 
 def _residual_for_uncovered(data: dict[str, Any], ledger: RuleLedger, log: list[str]) -> None:

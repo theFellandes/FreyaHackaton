@@ -647,3 +647,12 @@ def test_an_any_scope_intent_that_records_a_note_is_split_at_the_verification_bo
     assert all(i.outcome is not None and i.outcome.outcome == "not_verified" for i in halves)
     assert any("split" in line for line in log)
     assert fixed.intent("refuse_to_talk_again", verified=False) is halves[0]
+
+
+def test_a_before_verification_note_is_dropped_when_the_intent_has_an_outcome(ir_a, ledger_a, kit_tool_api) -> None:
+    refusal = next(i for i in ir_a["intents"] if i["key"] == "refuse_to_talk" and i["scope"] == "before_verification")
+    refusal["note_reason"] = "service_error"
+    fixed, log = apply_safe_fixes(PolicyIR.model_validate(ir_a), ledger_a, kit_tool_api)
+    kept = fixed.intent("refuse_to_talk", verified=False)
+    assert kept is not None and kept.note_reason is None and kept.outcome is not None
+    assert any("refuse_to_talk" in line and "note" in line for line in log)
