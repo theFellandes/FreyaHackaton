@@ -1,0 +1,548 @@
+{
+ "chat": [
+  {
+   "id": "experimental-5",
+   "provider": "experimental-5",
+   "model": "experimental-5",
+   "recommended": true,
+   "supportsTemperature": true,
+   "temperatureDefault": 0.5,
+   "contextWindow": 65536,
+   "analysisCapable": true
+  }
+ ],
+ "audio_speech": [
+  {
+   "id": "freya-tts",
+   "provider": "freya",
+   "model": "freya-tts",
+   "recommended": true,
+   "deprecated": null,
+   "supportedLanguages": null
+  },
+  {
+   "id": "sonic",
+   "provider": "cartesia",
+   "model": "sonic",
+   "recommended": null,
+   "deprecated": true,
+   "supportedLanguages": [
+    "de",
+    "en",
+    "es",
+    "fr",
+    "hi",
+    "it",
+    "ja",
+    "ko",
+    "nl",
+    "pl",
+    "pt",
+    "ru",
+    "sv",
+    "tr",
+    "zh"
+   ]
+  },
+  {
+   "id": "sonic-2",
+   "provider": "cartesia",
+   "model": "sonic-2",
+   "recommended": null,
+   "deprecated": true,
+   "supportedLanguages": [
+    "de",
+    "en",
+    "es",
+    "fr",
+    "hi",
+    "it",
+    "ja",
+    "ko",
+    "nl",
+    "pl",
+    "pt",
+    "ru",
+    "sv",
+    "tr",
+    "zh"
+   ]
+  },
+  {
+   "id": "sonic-3.6",
+   "provider": "cartesia",
+   "model": "sonic-3.6",
+   "recommended": true,
+   "deprecated": null,
+   "supportedLanguages": [
+    "ar",
+    "bg",
+    "bn",
+    "cs",
+    "da",
+    "de",
+    "el",
+    "en",
+    "es",
+    "fi",
+    "fr",
+    "gu",
+    "he",
+    "hi",
+    "hr",
+    "hu",
+    "id",
+    "it",
+    "ja",
+    "ka",
+    "kn",
+    "ko",
+    "ml",
+    "mr",
+    "ms",
+    "nl",
+    "no",
+    "pa",
+    "pl",
+    "pt",
+    "ro",
+    "ru",
+    "sk",
+    "sv",
+    "ta",
+    "te",
+    "th",
+    "tl",
+    "tr",
+    "uk",
+    "vi",
+    "zh"
+   ]
+  },
+  {
+   "id": "sonic-3",
+   "provider": "cartesia",
+   "model": "sonic-3",
+   "recommended": null,
+   "deprecated": null,
+   "supportedLanguages": [
+    "ar",
+    "bg",
+    "bn",
+    "cs",
+    "da",
+    "de",
+    "el",
+    "en",
+    "es",
+    "fi",
+    "fr",
+    "gu",
+    "he",
+    "hi",
+    "hr",
+    "hu",
+    "id",
+    "it",
+    "ja",
+    "ka",
+    "kn",
+    "ko",
+    "ml",
+    "mr",
+    "ms",
+    "nl",
+    "no",
+    "pa",
+    "pl",
+    "pt",
+    "ro",
+    "ru",
+    "sk",
+    "sv",
+    "ta",
+    "te",
+    "th",
+    "tl",
+    "tr",
+    "uk",
+    "vi",
+    "zh"
+   ]
+  },
+  {
+   "id": "sonic-turbo",
+   "provider": "cartesia",
+   "model": "sonic-turbo",
+   "recommended": null,
+   "deprecated": true,
+   "supportedLanguages": [
+    "de",
+    "en",
+    "es",
+    "fr",
+    "hi",
+    "it",
+    "ja",
+    "ko",
+    "nl",
+    "pl",
+    "pt",
+    "ru",
+    "sv",
+    "tr",
+    "zh"
+   ]
+  },
+  {
+   "id": "eleven_flash_v2_5",
+   "provider": "elevenlabs",
+   "model": "eleven_flash_v2_5",
+   "recommended": true,
+   "deprecated": null,
+   "supportedLanguages": [
+    "ar",
+    "bg",
+    "cs",
+    "da",
+    "de",
+    "el",
+    "en",
+    "es",
+    "fi",
+    "fil",
+    "fr",
+    "hi",
+    "hr",
+    "hu",
+    "id",
+    "it",
+    "ja",
+    "ko",
+    "ms",
+    "nl",
+    "no",
+    "pl",
+    "pt",
+    "ro",
+    "ru",
+    "sk",
+    "sv",
+    "ta",
+    "tr",
+    "uk",
+    "vi",
+    "zh"
+   ]
+  },
+  {
+   "id": "eleven_multilingual_v2",
+   "provider": "elevenlabs",
+   "model": "eleven_multilingual_v2",
+   "recommended": null,
+   "deprecated": null,
+   "supportedLanguages": [
+    "ar",
+    "bg",
+    "cs",
+    "da",
+    "de",
+    "el",
+    "en",
+    "es",
+    "fi",
+    "fil",
+    "fr",
+    "hi",
+    "hr",
+    "id",
+    "it",
+    "ja",
+    "ko",
+    "ms",
+    "nl",
+    "pl",
+    "pt",
+    "ro",
+    "ru",
+    "sk",
+    "sv",
+    "ta",
+    "tr",
+    "uk",
+    "zh"
+   ]
+  },
+  {
+   "id": "eleven_turbo_v2_5",
+   "provider": "elevenlabs",
+   "model": "eleven_turbo_v2_5",
+   "recommended": null,
+   "deprecated": true,
+   "supportedLanguages": [
+    "ar",
+    "bg",
+    "cs",
+    "da",
+    "de",
+    "el",
+    "en",
+    "es",
+    "fi",
+    "fil",
+    "fr",
+    "hi",
+    "hr",
+    "hu",
+    "id",
+    "it",
+    "ja",
+    "ko",
+    "ms",
+    "nl",
+    "no",
+    "pl",
+    "pt",
+    "ro",
+    "ru",
+    "sk",
+    "sv",
+    "ta",
+    "tr",
+    "uk",
+    "vi",
+    "zh"
+   ]
+  },
+  {
+   "id": "gpt-4o-mini-tts",
+   "provider": "openai",
+   "model": "gpt-4o-mini-tts",
+   "recommended": null,
+   "deprecated": null,
+   "supportedLanguages": null
+  }
+ ],
+ "audio_transcription": [
+  {
+   "id": "freya-stt",
+   "provider": "freya",
+   "model": "freya-stt",
+   "recommended": true,
+   "deprecated": null
+  },
+  {
+   "id": "freya-stt-continuous",
+   "provider": "freya-continuous",
+   "model": "freya-stt",
+   "recommended": true,
+   "deprecated": null
+  },
+  {
+   "id": "nova-2",
+   "provider": "deepgram",
+   "model": "nova-2",
+   "recommended": null,
+   "deprecated": null
+  },
+  {
+   "id": "nova-2-atc",
+   "provider": "deepgram",
+   "model": "nova-2-atc",
+   "recommended": null,
+   "deprecated": null
+  },
+  {
+   "id": "nova-2-automotive",
+   "provider": "deepgram",
+   "model": "nova-2-automotive",
+   "recommended": null,
+   "deprecated": null
+  },
+  {
+   "id": "nova-2-conversationalai",
+   "provider": "deepgram",
+   "model": "nova-2-conversationalai",
+   "recommended": null,
+   "deprecated": null
+  },
+  {
+   "id": "nova-2-drivethru",
+   "provider": "deepgram",
+   "model": "nova-2-drivethru",
+   "recommended": null,
+   "deprecated": null
+  },
+  {
+   "id": "nova-2-finance",
+   "provider": "deepgram",
+   "model": "nova-2-finance",
+   "recommended": null,
+   "deprecated": null
+  },
+  {
+   "id": "nova-2-general",
+   "provider": "deepgram",
+   "model": "nova-2-general",
+   "recommended": null,
+   "deprecated": null
+  },
+  {
+   "id": "nova-2-meeting",
+   "provider": "deepgram",
+   "model": "nova-2-meeting",
+   "recommended": null,
+   "deprecated": null
+  },
+  {
+   "id": "nova-2-phonecall",
+   "provider": "deepgram",
+   "model": "nova-2-phonecall",
+   "recommended": null,
+   "deprecated": null
+  },
+  {
+   "id": "nova-2-video",
+   "provider": "deepgram",
+   "model": "nova-2-video",
+   "recommended": null,
+   "deprecated": null
+  },
+  {
+   "id": "nova-2-voicemail",
+   "provider": "deepgram",
+   "model": "nova-2-voicemail",
+   "recommended": null,
+   "deprecated": null
+  },
+  {
+   "id": "nova-3",
+   "provider": "deepgram",
+   "model": "nova-3",
+   "recommended": null,
+   "deprecated": null
+  },
+  {
+   "id": "nova-3-general",
+   "provider": "deepgram",
+   "model": "nova-3-general",
+   "recommended": null,
+   "deprecated": null
+  },
+  {
+   "id": "nova-3-medical",
+   "provider": "deepgram",
+   "model": "nova-3-medical",
+   "recommended": null,
+   "deprecated": null
+  },
+  {
+   "id": "whisper",
+   "provider": "deepgram",
+   "model": "whisper",
+   "recommended": null,
+   "deprecated": null
+  },
+  {
+   "id": "whisper-base",
+   "provider": "deepgram",
+   "model": "whisper-base",
+   "recommended": null,
+   "deprecated": null
+  },
+  {
+   "id": "whisper-large",
+   "provider": "deepgram",
+   "model": "whisper-large",
+   "recommended": null,
+   "deprecated": null
+  },
+  {
+   "id": "whisper-medium",
+   "provider": "deepgram",
+   "model": "whisper-medium",
+   "recommended": null,
+   "deprecated": null
+  },
+  {
+   "id": "whisper-small",
+   "provider": "deepgram",
+   "model": "whisper-small",
+   "recommended": null,
+   "deprecated": null
+  },
+  {
+   "id": "whisper-tiny",
+   "provider": "deepgram",
+   "model": "whisper-tiny",
+   "recommended": null,
+   "deprecated": null
+  },
+  {
+   "id": "gpt-4o-transcribe",
+   "provider": "openai",
+   "model": "gpt-4o-transcribe",
+   "recommended": null,
+   "deprecated": null
+  }
+ ],
+ "tts_voice_counts": {
+  "openai": 11,
+  "elevenlabs": 176,
+  "cartesia": 612,
+  "freya": 5
+ },
+ "freya_voices": [
+  {
+   "id": "leyla",
+   "name": "Leyla",
+   "language": "tr",
+   "gender": "feminine",
+   "description": "Sıcak ve samimi kadın sesi"
+  },
+  {
+   "id": "6ccbf222-1fc6-48f7-b71d-91ac6298247b",
+   "name": "Cemre - Professional Support",
+   "language": "tr",
+   "description": "Corporate, professional and straight forward."
+  },
+  {
+   "id": "6ccbf111-1111-48f7-b71d-91ac6298247b",
+   "name": "Rhea - Multilingual Support",
+   "language": "tr",
+   "description": "Sweet, professional, and multilingual voice."
+  },
+  {
+   "id": "6ccbf333-1111-48f7-b71d-91ac6298247b",
+   "name": "Ivory - Call Center",
+   "language": "tr",
+   "gender": "feminine",
+   "description": "Warm, professional American English voice.",
+   "accent": "american"
+  },
+  {
+   "id": "6ccbf444-1111-48f7-b71d-91ac6298247b",
+   "name": "Meryem - Calm and Serene",
+   "language": "tr",
+   "gender": "feminine",
+   "description": "Calm and clear serene.",
+   "accent": "ankara"
+  }
+ ],
+ "providers": {
+  "experimental-2": "Experimental 2",
+  "experimental-3": "Experimental 3",
+  "experimental-4": "Experimental 4",
+  "freya": "Freya",
+  "experimental-5": "Freya YC LLM",
+  "openai": "OpenAI",
+  "openrouter": "OpenRouter",
+  "experimental": "Experimental",
+  "anthropic": "Anthropic",
+  "google": "Google",
+  "elevenlabs": "ElevenLabs",
+  "deepgram": "Deepgram",
+  "cartesia": "Cartesia",
+  "freya-continuous": "Freya-Continuous"
+ }
+}
