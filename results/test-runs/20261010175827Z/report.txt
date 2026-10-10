@@ -1,0 +1,127 @@
+DETAILED OFFLINE TEST REPORT
+Completed UTC: 2026-10-10T18:02:50.385452+00:00
+Workspace: C:\Users\Felladien\Documents\Projects\Python\FreyaHackaton
+
+RESULT: 1,011 passed; 3 failed; 0 skipped; 0 deselected. 1,014 cases in 27 modules.
+Pytest duration: 25.07 seconds. Pytest exit status: 1 (not a green full suite).
+All three failures occur while importing uuid_utils: Windows Application Control blocked its native DLL.
+No application assertion failed in this run. These import failures still leave real LangChain behavior unverified.
+No source code was changed, no live simulations or paid model calls were made, and no OS controls were changed.
+
+AREA BREAKDOWN
+Area                                          Pass  Fail  Total
+Inputs and tool API                             81     0     81
+Policy IR and understanding                    117     0    117
+Calendar, money, outcomes and robustness       231     0    231
+Generated workflow snippets                    133     0    133
+Freya adapters and practice                    107     0    107
+Playground, monitor and diagnostics             89     0     89
+LLM subsystem                                  184     3    187
+Runtime settings, budget and trace              69     0     69
+
+MODULE BREAKDOWN (JUnit duration includes setup/call/teardown)
+Module                                   Pass  Fail  Skip  Seconds
+test_brief_loader                          30     0     0    0.152
+test_budget                                12     0     0    0.011
+test_calendar                             109     0     0    0.113
+test_codegen                               95     0     0    2.723
+test_codegen_calendar_parity               38     0     0    0.495
+test_diagnostics                           29     0     0    0.096
+test_freya_client                          63     0     0    0.349
+test_freya_diff                            19     0     0    0.023
+test_freya_practice                        25     0     0    0.170
+test_grounding                             12     0     0    0.103
+test_inputs                                29     0     0    0.280
+test_llm_errors                            71     1     0    3.906
+test_llm_gateway                           54     0     0    0.560
+test_llm_keys                              30     0     0    0.147
+test_llm_structured                        29     2     0    0.187
+test_money                                 47     0     0    0.078
+test_outcomes                              61     0     0    0.095
+test_playground                            42     0     0    0.139
+test_policy_ir                             48     0     0    0.148
+test_robustness                            14     0     0    0.143
+test_settings                              33     0     0    0.126
+test_streamlit_app                         10     0     0    6.053
+test_streamlit_monitor                      8     0     0    3.673
+test_tool_api                              22     0     0    0.113
+test_trace                                 24     0     0    0.324
+test_understand_fake_llm                   29     0     0    1.545
+test_validate_policy                       28     0     0    0.176
+
+FAILURES
+tests.unit.test_llm_errors::test_langchain_wrapped_anthropic_errors
+  ImportError: DLL load failed while importing _uuid_utils: An Application Control policy has blocked this file.
+tests.unit.test_llm_structured::test_recursive_schema_is_accepted_by_langchain_function_conversion
+  ImportError: DLL load failed while importing _uuid_utils: An Application Control policy has blocked this file.
+tests.unit.test_llm_structured::test_schema_is_accepted_by_langchain_openai_function_conversion
+  ImportError: DLL load failed while importing _uuid_utils: An Application Control policy has blocked this file.
+
+STATIC CHECKS
+Ruff: 10 findings across 5 files. Formatting: 32 files would be reformatted.
+Checks were read-only; no automatic lint or formatting fixes were applied.
+builder/checks/code_sandbox.py:35:23 SIM905 Consider using a list literal instead of `str.split`
+builder/checks/code_sandbox.py:81:40 RUF100 Unused `noqa` directive (non-enabled: `S102`)
+builder/checks/code_sandbox.py:97:94 RUF100 Unused `noqa` directive (non-enabled: `A002`)
+builder/checks/code_sandbox.py:115:42 RUF100 Unused `noqa` directive (non-enabled: `A002`)
+builder/checks/lint.py:574:48 UP034 Avoid extraneous parentheses
+builder/checks/lint.py:654:27 UP034 Avoid extraneous parentheses
+builder/compiler/toolset.py:227:26 F541 f-string without any placeholders
+builder/compiler/toolset.py:228:26 F541 f-string without any placeholders
+evals/reference/brief_a_ref.py:735:23 RUF100 Unused `noqa` directive (non-enabled: `PLC0415`)
+evals/triage.py:96:35 RUF100 Unused `noqa` directive (non-enabled: `BLE001`)
+
+SYNTHETIC POLICY BOUNDARY RUNS (evaluations, not customers)
+Brief A: 1640 evaluations; 15 passed groups; 0 failed groups; 2 unchecked groups.
+  Unchecked outcomes.note_order_invariance: Multi-product policy is disabled
+  Unchecked contracts.close_call.reason: No named request enum available; field mapping or unconstrained values are unchecked
+Brief AB: 1670 evaluations; 17 passed groups; 0 failed groups; 1 unchecked groups.
+  Unchecked contracts.close_call.reason: No named request enum available; field mapping or unconstrained values are unchecked
+
+SLOWEST 10 TEST CASES (setup/call/teardown combined)
+ 2.587s  tests.unit.test_llm_errors::test_real_anthropic_sdk_errors
+ 1.612s  tests.unit.test_streamlit_app::test_every_local_screen_renders_without_errors
+ 1.549s  tests.unit.test_codegen::test_decide_agrees_with_the_reference_engine[AB]
+ 0.739s  tests.unit.test_llm_errors::test_real_openai_sdk_errors
+ 0.717s  tests.unit.test_streamlit_app::test_mocked_custom_conversation_sends_continues_and_ends
+ 0.593s  tests.unit.test_streamlit_monitor::test_dashboard_warns_about_stale_draft_after_one_explicit_read
+ 0.557s  tests.unit.test_streamlit_monitor::test_robustness_failure_counterexamples_remain_visible_and_report_becomes_stale
+ 0.530s  tests.unit.test_streamlit_monitor::test_bundled_robustness_reports_metrics_groups_and_limits_without_network[Brief A + B]
+ 0.510s  tests.unit.test_streamlit_app::test_editor_changes_survive_navigating_away_and_back[Policy document]
+ 0.507s  tests.unit.test_streamlit_app::test_invalid_call_record_collection_shows_friendly_error[product_order]
+
+COVERAGE LIMITS AND OUTSTANDING ACCEPTANCE CRITERIA
+- No real provider calls, Freya deployment, live practice customers, transcript policy/honesty judge, or hidden cases were executed.
+- No integration/e2e/compliance suite exists. The compliance criterion in docs/TASKS.md is not satisfied by this unit suite.
+- builder/build.py is absent; a complete automated brief-to-agent build/deploy and the build-time requirement remain unverified.
+- New compiler assembly/tool/hook modules and workflow lint/rule-coverage modules lack direct tests; compiler tests concentrate on executable snippets.
+- Understanding tests use fixture-backed fake LLM responses; they do not measure extraction quality on unseen raw briefs.
+- UI upload paths have less behavioral coverage than bundled input, editor, navigation, and mocked live paths.
+- No measured line/branch coverage: coverage and pytest-cov are not installed in this environment.
+
+RUNTIME AND ISOLATION
+Python: 3.12.14 (main, Aug 25 2026, 14:01:42) [MSC v.1944 64 bit (AMD64)]
+Environment: isolated .venv-playground; existing .venv was not modified.
+Automatic third-party pytest plugin discovery disabled; pytest_asyncio.plugin explicitly enabled.
+Unit fixtures disable repository .env loading, remove configured credentials, and block non-loopback socket connect/connect_ex in the test process.
+The in-process socket guard is best effort and does not constitute a subprocess firewall.
+There are no current live-marked tests; -m not live selected all 1,014 tests.
+All optional SDK/UI imports were exercised where possible: no skips were reported.
+
+REPRODUCTION COMMANDS (from repository root, PowerShell)
+$env:PYTEST_DISABLE_PLUGIN_AUTOLOAD = '1'
+.venv-playground/Scripts/python.exe -m pytest tests -m 'not live' -p pytest_asyncio.plugin -o 'addopts=' -vv -ra --tb=long --durations=30 --junitxml='C:/Users/Felladien/Documents/Projects/Python/FreyaHackaton/results/test-runs/20261010175827Z/pytest.xml' --basetemp='C:/Users/Felladien/Documents/Projects/Python/FreyaHackaton/results/test-runs/20261010175827Z/tmp'
+.venv-playground/Scripts/python.exe -m ruff check builder tests streamlit_app.py --output-format json
+.venv-playground/Scripts/python.exe -m ruff check evals --output-format json
+.venv-playground/Scripts/python.exe -m ruff format --check builder tests streamlit_app.py
+.venv-playground/Scripts/python.exe -m ruff format --check evals
+
+ARTIFACTS
+pytest.log - full verbose run, all case names/verdicts, warnings, tracebacks and slowest setup/call times
+pytest.xml - JUnit machine-readable run and full failure tracebacks
+testcases.json - each test case, duration and failure data
+summary.json - aggregated results, environment, lint findings and limitations
+environment.json - interpreter and installed relevant package versions
+ruff.json / ruff-evals.json - complete lint findings with exact source locations
+format.log / format-evals.log - formatting diagnostics and proposed diffs
+robustness-a.json / robustness-ab.json - complete synthetic invariant reports

@@ -1,0 +1,19 @@
+<# Lean profile prompts. stage = "call" (opening + third party + identity in one node) or "negotiate". Inputs: stage, opening_text, third_party_text, identity_text, negotiate_text, closing_text, extra #>
+<% if stage == "call" %>
+<<opening_text>>
+
+IF SOMEONE ELSE ANSWERED (not the customer)
+<<third_party_text>>
+
+IDENTITY (only once the customer confirmed who they are)
+<<identity_text>>
+<% else %>
+<<negotiate_text>>
+<% endif %>
+
+CLOSING THE CALL
+<<closing_text>>
+<% if extra %>
+
+<<extra>>
+<% endif %>

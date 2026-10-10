@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "entries": [
+    {
+      "provider": "anthropic",
+      "fingerprint": "8ac641f52b41",
+      "label": "anthropic#1(…1111)",
+      "reason": "quota: FakeStatusError: Your credit balance is too low to access the Anthropic API.",
+      "marked_at": 1760000000.0,
+      "marked_at_utc": "2025-10-09T08:53:20Z"
+    },
+    {
+      "provider": "anthropic",
+      "fingerprint": "ce91a62d847e",
+      "label": "anthropic#2(…2222)",
+      "reason": "quota: FakeStatusError: Your credit balance is too low to access the Anthropic API.",
+      "marked_at": 1760000000.0,
+      "marked_at_utc": "2025-10-09T08:53:20Z"
+    }
+  ]
+}

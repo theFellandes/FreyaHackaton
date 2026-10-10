@@ -1,0 +1,701 @@
+2026-10-10T20:16:04.976Z | START  | run 96620be3dc2d started | slot=qr-repo-loop | builder 0.1.0, python 3.13.16
+2026-10-10T20:16:04.977Z | CONFIG | effective configuration | freya_api_url=https://staging-app.freyavoice.ai freya_api_key=set freya_bank_team_key=set freya_workspace_id=auto llm_providers=[anthropic, openai, claude_code] builder_track=compiled agent_profile=staged self_test=none build_time_budget_s=1680 build_slot=auto dry_run=True langfuse=disabled
+2026-10-10T20:16:04.977Z | OBS    | langfuse disabled (no keys)
+2026-10-10T20:16:04.989Z | STAGE  | load_inputs | start | budget_left_s=1680
+2026-10-10T20:16:04.989Z | DECIDE | track compiled (requested compiled; agentic fallback off) | profile=staged dry_run=True
+2026-10-10T20:16:04.990Z | INPUT  | 1 brief file(s), tool API with 7 tool(s) | briefs=[brief-a.md] chars=10174 brief_sha=97a030a681d1 tools=[add_note, close_call, create_promise, get_account, schedule_callback, transfer_to_agent, verify_identity]
+2026-10-10T20:16:04.990Z | STAGE  | load_inputs | end 0.0s | budget_left_s=1680
+2026-10-10T20:16:04.991Z | STAGE  | guard_inputs | start | budget_left_s=1680
+2026-10-10T20:16:04.996Z | GUARD  | inputs | ok | 0 violations | blocked=False violations=[]
+2026-10-10T20:16:04.996Z | STAGE  | guard_inputs | end 0.0s | budget_left_s=1680
+2026-10-10T20:16:04.997Z | STAGE  | understand_brief | start | budget_left_s=1680
+2026-10-10T20:16:04.997Z | LEDGER | reading 1 file(s) in 3 passage(s) | files=[brief-a.md] passages=3
+2026-10-10T20:16:05.006Z | LEDGER | passage 1/3 (brief-a.md): 39 rules, 16 ambiguities
+2026-10-10T20:16:05.009Z | LEDGER | passage 2/3 (brief-a.md): 42 rules, 0 ambiguities
+2026-10-10T20:16:05.012Z | LEDGER | passage 3/3 (brief-a.md): 21 rules, 0 ambiguities
+2026-10-10T20:16:05.033Z | LEDGER | completeness check: 4 uncovered passage(s), no missing rule
+2026-10-10T20:16:05.033Z | LEDGER | ledger ready: 101 rules (101 active), 16 ambiguities, 0 superseded | rules=101 active=101 ambiguities=16
+2026-10-10T20:16:05.033Z | AMBIG  | [A-5a, A-6a, A-8] A relative answers and later says the number is not the customer's (or the reverse). -> chosen: wrong_number only on an explicit statement that the number does not belong to the customer; 'not here / not available' is the callback path; after a booked callback the close is callback. (because: Rule 8's trigger is an explicit statement; a booked callback is already in the ledger.)
+2026-10-10T20:16:05.034Z | AMBIG  | [A-22, A-19] 'This <weekday>' already past, a bare weekday, or a weekday equal to today. -> chosen: Weeks run Monday to Sunday. A past 'this <weekday>' is before today: say so and ask for a day from today on (a date proposal, not a refusal). A bare weekday is its next occurrence after today. The read-back states weekday and date. (because: Rule 22 defines only 'this' and 'next'; rule 19 forbids past dates; the read-back is the safety net.)
+2026-10-10T20:16:05.034Z | AMBIG  | [A-21, A-29, A-30b] Is 'not today, maybe later' or 'when I get paid' a vague period or a flat refusal? -> chosen: Any time reference (a period, an event, 'later') is a vague period: ask once for the exact day, then propose the deadline. A 'no' with no time reference and no amount is a flat refusal. (because: Rule 29: a proposed date is never a refusal; rule 30 defines a flat refusal as a no with no date and no amount.)
+2026-10-10T20:16:05.034Z | AMBIG  | [A-36b, A-41b, A-OUT-T] Restructuring requested after a promise was recorded. -> chosen: Transfer to the restructuring queue; the recorded promise stays; close transferred / restructuring. Asking to change the recorded promise itself is rule 36 (mobile app). (because: Rule 41 is unconditional and the closing note says a transfer after a recorded promise closes transferred.)
+2026-10-10T20:16:05.034Z | AMBIG  | [A-15a, A-15c] Does 'why do you need that?' before a security answer count as declining? -> chosen: Explain once that the questions protect the account and re-ask; close declined only on a second refusal or when the customer again refuses to answer until told the purpose. (because: The rule says 'instead of answering'; a clarifying question followed by an answer is not a refusal.)
+2026-10-10T20:16:05.034Z | AMBIG  | [A-32d, A-41a] Hardship and a request for lower instalments in the same call. -> chosen: Hardship first: sympathy, offer support; accept → support transfer; decline → no_promise / hardship. (because: Rule 32 comes before rule 41.)
+2026-10-10T20:16:05.034Z | AMBIG  | [A-26a, A-30c, A-26d] Does the floor offer use a persuasion attempt, and on which date is it offered? -> chosen: 'Too much' to the first ask makes attempt 1 the floor on the attempt-1 date with the rest-stays-overdue sentence; a refused floor is a flat refusal → next attempt (late band: floor on the deadline) or stop. (because: Rule 30 makes attempt 1 the floor once the full amount was called too much; rule 26 allows attempt 2 to name the floor again on the deadline.)
+2026-10-10T20:16:05.034Z | AMBIG  | [A-JOB-a, A-BANDS] days_late outside every band (0, or more than 45). -> chosen: Use the nearest band and never fail. (because: The brief scopes calls to 1-45 days late; the agent still has to behave.)
+2026-10-10T20:16:05.034Z | AMBIG  | [A-30d, A-19] Attempt-1 date on a weekend call, or after a short deadline. -> chosen: When this week's last business day is before today, use next week's; cap any proposal at the deadline. (because: Rule 19 forbids past dates and dates after the deadline.)
+2026-10-10T20:16:05.034Z | AMBIG  | [A-6a, A-7a, A-7b] Callback 'today' on a non-business day; a vague time such as 'in the morning'. -> chosen: 'Today' is allowed on any day (literal reading); 'later than now' is strict; a vague time is followed by a request for a specific time (not counted as an outside-window offer). (because: Literal reading of rule 6; rule 7 is the only no-callback path.)
+2026-10-10T20:16:05.034Z | AMBIG  | [A-25, A-26a, A-27a, A-27b] Amount above the full amount, a floor above the past-due amount, or a missing floor field. -> chosen: Above the full amount → offer the full amount; effective floor = min(floor, past due); no floor field → no floor offer. (because: Rule 27 bounds the range at the full amount; rule 33 forbids invented terms.)
+2026-10-10T20:16:05.034Z | AMBIG  | [A-17c, A-44] No currency is named in the brief or the tool API. -> chosen: Say amounts with two decimals and no currency word. (because: Rule 44: never invent facts.)
+2026-10-10T20:16:05.034Z | AMBIG  | [A-3b, A-45b] 'I don't want to talk' before the right party is confirmed. -> chosen: Before right-party confirmation it is an unclear answer (second ask, then not_reached / unclear); after confirmation and before verification it is not_verified / declined. (because: Rule 45 speaks of 'the same customer'; before confirmation the person is not known to be the customer.)
+2026-10-10T20:16:05.034Z | AMBIG  | [A-10, A-7b] A third party will not say when the customer can be reached, or insists on paying. -> chosen: No disclosure and no payment; without a time no callback is booked → not_reached / no_callback. (because: Rule 10 forbids any account talk; nothing can be scheduled.)
+2026-10-10T20:16:05.034Z | AMBIG  | [A-32c, A-32e] A hardship customer declines support but names a date or an amount. -> chosen: Record the promise under the date and amount rules (no persuasion) and close promise; a later accepted support transfer closes transferred / support. (because: Rule 32's last sentence and the transfer-after-promise note.)
+2026-10-10T20:16:05.034Z | AMBIG  | [A-46a, A-OUTCOMES] The call ends with no situation from the outcome table (e.g. the customer hangs up). -> chosen: Verified customer → no_promise / refused; customer on the line but not verified → not_verified / declined; otherwise not_reached / unclear. (because: Every call needs exactly one close_call; these rows say the least about the customer.)
+2026-10-10T20:16:05.045Z | GUARD  | ledger | ok | 0 violations | blocked=False violations=[]
+2026-10-10T20:16:05.045Z | DECIDE | rule ledger: 101 rules (101 active), 16 ambiguities, 0 supersessions
+2026-10-10T20:16:05.046Z | STAGE  | understand_brief | end 0.0s | budget_left_s=1679.9
+2026-10-10T20:16:05.047Z | STAGE  | extract_policy | start | budget_left_s=1679.9
+2026-10-10T20:16:05.115Z | GROUNDING | warning: phrases.identity_failed_sentence: sentence not found in the briefs: "I'm sorry, I could not verify your identity. Please use the mobile app or visit a branch."
+2026-10-10T20:16:05.115Z | GROUNDING | warning: phrases.extra.below_floor: sentence not found in the briefs: 'That amount cannot be recorded.'
+2026-10-10T20:16:05.115Z | GROUNDING | warning: phrases.extra.record_failed: sentence not found in the briefs: "I'm sorry, I could not record your promise."
+2026-10-10T20:16:05.115Z | GROUNDING | warning: recording.failure_sentence: sentence not found in the briefs: "I'm sorry, I could not record your promise."
+2026-10-10T20:16:05.115Z | GROUNDING | warning: identity.questions[0].ask: sentence not found in the briefs: 'Could you please tell me your date of birth?'
+2026-10-10T20:16:05.116Z | EXTRACT | policy IR extracted: 2 band(s), 22 intent(s), 18 outcome row(s), 1 residual rule(s) | cited_rules=101
+2026-10-10T20:16:05.116Z | STAGE  | extract_policy | end 0.1s | budget_left_s=1679.9
+2026-10-10T20:16:05.117Z | STAGE  | validate_policy | start | budget_left_s=1679.9
+2026-10-10T20:16:05.121Z | VALIDATE | policy IR: 1 error(s), 0 warning(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:05.121Z | VALIDATE | issues: - ERROR PHRASE_MISSING at phrases.goodbye_sentence: phrases.goodbye_sentence is empty, but the rule ledger prescribes it (the thanks and farewell before the call is closed). Fill it: copy the documents' wording when they quote the sentence; when they only describe it, compose one short natural sentence that contains exactly the elements the rule requires and nothing else, and add the rule ids to phrases.rule_ids. [A-47]
+2026-10-10T20:16:05.174Z | VALIDATE | 5 fixed sentence(s) not found in the briefs | sentences=[phrases.identity_failed_sentence: sentence not found in the briefs: "I'm sorry, I could not verify your identity. Pl...
+2026-10-10T20:16:05.184Z | VALIDATE | offline invariants: 15 passed, 0 failed, 2 unchecked | failing=[]
+2026-10-10T20:16:05.185Z | STAGE  | validate_policy | end 0.1s | budget_left_s=1679.8
+2026-10-10T20:16:05.186Z | STAGE  | repair_policy | start | budget_left_s=1679.8
+2026-10-10T20:16:05.186Z | DECIDE | policy repair round 1: 1 issue(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:05.203Z | REPAIR | asking the model to fix 1 issue(s) (round 1) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:05.205Z | ERROR  | node repair_policy crashed: RuntimeError | stage=repair_policy error=unexpected bug inside the repair step
+2026-10-10T20:16:05.205Z | STAGE  | repair_policy | failed 0.0s | budget_left_s=1679.8
+2026-10-10T20:16:05.206Z | STAGE  | validate_policy | start | budget_left_s=1679.8
+2026-10-10T20:16:05.209Z | VALIDATE | policy IR: 1 error(s), 0 warning(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:05.209Z | VALIDATE | issues: - ERROR PHRASE_MISSING at phrases.goodbye_sentence: phrases.goodbye_sentence is empty, but the rule ledger prescribes it (the thanks and farewell before the call is closed). Fill it: copy the documents' wording when they quote the sentence; when they only describe it, compose one short natural sentence that contains exactly the elements the rule requires and nothing else, and add the rule ids to phrases.rule_ids. [A-47]
+2026-10-10T20:16:05.261Z | VALIDATE | 5 fixed sentence(s) not found in the briefs | sentences=[phrases.identity_failed_sentence: sentence not found in the briefs: "I'm sorry, I could not verify your identity. Pl...
+2026-10-10T20:16:05.271Z | VALIDATE | offline invariants: 15 passed, 0 failed, 2 unchecked | failing=[]
+2026-10-10T20:16:05.271Z | STAGE  | validate_policy | end 0.1s | budget_left_s=1679.7
+2026-10-10T20:16:05.272Z | STAGE  | repair_policy | start | budget_left_s=1679.7
+2026-10-10T20:16:05.273Z | DECIDE | policy repair round 1: 1 issue(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:05.288Z | REPAIR | asking the model to fix 1 issue(s) (round 1) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:05.289Z | ERROR  | node repair_policy crashed: RuntimeError | stage=repair_policy error=unexpected bug inside the repair step
+2026-10-10T20:16:05.289Z | STAGE  | repair_policy | failed 0.0s | budget_left_s=1679.7
+2026-10-10T20:16:05.290Z | STAGE  | validate_policy | start | budget_left_s=1679.7
+2026-10-10T20:16:05.293Z | VALIDATE | policy IR: 1 error(s), 0 warning(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:05.293Z | VALIDATE | issues: - ERROR PHRASE_MISSING at phrases.goodbye_sentence: phrases.goodbye_sentence is empty, but the rule ledger prescribes it (the thanks and farewell before the call is closed). Fill it: copy the documents' wording when they quote the sentence; when they only describe it, compose one short natural sentence that contains exactly the elements the rule requires and nothing else, and add the rule ids to phrases.rule_ids. [A-47]
+2026-10-10T20:16:05.394Z | VALIDATE | 5 fixed sentence(s) not found in the briefs | sentences=[phrases.identity_failed_sentence: sentence not found in the briefs: "I'm sorry, I could not verify your identity. Pl...
+2026-10-10T20:16:05.404Z | VALIDATE | offline invariants: 15 passed, 0 failed, 2 unchecked | failing=[]
+2026-10-10T20:16:05.404Z | STAGE  | validate_policy | end 0.1s | budget_left_s=1679.6
+2026-10-10T20:16:05.405Z | STAGE  | repair_policy | start | budget_left_s=1679.6
+2026-10-10T20:16:05.406Z | DECIDE | policy repair round 1: 1 issue(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:05.420Z | REPAIR | asking the model to fix 1 issue(s) (round 1) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:05.421Z | ERROR  | node repair_policy crashed: RuntimeError | stage=repair_policy error=unexpected bug inside the repair step
+2026-10-10T20:16:05.421Z | STAGE  | repair_policy | failed 0.0s | budget_left_s=1679.6
+2026-10-10T20:16:05.422Z | STAGE  | validate_policy | start | budget_left_s=1679.6
+2026-10-10T20:16:05.425Z | VALIDATE | policy IR: 1 error(s), 0 warning(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:05.425Z | VALIDATE | issues: - ERROR PHRASE_MISSING at phrases.goodbye_sentence: phrases.goodbye_sentence is empty, but the rule ledger prescribes it (the thanks and farewell before the call is closed). Fill it: copy the documents' wording when they quote the sentence; when they only describe it, compose one short natural sentence that contains exactly the elements the rule requires and nothing else, and add the rule ids to phrases.rule_ids. [A-47]
+2026-10-10T20:16:05.478Z | VALIDATE | 5 fixed sentence(s) not found in the briefs | sentences=[phrases.identity_failed_sentence: sentence not found in the briefs: "I'm sorry, I could not verify your identity. Pl...
+2026-10-10T20:16:05.488Z | VALIDATE | offline invariants: 15 passed, 0 failed, 2 unchecked | failing=[]
+2026-10-10T20:16:05.489Z | STAGE  | validate_policy | end 0.1s | budget_left_s=1679.5
+2026-10-10T20:16:05.490Z | STAGE  | repair_policy | start | budget_left_s=1679.5
+2026-10-10T20:16:05.490Z | DECIDE | policy repair round 1: 1 issue(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:05.505Z | REPAIR | asking the model to fix 1 issue(s) (round 1) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:05.506Z | ERROR  | node repair_policy crashed: RuntimeError | stage=repair_policy error=unexpected bug inside the repair step
+2026-10-10T20:16:05.506Z | STAGE  | repair_policy | failed 0.0s | budget_left_s=1679.5
+2026-10-10T20:16:05.507Z | STAGE  | validate_policy | start | budget_left_s=1679.5
+2026-10-10T20:16:05.510Z | VALIDATE | policy IR: 1 error(s), 0 warning(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:05.510Z | VALIDATE | issues: - ERROR PHRASE_MISSING at phrases.goodbye_sentence: phrases.goodbye_sentence is empty, but the rule ledger prescribes it (the thanks and farewell before the call is closed). Fill it: copy the documents' wording when they quote the sentence; when they only describe it, compose one short natural sentence that contains exactly the elements the rule requires and nothing else, and add the rule ids to phrases.rule_ids. [A-47]
+2026-10-10T20:16:05.563Z | VALIDATE | 5 fixed sentence(s) not found in the briefs | sentences=[phrases.identity_failed_sentence: sentence not found in the briefs: "I'm sorry, I could not verify your identity. Pl...
+2026-10-10T20:16:05.573Z | VALIDATE | offline invariants: 15 passed, 0 failed, 2 unchecked | failing=[]
+2026-10-10T20:16:05.574Z | STAGE  | validate_policy | end 0.1s | budget_left_s=1679.4
+2026-10-10T20:16:05.575Z | STAGE  | repair_policy | start | budget_left_s=1679.4
+2026-10-10T20:16:05.576Z | DECIDE | policy repair round 1: 1 issue(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:05.591Z | REPAIR | asking the model to fix 1 issue(s) (round 1) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:05.592Z | ERROR  | node repair_policy crashed: RuntimeError | stage=repair_policy error=unexpected bug inside the repair step
+2026-10-10T20:16:05.592Z | STAGE  | repair_policy | failed 0.0s | budget_left_s=1679.4
+2026-10-10T20:16:05.593Z | STAGE  | validate_policy | start | budget_left_s=1679.4
+2026-10-10T20:16:05.596Z | VALIDATE | policy IR: 1 error(s), 0 warning(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:05.596Z | VALIDATE | issues: - ERROR PHRASE_MISSING at phrases.goodbye_sentence: phrases.goodbye_sentence is empty, but the rule ledger prescribes it (the thanks and farewell before the call is closed). Fill it: copy the documents' wording when they quote the sentence; when they only describe it, compose one short natural sentence that contains exactly the elements the rule requires and nothing else, and add the rule ids to phrases.rule_ids. [A-47]
+2026-10-10T20:16:05.650Z | VALIDATE | 5 fixed sentence(s) not found in the briefs | sentences=[phrases.identity_failed_sentence: sentence not found in the briefs: "I'm sorry, I could not verify your identity. Pl...
+2026-10-10T20:16:05.659Z | VALIDATE | offline invariants: 15 passed, 0 failed, 2 unchecked | failing=[]
+2026-10-10T20:16:05.660Z | STAGE  | validate_policy | end 0.1s | budget_left_s=1679.3
+2026-10-10T20:16:05.661Z | STAGE  | repair_policy | start | budget_left_s=1679.3
+2026-10-10T20:16:05.661Z | DECIDE | policy repair round 1: 1 issue(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:05.676Z | REPAIR | asking the model to fix 1 issue(s) (round 1) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:05.677Z | ERROR  | node repair_policy crashed: RuntimeError | stage=repair_policy error=unexpected bug inside the repair step
+2026-10-10T20:16:05.677Z | STAGE  | repair_policy | failed 0.0s | budget_left_s=1679.3
+2026-10-10T20:16:05.678Z | STAGE  | validate_policy | start | budget_left_s=1679.3
+2026-10-10T20:16:05.681Z | VALIDATE | policy IR: 1 error(s), 0 warning(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:05.681Z | VALIDATE | issues: - ERROR PHRASE_MISSING at phrases.goodbye_sentence: phrases.goodbye_sentence is empty, but the rule ledger prescribes it (the thanks and farewell before the call is closed). Fill it: copy the documents' wording when they quote the sentence; when they only describe it, compose one short natural sentence that contains exactly the elements the rule requires and nothing else, and add the rule ids to phrases.rule_ids. [A-47]
+2026-10-10T20:16:05.734Z | VALIDATE | 5 fixed sentence(s) not found in the briefs | sentences=[phrases.identity_failed_sentence: sentence not found in the briefs: "I'm sorry, I could not verify your identity. Pl...
+2026-10-10T20:16:05.744Z | VALIDATE | offline invariants: 15 passed, 0 failed, 2 unchecked | failing=[]
+2026-10-10T20:16:05.744Z | STAGE  | validate_policy | end 0.1s | budget_left_s=1679.2
+2026-10-10T20:16:05.745Z | STAGE  | repair_policy | start | budget_left_s=1679.2
+2026-10-10T20:16:05.746Z | DECIDE | policy repair round 1: 1 issue(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:05.760Z | REPAIR | asking the model to fix 1 issue(s) (round 1) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:05.761Z | ERROR  | node repair_policy crashed: RuntimeError | stage=repair_policy error=unexpected bug inside the repair step
+2026-10-10T20:16:05.761Z | STAGE  | repair_policy | failed 0.0s | budget_left_s=1679.2
+2026-10-10T20:16:05.761Z | STAGE  | validate_policy | start | budget_left_s=1679.2
+2026-10-10T20:16:05.764Z | VALIDATE | policy IR: 1 error(s), 0 warning(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:05.764Z | VALIDATE | issues: - ERROR PHRASE_MISSING at phrases.goodbye_sentence: phrases.goodbye_sentence is empty, but the rule ledger prescribes it (the thanks and farewell before the call is closed). Fill it: copy the documents' wording when they quote the sentence; when they only describe it, compose one short natural sentence that contains exactly the elements the rule requires and nothing else, and add the rule ids to phrases.rule_ids. [A-47]
+2026-10-10T20:16:05.818Z | VALIDATE | 5 fixed sentence(s) not found in the briefs | sentences=[phrases.identity_failed_sentence: sentence not found in the briefs: "I'm sorry, I could not verify your identity. Pl...
+2026-10-10T20:16:05.829Z | VALIDATE | offline invariants: 15 passed, 0 failed, 2 unchecked | failing=[]
+2026-10-10T20:16:05.830Z | STAGE  | validate_policy | end 0.1s | budget_left_s=1679.1
+2026-10-10T20:16:05.831Z | STAGE  | repair_policy | start | budget_left_s=1679.1
+2026-10-10T20:16:05.831Z | DECIDE | policy repair round 1: 1 issue(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:05.845Z | REPAIR | asking the model to fix 1 issue(s) (round 1) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:05.846Z | ERROR  | node repair_policy crashed: RuntimeError | stage=repair_policy error=unexpected bug inside the repair step
+2026-10-10T20:16:05.846Z | STAGE  | repair_policy | failed 0.0s | budget_left_s=1679.1
+2026-10-10T20:16:05.847Z | STAGE  | validate_policy | start | budget_left_s=1679.1
+2026-10-10T20:16:05.850Z | VALIDATE | policy IR: 1 error(s), 0 warning(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:05.850Z | VALIDATE | issues: - ERROR PHRASE_MISSING at phrases.goodbye_sentence: phrases.goodbye_sentence is empty, but the rule ledger prescribes it (the thanks and farewell before the call is closed). Fill it: copy the documents' wording when they quote the sentence; when they only describe it, compose one short natural sentence that contains exactly the elements the rule requires and nothing else, and add the rule ids to phrases.rule_ids. [A-47]
+2026-10-10T20:16:05.901Z | VALIDATE | 5 fixed sentence(s) not found in the briefs | sentences=[phrases.identity_failed_sentence: sentence not found in the briefs: "I'm sorry, I could not verify your identity. Pl...
+2026-10-10T20:16:05.911Z | VALIDATE | offline invariants: 15 passed, 0 failed, 2 unchecked | failing=[]
+2026-10-10T20:16:05.911Z | STAGE  | validate_policy | end 0.1s | budget_left_s=1679.1
+2026-10-10T20:16:05.912Z | STAGE  | repair_policy | start | budget_left_s=1679.1
+2026-10-10T20:16:05.912Z | DECIDE | policy repair round 1: 1 issue(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:05.927Z | REPAIR | asking the model to fix 1 issue(s) (round 1) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:05.928Z | ERROR  | node repair_policy crashed: RuntimeError | stage=repair_policy error=unexpected bug inside the repair step
+2026-10-10T20:16:05.928Z | STAGE  | repair_policy | failed 0.0s | budget_left_s=1679
+2026-10-10T20:16:05.929Z | STAGE  | validate_policy | start | budget_left_s=1679
+2026-10-10T20:16:05.932Z | VALIDATE | policy IR: 1 error(s), 0 warning(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:05.932Z | VALIDATE | issues: - ERROR PHRASE_MISSING at phrases.goodbye_sentence: phrases.goodbye_sentence is empty, but the rule ledger prescribes it (the thanks and farewell before the call is closed). Fill it: copy the documents' wording when they quote the sentence; when they only describe it, compose one short natural sentence that contains exactly the elements the rule requires and nothing else, and add the rule ids to phrases.rule_ids. [A-47]
+2026-10-10T20:16:05.984Z | VALIDATE | 5 fixed sentence(s) not found in the briefs | sentences=[phrases.identity_failed_sentence: sentence not found in the briefs: "I'm sorry, I could not verify your identity. Pl...
+2026-10-10T20:16:05.994Z | VALIDATE | offline invariants: 15 passed, 0 failed, 2 unchecked | failing=[]
+2026-10-10T20:16:05.994Z | STAGE  | validate_policy | end 0.1s | budget_left_s=1679
+2026-10-10T20:16:05.995Z | STAGE  | repair_policy | start | budget_left_s=1679
+2026-10-10T20:16:05.996Z | DECIDE | policy repair round 1: 1 issue(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:06.011Z | REPAIR | asking the model to fix 1 issue(s) (round 1) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:06.011Z | ERROR  | node repair_policy crashed: RuntimeError | stage=repair_policy error=unexpected bug inside the repair step
+2026-10-10T20:16:06.012Z | STAGE  | repair_policy | failed 0.0s | budget_left_s=1679
+2026-10-10T20:16:06.012Z | STAGE  | validate_policy | start | budget_left_s=1679
+2026-10-10T20:16:06.016Z | VALIDATE | policy IR: 1 error(s), 0 warning(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:06.016Z | VALIDATE | issues: - ERROR PHRASE_MISSING at phrases.goodbye_sentence: phrases.goodbye_sentence is empty, but the rule ledger prescribes it (the thanks and farewell before the call is closed). Fill it: copy the documents' wording when they quote the sentence; when they only describe it, compose one short natural sentence that contains exactly the elements the rule requires and nothing else, and add the rule ids to phrases.rule_ids. [A-47]
+2026-10-10T20:16:06.068Z | VALIDATE | 5 fixed sentence(s) not found in the briefs | sentences=[phrases.identity_failed_sentence: sentence not found in the briefs: "I'm sorry, I could not verify your identity. Pl...
+2026-10-10T20:16:06.078Z | VALIDATE | offline invariants: 15 passed, 0 failed, 2 unchecked | failing=[]
+2026-10-10T20:16:06.078Z | STAGE  | validate_policy | end 0.1s | budget_left_s=1678.9
+2026-10-10T20:16:06.079Z | STAGE  | repair_policy | start | budget_left_s=1678.9
+2026-10-10T20:16:06.080Z | DECIDE | policy repair round 1: 1 issue(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:06.095Z | REPAIR | asking the model to fix 1 issue(s) (round 1) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:06.096Z | ERROR  | node repair_policy crashed: RuntimeError | stage=repair_policy error=unexpected bug inside the repair step
+2026-10-10T20:16:06.096Z | STAGE  | repair_policy | failed 0.0s | budget_left_s=1678.9
+2026-10-10T20:16:06.096Z | STAGE  | validate_policy | start | budget_left_s=1678.9
+2026-10-10T20:16:06.099Z | VALIDATE | policy IR: 1 error(s), 0 warning(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:06.099Z | VALIDATE | issues: - ERROR PHRASE_MISSING at phrases.goodbye_sentence: phrases.goodbye_sentence is empty, but the rule ledger prescribes it (the thanks and farewell before the call is closed). Fill it: copy the documents' wording when they quote the sentence; when they only describe it, compose one short natural sentence that contains exactly the elements the rule requires and nothing else, and add the rule ids to phrases.rule_ids. [A-47]
+2026-10-10T20:16:06.152Z | VALIDATE | 5 fixed sentence(s) not found in the briefs | sentences=[phrases.identity_failed_sentence: sentence not found in the briefs: "I'm sorry, I could not verify your identity. Pl...
+2026-10-10T20:16:06.162Z | VALIDATE | offline invariants: 15 passed, 0 failed, 2 unchecked | failing=[]
+2026-10-10T20:16:06.162Z | STAGE  | validate_policy | end 0.1s | budget_left_s=1678.8
+2026-10-10T20:16:06.163Z | STAGE  | repair_policy | start | budget_left_s=1678.8
+2026-10-10T20:16:06.164Z | DECIDE | policy repair round 1: 1 issue(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:06.179Z | REPAIR | asking the model to fix 1 issue(s) (round 1) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:06.180Z | ERROR  | node repair_policy crashed: RuntimeError | stage=repair_policy error=unexpected bug inside the repair step
+2026-10-10T20:16:06.180Z | STAGE  | repair_policy | failed 0.0s | budget_left_s=1678.8
+2026-10-10T20:16:06.180Z | STAGE  | validate_policy | start | budget_left_s=1678.8
+2026-10-10T20:16:06.183Z | VALIDATE | policy IR: 1 error(s), 0 warning(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:06.184Z | VALIDATE | issues: - ERROR PHRASE_MISSING at phrases.goodbye_sentence: phrases.goodbye_sentence is empty, but the rule ledger prescribes it (the thanks and farewell before the call is closed). Fill it: copy the documents' wording when they quote the sentence; when they only describe it, compose one short natural sentence that contains exactly the elements the rule requires and nothing else, and add the rule ids to phrases.rule_ids. [A-47]
+2026-10-10T20:16:06.236Z | VALIDATE | 5 fixed sentence(s) not found in the briefs | sentences=[phrases.identity_failed_sentence: sentence not found in the briefs: "I'm sorry, I could not verify your identity. Pl...
+2026-10-10T20:16:06.246Z | VALIDATE | offline invariants: 15 passed, 0 failed, 2 unchecked | failing=[]
+2026-10-10T20:16:06.246Z | STAGE  | validate_policy | end 0.1s | budget_left_s=1678.7
+2026-10-10T20:16:06.247Z | STAGE  | repair_policy | start | budget_left_s=1678.7
+2026-10-10T20:16:06.248Z | DECIDE | policy repair round 1: 1 issue(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:06.262Z | REPAIR | asking the model to fix 1 issue(s) (round 1) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:06.263Z | ERROR  | node repair_policy crashed: RuntimeError | stage=repair_policy error=unexpected bug inside the repair step
+2026-10-10T20:16:06.264Z | STAGE  | repair_policy | failed 0.0s | budget_left_s=1678.7
+2026-10-10T20:16:06.264Z | STAGE  | validate_policy | start | budget_left_s=1678.7
+2026-10-10T20:16:06.267Z | VALIDATE | policy IR: 1 error(s), 0 warning(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:06.267Z | VALIDATE | issues: - ERROR PHRASE_MISSING at phrases.goodbye_sentence: phrases.goodbye_sentence is empty, but the rule ledger prescribes it (the thanks and farewell before the call is closed). Fill it: copy the documents' wording when they quote the sentence; when they only describe it, compose one short natural sentence that contains exactly the elements the rule requires and nothing else, and add the rule ids to phrases.rule_ids. [A-47]
+2026-10-10T20:16:06.320Z | VALIDATE | 5 fixed sentence(s) not found in the briefs | sentences=[phrases.identity_failed_sentence: sentence not found in the briefs: "I'm sorry, I could not verify your identity. Pl...
+2026-10-10T20:16:06.330Z | VALIDATE | offline invariants: 15 passed, 0 failed, 2 unchecked | failing=[]
+2026-10-10T20:16:06.330Z | STAGE  | validate_policy | end 0.1s | budget_left_s=1678.6
+2026-10-10T20:16:06.331Z | STAGE  | repair_policy | start | budget_left_s=1678.6
+2026-10-10T20:16:06.332Z | DECIDE | policy repair round 1: 1 issue(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:06.347Z | REPAIR | asking the model to fix 1 issue(s) (round 1) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:06.348Z | ERROR  | node repair_policy crashed: RuntimeError | stage=repair_policy error=unexpected bug inside the repair step
+2026-10-10T20:16:06.348Z | STAGE  | repair_policy | failed 0.0s | budget_left_s=1678.6
+2026-10-10T20:16:06.349Z | STAGE  | validate_policy | start | budget_left_s=1678.6
+2026-10-10T20:16:06.352Z | VALIDATE | policy IR: 1 error(s), 0 warning(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:06.352Z | VALIDATE | issues: - ERROR PHRASE_MISSING at phrases.goodbye_sentence: phrases.goodbye_sentence is empty, but the rule ledger prescribes it (the thanks and farewell before the call is closed). Fill it: copy the documents' wording when they quote the sentence; when they only describe it, compose one short natural sentence that contains exactly the elements the rule requires and nothing else, and add the rule ids to phrases.rule_ids. [A-47]
+2026-10-10T20:16:06.430Z | VALIDATE | 5 fixed sentence(s) not found in the briefs | sentences=[phrases.identity_failed_sentence: sentence not found in the briefs: "I'm sorry, I could not verify your identity. Pl...
+2026-10-10T20:16:06.448Z | VALIDATE | offline invariants: 15 passed, 0 failed, 2 unchecked | failing=[]
+2026-10-10T20:16:06.448Z | STAGE  | validate_policy | end 0.1s | budget_left_s=1678.5
+2026-10-10T20:16:06.450Z | STAGE  | repair_policy | start | budget_left_s=1678.5
+2026-10-10T20:16:06.451Z | DECIDE | policy repair round 1: 1 issue(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:06.479Z | REPAIR | asking the model to fix 1 issue(s) (round 1) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:06.480Z | ERROR  | node repair_policy crashed: RuntimeError | stage=repair_policy error=unexpected bug inside the repair step
+2026-10-10T20:16:06.481Z | STAGE  | repair_policy | failed 0.0s | budget_left_s=1678.5
+2026-10-10T20:16:06.482Z | STAGE  | validate_policy | start | budget_left_s=1678.5
+2026-10-10T20:16:06.488Z | VALIDATE | policy IR: 1 error(s), 0 warning(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:06.488Z | VALIDATE | issues: - ERROR PHRASE_MISSING at phrases.goodbye_sentence: phrases.goodbye_sentence is empty, but the rule ledger prescribes it (the thanks and farewell before the call is closed). Fill it: copy the documents' wording when they quote the sentence; when they only describe it, compose one short natural sentence that contains exactly the elements the rule requires and nothing else, and add the rule ids to phrases.rule_ids. [A-47]
+2026-10-10T20:16:06.585Z | VALIDATE | 5 fixed sentence(s) not found in the briefs | sentences=[phrases.identity_failed_sentence: sentence not found in the briefs: "I'm sorry, I could not verify your identity. Pl...
+2026-10-10T20:16:06.602Z | VALIDATE | offline invariants: 15 passed, 0 failed, 2 unchecked | failing=[]
+2026-10-10T20:16:06.602Z | STAGE  | validate_policy | end 0.1s | budget_left_s=1678.4
+2026-10-10T20:16:06.603Z | STAGE  | repair_policy | start | budget_left_s=1678.4
+2026-10-10T20:16:06.604Z | DECIDE | policy repair round 1: 1 issue(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:06.631Z | REPAIR | asking the model to fix 1 issue(s) (round 1) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:06.632Z | ERROR  | node repair_policy crashed: RuntimeError | stage=repair_policy error=unexpected bug inside the repair step
+2026-10-10T20:16:06.633Z | STAGE  | repair_policy | failed 0.0s | budget_left_s=1678.3
+2026-10-10T20:16:06.633Z | STAGE  | validate_policy | start | budget_left_s=1678.3
+2026-10-10T20:16:06.639Z | VALIDATE | policy IR: 1 error(s), 0 warning(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:06.639Z | VALIDATE | issues: - ERROR PHRASE_MISSING at phrases.goodbye_sentence: phrases.goodbye_sentence is empty, but the rule ledger prescribes it (the thanks and farewell before the call is closed). Fill it: copy the documents' wording when they quote the sentence; when they only describe it, compose one short natural sentence that contains exactly the elements the rule requires and nothing else, and add the rule ids to phrases.rule_ids. [A-47]
+2026-10-10T20:16:06.731Z | VALIDATE | 5 fixed sentence(s) not found in the briefs | sentences=[phrases.identity_failed_sentence: sentence not found in the briefs: "I'm sorry, I could not verify your identity. Pl...
+2026-10-10T20:16:06.748Z | VALIDATE | offline invariants: 15 passed, 0 failed, 2 unchecked | failing=[]
+2026-10-10T20:16:06.748Z | STAGE  | validate_policy | end 0.1s | budget_left_s=1678.2
+2026-10-10T20:16:06.750Z | STAGE  | repair_policy | start | budget_left_s=1678.2
+2026-10-10T20:16:06.750Z | DECIDE | policy repair round 1: 1 issue(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:06.776Z | REPAIR | asking the model to fix 1 issue(s) (round 1) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:06.778Z | ERROR  | node repair_policy crashed: RuntimeError | stage=repair_policy error=unexpected bug inside the repair step
+2026-10-10T20:16:06.779Z | STAGE  | repair_policy | failed 0.0s | budget_left_s=1678.2
+2026-10-10T20:16:06.780Z | STAGE  | validate_policy | start | budget_left_s=1678.2
+2026-10-10T20:16:06.784Z | VALIDATE | policy IR: 1 error(s), 0 warning(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:06.784Z | VALIDATE | issues: - ERROR PHRASE_MISSING at phrases.goodbye_sentence: phrases.goodbye_sentence is empty, but the rule ledger prescribes it (the thanks and farewell before the call is closed). Fill it: copy the documents' wording when they quote the sentence; when they only describe it, compose one short natural sentence that contains exactly the elements the rule requires and nothing else, and add the rule ids to phrases.rule_ids. [A-47]
+2026-10-10T20:16:06.874Z | VALIDATE | 5 fixed sentence(s) not found in the briefs | sentences=[phrases.identity_failed_sentence: sentence not found in the briefs: "I'm sorry, I could not verify your identity. Pl...
+2026-10-10T20:16:06.891Z | VALIDATE | offline invariants: 15 passed, 0 failed, 2 unchecked | failing=[]
+2026-10-10T20:16:06.891Z | STAGE  | validate_policy | end 0.1s | budget_left_s=1678.1
+2026-10-10T20:16:06.893Z | STAGE  | repair_policy | start | budget_left_s=1678.1
+2026-10-10T20:16:06.894Z | DECIDE | policy repair round 1: 1 issue(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:06.920Z | REPAIR | asking the model to fix 1 issue(s) (round 1) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:06.922Z | ERROR  | node repair_policy crashed: RuntimeError | stage=repair_policy error=unexpected bug inside the repair step
+2026-10-10T20:16:06.922Z | STAGE  | repair_policy | failed 0.0s | budget_left_s=1678.1
+2026-10-10T20:16:06.923Z | STAGE  | validate_policy | start | budget_left_s=1678.1
+2026-10-10T20:16:06.930Z | VALIDATE | policy IR: 1 error(s), 0 warning(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:06.930Z | VALIDATE | issues: - ERROR PHRASE_MISSING at phrases.goodbye_sentence: phrases.goodbye_sentence is empty, but the rule ledger prescribes it (the thanks and farewell before the call is closed). Fill it: copy the documents' wording when they quote the sentence; when they only describe it, compose one short natural sentence that contains exactly the elements the rule requires and nothing else, and add the rule ids to phrases.rule_ids. [A-47]
+2026-10-10T20:16:07.024Z | VALIDATE | 5 fixed sentence(s) not found in the briefs | sentences=[phrases.identity_failed_sentence: sentence not found in the briefs: "I'm sorry, I could not verify your identity. Pl...
+2026-10-10T20:16:07.042Z | VALIDATE | offline invariants: 15 passed, 0 failed, 2 unchecked | failing=[]
+2026-10-10T20:16:07.042Z | STAGE  | validate_policy | end 0.1s | budget_left_s=1677.9
+2026-10-10T20:16:07.044Z | STAGE  | repair_policy | start | budget_left_s=1677.9
+2026-10-10T20:16:07.045Z | DECIDE | policy repair round 1: 1 issue(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:07.072Z | REPAIR | asking the model to fix 1 issue(s) (round 1) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:07.074Z | ERROR  | node repair_policy crashed: RuntimeError | stage=repair_policy error=unexpected bug inside the repair step
+2026-10-10T20:16:07.074Z | STAGE  | repair_policy | failed 0.0s | budget_left_s=1677.9
+2026-10-10T20:16:07.075Z | STAGE  | validate_policy | start | budget_left_s=1677.9
+2026-10-10T20:16:07.080Z | VALIDATE | policy IR: 1 error(s), 0 warning(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:07.080Z | VALIDATE | issues: - ERROR PHRASE_MISSING at phrases.goodbye_sentence: phrases.goodbye_sentence is empty, but the rule ledger prescribes it (the thanks and farewell before the call is closed). Fill it: copy the documents' wording when they quote the sentence; when they only describe it, compose one short natural sentence that contains exactly the elements the rule requires and nothing else, and add the rule ids to phrases.rule_ids. [A-47]
+2026-10-10T20:16:07.176Z | VALIDATE | 5 fixed sentence(s) not found in the briefs | sentences=[phrases.identity_failed_sentence: sentence not found in the briefs: "I'm sorry, I could not verify your identity. Pl...
+2026-10-10T20:16:07.192Z | VALIDATE | offline invariants: 15 passed, 0 failed, 2 unchecked | failing=[]
+2026-10-10T20:16:07.193Z | STAGE  | validate_policy | end 0.1s | budget_left_s=1677.8
+2026-10-10T20:16:07.194Z | STAGE  | repair_policy | start | budget_left_s=1677.8
+2026-10-10T20:16:07.195Z | DECIDE | policy repair round 1: 1 issue(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:07.221Z | REPAIR | asking the model to fix 1 issue(s) (round 1) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:07.222Z | ERROR  | node repair_policy crashed: RuntimeError | stage=repair_policy error=unexpected bug inside the repair step
+2026-10-10T20:16:07.223Z | STAGE  | repair_policy | failed 0.0s | budget_left_s=1677.8
+2026-10-10T20:16:07.223Z | STAGE  | validate_policy | start | budget_left_s=1677.8
+2026-10-10T20:16:07.229Z | VALIDATE | policy IR: 1 error(s), 0 warning(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:07.229Z | VALIDATE | issues: - ERROR PHRASE_MISSING at phrases.goodbye_sentence: phrases.goodbye_sentence is empty, but the rule ledger prescribes it (the thanks and farewell before the call is closed). Fill it: copy the documents' wording when they quote the sentence; when they only describe it, compose one short natural sentence that contains exactly the elements the rule requires and nothing else, and add the rule ids to phrases.rule_ids. [A-47]
+2026-10-10T20:16:07.323Z | VALIDATE | 5 fixed sentence(s) not found in the briefs | sentences=[phrases.identity_failed_sentence: sentence not found in the briefs: "I'm sorry, I could not verify your identity. Pl...
+2026-10-10T20:16:07.341Z | VALIDATE | offline invariants: 15 passed, 0 failed, 2 unchecked | failing=[]
+2026-10-10T20:16:07.341Z | STAGE  | validate_policy | end 0.1s | budget_left_s=1677.6
+2026-10-10T20:16:07.343Z | STAGE  | repair_policy | start | budget_left_s=1677.6
+2026-10-10T20:16:07.344Z | DECIDE | policy repair round 1: 1 issue(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:07.369Z | REPAIR | asking the model to fix 1 issue(s) (round 1) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:07.370Z | ERROR  | node repair_policy crashed: RuntimeError | stage=repair_policy error=unexpected bug inside the repair step
+2026-10-10T20:16:07.370Z | STAGE  | repair_policy | failed 0.0s | budget_left_s=1677.6
+2026-10-10T20:16:07.371Z | STAGE  | validate_policy | start | budget_left_s=1677.6
+2026-10-10T20:16:07.377Z | VALIDATE | policy IR: 1 error(s), 0 warning(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:07.377Z | VALIDATE | issues: - ERROR PHRASE_MISSING at phrases.goodbye_sentence: phrases.goodbye_sentence is empty, but the rule ledger prescribes it (the thanks and farewell before the call is closed). Fill it: copy the documents' wording when they quote the sentence; when they only describe it, compose one short natural sentence that contains exactly the elements the rule requires and nothing else, and add the rule ids to phrases.rule_ids. [A-47]
+2026-10-10T20:16:07.467Z | VALIDATE | 5 fixed sentence(s) not found in the briefs | sentences=[phrases.identity_failed_sentence: sentence not found in the briefs: "I'm sorry, I could not verify your identity. Pl...
+2026-10-10T20:16:07.483Z | VALIDATE | offline invariants: 15 passed, 0 failed, 2 unchecked | failing=[]
+2026-10-10T20:16:07.484Z | STAGE  | validate_policy | end 0.1s | budget_left_s=1677.5
+2026-10-10T20:16:07.485Z | STAGE  | repair_policy | start | budget_left_s=1677.5
+2026-10-10T20:16:07.486Z | DECIDE | policy repair round 1: 1 issue(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:07.511Z | REPAIR | asking the model to fix 1 issue(s) (round 1) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:07.513Z | ERROR  | node repair_policy crashed: RuntimeError | stage=repair_policy error=unexpected bug inside the repair step
+2026-10-10T20:16:07.513Z | STAGE  | repair_policy | failed 0.0s | budget_left_s=1677.5
+2026-10-10T20:16:07.514Z | STAGE  | validate_policy | start | budget_left_s=1677.5
+2026-10-10T20:16:07.518Z | VALIDATE | policy IR: 1 error(s), 0 warning(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:07.518Z | VALIDATE | issues: - ERROR PHRASE_MISSING at phrases.goodbye_sentence: phrases.goodbye_sentence is empty, but the rule ledger prescribes it (the thanks and farewell before the call is closed). Fill it: copy the documents' wording when they quote the sentence; when they only describe it, compose one short natural sentence that contains exactly the elements the rule requires and nothing else, and add the rule ids to phrases.rule_ids. [A-47]
+2026-10-10T20:16:07.619Z | VALIDATE | 5 fixed sentence(s) not found in the briefs | sentences=[phrases.identity_failed_sentence: sentence not found in the briefs: "I'm sorry, I could not verify your identity. Pl...
+2026-10-10T20:16:07.636Z | VALIDATE | offline invariants: 15 passed, 0 failed, 2 unchecked | failing=[]
+2026-10-10T20:16:07.637Z | STAGE  | validate_policy | end 0.1s | budget_left_s=1677.3
+2026-10-10T20:16:07.639Z | STAGE  | repair_policy | start | budget_left_s=1677.3
+2026-10-10T20:16:07.639Z | DECIDE | policy repair round 1: 1 issue(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:07.664Z | REPAIR | asking the model to fix 1 issue(s) (round 1) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:07.665Z | ERROR  | node repair_policy crashed: RuntimeError | stage=repair_policy error=unexpected bug inside the repair step
+2026-10-10T20:16:07.666Z | STAGE  | repair_policy | failed 0.0s | budget_left_s=1677.3
+2026-10-10T20:16:07.666Z | STAGE  | validate_policy | start | budget_left_s=1677.3
+2026-10-10T20:16:07.672Z | VALIDATE | policy IR: 1 error(s), 0 warning(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:07.672Z | VALIDATE | issues: - ERROR PHRASE_MISSING at phrases.goodbye_sentence: phrases.goodbye_sentence is empty, but the rule ledger prescribes it (the thanks and farewell before the call is closed). Fill it: copy the documents' wording when they quote the sentence; when they only describe it, compose one short natural sentence that contains exactly the elements the rule requires and nothing else, and add the rule ids to phrases.rule_ids. [A-47]
+2026-10-10T20:16:07.765Z | VALIDATE | 5 fixed sentence(s) not found in the briefs | sentences=[phrases.identity_failed_sentence: sentence not found in the briefs: "I'm sorry, I could not verify your identity. Pl...
+2026-10-10T20:16:07.782Z | VALIDATE | offline invariants: 15 passed, 0 failed, 2 unchecked | failing=[]
+2026-10-10T20:16:07.783Z | STAGE  | validate_policy | end 0.1s | budget_left_s=1677.2
+2026-10-10T20:16:07.784Z | STAGE  | repair_policy | start | budget_left_s=1677.2
+2026-10-10T20:16:07.785Z | DECIDE | policy repair round 1: 1 issue(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:07.809Z | REPAIR | asking the model to fix 1 issue(s) (round 1) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:07.811Z | ERROR  | node repair_policy crashed: RuntimeError | stage=repair_policy error=unexpected bug inside the repair step
+2026-10-10T20:16:07.811Z | STAGE  | repair_policy | failed 0.0s | budget_left_s=1677.2
+2026-10-10T20:16:07.812Z | STAGE  | validate_policy | start | budget_left_s=1677.2
+2026-10-10T20:16:07.817Z | VALIDATE | policy IR: 1 error(s), 0 warning(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:07.817Z | VALIDATE | issues: - ERROR PHRASE_MISSING at phrases.goodbye_sentence: phrases.goodbye_sentence is empty, but the rule ledger prescribes it (the thanks and farewell before the call is closed). Fill it: copy the documents' wording when they quote the sentence; when they only describe it, compose one short natural sentence that contains exactly the elements the rule requires and nothing else, and add the rule ids to phrases.rule_ids. [A-47]
+2026-10-10T20:16:07.913Z | VALIDATE | 5 fixed sentence(s) not found in the briefs | sentences=[phrases.identity_failed_sentence: sentence not found in the briefs: "I'm sorry, I could not verify your identity. Pl...
+2026-10-10T20:16:07.931Z | VALIDATE | offline invariants: 15 passed, 0 failed, 2 unchecked | failing=[]
+2026-10-10T20:16:07.931Z | STAGE  | validate_policy | end 0.1s | budget_left_s=1677
+2026-10-10T20:16:07.933Z | STAGE  | repair_policy | start | budget_left_s=1677
+2026-10-10T20:16:07.933Z | DECIDE | policy repair round 1: 1 issue(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:07.959Z | REPAIR | asking the model to fix 1 issue(s) (round 1) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:07.960Z | ERROR  | node repair_policy crashed: RuntimeError | stage=repair_policy error=unexpected bug inside the repair step
+2026-10-10T20:16:07.961Z | STAGE  | repair_policy | failed 0.0s | budget_left_s=1677
+2026-10-10T20:16:07.961Z | STAGE  | validate_policy | start | budget_left_s=1677
+2026-10-10T20:16:07.966Z | VALIDATE | policy IR: 1 error(s), 0 warning(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:07.966Z | VALIDATE | issues: - ERROR PHRASE_MISSING at phrases.goodbye_sentence: phrases.goodbye_sentence is empty, but the rule ledger prescribes it (the thanks and farewell before the call is closed). Fill it: copy the documents' wording when they quote the sentence; when they only describe it, compose one short natural sentence that contains exactly the elements the rule requires and nothing else, and add the rule ids to phrases.rule_ids. [A-47]
+2026-10-10T20:16:08.061Z | VALIDATE | 5 fixed sentence(s) not found in the briefs | sentences=[phrases.identity_failed_sentence: sentence not found in the briefs: "I'm sorry, I could not verify your identity. Pl...
+2026-10-10T20:16:08.078Z | VALIDATE | offline invariants: 15 passed, 0 failed, 2 unchecked | failing=[]
+2026-10-10T20:16:08.079Z | STAGE  | validate_policy | end 0.1s | budget_left_s=1676.9
+2026-10-10T20:16:08.080Z | STAGE  | repair_policy | start | budget_left_s=1676.9
+2026-10-10T20:16:08.081Z | DECIDE | policy repair round 1: 1 issue(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:08.107Z | REPAIR | asking the model to fix 1 issue(s) (round 1) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:08.109Z | ERROR  | node repair_policy crashed: RuntimeError | stage=repair_policy error=unexpected bug inside the repair step
+2026-10-10T20:16:08.109Z | STAGE  | repair_policy | failed 0.0s | budget_left_s=1676.9
+2026-10-10T20:16:08.110Z | STAGE  | validate_policy | start | budget_left_s=1676.9
+2026-10-10T20:16:08.115Z | VALIDATE | policy IR: 1 error(s), 0 warning(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:08.115Z | VALIDATE | issues: - ERROR PHRASE_MISSING at phrases.goodbye_sentence: phrases.goodbye_sentence is empty, but the rule ledger prescribes it (the thanks and farewell before the call is closed). Fill it: copy the documents' wording when they quote the sentence; when they only describe it, compose one short natural sentence that contains exactly the elements the rule requires and nothing else, and add the rule ids to phrases.rule_ids. [A-47]
+2026-10-10T20:16:08.208Z | VALIDATE | 5 fixed sentence(s) not found in the briefs | sentences=[phrases.identity_failed_sentence: sentence not found in the briefs: "I'm sorry, I could not verify your identity. Pl...
+2026-10-10T20:16:08.224Z | VALIDATE | offline invariants: 15 passed, 0 failed, 2 unchecked | failing=[]
+2026-10-10T20:16:08.224Z | STAGE  | validate_policy | end 0.1s | budget_left_s=1676.8
+2026-10-10T20:16:08.226Z | STAGE  | repair_policy | start | budget_left_s=1676.8
+2026-10-10T20:16:08.226Z | DECIDE | policy repair round 1: 1 issue(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:08.252Z | REPAIR | asking the model to fix 1 issue(s) (round 1) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:08.253Z | ERROR  | node repair_policy crashed: RuntimeError | stage=repair_policy error=unexpected bug inside the repair step
+2026-10-10T20:16:08.253Z | STAGE  | repair_policy | failed 0.0s | budget_left_s=1676.7
+2026-10-10T20:16:08.254Z | STAGE  | validate_policy | start | budget_left_s=1676.7
+2026-10-10T20:16:08.258Z | VALIDATE | policy IR: 1 error(s), 0 warning(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:08.259Z | VALIDATE | issues: - ERROR PHRASE_MISSING at phrases.goodbye_sentence: phrases.goodbye_sentence is empty, but the rule ledger prescribes it (the thanks and farewell before the call is closed). Fill it: copy the documents' wording when they quote the sentence; when they only describe it, compose one short natural sentence that contains exactly the elements the rule requires and nothing else, and add the rule ids to phrases.rule_ids. [A-47]
+2026-10-10T20:16:08.353Z | VALIDATE | 5 fixed sentence(s) not found in the briefs | sentences=[phrases.identity_failed_sentence: sentence not found in the briefs: "I'm sorry, I could not verify your identity. Pl...
+2026-10-10T20:16:08.371Z | VALIDATE | offline invariants: 15 passed, 0 failed, 2 unchecked | failing=[]
+2026-10-10T20:16:08.371Z | STAGE  | validate_policy | end 0.1s | budget_left_s=1676.6
+2026-10-10T20:16:08.372Z | STAGE  | repair_policy | start | budget_left_s=1676.6
+2026-10-10T20:16:08.373Z | DECIDE | policy repair round 1: 1 issue(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:08.398Z | REPAIR | asking the model to fix 1 issue(s) (round 1) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:08.399Z | ERROR  | node repair_policy crashed: RuntimeError | stage=repair_policy error=unexpected bug inside the repair step
+2026-10-10T20:16:08.400Z | STAGE  | repair_policy | failed 0.0s | budget_left_s=1676.6
+2026-10-10T20:16:08.401Z | STAGE  | validate_policy | start | budget_left_s=1676.6
+2026-10-10T20:16:08.406Z | VALIDATE | policy IR: 1 error(s), 0 warning(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:08.406Z | VALIDATE | issues: - ERROR PHRASE_MISSING at phrases.goodbye_sentence: phrases.goodbye_sentence is empty, but the rule ledger prescribes it (the thanks and farewell before the call is closed). Fill it: copy the documents' wording when they quote the sentence; when they only describe it, compose one short natural sentence that contains exactly the elements the rule requires and nothing else, and add the rule ids to phrases.rule_ids. [A-47]
+2026-10-10T20:16:08.499Z | VALIDATE | 5 fixed sentence(s) not found in the briefs | sentences=[phrases.identity_failed_sentence: sentence not found in the briefs: "I'm sorry, I could not verify your identity. Pl...
+2026-10-10T20:16:08.517Z | VALIDATE | offline invariants: 15 passed, 0 failed, 2 unchecked | failing=[]
+2026-10-10T20:16:08.517Z | STAGE  | validate_policy | end 0.1s | budget_left_s=1676.5
+2026-10-10T20:16:08.519Z | STAGE  | repair_policy | start | budget_left_s=1676.5
+2026-10-10T20:16:08.520Z | DECIDE | policy repair round 1: 1 issue(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:08.548Z | REPAIR | asking the model to fix 1 issue(s) (round 1) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:08.549Z | ERROR  | node repair_policy crashed: RuntimeError | stage=repair_policy error=unexpected bug inside the repair step
+2026-10-10T20:16:08.550Z | STAGE  | repair_policy | failed 0.0s | budget_left_s=1676.4
+2026-10-10T20:16:08.550Z | STAGE  | validate_policy | start | budget_left_s=1676.4
+2026-10-10T20:16:08.556Z | VALIDATE | policy IR: 1 error(s), 0 warning(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:08.556Z | VALIDATE | issues: - ERROR PHRASE_MISSING at phrases.goodbye_sentence: phrases.goodbye_sentence is empty, but the rule ledger prescribes it (the thanks and farewell before the call is closed). Fill it: copy the documents' wording when they quote the sentence; when they only describe it, compose one short natural sentence that contains exactly the elements the rule requires and nothing else, and add the rule ids to phrases.rule_ids. [A-47]
+2026-10-10T20:16:08.658Z | VALIDATE | 5 fixed sentence(s) not found in the briefs | sentences=[phrases.identity_failed_sentence: sentence not found in the briefs: "I'm sorry, I could not verify your identity. Pl...
+2026-10-10T20:16:08.675Z | VALIDATE | offline invariants: 15 passed, 0 failed, 2 unchecked | failing=[]
+2026-10-10T20:16:08.676Z | STAGE  | validate_policy | end 0.1s | budget_left_s=1676.3
+2026-10-10T20:16:08.677Z | STAGE  | repair_policy | start | budget_left_s=1676.3
+2026-10-10T20:16:08.678Z | DECIDE | policy repair round 1: 1 issue(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:08.704Z | REPAIR | asking the model to fix 1 issue(s) (round 1) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:08.705Z | ERROR  | node repair_policy crashed: RuntimeError | stage=repair_policy error=unexpected bug inside the repair step
+2026-10-10T20:16:08.706Z | STAGE  | repair_policy | failed 0.0s | budget_left_s=1676.3
+2026-10-10T20:16:08.707Z | STAGE  | validate_policy | start | budget_left_s=1676.3
+2026-10-10T20:16:08.712Z | VALIDATE | policy IR: 1 error(s), 0 warning(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:08.712Z | VALIDATE | issues: - ERROR PHRASE_MISSING at phrases.goodbye_sentence: phrases.goodbye_sentence is empty, but the rule ledger prescribes it (the thanks and farewell before the call is closed). Fill it: copy the documents' wording when they quote the sentence; when they only describe it, compose one short natural sentence that contains exactly the elements the rule requires and nothing else, and add the rule ids to phrases.rule_ids. [A-47]
+2026-10-10T20:16:08.806Z | VALIDATE | 5 fixed sentence(s) not found in the briefs | sentences=[phrases.identity_failed_sentence: sentence not found in the briefs: "I'm sorry, I could not verify your identity. Pl...
+2026-10-10T20:16:08.824Z | VALIDATE | offline invariants: 15 passed, 0 failed, 2 unchecked | failing=[]
+2026-10-10T20:16:08.825Z | STAGE  | validate_policy | end 0.1s | budget_left_s=1676.2
+2026-10-10T20:16:08.826Z | STAGE  | repair_policy | start | budget_left_s=1676.2
+2026-10-10T20:16:08.827Z | DECIDE | policy repair round 1: 1 issue(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:08.851Z | REPAIR | asking the model to fix 1 issue(s) (round 1) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:08.853Z | ERROR  | node repair_policy crashed: RuntimeError | stage=repair_policy error=unexpected bug inside the repair step
+2026-10-10T20:16:08.853Z | STAGE  | repair_policy | failed 0.0s | budget_left_s=1676.1
+2026-10-10T20:16:08.854Z | STAGE  | validate_policy | start | budget_left_s=1676.1
+2026-10-10T20:16:08.859Z | VALIDATE | policy IR: 1 error(s), 0 warning(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:08.859Z | VALIDATE | issues: - ERROR PHRASE_MISSING at phrases.goodbye_sentence: phrases.goodbye_sentence is empty, but the rule ledger prescribes it (the thanks and farewell before the call is closed). Fill it: copy the documents' wording when they quote the sentence; when they only describe it, compose one short natural sentence that contains exactly the elements the rule requires and nothing else, and add the rule ids to phrases.rule_ids. [A-47]
+2026-10-10T20:16:08.952Z | VALIDATE | 5 fixed sentence(s) not found in the briefs | sentences=[phrases.identity_failed_sentence: sentence not found in the briefs: "I'm sorry, I could not verify your identity. Pl...
+2026-10-10T20:16:08.971Z | VALIDATE | offline invariants: 15 passed, 0 failed, 2 unchecked | failing=[]
+2026-10-10T20:16:08.971Z | STAGE  | validate_policy | end 0.1s | budget_left_s=1676
+2026-10-10T20:16:08.972Z | STAGE  | repair_policy | start | budget_left_s=1676
+2026-10-10T20:16:08.973Z | DECIDE | policy repair round 1: 1 issue(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:09.009Z | REPAIR | asking the model to fix 1 issue(s) (round 1) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:09.011Z | ERROR  | node repair_policy crashed: RuntimeError | stage=repair_policy error=unexpected bug inside the repair step
+2026-10-10T20:16:09.012Z | STAGE  | repair_policy | failed 0.0s | budget_left_s=1676
+2026-10-10T20:16:09.013Z | STAGE  | validate_policy | start | budget_left_s=1676
+2026-10-10T20:16:09.018Z | VALIDATE | policy IR: 1 error(s), 0 warning(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:09.019Z | VALIDATE | issues: - ERROR PHRASE_MISSING at phrases.goodbye_sentence: phrases.goodbye_sentence is empty, but the rule ledger prescribes it (the thanks and farewell before the call is closed). Fill it: copy the documents' wording when they quote the sentence; when they only describe it, compose one short natural sentence that contains exactly the elements the rule requires and nothing else, and add the rule ids to phrases.rule_ids. [A-47]
+2026-10-10T20:16:09.113Z | VALIDATE | 5 fixed sentence(s) not found in the briefs | sentences=[phrases.identity_failed_sentence: sentence not found in the briefs: "I'm sorry, I could not verify your identity. Pl...
+2026-10-10T20:16:09.132Z | VALIDATE | offline invariants: 15 passed, 0 failed, 2 unchecked | failing=[]
+2026-10-10T20:16:09.132Z | STAGE  | validate_policy | end 0.1s | budget_left_s=1675.8
+2026-10-10T20:16:09.134Z | STAGE  | repair_policy | start | budget_left_s=1675.8
+2026-10-10T20:16:09.134Z | DECIDE | policy repair round 1: 1 issue(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:09.160Z | REPAIR | asking the model to fix 1 issue(s) (round 1) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:09.162Z | ERROR  | node repair_policy crashed: RuntimeError | stage=repair_policy error=unexpected bug inside the repair step
+2026-10-10T20:16:09.162Z | STAGE  | repair_policy | failed 0.0s | budget_left_s=1675.8
+2026-10-10T20:16:09.163Z | STAGE  | validate_policy | start | budget_left_s=1675.8
+2026-10-10T20:16:09.169Z | VALIDATE | policy IR: 1 error(s), 0 warning(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:09.170Z | VALIDATE | issues: - ERROR PHRASE_MISSING at phrases.goodbye_sentence: phrases.goodbye_sentence is empty, but the rule ledger prescribes it (the thanks and farewell before the call is closed). Fill it: copy the documents' wording when they quote the sentence; when they only describe it, compose one short natural sentence that contains exactly the elements the rule requires and nothing else, and add the rule ids to phrases.rule_ids. [A-47]
+2026-10-10T20:16:09.267Z | VALIDATE | 5 fixed sentence(s) not found in the briefs | sentences=[phrases.identity_failed_sentence: sentence not found in the briefs: "I'm sorry, I could not verify your identity. Pl...
+2026-10-10T20:16:09.285Z | VALIDATE | offline invariants: 15 passed, 0 failed, 2 unchecked | failing=[]
+2026-10-10T20:16:09.285Z | STAGE  | validate_policy | end 0.1s | budget_left_s=1675.7
+2026-10-10T20:16:09.286Z | STAGE  | repair_policy | start | budget_left_s=1675.7
+2026-10-10T20:16:09.287Z | DECIDE | policy repair round 1: 1 issue(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:09.315Z | REPAIR | asking the model to fix 1 issue(s) (round 1) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:09.317Z | ERROR  | node repair_policy crashed: RuntimeError | stage=repair_policy error=unexpected bug inside the repair step
+2026-10-10T20:16:09.317Z | STAGE  | repair_policy | failed 0.0s | budget_left_s=1675.7
+2026-10-10T20:16:09.319Z | STAGE  | validate_policy | start | budget_left_s=1675.7
+2026-10-10T20:16:09.324Z | VALIDATE | policy IR: 1 error(s), 0 warning(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:09.324Z | VALIDATE | issues: - ERROR PHRASE_MISSING at phrases.goodbye_sentence: phrases.goodbye_sentence is empty, but the rule ledger prescribes it (the thanks and farewell before the call is closed). Fill it: copy the documents' wording when they quote the sentence; when they only describe it, compose one short natural sentence that contains exactly the elements the rule requires and nothing else, and add the rule ids to phrases.rule_ids. [A-47]
+2026-10-10T20:16:09.421Z | VALIDATE | 5 fixed sentence(s) not found in the briefs | sentences=[phrases.identity_failed_sentence: sentence not found in the briefs: "I'm sorry, I could not verify your identity. Pl...
+2026-10-10T20:16:09.438Z | VALIDATE | offline invariants: 15 passed, 0 failed, 2 unchecked | failing=[]
+2026-10-10T20:16:09.439Z | STAGE  | validate_policy | end 0.1s | budget_left_s=1675.5
+2026-10-10T20:16:09.440Z | STAGE  | repair_policy | start | budget_left_s=1675.5
+2026-10-10T20:16:09.441Z | DECIDE | policy repair round 1: 1 issue(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:09.466Z | REPAIR | asking the model to fix 1 issue(s) (round 1) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:09.468Z | ERROR  | node repair_policy crashed: RuntimeError | stage=repair_policy error=unexpected bug inside the repair step
+2026-10-10T20:16:09.468Z | STAGE  | repair_policy | failed 0.0s | budget_left_s=1675.5
+2026-10-10T20:16:09.469Z | STAGE  | validate_policy | start | budget_left_s=1675.5
+2026-10-10T20:16:09.474Z | VALIDATE | policy IR: 1 error(s), 0 warning(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:09.474Z | VALIDATE | issues: - ERROR PHRASE_MISSING at phrases.goodbye_sentence: phrases.goodbye_sentence is empty, but the rule ledger prescribes it (the thanks and farewell before the call is closed). Fill it: copy the documents' wording when they quote the sentence; when they only describe it, compose one short natural sentence that contains exactly the elements the rule requires and nothing else, and add the rule ids to phrases.rule_ids. [A-47]
+2026-10-10T20:16:09.565Z | VALIDATE | 5 fixed sentence(s) not found in the briefs | sentences=[phrases.identity_failed_sentence: sentence not found in the briefs: "I'm sorry, I could not verify your identity. Pl...
+2026-10-10T20:16:09.582Z | VALIDATE | offline invariants: 15 passed, 0 failed, 2 unchecked | failing=[]
+2026-10-10T20:16:09.582Z | STAGE  | validate_policy | end 0.1s | budget_left_s=1675.4
+2026-10-10T20:16:09.584Z | STAGE  | repair_policy | start | budget_left_s=1675.4
+2026-10-10T20:16:09.585Z | DECIDE | policy repair round 1: 1 issue(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:09.611Z | REPAIR | asking the model to fix 1 issue(s) (round 1) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:09.613Z | ERROR  | node repair_policy crashed: RuntimeError | stage=repair_policy error=unexpected bug inside the repair step
+2026-10-10T20:16:09.613Z | STAGE  | repair_policy | failed 0.0s | budget_left_s=1675.4
+2026-10-10T20:16:09.614Z | STAGE  | validate_policy | start | budget_left_s=1675.4
+2026-10-10T20:16:09.619Z | VALIDATE | policy IR: 1 error(s), 0 warning(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:09.619Z | VALIDATE | issues: - ERROR PHRASE_MISSING at phrases.goodbye_sentence: phrases.goodbye_sentence is empty, but the rule ledger prescribes it (the thanks and farewell before the call is closed). Fill it: copy the documents' wording when they quote the sentence; when they only describe it, compose one short natural sentence that contains exactly the elements the rule requires and nothing else, and add the rule ids to phrases.rule_ids. [A-47]
+2026-10-10T20:16:09.713Z | VALIDATE | 5 fixed sentence(s) not found in the briefs | sentences=[phrases.identity_failed_sentence: sentence not found in the briefs: "I'm sorry, I could not verify your identity. Pl...
+2026-10-10T20:16:09.730Z | VALIDATE | offline invariants: 15 passed, 0 failed, 2 unchecked | failing=[]
+2026-10-10T20:16:09.730Z | STAGE  | validate_policy | end 0.1s | budget_left_s=1675.2
+2026-10-10T20:16:09.732Z | STAGE  | repair_policy | start | budget_left_s=1675.2
+2026-10-10T20:16:09.733Z | DECIDE | policy repair round 1: 1 issue(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:09.759Z | REPAIR | asking the model to fix 1 issue(s) (round 1) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:09.760Z | ERROR  | node repair_policy crashed: RuntimeError | stage=repair_policy error=unexpected bug inside the repair step
+2026-10-10T20:16:09.761Z | STAGE  | repair_policy | failed 0.0s | budget_left_s=1675.2
+2026-10-10T20:16:09.761Z | STAGE  | validate_policy | start | budget_left_s=1675.2
+2026-10-10T20:16:09.767Z | VALIDATE | policy IR: 1 error(s), 0 warning(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:09.768Z | VALIDATE | issues: - ERROR PHRASE_MISSING at phrases.goodbye_sentence: phrases.goodbye_sentence is empty, but the rule ledger prescribes it (the thanks and farewell before the call is closed). Fill it: copy the documents' wording when they quote the sentence; when they only describe it, compose one short natural sentence that contains exactly the elements the rule requires and nothing else, and add the rule ids to phrases.rule_ids. [A-47]
+2026-10-10T20:16:09.864Z | VALIDATE | 5 fixed sentence(s) not found in the briefs | sentences=[phrases.identity_failed_sentence: sentence not found in the briefs: "I'm sorry, I could not verify your identity. Pl...
+2026-10-10T20:16:09.881Z | VALIDATE | offline invariants: 15 passed, 0 failed, 2 unchecked | failing=[]
+2026-10-10T20:16:09.881Z | STAGE  | validate_policy | end 0.1s | budget_left_s=1675.1
+2026-10-10T20:16:09.883Z | STAGE  | repair_policy | start | budget_left_s=1675.1
+2026-10-10T20:16:09.883Z | DECIDE | policy repair round 1: 1 issue(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:09.910Z | REPAIR | asking the model to fix 1 issue(s) (round 1) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:09.912Z | ERROR  | node repair_policy crashed: RuntimeError | stage=repair_policy error=unexpected bug inside the repair step
+2026-10-10T20:16:09.912Z | STAGE  | repair_policy | failed 0.0s | budget_left_s=1675.1
+2026-10-10T20:16:09.913Z | STAGE  | validate_policy | start | budget_left_s=1675.1
+2026-10-10T20:16:09.918Z | VALIDATE | policy IR: 1 error(s), 0 warning(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:09.918Z | VALIDATE | issues: - ERROR PHRASE_MISSING at phrases.goodbye_sentence: phrases.goodbye_sentence is empty, but the rule ledger prescribes it (the thanks and farewell before the call is closed). Fill it: copy the documents' wording when they quote the sentence; when they only describe it, compose one short natural sentence that contains exactly the elements the rule requires and nothing else, and add the rule ids to phrases.rule_ids. [A-47]
+2026-10-10T20:16:10.014Z | VALIDATE | 5 fixed sentence(s) not found in the briefs | sentences=[phrases.identity_failed_sentence: sentence not found in the briefs: "I'm sorry, I could not verify your identity. Pl...
+2026-10-10T20:16:10.033Z | VALIDATE | offline invariants: 15 passed, 0 failed, 2 unchecked | failing=[]
+2026-10-10T20:16:10.034Z | STAGE  | validate_policy | end 0.1s | budget_left_s=1674.9
+2026-10-10T20:16:10.035Z | STAGE  | repair_policy | start | budget_left_s=1674.9
+2026-10-10T20:16:10.036Z | DECIDE | policy repair round 1: 1 issue(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:10.062Z | REPAIR | asking the model to fix 1 issue(s) (round 1) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:10.063Z | ERROR  | node repair_policy crashed: RuntimeError | stage=repair_policy error=unexpected bug inside the repair step
+2026-10-10T20:16:10.064Z | STAGE  | repair_policy | failed 0.0s | budget_left_s=1674.9
+2026-10-10T20:16:10.065Z | STAGE  | validate_policy | start | budget_left_s=1674.9
+2026-10-10T20:16:10.070Z | VALIDATE | policy IR: 1 error(s), 0 warning(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:10.070Z | VALIDATE | issues: - ERROR PHRASE_MISSING at phrases.goodbye_sentence: phrases.goodbye_sentence is empty, but the rule ledger prescribes it (the thanks and farewell before the call is closed). Fill it: copy the documents' wording when they quote the sentence; when they only describe it, compose one short natural sentence that contains exactly the elements the rule requires and nothing else, and add the rule ids to phrases.rule_ids. [A-47]
+2026-10-10T20:16:10.169Z | VALIDATE | 5 fixed sentence(s) not found in the briefs | sentences=[phrases.identity_failed_sentence: sentence not found in the briefs: "I'm sorry, I could not verify your identity. Pl...
+2026-10-10T20:16:10.187Z | VALIDATE | offline invariants: 15 passed, 0 failed, 2 unchecked | failing=[]
+2026-10-10T20:16:10.187Z | STAGE  | validate_policy | end 0.1s | budget_left_s=1674.8
+2026-10-10T20:16:10.188Z | STAGE  | repair_policy | start | budget_left_s=1674.8
+2026-10-10T20:16:10.189Z | DECIDE | policy repair round 1: 1 issue(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:10.217Z | REPAIR | asking the model to fix 1 issue(s) (round 1) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:10.219Z | ERROR  | node repair_policy crashed: RuntimeError | stage=repair_policy error=unexpected bug inside the repair step
+2026-10-10T20:16:10.219Z | STAGE  | repair_policy | failed 0.0s | budget_left_s=1674.8
+2026-10-10T20:16:10.220Z | STAGE  | validate_policy | start | budget_left_s=1674.8
+2026-10-10T20:16:10.225Z | VALIDATE | policy IR: 1 error(s), 0 warning(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:10.225Z | VALIDATE | issues: - ERROR PHRASE_MISSING at phrases.goodbye_sentence: phrases.goodbye_sentence is empty, but the rule ledger prescribes it (the thanks and farewell before the call is closed). Fill it: copy the documents' wording when they quote the sentence; when they only describe it, compose one short natural sentence that contains exactly the elements the rule requires and nothing else, and add the rule ids to phrases.rule_ids. [A-47]
+2026-10-10T20:16:10.319Z | VALIDATE | 5 fixed sentence(s) not found in the briefs | sentences=[phrases.identity_failed_sentence: sentence not found in the briefs: "I'm sorry, I could not verify your identity. Pl...
+2026-10-10T20:16:10.336Z | VALIDATE | offline invariants: 15 passed, 0 failed, 2 unchecked | failing=[]
+2026-10-10T20:16:10.337Z | STAGE  | validate_policy | end 0.1s | budget_left_s=1674.6
+2026-10-10T20:16:10.338Z | STAGE  | repair_policy | start | budget_left_s=1674.6
+2026-10-10T20:16:10.339Z | DECIDE | policy repair round 1: 1 issue(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:10.363Z | REPAIR | asking the model to fix 1 issue(s) (round 1) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:10.365Z | ERROR  | node repair_policy crashed: RuntimeError | stage=repair_policy error=unexpected bug inside the repair step
+2026-10-10T20:16:10.365Z | STAGE  | repair_policy | failed 0.0s | budget_left_s=1674.6
+2026-10-10T20:16:10.366Z | STAGE  | validate_policy | start | budget_left_s=1674.6
+2026-10-10T20:16:10.371Z | VALIDATE | policy IR: 1 error(s), 0 warning(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:10.371Z | VALIDATE | issues: - ERROR PHRASE_MISSING at phrases.goodbye_sentence: phrases.goodbye_sentence is empty, but the rule ledger prescribes it (the thanks and farewell before the call is closed). Fill it: copy the documents' wording when they quote the sentence; when they only describe it, compose one short natural sentence that contains exactly the elements the rule requires and nothing else, and add the rule ids to phrases.rule_ids. [A-47]
+2026-10-10T20:16:10.466Z | VALIDATE | 5 fixed sentence(s) not found in the briefs | sentences=[phrases.identity_failed_sentence: sentence not found in the briefs: "I'm sorry, I could not verify your identity. Pl...
+2026-10-10T20:16:10.486Z | VALIDATE | offline invariants: 15 passed, 0 failed, 2 unchecked | failing=[]
+2026-10-10T20:16:10.486Z | STAGE  | validate_policy | end 0.1s | budget_left_s=1674.5
+2026-10-10T20:16:10.487Z | STAGE  | repair_policy | start | budget_left_s=1674.5
+2026-10-10T20:16:10.488Z | DECIDE | policy repair round 1: 1 issue(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:10.514Z | REPAIR | asking the model to fix 1 issue(s) (round 1) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:10.516Z | ERROR  | node repair_policy crashed: RuntimeError | stage=repair_policy error=unexpected bug inside the repair step
+2026-10-10T20:16:10.516Z | STAGE  | repair_policy | failed 0.0s | budget_left_s=1674.5
+2026-10-10T20:16:10.517Z | STAGE  | validate_policy | start | budget_left_s=1674.5
+2026-10-10T20:16:10.521Z | VALIDATE | policy IR: 1 error(s), 0 warning(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:10.521Z | VALIDATE | issues: - ERROR PHRASE_MISSING at phrases.goodbye_sentence: phrases.goodbye_sentence is empty, but the rule ledger prescribes it (the thanks and farewell before the call is closed). Fill it: copy the documents' wording when they quote the sentence; when they only describe it, compose one short natural sentence that contains exactly the elements the rule requires and nothing else, and add the rule ids to phrases.rule_ids. [A-47]
+2026-10-10T20:16:10.617Z | VALIDATE | 5 fixed sentence(s) not found in the briefs | sentences=[phrases.identity_failed_sentence: sentence not found in the briefs: "I'm sorry, I could not verify your identity. Pl...
+2026-10-10T20:16:10.634Z | VALIDATE | offline invariants: 15 passed, 0 failed, 2 unchecked | failing=[]
+2026-10-10T20:16:10.634Z | STAGE  | validate_policy | end 0.1s | budget_left_s=1674.3
+2026-10-10T20:16:10.636Z | STAGE  | repair_policy | start | budget_left_s=1674.3
+2026-10-10T20:16:10.637Z | DECIDE | policy repair round 1: 1 issue(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:10.662Z | REPAIR | asking the model to fix 1 issue(s) (round 1) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:10.664Z | ERROR  | node repair_policy crashed: RuntimeError | stage=repair_policy error=unexpected bug inside the repair step
+2026-10-10T20:16:10.664Z | STAGE  | repair_policy | failed 0.0s | budget_left_s=1674.3
+2026-10-10T20:16:10.665Z | STAGE  | validate_policy | start | budget_left_s=1674.3
+2026-10-10T20:16:10.672Z | VALIDATE | policy IR: 1 error(s), 0 warning(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:10.672Z | VALIDATE | issues: - ERROR PHRASE_MISSING at phrases.goodbye_sentence: phrases.goodbye_sentence is empty, but the rule ledger prescribes it (the thanks and farewell before the call is closed). Fill it: copy the documents' wording when they quote the sentence; when they only describe it, compose one short natural sentence that contains exactly the elements the rule requires and nothing else, and add the rule ids to phrases.rule_ids. [A-47]
+2026-10-10T20:16:10.766Z | VALIDATE | 5 fixed sentence(s) not found in the briefs | sentences=[phrases.identity_failed_sentence: sentence not found in the briefs: "I'm sorry, I could not verify your identity. Pl...
+2026-10-10T20:16:10.782Z | VALIDATE | offline invariants: 15 passed, 0 failed, 2 unchecked | failing=[]
+2026-10-10T20:16:10.783Z | STAGE  | validate_policy | end 0.1s | budget_left_s=1674.2
+2026-10-10T20:16:10.784Z | STAGE  | repair_policy | start | budget_left_s=1674.2
+2026-10-10T20:16:10.785Z | DECIDE | policy repair round 1: 1 issue(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:10.811Z | REPAIR | asking the model to fix 1 issue(s) (round 1) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:10.812Z | ERROR  | node repair_policy crashed: RuntimeError | stage=repair_policy error=unexpected bug inside the repair step
+2026-10-10T20:16:10.813Z | STAGE  | repair_policy | failed 0.0s | budget_left_s=1674.2
+2026-10-10T20:16:10.813Z | STAGE  | validate_policy | start | budget_left_s=1674.2
+2026-10-10T20:16:10.819Z | VALIDATE | policy IR: 1 error(s), 0 warning(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:10.819Z | VALIDATE | issues: - ERROR PHRASE_MISSING at phrases.goodbye_sentence: phrases.goodbye_sentence is empty, but the rule ledger prescribes it (the thanks and farewell before the call is closed). Fill it: copy the documents' wording when they quote the sentence; when they only describe it, compose one short natural sentence that contains exactly the elements the rule requires and nothing else, and add the rule ids to phrases.rule_ids. [A-47]
+2026-10-10T20:16:10.912Z | VALIDATE | 5 fixed sentence(s) not found in the briefs | sentences=[phrases.identity_failed_sentence: sentence not found in the briefs: "I'm sorry, I could not verify your identity. Pl...
+2026-10-10T20:16:10.929Z | VALIDATE | offline invariants: 15 passed, 0 failed, 2 unchecked | failing=[]
+2026-10-10T20:16:10.930Z | STAGE  | validate_policy | end 0.1s | budget_left_s=1674
+2026-10-10T20:16:10.932Z | STAGE  | repair_policy | start | budget_left_s=1674
+2026-10-10T20:16:10.932Z | DECIDE | policy repair round 1: 1 issue(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:10.961Z | REPAIR | asking the model to fix 1 issue(s) (round 1) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:10.963Z | ERROR  | node repair_policy crashed: RuntimeError | stage=repair_policy error=unexpected bug inside the repair step
+2026-10-10T20:16:10.963Z | STAGE  | repair_policy | failed 0.0s | budget_left_s=1674
+2026-10-10T20:16:10.964Z | STAGE  | validate_policy | start | budget_left_s=1674
+2026-10-10T20:16:10.971Z | VALIDATE | policy IR: 1 error(s), 0 warning(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:10.971Z | VALIDATE | issues: - ERROR PHRASE_MISSING at phrases.goodbye_sentence: phrases.goodbye_sentence is empty, but the rule ledger prescribes it (the thanks and farewell before the call is closed). Fill it: copy the documents' wording when they quote the sentence; when they only describe it, compose one short natural sentence that contains exactly the elements the rule requires and nothing else, and add the rule ids to phrases.rule_ids. [A-47]
+2026-10-10T20:16:11.075Z | VALIDATE | 5 fixed sentence(s) not found in the briefs | sentences=[phrases.identity_failed_sentence: sentence not found in the briefs: "I'm sorry, I could not verify your identity. Pl...
+2026-10-10T20:16:11.097Z | VALIDATE | offline invariants: 15 passed, 0 failed, 2 unchecked | failing=[]
+2026-10-10T20:16:11.097Z | STAGE  | validate_policy | end 0.1s | budget_left_s=1673.9
+2026-10-10T20:16:11.099Z | STAGE  | repair_policy | start | budget_left_s=1673.9
+2026-10-10T20:16:11.099Z | DECIDE | policy repair round 1: 1 issue(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:11.131Z | REPAIR | asking the model to fix 1 issue(s) (round 1) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:11.133Z | ERROR  | node repair_policy crashed: RuntimeError | stage=repair_policy error=unexpected bug inside the repair step
+2026-10-10T20:16:11.133Z | STAGE  | repair_policy | failed 0.0s | budget_left_s=1673.8
+2026-10-10T20:16:11.134Z | STAGE  | validate_policy | start | budget_left_s=1673.8
+2026-10-10T20:16:11.141Z | VALIDATE | policy IR: 1 error(s), 0 warning(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:11.142Z | VALIDATE | issues: - ERROR PHRASE_MISSING at phrases.goodbye_sentence: phrases.goodbye_sentence is empty, but the rule ledger prescribes it (the thanks and farewell before the call is closed). Fill it: copy the documents' wording when they quote the sentence; when they only describe it, compose one short natural sentence that contains exactly the elements the rule requires and nothing else, and add the rule ids to phrases.rule_ids. [A-47]
+2026-10-10T20:16:11.248Z | VALIDATE | 5 fixed sentence(s) not found in the briefs | sentences=[phrases.identity_failed_sentence: sentence not found in the briefs: "I'm sorry, I could not verify your identity. Pl...
+2026-10-10T20:16:11.269Z | VALIDATE | offline invariants: 15 passed, 0 failed, 2 unchecked | failing=[]
+2026-10-10T20:16:11.269Z | STAGE  | validate_policy | end 0.1s | budget_left_s=1673.7
+2026-10-10T20:16:11.271Z | STAGE  | repair_policy | start | budget_left_s=1673.7
+2026-10-10T20:16:11.272Z | DECIDE | policy repair round 1: 1 issue(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:11.305Z | REPAIR | asking the model to fix 1 issue(s) (round 1) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:11.306Z | ERROR  | node repair_policy crashed: RuntimeError | stage=repair_policy error=unexpected bug inside the repair step
+2026-10-10T20:16:11.307Z | STAGE  | repair_policy | failed 0.0s | budget_left_s=1673.7
+2026-10-10T20:16:11.308Z | STAGE  | validate_policy | start | budget_left_s=1673.7
+2026-10-10T20:16:11.313Z | VALIDATE | policy IR: 1 error(s), 0 warning(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:11.313Z | VALIDATE | issues: - ERROR PHRASE_MISSING at phrases.goodbye_sentence: phrases.goodbye_sentence is empty, but the rule ledger prescribes it (the thanks and farewell before the call is closed). Fill it: copy the documents' wording when they quote the sentence; when they only describe it, compose one short natural sentence that contains exactly the elements the rule requires and nothing else, and add the rule ids to phrases.rule_ids. [A-47]
+2026-10-10T20:16:11.420Z | VALIDATE | 5 fixed sentence(s) not found in the briefs | sentences=[phrases.identity_failed_sentence: sentence not found in the briefs: "I'm sorry, I could not verify your identity. Pl...
+2026-10-10T20:16:11.437Z | VALIDATE | offline invariants: 15 passed, 0 failed, 2 unchecked | failing=[]
+2026-10-10T20:16:11.438Z | STAGE  | validate_policy | end 0.1s | budget_left_s=1673.5
+2026-10-10T20:16:11.440Z | STAGE  | repair_policy | start | budget_left_s=1673.5
+2026-10-10T20:16:11.441Z | DECIDE | policy repair round 1: 1 issue(s) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:11.469Z | REPAIR | asking the model to fix 1 issue(s) (round 1) | codes=[PHRASE_MISSING]
+2026-10-10T20:16:11.470Z | ERROR  | node repair_policy crashed: RuntimeError | stage=repair_policy error=unexpected bug inside the repair step
+2026-10-10T20:16:11.471Z | STAGE  | repair_policy | failed 0.0s | budget_left_s=1673.5
+2026-10-10T20:16:11.475Z | ERROR  | the build failed: GraphRecursionError: Recursion limit of 100 reached without hitting a stop condition. You can increase the limit by setting the `recursion_limit` config key. For troubleshooting, visit: https://docs.langchain.com/oss/python/langgraph/errors/GRAPH_RECURSION_LIMIT
+2026-10-10T20:16:11.476Z | FINAL  | run 96620be3dc2d finished
+====================================================================================================
+BUILD SUMMARY
+run id       : 96620be3dc2d
+slot         : qr-repo-loop
+track        : compiled
+status       : failed
+started      : 2026-10-10T20:16:04.893Z
+ended        : 2026-10-10T20:16:11.476Z
+duration     : 6.6 s (0 min 07 s)
+model calls  : 0 (0 ok, 0 failed)
+Freya        :
+  - slot: qr-repo-loop
+tests        : 0 (0 passed, 0 failed)
+stages       :
+  - load_inputs: end 0.0s
+  - guard_inputs: end 0.0s
+  - understand_brief: end 0.0s
+  - extract_policy: end 0.1s
+  - validate_policy: end 0.1s
+  - repair_policy: failed 0.0s
+  - validate_policy: end 0.1s
+  - repair_policy: failed 0.0s
+  - validate_policy: end 0.1s
+  - repair_policy: failed 0.0s
+  - validate_policy: end 0.1s
+  - repair_policy: failed 0.0s
+  - validate_policy: end 0.1s
+  - repair_policy: failed 0.0s
+  - validate_policy: end 0.1s
+  - repair_policy: failed 0.0s
+  - validate_policy: end 0.1s
+  - repair_policy: failed 0.0s
+  - validate_policy: end 0.1s
+  - repair_policy: failed 0.0s
+  - validate_policy: end 0.1s
+  - repair_policy: failed 0.0s
+  - validate_policy: end 0.1s
+  - repair_policy: failed 0.0s
+  - validate_policy: end 0.1s
+  - repair_policy: failed 0.0s
+  - validate_policy: end 0.1s
+  - repair_policy: failed 0.0s
+  - validate_policy: end 0.1s
+  - repair_policy: failed 0.0s
+  - validate_policy: end 0.1s
+  - repair_policy: failed 0.0s
+  - validate_policy: end 0.1s
+  - repair_policy: failed 0.0s
+  - validate_policy: end 0.1s
+  - repair_policy: failed 0.0s
+  - validate_policy: end 0.1s
+  - repair_policy: failed 0.0s
+  - validate_policy: end 0.1s
+  - repair_policy: failed 0.0s
+  - validate_policy: end 0.1s
+  - repair_policy: failed 0.0s
+  - validate_policy: end 0.1s
+  - repair_policy: failed 0.0s
+  - validate_policy: end 0.1s
+  - repair_policy: failed 0.0s
+  - validate_policy: end 0.1s
+  - repair_policy: failed 0.0s
+  - validate_policy: end 0.1s
+  - repair_policy: failed 0.0s
+  - validate_policy: end 0.1s
+  - repair_policy: failed 0.0s
+  - validate_policy: end 0.1s
+  - repair_policy: failed 0.0s
+  - validate_policy: end 0.1s
+  - repair_policy: failed 0.0s
+  - validate_policy: end 0.1s
+  - repair_policy: failed 0.0s
+  - validate_policy: end 0.1s
+  - repair_policy: failed 0.0s
+  - validate_policy: end 0.1s
+  - repair_policy: failed 0.0s
+  - validate_policy: end 0.1s
+  - repair_policy: failed 0.0s
+  - validate_policy: end 0.1s
+  - repair_policy: failed 0.0s
+  - validate_policy: end 0.1s
+  - repair_policy: failed 0.0s
+  - validate_policy: end 0.1s
+  - repair_policy: failed 0.0s
+  - validate_policy: end 0.1s
+  - repair_policy: failed 0.0s
+  - validate_policy: end 0.1s
+  - repair_policy: failed 0.0s
+  - validate_policy: end 0.1s
+  - repair_policy: failed 0.0s
+  - validate_policy: end 0.1s
+  - repair_policy: failed 0.0s
+  - validate_policy: end 0.1s
+  - repair_policy: failed 0.0s
+  - validate_policy: end 0.1s
+  - repair_policy: failed 0.0s
+  - validate_policy: end 0.1s
+  - repair_policy: failed 0.0s
+  - validate_policy: end 0.1s
+  - repair_policy: failed 0.0s
+  - validate_policy: end 0.1s
+  - repair_policy: failed 0.0s
+  - validate_policy: end 0.1s
+  - repair_policy: failed 0.0s
+  - validate_policy: end 0.1s
+  - repair_policy: failed 0.0s
+  - validate_policy: end 0.1s
+  - repair_policy: failed 0.0s
+  - validate_policy: end 0.1s
+  - repair_policy: failed 0.0s
+  - validate_policy: end 0.1s
+  - repair_policy: failed 0.0s
+  - validate_policy: end 0.1s
+  - repair_policy: failed 0.0s
+errors       : 49
+workflow_id  : null
+agent_id     : null
+version      : null
+node_count   : null
+tool_count   : null
+exported     : null
+profile      : staged
+coverage     : null
+notes        : []
+errors_list  : []
+====================================================================================================
+2026-10-10T20:16:11.481Z | END    | run 96620be3dc2d closed after 6.6 s | duration_s=6.588

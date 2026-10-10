@@ -1,0 +1,35 @@
+TEST QUALITY AUDIT
+
+The recorded counts (1,011 passed, 3 failed) describe execution correctly. They do not prove policy correctness or hidden-customer readiness.
+The suite is a useful component-level baseline, with incomplete acceptance and adversarial coverage.
+
+Strengths
+- Literal expected calendar dates and Decimal money values provide independent expectations.
+- Tests cover invalid inputs, retry limits, request correlation IDs, credential redaction, UI state retention, and failed-tool behavior.
+- Generated snippets execute in a local sandbox; orchestration runs against controlled fake model and API responses.
+- Fault-injection tests deliberately break date classification and suggestions, then verify the robustness evaluator reports bounded counterexamples.
+
+Confirmed gaps not caught by the suite
+1. Incomplete paid notes: two known products, but only p1 has a paid note. Both helper and generator return paid. The IR/Brief B requires every product to be noted paid. Differential agreement therefore conceals a shared mistake.
+   Tests: tests/unit/test_outcomes.py:157; tests/unit/test_codegen.py:557.
+2. Half-cent rounding: amount=1.005 and floor/full=1.01. Decimal helper says ok; generated float/round code says below_floor. Current generated amount vectors omit half cents. Applicability to a deployed tool depends on whether its contract allows more than two decimal places.
+   Test weakness: tests/unit/test_codegen.py:371 normalizes the expected input with float/comma stripping similar to generator preprocessing. Locale 637,50 also diverges if accepted by the input contract.
+3. Monitor filtering: a legacy status=429 request without ok is counted as one failed attempt, but disappears under Only errors/retries. UI fixtures always pair failure status with ok=False.
+   Source: builder/monitor_views.py:110.
+4. Malformed embedded JSON: an unknown synthetic custom-header credential survives raw redaction when the embedded JSON is syntactically incomplete. Existing malformed-event tests check parsing skips, not raw redaction.
+   Source: builder/diagnostics.py:126.
+5. Generic outcome test asserts only decide_state=ok, not the expected outcome/reason.
+   Test: tests/unit/test_codegen.py:572.
+
+Failure diagnosis
+Each of the three originally failing test functions was executed independently in a fresh Python process.
+All reproduced ImportError: DLL load failed while importing _uuid_utils: An Application Control policy has blocked this file.
+The blocked dependency is used by LangChain tracing/runtime internals. The Anthropic-wrapper check fails during import; the schema checks fail when conversion triggers additional LangChain imports.
+Importing langchain_core.utils.function_calling alone succeeds. Calling its conversions in these tests reaches the blocked dependency.
+These are real environment/dependency failures before behavioral assertions, not evidence that the asserted policy/schema results are wrong. Their SDK compatibility behavior remains unverified.
+
+Evidence
+- isolated-failure-probes.json: each test function and its independent exception traceback.
+- dependency-import-probes.json: standalone module imports, including the successful function_calling import.
+- test-quality-probes.json: synthetic local cases and observed outputs for all confirmed behavior gaps.
+No sources were modified; no provider/Freya requests or paid simulations were started for this audit.

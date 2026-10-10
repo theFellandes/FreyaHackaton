@@ -1,0 +1,68 @@
+# Build context filter for the Dockerfile (`COPY . /app`).
+#
+# Goals: never send secrets or host state into the image, keep the context small, and keep the dependency layer
+# cached. Everything the builder needs at run time stays IN: builder/, tests/, pyproject.toml, uv.lock, README.md
+# (hatchling reads it for the project metadata), and the kit files at the repository root (freya.py, tools/,
+# briefs/, docs/, examples/, public-test-set.json, .claude/skills/).
+
+# --- secrets: arrive only as environment variables at run time -------------------------------------------------
+.env
+.env.*
+!.env.example
+**/.env
+env.sh
+**/*.pem
+**/.credentials.json
+.claude/settings.local.json
+
+# --- host virtual environments and VCS / IDE metadata -----------------------------------------------------------
+.venv*
+venv
+.git
+.idea
+.junie
+.vscode
+
+# --- Python caches and build leftovers --------------------------------------------------------------------------
+**/__pycache__
+**/*.py[cod]
+.pytest_cache
+.ruff_cache
+.mypy_cache
+.coverage
+htmlcov
+build/
+dist/
+*.egg-info
+
+# --- run-time output and state: created empty in the image, mounted as volumes by docker-compose.yml -----------
+out
+traces
+results
+state
+inputs
+.freya-agents.json
+.personas.json
+
+# --- data: the kit archive and its unpacked copy (the kit files already sit at the repository root), and the
+#     LLM key-health file, which belongs to the host that wrote it --------------------------------------------------
+data/*.zip
+data/build-the-builder-v3
+data/key_health.json
+
+# --- local scratch folders (mirrors .gitignore) -----------------------------------------------------------------
+# .cache holds local audit / review / uv-playground data (hundreds of MB): without this line it is copied into the
+# build context and baked into the image.
+.cache
+logs
+outputs
+Thesis
+.kiro
+.streamlit
+.agent
+
+# --- container definitions: not needed inside the image; editing them must not invalidate the COPY layer -------
+Dockerfile
+.dockerignore
+docker-compose*.yml
+compose*.yml

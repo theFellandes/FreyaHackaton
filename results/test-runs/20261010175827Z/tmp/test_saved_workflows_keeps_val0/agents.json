@@ -1,0 +1,1 @@
+{"brief-a": {"workflow_id": "workflow-1", "agent_id": "agent-1"}, "brief-b": {"workflow_id": "workflow-2"}, "missing": {"agent_id": "agent-3"}, "empty": {"workflow_id": ""}, "null": null, "list": [{"workflow_id": "workflow-3"}], "scalar": "workflow-4"}

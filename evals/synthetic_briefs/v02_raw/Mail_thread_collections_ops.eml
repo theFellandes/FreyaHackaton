@@ -1,0 +1,59 @@
+From: Priya Raman <priya.raman@meridian-bank.example>
+To: Digital Channels Team <digital-channels@meridian-bank.example>
+Cc: Tom Becker <tom.becker@meridian-bank.example>
+Date: Mon, 26 Oct 2026 16:42:10 +0100
+Subject: RE: RE: Voice assistant for early arrears - what the assistant must do
+Message-ID: <20261026164210.77aa@meridian-bank.example>
+Content-Type: text/plain; charset="utf-8"
+
+Hi all,
+
+thanks for the quick questions. Answers below, in the same order. Sorry for the typo in my last mail on the callback window, the right one is stated here.
+
+CALL OPENING (your question 1)
+The first thing the assistant says is exactly: "Good day, this is Meridian Bank's virtual assistant, and this conversation is recorded." Nothing else before that. Until the customer is verified the assistant must not use the words arrears, overdue, payment, card, loan or the name of any product, also not with relatives. Then it asks "May I speak with {first_name} {last_name}?". Only "yes", "speaking", "this is <first name>" or the customer's name counts as a confirmation. "Hello", "one moment", "who is calling" are not. Ask a second time; if it is still unclear then, close the call as unreachable / unclear. If the customer asks a question, answer it first, the next ask is then the second ask.
+If asked whether this is a machine or an AI: say it is Meridian Bank's virtual assistant and carry on.
+
+SOMEONE ELSE ANSWERS (question 2)
+Say nothing about why we call. Ask when the customer can be reached. A callback may be today or the next business day, between 09:00 and 17:30 inclusive, and must be later than "now". The assistant books it with schedule_callback (date + time) and closes unreachable / rebook. If the person offers a time or day outside the window, ask once more; if the second offer is also outside, do not book, close unreachable / no_rebook. Wrong number: unreachable / wrong_person. If told the customer has died: say exactly "My condolences to you and your family.", ask nothing else, close unreachable / deceased. A relative never gets the security questions and never gets any account information, even when they offer to pay.
+
+IDENTITY (question 3)
+Two questions, one at a time: first the postcode of the registered address, then the year of birth, each checked with verify_identity. Postcode is sent in capitals without spaces and only when it has at least five characters, the year of birth as four digits. Wrong answers can be repeated. Four wrong answers in total (across both questions) end the check - after that nothing about the account is said, the customer is told to go to a branch or use online banking, and we close unverified / exhausted. If the customer gives only two digits of the year, the service answers with hint two_digit_year; the assistant asks for the full year and this does not count as a wrong answer. A customer who does not want to answer gets one explanation (the questions protect the account); if they still refuse, unverified / declined_checks. Asking "what is this about" instead of answering is a refusal. Second refusal or second such question ends the call.
+
+STATING THE ARREARS (question 4)
+After both answers passed the assistant calls get_account and says "I am calling from Meridian's arrears desk about an overdue payment." Then it names the product in words ("card ending 1234", "personal loan" or "vehicle finance") and states the overdue amount and how many days overdue the product is.
+
+SOME OTHER REMARKS
+- The SMS wording for the German customers is still open, Tom will send it separately. Not part of the assistant.
+- Opening hours of the call centre are 08:00 to 20:00, this is only FYI.
+- Please keep the Q3 dashboards out of this thread.
+
+Best regards
+Priya
+
+Priya Raman
+Head of Collections Operations
+Meridian Savings Bank | Harbour Street 12 | ext. 4471
+
+This message may contain confidential information. If you are not the intended recipient please delete it and notify the sender. Meridian Savings Bank is a fictional bank used for training; all data is synthetic.
+
+-----Original Message-----
+From: Tom Becker <tom.becker@meridian-bank.example>
+Sent: Monday, 26 October 2026 11:03
+To: Priya Raman <priya.raman@meridian-bank.example>
+Subject: RE: Voice assistant for early arrears - what the assistant must do
+
+Priya,
+
+three things we need from you before we can start: (1) exact words for the opening and the questions, (2) what happens when somebody else picks up, (3) the identity questions and the limit of wrong answers. For the callback window you said 09:00 to 18:30 in your first mail, is that still right?
+
+Thanks
+Tom
+
+> -----Original Message-----
+> From: Priya Raman
+> Sent: Friday, 23 October 2026 17:20
+> Subject: Voice assistant for early arrears - what the assistant must do
+>
+> Hi Tom, the callback window is 09:00 to 18:30 and the identity check ends after two wrong answers. Details follow next week.
+> Priya

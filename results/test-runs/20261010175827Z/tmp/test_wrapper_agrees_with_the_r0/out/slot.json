@@ -1,0 +1,91 @@
+{
+ "workflow_id": "wf_1",
+ "agent_id": "ag_1",
+ "updated_at": "2026-10-10T12:00:00Z",
+ "workflow": {
+  "initial_node": "setup",
+  "system_prompt": "Second build.",
+  "nodes": {
+   "setup": {
+    "name": "setup",
+    "node_type": "code",
+    "pre_actions": [
+     {
+      "type": "function",
+      "function": {
+       "name": "code_exec"
+      }
+     }
+    ],
+    "transitions": [
+     {
+      "target_node": "talk",
+      "condition": {
+       "operator": "always"
+      }
+     }
+    ]
+   },
+   "talk": {
+    "name": "talk",
+    "node_type": "conversation",
+    "tools": [
+     {
+      "type": "function",
+      "function": {
+       "name": "lookup"
+      }
+     },
+     {
+      "type": "function",
+      "function": {
+       "name": "close"
+      }
+     }
+    ],
+    "transitions": []
+   },
+   "end": {
+    "name": "end",
+    "node_type": "end_call",
+    "terminal": {
+     "function": {
+      "name": "hang_up"
+     }
+    }
+   }
+  },
+  "global_nodes": {
+   "help": {
+    "name": "help",
+    "tools": [
+     {
+      "function": {
+       "name": "lookup"
+      }
+     }
+    ]
+   }
+  },
+  "tools": [
+   {
+    "type": "function",
+    "config": {
+     "alwaysRunsAt": [
+      "end_of_call"
+     ]
+    },
+    "function": {
+     "name": "log"
+    }
+   }
+  ],
+  "agent_config": {
+   "llmConfig": {
+    "provider": "experimental-5",
+    "model": "experimental-5",
+    "temperature": 0.3
+   }
+  }
+ }
+}

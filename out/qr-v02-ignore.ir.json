@@ -1,0 +1,1128 @@
+{
+  "rule_ids": [
+    "D2-EFFECTIVE",
+    "D2-UNCHANGED"
+  ],
+  "bank_name": "Meridian Bank",
+  "language": "en",
+  "currency_word": "",
+  "call_variables": [
+    {
+      "name": "customer_id",
+      "meaning": "The customer identifier required by the bank tools.",
+      "example": ""
+    },
+    {
+      "name": "first_name",
+      "meaning": "The customer's first name used to establish who is on the line.",
+      "example": ""
+    },
+    {
+      "name": "last_name",
+      "meaning": "The customer's last name used to establish who is on the line.",
+      "example": ""
+    },
+    {
+      "name": "now",
+      "meaning": "The call date and time used for callback and date calculations.",
+      "example": ""
+    }
+  ],
+  "phrases": {
+    "rule_ids": [
+      "THR-OPENING-a",
+      "THR-OPENING-b",
+      "THR-OPENING-d",
+      "THR-OPENING-i",
+      "THR-THIRD-PARTY-h",
+      "D2-1c",
+      "EXT-6.1",
+      "EXT-7.1a",
+      "EXT-7.3c",
+      "EXT-7.4",
+      "EXT-8.1a",
+      "EXT-8.5a",
+      "EXT-8.6a",
+      "EXT-9.6c"
+    ],
+    "opening_sentence": "Good day, this is Meridian Bank's virtual assistant, and this conversation is recorded.",
+    "right_party_question": "May I speak with {first_name} {last_name}?",
+    "robot_answer": "I am Meridian Bank's virtual assistant.",
+    "scam_answer": "You may verify this call by phoning the customer service number on your latest statement.",
+    "confirm_question": "Shall I record this?",
+    "today_question": "Can you settle this today?",
+    "recorded_sentence": "A confirmation will be sent to you by text message.",
+    "identity_failed_sentence": "Please go to a branch or use online banking.",
+    "deceased_sentence": "My condolences to you and your family.",
+    "paid_sentence": "Payments can take two business days to show.",
+    "goodbye_sentence": "Thank you and goodbye.",
+    "extra": {
+      "identity_decline_explanation": "These questions protect the account.",
+      "two_digit_year_instruction": "Please provide the full year.",
+      "unknown_answer": "I do not have that information.",
+      "promise_failure_sentence": "I could not record the promise.",
+      "floor_remaining_sentence": "The rest stays overdue.",
+      "below_floor_sentence": "That amount cannot be recorded.",
+      "hardship_sympathy": "I am sorry to hear that.",
+      "care_team_offer": "Would you like me to transfer you to the care team?",
+      "human_help_offer": "Can I help?",
+      "immutable_promise_sentence": "You can change it in online banking.",
+      "vague_date_question": "What exact day can you pay?",
+      "callback_question": "When can the customer be reached?",
+      "multi_product_today_question": "Can you settle both today?"
+    }
+  },
+  "right_party": {
+    "rule_ids": [
+      "THR-OPENING-e",
+      "THR-OPENING-f",
+      "THR-OPENING-g",
+      "THR-OPENING-h",
+      "OUT-OC16"
+    ],
+    "confirm_examples": [
+      "yes",
+      "speaking",
+      "this is <first name>",
+      "the customer's name"
+    ],
+    "not_confirm_examples": [
+      "Hello",
+      "one moment",
+      "who is calling"
+    ],
+    "max_asks": 2,
+    "unclear_outcome": {
+      "outcome": "unreachable",
+      "reason": "unclear"
+    }
+  },
+  "third_party": {
+    "rule_ids": [
+      "THR-THIRD-PARTY-a",
+      "THR-THIRD-PARTY-b",
+      "THR-THIRD-PARTY-c",
+      "THR-THIRD-PARTY-d",
+      "THR-THIRD-PARTY-e",
+      "THR-THIRD-PARTY-f",
+      "THR-THIRD-PARTY-g",
+      "THR-THIRD-PARTY-h",
+      "THR-THIRD-PARTY-i",
+      "THR-THIRD-PARTY-j",
+      "OUT-OC12",
+      "OUT-OC13",
+      "OUT-OC14",
+      "OUT-OC15"
+    ],
+    "disclose_nothing": true,
+    "ask_when_reachable": true,
+    "callback": {
+      "rule_ids": [
+        "THR-THIRD-PARTY-c",
+        "THR-THIRD-PARTY-d",
+        "THR-THIRD-PARTY-e",
+        "THR-THIRD-PARTY-f"
+      ],
+      "allowed_days": "today_or_next_business_day",
+      "window_start": "09:00",
+      "window_end": "17:30",
+      "inclusive": true,
+      "must_be_after_now": true,
+      "max_extra_asks": 1,
+      "success": {
+        "outcome": "unreachable",
+        "reason": "rebook"
+      },
+      "failure": {
+        "outcome": "unreachable",
+        "reason": "no_rebook"
+      },
+      "custom_rule_text": ""
+    },
+    "wrong_number": {
+      "outcome": "unreachable",
+      "reason": "wrong_person"
+    },
+    "deceased": {
+      "outcome": "unreachable",
+      "reason": "deceased"
+    },
+    "notes": [
+      "A relative never gets the security questions or any account information, even when they offer to pay."
+    ]
+  },
+  "identity": {
+    "rule_ids": [
+      "THR-IDENTITY-a",
+      "THR-IDENTITY-b",
+      "THR-IDENTITY-c",
+      "THR-IDENTITY-d",
+      "THR-IDENTITY-i",
+      "THR-IDENTITY-j",
+      "THR-IDENTITY-k",
+      "THR-IDENTITY-l",
+      "THR-IDENTITY-m",
+      "THR-IDENTITY-n",
+      "THR-IDENTITY-o",
+      "D2-1a",
+      "D2-1b",
+      "D2-1c",
+      "OUT-OC10",
+      "OUT-OC11"
+    ],
+    "questions": [
+      {
+        "field": "postcode",
+        "ask": "What is the postcode of your registered address?",
+        "answer_format": "postcode",
+        "normalisation": "Convert to capitals and remove spaces; send only when at least five characters."
+      },
+      {
+        "field": "birth_year",
+        "ask": "What is your year of birth?",
+        "answer_format": "year",
+        "digits": 4,
+        "normalisation": "Send as four digits."
+      }
+    ],
+    "one_at_a_time": true,
+    "max_wrong_total": 3,
+    "hints": [
+      {
+        "value": "two_digit_year",
+        "instruction": "Ask for the full year.",
+        "counts_as_wrong": false
+      }
+    ],
+    "on_failed": {
+      "outcome": "unverified",
+      "reason": "exhausted"
+    },
+    "failed_instruction": "Please go to a branch or use online banking.",
+    "decline_explanation": "These questions protect the account.",
+    "decline_max": 2,
+    "on_declined": {
+      "outcome": "unverified",
+      "reason": "declined_checks"
+    }
+  },
+  "disclosure": {
+    "rule_ids": [
+      "THR-DISCLOSURE-a",
+      "THR-DISCLOSURE-b",
+      "THR-DISCLOSURE-c",
+      "THR-DISCLOSURE-d",
+      "EXT-9.2a"
+    ],
+    "team_phrase": "I am calling from Meridian's arrears desk about an overdue payment.",
+    "product_naming": {
+      "card": "card ending {card_last4}",
+      "loan": "personal loan",
+      "vehicle_finance": "vehicle finance"
+    },
+    "state_fields": [
+      "past_due",
+      "days_overdue"
+    ]
+  },
+  "calendar": {
+    "rule_ids": [
+      "EXT-4.1a",
+      "EXT-4.1b",
+      "EXT-4.6a",
+      "EXT-4.6b",
+      "EXT-4.7"
+    ],
+    "business_weekdays": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "holidays": [
+      "2026-10-19",
+      "2026-11-03",
+      "2026-11-27",
+      "2026-12-24",
+      "2026-12-31"
+    ],
+    "date_input_order": "DMY",
+    "notes": [
+      "Calculate dates using the call's now value, never the system clock.",
+      "\"this <weekday>\" is the weekday in the current week if it is today or later."
+    ]
+  },
+  "bands": [
+    {
+      "rule_ids": [
+        "EXT-4.2a",
+        "D2-2c",
+        "EXT-M1"
+      ],
+      "name": "GREEN",
+      "days_late_min": 1,
+      "days_late_max": 10,
+      "deadline": {
+        "kind": "nth_business_day_after_today",
+        "n": 10,
+        "custom_rule_text": ""
+      },
+      "persuasion_attempts": 1
+    },
+    {
+      "rule_ids": [
+        "EXT-4.2b",
+        "D2-2c",
+        "EXT-M1"
+      ],
+      "name": "AMBER",
+      "days_late_min": 11,
+      "days_late_max": 30,
+      "deadline": {
+        "kind": "nth_business_day_after_today",
+        "n": 6,
+        "custom_rule_text": ""
+      },
+      "persuasion_attempts": 2
+    },
+    {
+      "rule_ids": [
+        "D2-2a",
+        "D2-2b",
+        "EXT-M1"
+      ],
+      "name": "RED",
+      "days_late_min": 31,
+      "days_late_max": 60,
+      "deadline": {
+        "kind": "nth_business_day_after_today",
+        "n": 2,
+        "custom_rule_text": ""
+      },
+      "persuasion_attempts": 3
+    }
+  ],
+  "promise_dates": {
+    "rule_ids": [
+      "EXT-4.3a",
+      "EXT-4.3b",
+      "EXT-4.3c",
+      "EXT-4.4a",
+      "EXT-4.4b",
+      "EXT-4.4c",
+      "EXT-4.5a",
+      "EXT-4.5b",
+      "EXT-4.6a"
+    ],
+    "allow_today": true,
+    "business_days_only": true,
+    "not_after_deadline": true,
+    "non_business_day_shift": "next_business_day",
+    "vague_period": "ask_once_then_refusal",
+    "next_weekday_semantics": "next_occurrence",
+    "after_deadline": "offer_deadline",
+    "refuse_deadline_is_refusal": true
+  },
+  "amounts": {
+    "rule_ids": [
+      "EXT-5.1a",
+      "EXT-5.1b",
+      "EXT-5.1c",
+      "EXT-5.2a",
+      "EXT-5.2b",
+      "EXT-5.2c",
+      "EXT-5.3a",
+      "EXT-5.3b",
+      "EXT-5.3c",
+      "EXT-5.3d",
+      "EXT-5.4a",
+      "EXT-5.4b",
+      "EXT-5.4c",
+      "EXT-5.4d"
+    ],
+    "ask_full_first": true,
+    "never_ask_open_amount": true,
+    "floor_field_by_type": {
+      "card": "min_due",
+      "loan": "monthly_instalment",
+      "vehicle_finance": "monthly_instalment"
+    },
+    "floor_offer_times": 1,
+    "floor_note": "The rest stays overdue.",
+    "accept_between_floor_and_full": true,
+    "below_floor": "offer_floor_once"
+  },
+  "persuasion": {
+    "rule_ids": [
+      "EXT-6.1",
+      "EXT-6.2a",
+      "EXT-6.2b",
+      "EXT-6.2c",
+      "EXT-6.2d",
+      "EXT-6.2e",
+      "EXT-6.2f",
+      "EXT-6.3a",
+      "EXT-6.3b",
+      "OUT-OC06",
+      "EXT-9.2b"
+    ],
+    "first_ask": "Can you settle this today?",
+    "non_answer_counts": true,
+    "steps": [
+      {
+        "attempt": 1,
+        "bands": [],
+        "amount": "current",
+        "date": "customer",
+        "text": "Propose the next business day after the call date for the full overdue amount, or for the floor if the customer already said the full amount is too much."
+      },
+      {
+        "attempt": 2,
+        "bands": [
+          "AMBER",
+          "RED"
+        ],
+        "amount": "floor",
+        "date": "deadline",
+        "text": "Propose the floor amount on the deadline."
+      },
+      {
+        "attempt": 3,
+        "bands": [
+          "RED"
+        ],
+        "amount": "floor",
+        "date": "customer",
+        "text": "Propose the floor amount on the next business day after the call date."
+      }
+    ],
+    "stop_outcome": {
+      "outcome": "declined",
+      "reason": "rejected"
+    }
+  },
+  "intents": [
+    {
+      "rule_ids": [
+        "THR-OPENING-i"
+      ],
+      "key": "robot_question",
+      "description": "Asks whether the caller is a machine or an AI.",
+      "examples": [],
+      "scope": "any",
+      "response": "I am Meridian Bank's virtual assistant.",
+      "actions": [],
+      "precedence": 50,
+      "overrides": [],
+      "offer": "",
+      "min_occurrences": 1
+    },
+    {
+      "rule_ids": [
+        "EXT-8.5a",
+        "EXT-8.5b"
+      ],
+      "key": "scam_question",
+      "description": "Doubts that the call is genuine or asks how to check it.",
+      "examples": [
+        "Is this a scam?"
+      ],
+      "scope": "any",
+      "response": "You may verify this call by phoning the customer service number on your latest statement.",
+      "actions": [],
+      "precedence": 50,
+      "overrides": [],
+      "offer": "",
+      "min_occurrences": 1
+    },
+    {
+      "rule_ids": [
+        "EXT-8.6a",
+        "EXT-8.6b"
+      ],
+      "key": "unknown_question",
+      "description": "Asks something the agent cannot answer from its tools and facts.",
+      "examples": [],
+      "scope": "any",
+      "response": "I do not have that information",
+      "actions": [],
+      "precedence": 50,
+      "overrides": [],
+      "offer": "",
+      "min_occurrences": 1
+    },
+    {
+      "rule_ids": [
+        "THR-IDENTITY-n",
+        "THR-IDENTITY-l",
+        "THR-IDENTITY-m",
+        "THR-IDENTITY-o"
+      ],
+      "key": "decline_verification",
+      "description": "Will not answer a security question, or asks why instead of answering.",
+      "examples": [
+        "what is this about"
+      ],
+      "scope": "before_verification",
+      "response": "These questions protect the account.",
+      "actions": [],
+      "outcome": {
+        "outcome": "unverified",
+        "reason": "declined_checks"
+      },
+      "precedence": 50,
+      "overrides": [],
+      "offer": "",
+      "min_occurrences": 2
+    },
+    {
+      "rule_ids": [
+        "EXT-6.4a",
+        "EXT-6.4b",
+        "EXT-6.4c",
+        "EXT-6.4d",
+        "EXT-6.4e",
+        "EXT-6.4f",
+        "EXT-6.4g",
+        "EXT-6.4h",
+        "OUT-OC05",
+        "OUT-OC07"
+      ],
+      "key": "hardship",
+      "description": "Mentions illness, bereavement, or loss of a job.",
+      "examples": [],
+      "scope": "after_verification",
+      "response": "I am sorry to hear that.",
+      "actions": [
+        {
+          "tool": "transfer_to_agent",
+          "params": {
+            "queue": "care_team"
+          }
+        }
+      ],
+      "outcome": {
+        "outcome": "escalated",
+        "reason": "care"
+      },
+      "note_reason": "vulnerable",
+      "precedence": 100,
+      "overrides": [
+        "flat_refusal",
+        "restructuring"
+      ],
+      "offer": "Would you like me to transfer you to the care team?",
+      "declined_outcome": {
+        "outcome": "declined",
+        "reason": "vulnerable"
+      },
+      "min_occurrences": 1
+    },
+    {
+      "rule_ids": [
+        "EXT-8.1a",
+        "EXT-8.1b",
+        "EXT-8.1c",
+        "EXT-8.2e",
+        "OUT-OC02",
+        "EXT-9.4b"
+      ],
+      "key": "already_paid",
+      "description": "Says the past-due amount has already been paid.",
+      "examples": [
+        "I already paid"
+      ],
+      "scope": "after_verification",
+      "response": "Payments can take two business days to show.",
+      "actions": [],
+      "note_reason": "settled",
+      "precedence": 50,
+      "overrides": [],
+      "offer": "",
+      "min_occurrences": 1
+    },
+    {
+      "rule_ids": [
+        "EXT-8.2a",
+        "EXT-8.2b",
+        "EXT-8.2c",
+        "EXT-8.2d",
+        "OUT-OC08",
+        "EXT-9.4b"
+      ],
+      "key": "dispute",
+      "description": "Denies owing the debt or having the product, or says the account was closed.",
+      "examples": [
+        "Not my debt",
+        "never had this product"
+      ],
+      "scope": "after_verification",
+      "response": "Do not argue.",
+      "actions": [],
+      "note_reason": "contested",
+      "precedence": 50,
+      "overrides": [],
+      "offer": "",
+      "min_occurrences": 1
+    },
+    {
+      "rule_ids": [
+        "EXT-8.3a",
+        "EXT-8.3b",
+        "EXT-8.3c",
+        "OUT-OC03"
+      ],
+      "key": "restructuring",
+      "description": "Requests a new payment plan or lower instalments.",
+      "examples": [],
+      "scope": "after_verification",
+      "response": "Do not describe a plan.",
+      "actions": [
+        {
+          "tool": "transfer_to_agent",
+          "params": {
+            "queue": "payment_plans"
+          }
+        }
+      ],
+      "outcome": {
+        "outcome": "escalated",
+        "reason": "plan"
+      },
+      "precedence": 50,
+      "overrides": [],
+      "offer": "",
+      "min_occurrences": 1
+    },
+    {
+      "rule_ids": [
+        "EXT-8.4a",
+        "EXT-8.4b",
+        "EXT-8.4c",
+        "EXT-8.7c",
+        "OUT-OC04"
+      ],
+      "key": "human_request",
+      "description": "Requests a person instead of the assistant.",
+      "examples": [],
+      "scope": "any",
+      "response": "Ask once whether the assistant can help.",
+      "actions": [
+        {
+          "tool": "transfer_to_agent",
+          "params": {
+            "queue": "front_desk"
+          }
+        }
+      ],
+      "outcome": {
+        "outcome": "escalated",
+        "reason": "agent"
+      },
+      "precedence": 50,
+      "overrides": [],
+      "offer": "Can I help?",
+      "min_occurrences": 1
+    },
+    {
+      "rule_ids": [
+        "EXT-8.7a",
+        "EXT-8.7b",
+        "OUT-OC06",
+        "OUT-OC11"
+      ],
+      "key": "refuse_to_talk",
+      "description": "Says they do not want to talk or wants the call to end.",
+      "examples": [],
+      "scope": "any",
+      "response": "",
+      "actions": [],
+      "outcome": {
+        "outcome": "declined",
+        "reason": "rejected"
+      },
+      "note_reason": "rejected",
+      "precedence": 50,
+      "overrides": [],
+      "offer": "",
+      "declined_outcome": {
+        "outcome": "unverified",
+        "reason": "declined_checks"
+      },
+      "min_occurrences": 2
+    },
+    {
+      "rule_ids": [
+        "EXT-5.3a",
+        "EXT-5.3b",
+        "EXT-5.3c"
+      ],
+      "key": "cant_afford_full",
+      "description": "Says the full amount is too much right now.",
+      "examples": [],
+      "scope": "after_verification",
+      "response": "Offer the floor once. The rest stays overdue.",
+      "actions": [],
+      "precedence": 50,
+      "overrides": [],
+      "offer": "",
+      "min_occurrences": 1
+    },
+    {
+      "rule_ids": [
+        "EXT-4.5a",
+        "EXT-4.5b"
+      ],
+      "key": "vague_period",
+      "description": "Gives a period or event instead of an exact day.",
+      "examples": [
+        "next week",
+        "after payday",
+        "soon"
+      ],
+      "scope": "after_verification",
+      "response": "Ask once for the exact day.",
+      "actions": [],
+      "precedence": 50,
+      "overrides": [],
+      "offer": "",
+      "min_occurrences": 1
+    },
+    {
+      "rule_ids": [
+        "EXT-7.2b",
+        "EXT-7.2c"
+      ],
+      "key": "change_promise",
+      "description": "Wants to change or cancel a promise already recorded in this call.",
+      "examples": [],
+      "scope": "after_verification",
+      "response": "You can change it in online banking.",
+      "actions": [],
+      "precedence": 50,
+      "overrides": [],
+      "offer": "",
+      "min_occurrences": 1
+    }
+  ],
+  "confirmation": {
+    "rule_ids": [
+      "EXT-7.1a",
+      "EXT-7.1c",
+      "EXT-7.1d",
+      "EXT-9.3a"
+    ],
+    "readback_fields": [
+      "product",
+      "amount",
+      "date"
+    ],
+    "question": "Shall I record this?",
+    "on_change": "Check the new values against sections 4 and 5 and read them back again.",
+    "single_confirmation_for_all_products": true
+  },
+  "recording": {
+    "rule_ids": [
+      "EXT-7.1b",
+      "EXT-7.2a",
+      "EXT-7.2b",
+      "EXT-7.2c",
+      "EXT-7.3a",
+      "EXT-7.3b",
+      "EXT-7.3c",
+      "EXT-7.3d",
+      "EXT-7.4",
+      "EXT-9.3b",
+      "OUT-OC09"
+    ],
+    "one_promise_per_product": true,
+    "retries_on_failure": 0,
+    "failure_outcome": {
+      "outcome": "declined",
+      "reason": "system_fault"
+    },
+    "failure_sentence": "I could not record the promise.",
+    "success_sentence": "A confirmation will be sent to you by text message.",
+    "immutable_sentence": "You can change it in online banking."
+  },
+  "multi_product": {
+    "rule_ids": [
+      "EXT-9.1a",
+      "EXT-9.1b",
+      "EXT-9.1c",
+      "EXT-9.1d",
+      "EXT-9.2a",
+      "EXT-9.2b",
+      "EXT-9.2c",
+      "EXT-9.3a",
+      "EXT-9.3b",
+      "EXT-9.4a",
+      "EXT-9.4b",
+      "EXT-9.5a",
+      "EXT-9.5b",
+      "EXT-9.6d",
+      "EXT-9.6e",
+      "EXT-9.6f",
+      "EXT-9.6g"
+    ],
+    "enabled": true,
+    "max_products": 2,
+    "state_all_before_asking": true,
+    "order": "as_returned",
+    "ask_all_today_first": true,
+    "per_product_attempts": true,
+    "one_date_after_deadline": "use_product_deadline",
+    "note_tool": "add_note",
+    "note_reasons": [
+      "rejected",
+      "vulnerable",
+      "contested",
+      "settled",
+      "system_fault"
+    ],
+    "notes_on_transfer": false,
+    "closing_reason_rule": "first_non_paid_note",
+    "all_paid_outcome": {
+      "outcome": "settled"
+    },
+    "paid_note_reason": "settled",
+    "notes_outcome": "declined"
+  },
+  "closing": {
+    "rule_ids": [
+      "THR-OPENING-g",
+      "THR-THIRD-PARTY-d",
+      "THR-THIRD-PARTY-f",
+      "THR-THIRD-PARTY-g",
+      "THR-THIRD-PARTY-h",
+      "THR-IDENTITY-m",
+      "THR-IDENTITY-o",
+      "EXT-6.3b",
+      "EXT-6.4e",
+      "EXT-6.4f",
+      "EXT-7.3d",
+      "EXT-8.1c",
+      "EXT-8.2c",
+      "EXT-8.3c",
+      "EXT-8.4c",
+      "EXT-8.7a",
+      "EXT-8.7b",
+      "EXT-9.6a",
+      "EXT-9.6b",
+      "EXT-9.6c",
+      "EXT-9.6d",
+      "EXT-9.6e",
+      "EXT-9.6f",
+      "EXT-9.6g",
+      "EXT-9.7",
+      "OUT-OC01",
+      "OUT-OC02",
+      "OUT-OC03",
+      "OUT-OC04",
+      "OUT-OC05",
+      "OUT-OC06",
+      "OUT-OC07",
+      "OUT-OC08",
+      "OUT-OC09",
+      "OUT-OC10",
+      "OUT-OC11",
+      "OUT-OC12",
+      "OUT-OC13",
+      "OUT-OC14",
+      "OUT-OC15",
+      "OUT-OC16",
+      "OUT-OC17"
+    ],
+    "rows": [
+      {
+        "outcome": "agreed",
+        "situation": "promise_recorded",
+        "when": "at least one promise was recorded",
+        "rule_ids": [
+          "EXT-9.6d",
+          "OUT-OC01"
+        ],
+        "requires_verified": true
+      },
+      {
+        "outcome": "settled",
+        "situation": "product_notes",
+        "when": "every product is noted settled and no promise was recorded",
+        "rule_ids": [
+          "EXT-9.6f",
+          "OUT-OC02"
+        ],
+        "requires_verified": true
+      },
+      {
+        "outcome": "declined",
+        "reason": "rejected",
+        "situation": "product_notes",
+        "when": "no promise was recorded and the first product in get_account order whose note is not settled supplies the reason",
+        "rule_ids": [
+          "EXT-9.6g"
+        ],
+        "requires_verified": true
+      },
+      {
+        "outcome": "declined",
+        "reason": "system_fault",
+        "situation": "recording_failed",
+        "when": "create_promise failed",
+        "rule_ids": [
+          "EXT-7.3d",
+          "OUT-OC09"
+        ],
+        "requires_verified": true
+      },
+      {
+        "outcome": "unverified",
+        "reason": "exhausted",
+        "situation": "identity_failed",
+        "when": "the wrong answers limit is reached",
+        "rule_ids": [
+          "D2-1b",
+          "D2-1c",
+          "OUT-OC10"
+        ],
+        "requires_verified": false
+      },
+      {
+        "outcome": "unverified",
+        "reason": "declined_checks",
+        "situation": "identity_declined",
+        "when": "the customer refuses the security questions",
+        "rule_ids": [
+          "THR-IDENTITY-m",
+          "THR-IDENTITY-o",
+          "OUT-OC11"
+        ],
+        "requires_verified": false
+      },
+      {
+        "outcome": "unreachable",
+        "reason": "wrong_person",
+        "situation": "wrong_number",
+        "when": "number does not belong to the customer",
+        "rule_ids": [
+          "THR-THIRD-PARTY-g",
+          "OUT-OC14"
+        ],
+        "requires_verified": false
+      },
+      {
+        "outcome": "unreachable",
+        "reason": "deceased",
+        "situation": "deceased",
+        "when": "customer has died",
+        "rule_ids": [
+          "THR-THIRD-PARTY-h",
+          "OUT-OC15"
+        ],
+        "requires_verified": false
+      },
+      {
+        "outcome": "unreachable",
+        "reason": "rebook",
+        "situation": "callback_booked",
+        "when": "callback booked for the customer",
+        "rule_ids": [
+          "THR-THIRD-PARTY-d",
+          "OUT-OC12"
+        ],
+        "requires_verified": false
+      },
+      {
+        "outcome": "unreachable",
+        "reason": "no_rebook",
+        "situation": "callback_not_booked",
+        "when": "no valid callback time was found",
+        "rule_ids": [
+          "THR-THIRD-PARTY-f",
+          "OUT-OC13"
+        ],
+        "requires_verified": false
+      },
+      {
+        "outcome": "unreachable",
+        "reason": "unclear",
+        "situation": "unclear_party",
+        "when": "identity of the person on the line unclear after two asks",
+        "rule_ids": [
+          "THR-OPENING-g",
+          "OUT-OC16"
+        ],
+        "requires_verified": false
+      },
+      {
+        "outcome": "escalated",
+        "reason": "plan",
+        "situation": "transfer:payment_plans",
+        "when": "transfer to queue payment_plans",
+        "rule_ids": [
+          "EXT-8.3b",
+          "EXT-8.3c",
+          "OUT-OC03"
+        ],
+        "requires_verified": true
+      },
+      {
+        "outcome": "escalated",
+        "reason": "agent",
+        "situation": "transfer:front_desk",
+        "when": "transfer to queue front_desk after the customer insisted on a person",
+        "rule_ids": [
+          "EXT-8.4b",
+          "EXT-8.4c",
+          "OUT-OC04"
+        ]
+      },
+      {
+        "outcome": "escalated",
+        "reason": "care",
+        "situation": "transfer:care_team",
+        "when": "transfer to queue care_team after hardship was accepted",
+        "rule_ids": [
+          "EXT-6.4d",
+          "EXT-6.4e",
+          "OUT-OC05"
+        ],
+        "requires_verified": true
+      },
+      {
+        "outcome": "declined",
+        "reason": "vulnerable",
+        "situation": "hardship",
+        "when": "hardship and the care team offer was declined",
+        "rule_ids": [
+          "EXT-6.4f",
+          "OUT-OC07"
+        ],
+        "requires_verified": true
+      },
+      {
+        "outcome": "declined",
+        "reason": "contested",
+        "situation": "dispute",
+        "when": "debt disputed",
+        "rule_ids": [
+          "EXT-8.2c",
+          "OUT-OC08"
+        ],
+        "requires_verified": true
+      },
+      {
+        "outcome": "declined",
+        "reason": "rejected",
+        "situation": "flat_refusal",
+        "when": "persuasion attempts are used up",
+        "rule_ids": [
+          "EXT-6.3b",
+          "OUT-OC06"
+        ],
+        "requires_verified": true
+      },
+      {
+        "outcome": "declined",
+        "reason": "rejected",
+        "situation": "refuse_to_talk",
+        "when": "the customer says twice that they do not want to talk",
+        "rule_ids": [
+          "EXT-8.7a",
+          "OUT-OC06"
+        ],
+        "requires_verified": true
+      },
+      {
+        "outcome": "unverified",
+        "reason": "declined_checks",
+        "situation": "refuse_to_talk",
+        "when": "before identity is verified, the customer says twice that they do not want to talk",
+        "rule_ids": [
+          "EXT-8.7b",
+          "OUT-OC11"
+        ],
+        "requires_verified": false
+      }
+    ],
+    "precedence": [
+      "transfer:care_team",
+      "transfer:payment_plans",
+      "transfer:front_desk",
+      "promise_recorded",
+      "recording_failed",
+      "hardship",
+      "dispute",
+      "identity_failed",
+      "identity_declined",
+      "refuse_to_talk",
+      "flat_refusal",
+      "product_notes",
+      "deceased",
+      "wrong_number",
+      "callback_booked",
+      "callback_not_booked",
+      "unclear_party"
+    ],
+    "promise_wins": true,
+    "transfer_after_promise_outcome": {
+      "outcome": "escalated"
+    },
+    "goodbye_before_close": true,
+    "close_last_exactly_once": true
+  },
+  "forbidden_before_verification": [
+    "arrears",
+    "overdue",
+    "payment",
+    "card",
+    "loan",
+    "the name of any product"
+  ],
+  "residual_rules": [
+    {
+      "rule_id": "EXT-4.2d",
+      "text": "Do not use the former four-band model with a 90-day band.",
+      "scope": [
+        "negotiation"
+      ]
+    },
+    {
+      "rule_id": "EXT-6.5",
+      "text": "Do not offer a discount, waiver, payment holiday, or any other term that is not in this document.",
+      "scope": [
+        "negotiation"
+      ]
+    },
+    {
+      "rule_id": "EXT-8.2e",
+      "text": "8.1 only covers a payment of this overdue amount.",
+      "scope": [
+        "negotiation"
+      ]
+    },
+    {
+      "rule_id": "OUT-OC17",
+      "text": "Do not use outcome legacy_hold with reason review.",
+      "scope": [
+        "closing"
+      ]
+    },
+    {
+      "rule_id": "THR-OPENING-c",
+      "text": "Until the customer is verified, do not use the words arrears, overdue, payment, card, loan, or the name of any product, including with relatives.",
+      "scope": [
+        "opening",
+        "third_party",
+        "identity"
+      ]
+    }
+  ],
+  "notes": [
+    "One or two products are returned by get_account.",
+    "For a customer-named non-business day on or before the deadline, offer the next business day even if it falls after the deadline.",
+    "A transfer after a recorded promise closes escalated with the transfer's reason; promises recorded before a transfer stay.",
+    "The retired legacy_hold / review outcome is not used."
+  ]
+}

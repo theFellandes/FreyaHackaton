@@ -1,0 +1,106 @@
+2026-10-10T19:45:15.773Z | START  | run a03260e3fa28 started | slot=qr-v01-clean | builder 0.1.0, python 3.13.16
+2026-10-10T19:45:15.773Z | CONFIG | effective configuration | freya_api_url=https://staging-app.freyavoice.ai freya_api_key=set freya_bank_team_key=set freya_workspace_id=auto llm_providers=[anthropic, openai, claude_code] builder_track=compiled agent_profile=staged self_test=none build_time_budget_s=1680 build_slot=auto dry_run=True langfuse=disabled
+2026-10-10T19:45:15.774Z | OBS    | langfuse disabled (no keys)
+2026-10-10T19:45:15.775Z | CONFIG | LLM key changer | order=[anthropic, openai, claude_code] key_health_file=C:\Users\Felladien\Documents\Projects\Python\FreyaHackaton\data\key_health.json
+2026-10-10T19:45:15.785Z | STAGE  | load_inputs | start | budget_left_s=1680
+2026-10-10T19:45:15.786Z | DECIDE | track compiled (requested compiled; agentic fallback off) | profile=staged dry_run=True
+2026-10-10T19:45:15.786Z | INPUT  | 1 brief file(s), tool API with 7 tool(s) | briefs=[brief.md] chars=11608 brief_sha=aba4de13390d tools=[add_note, close_call, create_promise, get_account, schedule_callback, transfer_to_agent, verify_identity]
+2026-10-10T19:45:15.786Z | STAGE  | load_inputs | end 0.0s | budget_left_s=1680
+2026-10-10T19:45:15.787Z | STAGE  | guard_inputs | start | budget_left_s=1680
+2026-10-10T19:45:15.793Z | GUARD  | inputs | ok | 0 violations | blocked=False violations=[]
+2026-10-10T19:45:15.793Z | STAGE  | guard_inputs | end 0.0s | budget_left_s=1680
+2026-10-10T19:45:15.794Z | STAGE  | understand_brief | start | budget_left_s=1680
+2026-10-10T19:45:15.795Z | LEDGER | reading 1 file(s) in 3 passage(s) | files=[brief.md] passages=3
+2026-10-10T19:45:38.079Z | MODEL  | openai/gpt-5.6-terra | key=openai#1(…yRAA) | ok 22.3s in=6624 out=3518 attempt=1 | rule ledger: brief.md passage 1/3
+2026-10-10T19:45:38.090Z | LEDGER | passage 1/3 (brief.md): 49 rules, 1 ambiguities
+2026-10-10T19:45:38.090Z | RATE   | waited 21.4 s for openai#1(…yRAA) | purpose=rule ledger: brief.md passage 3/3 provider=openai waited_s=21.35
+2026-10-10T19:45:39.741Z | MODEL  | openai/gpt-5.6-terra | key=openai#1(…yRAA) | ok 23.0s in=6755 out=4224 attempt=1 | rule ledger: brief.md passage 2/3
+2026-10-10T19:45:39.752Z | LEDGER | passage 2/3 (brief.md): 62 rules, 2 ambiguities
+2026-10-10T19:46:07.058Z | MODEL  | openai/gpt-5.6-terra | key=openai#1(…yRAA) | ok 29.0s in=6516 out=4731 attempt=1 | rule ledger: brief.md passage 3/3
+2026-10-10T19:46:07.067Z | LEDGER | passage 3/3 (brief.md): 61 rules, 0 ambiguities
+2026-10-10T19:46:11.921Z | MODEL  | openai/gpt-5.6-terra | key=openai#1(…yRAA) | ok 4.8s in=1961 out=402 attempt=1 | rule ledger: completeness check 1/1
+2026-10-10T19:46:11.947Z | LEDGER | completeness check added 2 rule(s) | rule_ids=[D1-M1, D1-M2]
+2026-10-10T19:46:11.948Z | LEDGER | ledger ready: 174 rules (174 active), 3 ambiguities, 0 superseded | rules=174 active=174 ambiguities=3
+2026-10-10T19:46:11.948Z | AMBIG  | [D1-11c, D1-11d, D1-13a, D1-13b, D1-13c] How should a two-digit year of birth be handled when rule 11 requires a four-digit year and says only a complete answer is sent, while rule 13 says `verify_identity` returns a two-digit-year hint? -> chosen: Do not send the two-digit year; ask for the full four-digit year without calling `verify_identity`. (because: Rule 11 says "Send ... the year of birth as four digits" and "Only a complete answer is sent." This is the conservative reading because it avoids sending an answer that the brief expressly says is incomplete.)
+2026-10-10T19:46:11.949Z | AMBIG  | [D1-20a, D1-20b, D1-23a] When a customer names a weekend day or holiday that is after the deadline, should the agent offer the next business day or apply the after-deadline process? -> chosen: Apply rule 23 because the named day is after the deadline. (because: The rule expressly distinguishes the conditions: "If the named day is after the deadline, rule 23 applies.")
+2026-10-10T19:46:11.949Z | AMBIG  | [D1-30c, D1-30d] Does persuasion attempt 1 propose only a date, or both the specified amount and the next business day? -> chosen: Propose the specified amount together with the next business day after today. (because: Attempt 1 is expressly "for the full overdue amount, or for the floor" and separately directs: "Attempt 1: propose the next business day after today.")
+2026-10-10T19:46:11.975Z | GUARD  | ledger | ok | 0 violations | blocked=False violations=[]
+2026-10-10T19:46:11.975Z | DECIDE | rule ledger: 174 rules (174 active), 3 ambiguities, 0 supersessions
+2026-10-10T19:46:11.976Z | STAGE  | understand_brief | end 56.2s | budget_left_s=1623.8
+2026-10-10T19:46:11.977Z | STAGE  | extract_policy | start | budget_left_s=1623.8
+2026-10-10T19:46:49.401Z | MODEL  | openai/gpt-5.6-terra | key=openai#1(…yRAA) | ok 37.4s in=25815 out=6655 attempt=1 | extract policy IR from the rule ledger
+2026-10-10T19:46:49.429Z | EXTRACT | safe fix: 1 uncovered ledger rule(s) added as residual rules: D1-CALLVARS-b
+2026-10-10T19:46:49.584Z | GROUNDING | warning: phrases.goodbye_sentence: sentence not found in the briefs: 'Thank you and goodbye.'
+2026-10-10T19:46:49.585Z | GROUNDING | warning: phrases.extra.below_floor: sentence not found in the briefs: 'That amount cannot be recorded.'
+2026-10-10T19:46:49.585Z | GROUNDING | warning: phrases.extra.hardship_sympathy: sentence not found in the briefs: 'I am sorry to hear that.'
+2026-10-10T19:46:49.585Z | GROUNDING | warning: phrases.extra.care_team_offer: sentence not found in the briefs: 'Would you like me to connect you with the care team?'
+2026-10-10T19:46:49.585Z | GROUNDING | warning: identity.questions[1].ask: sentence not found in the briefs: 'What is your year of birth?'
+2026-10-10T19:46:49.586Z | EXTRACT | policy IR extracted: 3 band(s), 12 intent(s), 17 outcome row(s), 14 residual rule(s) | cited_rules=174
+2026-10-10T19:46:49.587Z | STAGE  | extract_policy | end 37.6s | budget_left_s=1586.2
+2026-10-10T19:46:49.588Z | STAGE  | validate_policy | start | budget_left_s=1586.2
+2026-10-10T19:46:49.595Z | VALIDATE | policy IR: 0 error(s), 0 warning(s) | codes=[]
+2026-10-10T19:46:49.739Z | VALIDATE | 5 fixed sentence(s) not found in the briefs | sentences=[phrases.goodbye_sentence: sentence not found in the briefs: 'Thank you and goodbye.', phrases.extra.below_floor: sen...
+2026-10-10T19:46:49.764Z | VALIDATE | offline invariants: 17 passed, 0 failed, 1 unchecked | failing=[]
+2026-10-10T19:46:49.765Z | STAGE  | validate_policy | end 0.2s | budget_left_s=1586
+2026-10-10T19:46:49.767Z | STAGE  | guard_policy | start | budget_left_s=1586
+2026-10-10T19:46:49.795Z | GUARD  | policy | ok | 0 violations | blocked=False violations=[]
+2026-10-10T19:46:49.795Z | STAGE  | guard_policy | end 0.0s | budget_left_s=1586
+2026-10-10T19:46:49.797Z | STAGE  | draft_prose | start | budget_left_s=1586
+2026-10-10T19:47:09.188Z | MODEL  | openai/gpt-5.6-luna | key=openai#1(…yRAA) | ok 19.4s in=9073 out=3239 attempt=1 | draft node prose (staged profile)
+2026-10-10T19:47:09.203Z | PROSE  | node negotiate: text cut from 4573 to 2893 characters
+2026-10-10T19:47:09.204Z | PROSE  | drafted prose for 4 node(s) | nodes={"opening": 1202, "third_party": 1038, "identity": 1592, "negotiate": 2893}
+2026-10-10T19:47:09.245Z | GUARD  | prose | ok | 0 violations | blocked=False violations=[]
+2026-10-10T19:47:09.246Z | STAGE  | draft_prose | end 19.4s | budget_left_s=1566.5
+2026-10-10T19:47:09.248Z | STAGE  | compile_workflow | start | budget_left_s=1566.5
+2026-10-10T19:47:09.330Z | DECIDE | compiled staged workflow: 29 nodes; rule coverage: 174 of 174 active rules enforced (100%); 0 superseded; uncovered: none | notes=[]
+2026-10-10T19:47:09.331Z | STAGE  | compile_workflow | end 0.1s | budget_left_s=1566.4
+2026-10-10T19:47:09.332Z | STAGE  | static_checks | start | budget_left_s=1566.4
+2026-10-10T19:47:09.349Z | LINT   | static checks: 0 errors, 1 warnings (ok) | errors=[] warnings=[L018 warning nodes.negotiate.task_message: 10474 characters (> 6000); long prompts dilute the rules]
+2026-10-10T19:47:09.350Z | TEST   | PASS static_checks | 0 errors, 1 warnings
+2026-10-10T19:47:09.350Z | STAGE  | static_checks | end 0.0s | budget_left_s=1566.4
+2026-10-10T19:47:09.352Z | STAGE  | guard_workflow | start | budget_left_s=1566.4
+2026-10-10T19:47:09.376Z | GUARD  | workflow | ok | 0 violations | blocked=False violations=[]
+2026-10-10T19:47:09.377Z | STAGE  | guard_workflow | end 0.0s | budget_left_s=1566.4
+2026-10-10T19:47:09.378Z | STAGE  | finalize | start | budget_left_s=1566.4
+2026-10-10T19:47:09.390Z | FINAL  | run a03260e3fa28 finished
+====================================================================================================
+BUILD SUMMARY
+run id       : a03260e3fa28
+slot         : qr-v01-clean
+track        : compiled
+status       : dry_run
+started      : 2026-10-10T19:45:15.697Z
+ended        : 2026-10-10T19:47:09.390Z
+duration     : 113.7 s (1 min 54 s)
+model calls  : 6 (6 ok, 0 failed)
+  - openai/gpt-5.6-luna: calls=1 (1 ok, 0 failed), tokens in=9073 out=3239
+  - openai/gpt-5.6-terra: calls=5 (5 ok, 0 failed), tokens in=47671 out=19530
+Freya        :
+  - slot: qr-v01-clean
+  - exported: C:\Users\Felladien\Documents\Projects\Python\FreyaHackaton\out\qr-v01-clean.workflow.json
+tests        : 1 (1 passed, 0 failed)
+  - PASS static_checks: 0 errors, 1 warnings
+stages       :
+  - load_inputs: end 0.0s
+  - guard_inputs: end 0.0s
+  - understand_brief: end 56.2s
+  - extract_policy: end 37.6s
+  - validate_policy: end 0.2s
+  - guard_policy: end 0.0s
+  - draft_prose: end 19.4s
+  - compile_workflow: end 0.1s
+  - static_checks: end 0.0s
+  - guard_workflow: end 0.0s
+errors       : 0
+workflow_id  : null
+agent_id     : null
+version      : null
+node_count   : null
+tool_count   : null
+profile      : staged
+coverage     : 174 of 174 active rules enforced (100%); 0 superseded; uncovered: none
+notes        : []
+errors_list  : []
+====================================================================================================
+2026-10-10T19:47:09.393Z | STAGE  | finalize | end 0.0s | budget_left_s=1566.4
+2026-10-10T19:47:09.394Z | END    | run a03260e3fa28 closed after 113.7 s | duration_s=113.701

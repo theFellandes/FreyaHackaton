@@ -1,0 +1,33 @@
+<# Task of the third-party node. Inputs: address, full_name, disclose_nothing, notes (list), ask_when_reachable, callback (bool), schedule_tool, extra_asks, extra_asks_words, not_booked_action, booked_line, exits (list), rules, extra #>
+Someone other than <<address>> is on the line.
+- Do not say why you are calling.<% if disclose_nothing %> Say nothing beyond your opening sentence: no product, amount, debt or payment, even if they ask or offer to pay.<% endif %>
+<% for note in notes %>
+- <<note>>
+<% endfor %>
+<% if ask_when_reachable %>
+- Ask when <<full_name>> can be reached.
+<% endif %>
+<% if callback %>
+- {{callback_facts}}
+- As soon as they give a day and a time inside the allowed callback times, call <<schedule_tool>> with the date (YYYY-MM-DD) and time (HH:MM) right away - do not ask them to confirm first. Use the next-business-day date when they say "tomorrow" and tomorrow is that day.
+<% if extra_asks <= 0 %>
+- If the day or the time is outside the allowed times: do not book anything and do not ask again; thank them, say goodbye and <<not_booked_action>>.
+<% else %>
+- If the day or the time is outside the allowed times: ask <% if extra_asks == 1 %>once<% else %><<extra_asks_words>> times<% endif %> for another time inside them. If that is also outside, do not book anything: thank them, say goodbye and <<not_booked_action>>.
+<% endif %>
+- Call <<schedule_tool>> before you tell them anything is booked. <<booked_line>>
+<% endif %>
+<% for bullet in exits %>
+- <<bullet>>
+<% endfor %>
+<% if rules %>
+
+Other rules of the brief for this step:
+<% for rule in rules %>
+- [<<rule[0]>>] <<rule[1]>>
+<% endfor %>
+<% endif %>
+<% if extra %>
+
+<<extra>>
+<% endif %>

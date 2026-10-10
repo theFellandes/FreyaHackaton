@@ -1,0 +1,56 @@
+MERIDIAN SAVINGS BANK - ARREARS COLLECTIONS POLICY (EXTRACT, VERSION 3, valid from 2026-10-01)
+Owner: Collections Operations. Classification: internal / synthetic training data.
+Only sections 4 to 9 are reproduced here. Sections 1-3 (scope, governance) and 10 (reporting) are omitted.
+
+4. CALENDAR AND DEADLINES
+4.1 Business days are Monday to Friday. The following bank holidays are not business days: 19 October 2026, 3 November 2026, 27 November 2026, 24 December 2026, 31 December 2026.
+4.2 The promise deadline depends on the customer's days overdue (days_overdue in the account data):
+      Band GREEN   1-10 days overdue    deadline: 10th business day after the call date    persuasion attempts: 1
+      Band AMBER   11-30 days overdue   deadline: 6th business day after the call date     persuasion attempts: 2
+      Band RED     31-60 days overdue   deadline: 3rd business day after the call date     persuasion attempts: 3
+      (The former four-band model with a 90-day band was retired on 30 September 2026 and must not be used.)
+4.3 A promise date has to be the call date or later, a business day, and not later than the deadline.
+4.4 If the customer names a Saturday, a Sunday or a bank holiday which is not after the deadline, the next business day is offered. A day after the deadline: the latest recordable date is the deadline, it is offered; if the customer refuses that, it counts as a flat refusal (6.2).
+4.5 A vague period such as "next week", "after payday" or "soon": ask once for the exact day. If the customer still gives none it counts as a flat refusal (6.2).
+4.6 "Next <weekday>" is the first time that weekday occurs after the call date; "this <weekday>" is the one in the current week if it is today or later.
+4.7 Dates are always calculated with the `now` value of the call, never the system clock.
+
+5. AMOUNTS
+5.1 The assistant asks for the full overdue amount (past_due) first. It never asks "how much can you pay". Every amount is proposed by the assistant.
+5.2 The floor amount is min_due for a card and monthly_instalment for a personal loan and for vehicle finance.
+5.3 If the customer says the full amount is too much, the floor is offered once, saying that the rest stays overdue. Refusal of the floor = flat refusal (6.2). Attempts 2 and 3 may name the floor again on the deadline.
+5.4 An amount proposed by the customer from the floor up to the full amount (both included) is accepted. Below the floor: say it cannot be recorded and offer the floor once; if not accepted = flat refusal.
+
+6. GETTING THE PROMISE
+6.1 First ask, spoken exactly: "Can you settle this today?"
+6.2 A flat refusal or a non-answer uses up one persuasion attempt. A "no" to paying today without a date and without an amount is a flat refusal. A date or an amount that the customer proposes is never a refusal; it is handled under 4 and 5.
+     Attempt 1: propose the next business day after the call date, for the full overdue amount (or for the floor if the customer already said the full amount is too much).
+     Attempt 2 (amber and red only): propose the floor amount on the deadline.
+     Attempt 3 (red only): propose the floor amount on the next business day after the call date.
+6.3 When the attempts are used up the assistant stops and does not repeat an offer that was refused: outcome declined / rejected.
+6.4 Illness, bereavement or loss of a job: one short sentence of sympathy, no persuasion attempt, offer the care team. Accepted: transfer_to_agent with queue care_team, outcome escalated / care. Declined: outcome declined / vulnerable. This rule has priority over 6.2 and 8.3. If the customer then names a date or amount on their own, the promise is recorded under 4 and 5.
+6.5 No discount, waiver, payment holiday or any other term that is not in this document may be offered.
+
+7. CONFIRMATION AND RECORDING
+7.1 The assistant reads back product, amount and date and asks "Shall I record this?". create_promise is called only after a clear yes. If date or amount change at this point, the new values are checked against 4 and 5 and read back again.
+7.2 One promise per product. A recorded promise cannot be changed or cancelled in the same call; the customer can change it in online banking.
+7.3 "Recorded" may only be said after create_promise returned ok = true. When it fails, there is NO second attempt: the assistant says that it could not record the promise and closes declined / system_fault.
+7.4 After a recorded promise the assistant says exactly: "A confirmation will be sent to you by text message."
+
+8. OTHER CUSTOMER STATEMENTS
+8.1 "I already paid": payments can take two business days to show; no promise is taken; outcome settled.
+8.2 "Not my debt" / "never had this product": no argument, no promise: declined / contested. A claim that the product was closed in the past is a dispute. 8.1 only covers a payment of this overdue amount.
+8.3 Request for a new payment plan or lower instalments: no plan is described; transfer_to_agent queue payment_plans; outcome escalated / plan.
+8.4 Request for a person: the assistant asks once whether it can help; if the customer insists: transfer_to_agent queue front_desk; outcome escalated / agent.
+8.5 "Is this a scam?": the customer may verify the call by phoning the customer service number on their latest statement; the call continues.
+8.6 Questions the tools cannot answer: say "I do not have that information"; never invent figures, dates or reasons.
+8.7 If the customer says twice that they do not want to talk: declined / rejected; before identity is verified: unverified / declined_checks. 8.4 applies before and after verification.
+
+9. TWO PRODUCTS AND CLOSING
+9.1 get_account returns one or two products, each with its own past_due, days_overdue and floor. Band and deadline are determined per product; persuasion attempts are counted per product.
+9.2 Before asking anything, the assistant states each overdue product in one sentence. Then it asks whether the customer can settle both today; if not, the products are taken one by one in the order get_account returned them.
+9.3 All promises are read back together with one confirmation question; then create_promise is called once per product.
+9.4 For every product without a promise add_note is called with the product_id and one reason from: rejected, vulnerable, contested, settled, system_fault. A dispute or "already paid" for one product does not end the call.
+9.5 No notes at all are added on any transfer, neither before nor after it. Promises recorded before a transfer stay.
+9.6 Closing: exactly one close_call, as the last tool call, after thanking the customer and saying goodbye. With at least one recorded promise: agreed (but see 9.5: a transfer closes as escalated with the transfer's reason). With no promise: if every product is noted settled -> settled; otherwise declined with the reason of the first product (get_account order) whose note is not settled.
+9.7 Outcome and reason codes are listed in the code table (outcome_codes.csv).

@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "entries": [
+    {
+      "provider": "openai",
+      "fingerprint": "a9a16d299c1a",
+      "label": "openai#1(…3333)",
+      "reason": "quota: FakeStatusError: Your credit balance is too low to access the Anthropic API.",
+      "marked_at": 1760000000.0,
+      "marked_at_utc": "2025-10-09T08:53:20Z"
+    },
+    {
+      "provider": "claude_code",
+      "fingerprint": "428821350e96",
+      "label": "claude_code#0(login)",
+      "reason": "auth: ProviderError: Claude Code login missing: Not logged in",
+      "marked_at": 1760000000.0,
+      "marked_at_utc": "2025-10-09T08:53:20Z"
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+<# Task of the identity node. Inputs: n_questions, one_at_a_time, questions (list of dicts ask/field/how), verify_tool, max_wrong, complete, partial, hints (list), explanation, counting, declined_action, exits (list), rules, extra #>
+Verify the customer's identity before anything else. Ask <<n_questions>> security question<% if n_questions != "one" %>s<% endif %><% if one_at_a_time %>, one at a time<% endif %>, in this order:
+<% for q in questions %>
+<<loop.index>>. <<q.ask>>
+<% endfor %>
+- After each answer call <<verify_tool>> with that one answer:
+<% for q in questions %>
+  - field <<q.field>>: <<q.how>>
+<% endfor %>
+- Only a COMPLETE answer can be checked: <<complete>>. If the customer gives only part (<<partial>>), do not call <<verify_tool>>: ask only for the missing part and combine both parts.
+- Whenever the customer's message contains a complete answer (even mixed with a question, a complaint or other words), call <<verify_tool>> FIRST, before you say anything. Then do exactly what the what_to_do_next line in the result says.
+- Do not say anything about the account or why you are calling during this step.
+- A wrong answer may be asked again. <<max_wrong>> wrong answers in total end the check, whichever question they were on; <<counting>>
+<% for hint in hints %>
+- <<hint>>
+<% endfor %>
+- If the customer does not want to answer, or asks what the call is about instead of answering: explain once that "<<explanation>>" and ask again. A second refusal or a second such question: thank them, say goodbye and <<declined_action>>.
+<% for bullet in exits %>
+- <<bullet>>
+<% endfor %>
+<% if rules %>
+
+Other rules of the brief for this step:
+<% for rule in rules %>
+- [<<rule[0]>>] <<rule[1]>>
+<% endfor %>
+<% endif %>
+<% if extra %>
+
+<<extra>>
+<% endif %>

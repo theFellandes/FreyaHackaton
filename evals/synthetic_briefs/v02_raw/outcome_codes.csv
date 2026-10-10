@@ -1,0 +1,18 @@
+code,outcome,reason,used_when,reference
+OC01,agreed,,at least one promise was recorded,policy 9.6
+OC02,settled,,customer says the past-due amount was already paid,policy 8.1 / 9.6
+OC03,escalated,plan,transfer to queue payment_plans,policy 8.3
+OC04,escalated,agent,transfer to queue front_desk after the customer insisted on a person,policy 8.4
+OC05,escalated,care,transfer to queue care_team after hardship was accepted,policy 6.4
+OC06,declined,rejected,persuasion attempts used up or the customer refuses to talk twice,policy 6.3 / 8.7
+OC07,declined,vulnerable,hardship and the care team offer was declined,policy 6.4
+OC08,declined,contested,debt disputed,policy 8.2
+OC09,declined,system_fault,create_promise failed,policy 7.3
+OC10,unverified,exhausted,wrong answers limit reached,mail 26 Oct / memo 2 Nov
+OC11,unverified,declined_checks,customer refuses the security questions,mail 26 Oct / policy 8.7
+OC12,unreachable,rebook,callback booked for the customer,mail 26 Oct
+OC13,unreachable,no_rebook,no valid callback time was found,mail 26 Oct
+OC14,unreachable,wrong_person,number does not belong to the customer,mail 26 Oct
+OC15,unreachable,deceased,customer has died,mail 26 Oct
+OC16,unreachable,unclear,identity of the person on the line unclear after two asks,mail 26 Oct
+OC17,legacy_hold,review,RETIRED in 2025 - do not use,

@@ -1,0 +1,118 @@
+2026-10-10T19:57:16.787Z | START  | run 55196515ab3c started | slot=qr-v01-clean | builder 0.1.0, python 3.13.16
+2026-10-10T19:57:16.787Z | CONFIG | effective configuration | freya_api_url=https://staging-app.freyavoice.ai freya_api_key=set freya_bank_team_key=set freya_workspace_id=auto llm_providers=[anthropic, openai, claude_code] builder_track=compiled agent_profile=staged self_test=none build_time_budget_s=1680 build_slot=auto dry_run=True langfuse=disabled
+2026-10-10T19:57:16.788Z | OBS    | langfuse disabled (no keys)
+2026-10-10T19:57:16.789Z | CONFIG | LLM key changer | order=[anthropic, openai, claude_code] key_health_file=C:\Users\Felladien\Documents\Projects\Python\FreyaHackaton\data\key_health.json
+2026-10-10T19:57:16.800Z | STAGE  | load_inputs | start | budget_left_s=1680
+2026-10-10T19:57:16.801Z | DECIDE | track compiled (requested compiled; agentic fallback off) | profile=staged dry_run=True
+2026-10-10T19:57:16.801Z | INPUT  | 1 brief file(s), tool API with 7 tool(s) | briefs=[brief.md] chars=11608 brief_sha=90ab3178014d tools=[add_note, close_call, create_promise, get_account, schedule_callback, transfer_to_agent, verify_identity]
+2026-10-10T19:57:16.801Z | STAGE  | load_inputs | end 0.0s | budget_left_s=1680
+2026-10-10T19:57:16.802Z | STAGE  | guard_inputs | start | budget_left_s=1680
+2026-10-10T19:57:16.808Z | GUARD  | inputs | ok | 0 violations | blocked=False violations=[]
+2026-10-10T19:57:16.809Z | STAGE  | guard_inputs | end 0.0s | budget_left_s=1680
+2026-10-10T19:57:16.809Z | STAGE  | understand_brief | start | budget_left_s=1680
+2026-10-10T19:57:16.810Z | LEDGER | reading 1 file(s) in 3 passage(s) | files=[brief.md] passages=3
+2026-10-10T19:57:36.374Z | MODEL  | openai/gpt-5.6-terra | key=openai#1(…yRAA) | ok 19.6s in=6622 out=3342 attempt=1 | rule ledger: brief.md passage 1/3
+2026-10-10T19:57:36.383Z | LEDGER | passage 1/3 (brief.md): 50 rules, 1 ambiguities
+2026-10-10T19:57:36.383Z | RATE   | waited 18.7 s for openai#1(…yRAA) | purpose=rule ledger: brief.md passage 3/3 provider=openai waited_s=18.73
+2026-10-10T19:57:37.730Z | MODEL  | openai/gpt-5.6-terra | key=openai#1(…yRAA) | ok 20.1s in=6753 out=3955 attempt=1 | rule ledger: brief.md passage 2/3
+2026-10-10T19:57:37.740Z | LEDGER | passage 2/3 (brief.md): 58 rules, 2 ambiguities
+2026-10-10T19:57:52.045Z | MODEL  | openai/gpt-5.6-terra | key=openai#1(…yRAA) | ok 15.7s in=6512 out=3138 attempt=1 | rule ledger: brief.md passage 3/3
+2026-10-10T19:57:52.053Z | LEDGER | passage 3/3 (brief.md): 49 rules, 0 ambiguities
+2026-10-10T19:57:56.838Z | MODEL  | openai/gpt-5.6-terra | key=openai#1(…yRAA) | ok 4.7s in=1776 out=404 attempt=1 | rule ledger: completeness check 1/1
+2026-10-10T19:57:56.862Z | LEDGER | completeness check added 1 rule(s) | rule_ids=[D1-M1]
+2026-10-10T19:57:56.864Z | LEDGER | ledger ready: 158 rules (158 active), 3 ambiguities, 0 superseded | rules=158 active=158 ambiguities=3
+2026-10-10T19:57:56.864Z | AMBIG  | [D1-5b, D1-5c] When someone else answers, may the agent ask when the customer can be reached despite the instruction to say nothing beyond the opening sentence? -> chosen: Ask when the customer can be reached, while not disclosing the reason for the call or account information. (because: The same rule says both "Say nothing beyond the opening sentence of rule 1." and "Ask when the customer can be reached." The specific instruction to ask requires the latter reading.)
+2026-10-10T19:57:56.864Z | AMBIG  | [D1-19, D1-20a] What should happen if offering the next business day for a weekend day or holiday produces a date after the deadline? -> chosen: Do not offer a next business day that is after the deadline; apply the after-deadline handling. (because: Rule 19 says a promise date must be "not after the deadline," while rule 20 says to "offer the next business day" when the named day "is not after the deadline." The conservative reading preserves the explicit promise-date limit.)
+2026-10-10T19:57:56.865Z | AMBIG  | [D1-30c, D1-30d] Does persuasion attempt 1 require an amount proposal as well as the specified date proposal? -> chosen: Propose both the applicable amount and the next business day after today. (because: The rule says "Attempt 1 is for the full overdue amount, or for the floor" and then says "Attempt 1: propose the next business day after today." Reading both instructions together gives the attempt's amount and date without omitting either.)
+2026-10-10T19:57:56.889Z | GUARD  | ledger | ok | 0 violations | blocked=False violations=[]
+2026-10-10T19:57:56.889Z | DECIDE | rule ledger: 158 rules (158 active), 3 ambiguities, 0 supersessions
+2026-10-10T19:57:56.890Z | STAGE  | understand_brief | end 40.1s | budget_left_s=1639.9
+2026-10-10T19:57:56.891Z | STAGE  | extract_policy | start | budget_left_s=1639.9
+2026-10-10T19:58:27.764Z | MODEL  | openai/gpt-5.6-terra | key=openai#1(…yRAA) | ok 30.8s in=25181 out=6328 attempt=1 | extract policy IR from the rule ledger
+2026-10-10T19:58:27.977Z | GROUNDING | warning: phrases.goodbye_sentence: sentence not found in the briefs: 'Thank you, goodbye.'
+2026-10-10T19:58:27.978Z | GROUNDING | warning: phrases.extra.below_floor: sentence not found in the briefs: 'That amount cannot be recorded.'
+2026-10-10T19:58:27.978Z | GROUNDING | warning: phrases.extra.sympathy: sentence not found in the briefs: 'I am sorry to hear that.'
+2026-10-10T19:58:27.978Z | GROUNDING | warning: phrases.extra.care_offer: sentence not found in the briefs: 'Would you like me to connect you with the care team?'
+2026-10-10T19:58:27.978Z | GROUNDING | warning: identity.questions[1].ask: sentence not found in the briefs: 'What is your year of birth?'
+2026-10-10T19:58:27.979Z | EXTRACT | policy IR extracted: 3 band(s), 14 intent(s), 20 outcome row(s), 12 residual rule(s) | cited_rules=158
+2026-10-10T19:58:27.980Z | STAGE  | extract_policy | end 31.1s | budget_left_s=1608.8
+2026-10-10T19:58:27.982Z | STAGE  | validate_policy | start | budget_left_s=1608.8
+2026-10-10T19:58:27.991Z | VALIDATE | policy IR: 1 error(s), 0 warning(s) | codes=[REASON_MISSING]
+2026-10-10T19:58:27.991Z | VALIDATE | issues: - ERROR REASON_MISSING at closing.rows[19]: outcome 'declined' requires a reason (close_call). [D1-3d, D1-6b, D1-7c, D1-8, D1-9c, D1-14c, D1-15b, D1-15d, D1-31c, D1-32c, D1-32d, D1-37b, D1-39c, D1-40c, D1-41c, D1-42c, D1-45a, D1-45b, D1-46a, D1-46b, D1-46c, D1-46d, D1-46e, D1-46f, D1-46g, D1-46h, D1-46i, D1-46j, D1-47, D1-55a, D1-55b, D1-55c]
+2026-10-10T19:58:28.185Z | VALIDATE | 5 fixed sentence(s) not found in the briefs | sentences=[phrases.goodbye_sentence: sentence not found in the briefs: 'Thank you, goodbye.', phrases.extra.below_floor: senten...
+2026-10-10T19:58:28.212Z | VALIDATE | offline invariants: 17 passed, 0 failed, 1 unchecked | failing=[]
+2026-10-10T19:58:28.213Z | STAGE  | validate_policy | end 0.2s | budget_left_s=1608.6
+2026-10-10T19:58:28.215Z | STAGE  | repair_policy | start | budget_left_s=1608.6
+2026-10-10T19:58:28.216Z | DECIDE | policy repair round 1: 1 issue(s) | codes=[REASON_MISSING]
+2026-10-10T19:58:28.256Z | REPAIR | asking the model to fix 1 issue(s) (round 1) | codes=[REASON_MISSING]
+2026-10-10T19:58:57.983Z | MODEL  | openai/gpt-5.6-terra | key=openai#1(…yRAA) | ok 29.7s in=27457 out=6341 attempt=1 | repair policy IR (round 1, 1 errors)
+2026-10-10T19:58:58.008Z | STAGE  | repair_policy | end 29.8s | budget_left_s=1578.8
+2026-10-10T19:58:58.009Z | STAGE  | validate_policy | start | budget_left_s=1578.8
+2026-10-10T19:58:58.016Z | VALIDATE | policy IR: 0 error(s), 0 warning(s) | codes=[]
+2026-10-10T19:58:58.187Z | VALIDATE | 5 fixed sentence(s) not found in the briefs | sentences=[phrases.goodbye_sentence: sentence not found in the briefs: 'Thank you, goodbye.', phrases.extra.below_floor: senten...
+2026-10-10T19:58:58.206Z | VALIDATE | offline invariants: 17 passed, 0 failed, 1 unchecked | failing=[]
+2026-10-10T19:58:58.207Z | STAGE  | validate_policy | end 0.2s | budget_left_s=1578.6
+2026-10-10T19:58:58.208Z | STAGE  | guard_policy | start | budget_left_s=1578.6
+2026-10-10T19:58:58.229Z | GUARD  | policy | ok | 0 violations | blocked=False violations=[]
+2026-10-10T19:58:58.229Z | STAGE  | guard_policy | end 0.0s | budget_left_s=1578.6
+2026-10-10T19:58:58.230Z | STAGE  | draft_prose | start | budget_left_s=1578.6
+2026-10-10T19:59:18.366Z | MODEL  | openai/gpt-5.6-luna | key=openai#1(…yRAA) | ok 20.1s in=9120 out=2830 attempt=1 | draft node prose (staged profile)
+2026-10-10T19:59:18.380Z | PROSE  | node negotiate: text cut from 3102 to 2834 characters
+2026-10-10T19:59:18.380Z | PROSE  | drafted prose for 4 node(s) | nodes={"opening": 1222, "third_party": 1048, "identity": 1445, "negotiate": 2834}
+2026-10-10T19:59:18.412Z | GUARD  | prose | ok | 0 violations | blocked=False violations=[]
+2026-10-10T19:59:18.413Z | STAGE  | draft_prose | end 20.2s | budget_left_s=1558.4
+2026-10-10T19:59:18.415Z | STAGE  | compile_workflow | start | budget_left_s=1558.4
+2026-10-10T19:59:18.487Z | DECIDE | compiled staged workflow: 29 nodes; rule coverage: 158 of 158 active rules enforced (100%); 0 superseded; uncovered: none | notes=[]
+2026-10-10T19:59:18.488Z | STAGE  | compile_workflow | end 0.1s | budget_left_s=1558.3
+2026-10-10T19:59:18.489Z | STAGE  | static_checks | start | budget_left_s=1558.3
+2026-10-10T19:59:18.503Z | LINT   | static checks: 0 errors, 1 warnings (ok) | errors=[] warnings=[L018 warning nodes.negotiate.task_message: 9973 characters (> 6000); long prompts dilute the rules]
+2026-10-10T19:59:18.503Z | TEST   | PASS static_checks | 0 errors, 1 warnings
+2026-10-10T19:59:18.504Z | STAGE  | static_checks | end 0.0s | budget_left_s=1558.3
+2026-10-10T19:59:18.505Z | STAGE  | guard_workflow | start | budget_left_s=1558.3
+2026-10-10T19:59:18.530Z | GUARD  | workflow | ok | 0 violations | blocked=False violations=[]
+2026-10-10T19:59:18.530Z | STAGE  | guard_workflow | end 0.0s | budget_left_s=1558.3
+2026-10-10T19:59:18.532Z | STAGE  | finalize | start | budget_left_s=1558.3
+2026-10-10T19:59:18.545Z | FINAL  | run 55196515ab3c finished
+====================================================================================================
+BUILD SUMMARY
+run id       : 55196515ab3c
+slot         : qr-v01-clean
+track        : compiled
+status       : dry_run
+started      : 2026-10-10T19:57:16.711Z
+ended        : 2026-10-10T19:59:18.544Z
+duration     : 121.8 s (2 min 02 s)
+model calls  : 7 (7 ok, 0 failed)
+  - openai/gpt-5.6-luna: calls=1 (1 ok, 0 failed), tokens in=9120 out=2830
+  - openai/gpt-5.6-terra: calls=6 (6 ok, 0 failed), tokens in=74301 out=23508
+Freya        :
+  - slot: qr-v01-clean
+  - exported: C:\Users\Felladien\Documents\Projects\Python\FreyaHackaton\out\qr-v01-clean.workflow.json
+tests        : 1 (1 passed, 0 failed)
+  - PASS static_checks: 0 errors, 1 warnings
+stages       :
+  - load_inputs: end 0.0s
+  - guard_inputs: end 0.0s
+  - understand_brief: end 40.1s
+  - extract_policy: end 31.1s
+  - validate_policy: end 0.2s
+  - repair_policy: end 29.8s
+  - validate_policy: end 0.2s
+  - guard_policy: end 0.0s
+  - draft_prose: end 20.2s
+  - compile_workflow: end 0.1s
+  - static_checks: end 0.0s
+  - guard_workflow: end 0.0s
+errors       : 0
+workflow_id  : null
+agent_id     : null
+version      : null
+node_count   : null
+tool_count   : null
+profile      : staged
+coverage     : 158 of 158 active rules enforced (100%); 0 superseded; uncovered: none
+notes        : []
+errors_list  : []
+====================================================================================================
+2026-10-10T19:59:18.548Z | STAGE  | finalize | end 0.0s | budget_left_s=1558.2
+2026-10-10T19:59:18.549Z | END    | run 55196515ab3c closed after 121.8 s | duration_s=121.841

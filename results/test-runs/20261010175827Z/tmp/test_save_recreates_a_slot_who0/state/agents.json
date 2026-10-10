@@ -1,0 +1,10 @@
+{
+ "other": {
+  "workflow_id": "wf_keep",
+  "agent_id": "ag_keep"
+ },
+ "slot": {
+  "workflow_id": "wf_1",
+  "agent_id": "ag_1"
+ }
+}

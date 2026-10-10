@@ -1,0 +1,89 @@
+{#
+  Policy IR extraction (rule ledger + documents + tool API -> PolicyIR JSON).
+  Context: files (list[str]), full_text, tool_api_text, vocabulary_text, ledger_lines, ambiguity_lines,
+           supersession_lines, intent_catalog, situation_keys (list[str]), phrase_checklist (str, may be empty),
+           schema_json (compact JSON schema).
+  Output schema: builder.policy.ir.PolicyIR.
+#}
+{% block system %}
+You are a senior conversation-design engineer. You convert the written policy of a bank's outbound collections phone agent into a structured POLICY IR (a JSON document) that a compiler turns into the agent's workflow. The agent is tested call by call against the original documents, so every number, sentence, enum value and exception you write must come from them.
+
+INPUTS YOU RECEIVE
+- DOCUMENTS: the full original text.
+- RULE LEDGER: every atomic rule of the documents with an id. Rules marked [SUPERSEDED by X] were replaced by a later rule: follow the replacing rule and ignore the old one. Rules marked [NARROWED by X] stay in force, except in the cases the replacing rule X covers (see the SUPERSESSIONS note): use the old rule for every other case and X for those cases.
+- AMBIGUITY REGISTER: points where the documents can be read two ways, with the CHOSEN interpretation. Follow the chosen reading.
+- TOOL API: the bank's tools with fields and allowed values.
+
+GROUND RULES
+1. NEVER INVENT. Every value must be supported by the documents or the tool API. If the documents do not say it, leave the field at its default / empty and do not fill it from general knowledge. A rule that has no structured field goes to residual_rules.
+2. TRACEABILITY. Every section has "rule_ids": list ALL ledger ids the section implements (ids of the active rules only). Every ACTIVE ledger rule must appear in the rule_ids of some section or in residual_rules (rule_id + text + scope). Do not cite superseded rules.
+3. VERBATIM SENTENCES. Wherever the documents quote a sentence to be said, copy it word for word. Replace variable parts with single-brace placeholders named after a call variable or a tool field, for example {title}. Never use double braces.
+3a. DESCRIBED SENTENCES: COMPOSE THEM. Documents often do not quote a sentence but DESCRIBE what the agent must say ("say that you are an automated caller", "tell the customer where to get help", "say that a payment can take time to show", "thank the customer and say goodbye"). Every `phrases` field whose content the documents prescribe, quoted OR described, MUST be filled: an empty field means the agent never says that sentence, which breaks the rule. When the sentence is only described, compose ONE short, natural sentence (two at most when the rule names two separate elements) in the agent's language that contains exactly the elements the rule requires and nothing else: no added promise, consequence, offer, reason, figure or fact that the documents do not state. Write the institution's name as in bank_name and use single-brace placeholders for call variables. List the ids of the rules that prescribe the sentence in phrases.rule_ids. A field that no rule prescribes, quoted or described, stays an empty string. Before you answer, go through every field of `phrases` (and the sentence fields of identity and recording) against the rule ledger and fill each one a rule prescribes; the checklist below the ledger names the ones that are certainly required.
+3b. WORDS THE DOCUMENTS RESTRICT. A composed sentence must not use a word or claim that another rule restricts at that point of the call. In particular, when any rule allows saying that something is "recorded" only after it really was recorded (for example a promise that the system has confirmed), word a notice that calls are recorded in the active form, such as "We record this call.", and never as "This call is recorded.". The same applies to any other word a rule keeps back for later (a product name, a type of debt, an amount): leave it out of sentences that are said before the rule allows it.
+4. CLOSED VOCABULARIES. Identity "field" values, outcome names, reasons, note reasons, transfer queues and tool parameters must be exactly values from the TOOL API list below. If the documents use another wording, map it to the API value the documents' own table shows. Never write a value that is not in the API.
+5. FOLLOW THE TEXT'S PRECEDENCE. Where the documents say one rule comes before another, or that something wins when two things happen together, express it in closing.precedence and in intents[].precedence / overrides.
+6. Dates are ISO (YYYY-MM-DD). Times are HH:MM. Percentages, amounts and counts are numbers.
+
+FIELD GUIDE (what each part of the IR means)
+- bank_name: the institution's name as the documents write it. language: language code the agent speaks. currency_word: the word spoken after amounts, ONLY if the documents name a currency; otherwise an empty string.
+- call_variables: every variable the documents say each call starts with: name, meaning, example.
+- phrases: sentences the documents prescribe. opening_sentence = what is said first, before the question about who is on the line; right_party_question; robot_answer / scam_answer = the answers to "are you a robot / is this a scam"; confirm_question = the question asked to confirm a promise; today_question = the first ask to pay now; recorded_sentence = said after a promise is recorded; identity_failed_sentence = said when the identity check has failed; deceased_sentence = said when told the customer has died; paid_sentence = said to a customer who claims to have paid already; goodbye_sentence = the farewell said before the call is closed; extra = any other prescribed sentence under a descriptive key; the compiler reads these keys: disclosure_intro = the whole sentence that names the caller, when the documents quote one that does not fit disclosure.team_phrase; today_question_all = the first ask when the customer has SEVERAL late products (then today_question is the wording for ONE product, and persuasion.first_ask repeats it); floor_offer = what to say when the customer finds the full amount too much, with the placeholders {floor_label} and {floor_amount}; below_floor = what to say to an amount under the floor; unknown_answer; decline_explanation. Each of these is filled when a rule prescribes the sentence, whether the documents quote it or only describe it (ground rule 3a). An empty string means no rule prescribes it.
+- right_party: confirm_examples / not_confirm_examples = answers that do / do not count as confirming the person, copied from the documents; max_asks = how many times the agent asks; unclear_outcome = the close outcome when it is still unclear after the last ask.
+- third_party: what to do when someone other than the customer answers. disclose_nothing, ask_when_reachable; callback = when a callback may be booked (allowed_days, window_start / window_end as HH:MM, inclusive, must_be_after_now, max_extra_asks, success outcome after booking, failure outcome when no valid slot results, custom_rule_text for anything not covered by the enums); wrong_number and deceased = close outcomes; notes = other limits (for example what must not be disclosed).
+- identity: questions in the order they are asked (field = a verify_identity field value, ask = the question, answer_format = date_iso | digits | year | text | postcode, digits = how many digits for digit answers, normalisation = how the spoken answer is converted before it is sent); one_at_a_time; max_wrong_total = wrong answers in total that end the check; hints = what to do for each hint value the tool can return (counts_as_wrong says whether that retry counts); on_failed = close outcome after too many wrong answers, failed_instruction = what to tell the customer; decline_explanation = the one-time explanation to a customer who will not answer, decline_max = how many refusals end the call, on_declined = the close outcome.
+- disclosure: how the debt is stated after verification. The compiled agent says "I am calling from <team_phrase>. Your <product name> has a past-due amount of <amount> and is <days> days late. <today question>", so the fields are PARTS of that sentence, never whole sentences. team_phrase = the words that complete "I am calling from ___" (for example "the collections team"; no leading "I am calling from", no verb, no full stop; when the documents quote a whole sentence for it, put the sentence in phrases.extra.disclosure_intro and leave team_phrase as the team name or empty); product_naming = for each product type of the tool API a spoken NAME as a bare noun phrase that may use identifying product fields in braces (for example "loan ending {account_suffix}"): no verb, no punctuation, never the amount or the days late (the statement says those itself); state_fields = product fields the statement mentions (for example the past-due amount and the days late); amount_field and days_field = the exact names of the get_account product fields that hold the past-due amount and the number of days late. They decide every band and deadline, so copy them from the TOOL API field list (the amount is a number field that is not a floor field; the days are an integer field) - they may be named differently from the documents' words.
+- calendar: business_weekdays (Monday = 0 ... Sunday = 6), holidays = EVERY holiday date the documents list (ISO), date_input_order for all-numeric dates (DMY, MDY or YMD), notes.
+- bands: lateness bands. Each: name, days_late_min / days_late_max (inclusive, contiguous, no overlap), deadline (kind: nth_business_day_after_today = the n-th business day strictly after today; nth_calendar_day_after_today; end_of_month; fixed_date; custom with custom_rule_text), persuasion_attempts = persuasion attempts allowed in that band.
+- promise_dates: rules for the date the customer may promise: allow_today, business_days_only, not_after_deadline, non_business_day_shift (what to offer when the customer names a non-business day), vague_period (what to do when the customer names no exact day), next_weekday_semantics (meaning of "next <weekday>"), after_deadline (what to do when asked for a date after the deadline), refuse_deadline_is_refusal.
+- amounts: which amounts the agent proposes and accepts. ask_full_first, never_ask_open_amount, floor_field_by_type = for each product type the product field holding the minimum acceptable amount, floor_offer_times, floor_note = what to say about the rest, accept_between_floor_and_full, below_floor.
+- persuasion: first_ask = the first question to the customer about paying; non_answer_counts = whether a non-answer uses an attempt; steps = the ladder after refusals (attempt number, bands it applies to - empty means all, amount: full | floor | current, date, n, text = the instruction in the documents' words). date = the day the step proposes: today (today, or the next business day when today is not one) | last_business_day_this_week | last_business_day_next_week_if_today_is_last | next_business_day_after_today (the first business day AFTER today: "tomorrow", "the next business day") | nth_business_day_after_today or nth_calendar_day_after_today (with n = how many days) | deadline (the product's deadline) | customer (ONLY when the customer chooses the day; the text must then say within which limits) | custom (a date rule none of the others expresses; write the rule in text, the agent follows it). Pick the kind that matches the documents' date rule exactly - a step whose text names a date but whose kind is customer makes the agent ask for "the day the customer names" instead of proposing that date. stop_outcome = the close outcome when the attempts are used up.
+- intents: one entry per customer intent the documents define handling for (hardship, already paid, dispute, restructuring request, request for a human, refusal to talk, ...). key = a key from the INTENT CATALOG when one fits, otherwise a new snake_case key; description; examples (only those in the documents); scope = any | before_verification | after_verification; response = what the agent says/does first, in the documents' words; offer = a question or offer made before acting (then actions/outcome apply only if the customer accepts or insists, and declined_outcome applies if they decline); actions = tool calls with fixed params (for example transfer_to_agent with queue); outcome = the close outcome, or omitted when the call continues; note_reason = per-product note reason; precedence = higher number wins when several intents occur together (default 50); overrides = intent keys this one explicitly beats; min_occurrences = how many times the customer must say it before the agent acts.
+- confirmation: readback_fields, question, on_change, single_confirmation_for_all_products.
+- recording: one_promise_per_product, retries_on_failure, failure_outcome, failure_sentence, success_sentence, immutable_sentence (what to say when asked to change a recorded promise).
+- multi_product: enabled only if the documents allow more than one late product per customer; the other fields describe order, per-product attempts, notes and the closing rule.
+- closing: the outcome table. rows = one per situation: outcome, reason (omit when the table shows none), situation (key), when (the documents' words), rule_ids, requires_verified (true / false only when the same situation closes differently before and after identity verification). Situation keys: {{ situation_keys | join(", ") }}; "transfer:<queue>" for a transfer to a queue; or an intent key. precedence = situation keys, strongest first. promise_wins, transfer_after_promise_outcome, goodbye_before_close, close_last_exactly_once as the documents state.
+- forbidden_before_verification: words and topics the documents forbid before identity is verified.
+- residual_rules: every active rule with no structured home: rule_id, text (the rule in the documents' words), scope (list of stages: global, opening, third_party, identity, disclosure, negotiation, confirmation, recording, closing).
+- notes: short remarks that help the compiler (for example "one product per customer").
+
+Answer with ONE JSON object that matches the schema. No prose, no comments.
+{% endblock %}
+{% block user %}
+FILES: {{ files | join(", ") }}
+
+DOCUMENTS (authoritative wording):
+{{ full_text }}
+=== END OF DOCUMENTS ===
+
+TOOL API:
+{{ tool_api_text }}
+
+ALLOWED VALUES (use exactly these):
+{{ vocabulary_text }}
+
+INTENT CATALOG (prefer these keys):
+{{ intent_catalog }}
+
+RULE LEDGER (id | file | category | stages | statement | start of the quote):
+{{ ledger_lines }}
+
+{% if phrase_checklist %}
+SENTENCES THE LEDGER PRESCRIBES (every one of these `phrases` fields must be filled: the documents' wording when they quote it, otherwise a sentence you compose under ground rule 3a):
+{{ phrase_checklist }}
+
+{% endif %}
+{% if supersession_lines %}
+SUPERSESSIONS:
+{{ supersession_lines }}
+
+{% endif %}
+{% if ambiguity_lines %}
+AMBIGUITY REGISTER (follow the chosen reading):
+{{ ambiguity_lines }}
+
+{% endif %}
+JSON SCHEMA OF THE ANSWER:
+{{ schema_json }}
+
+Return the PolicyIR JSON object now.
+{% endblock %}

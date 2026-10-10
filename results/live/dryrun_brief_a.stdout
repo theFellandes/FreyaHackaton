@@ -1,0 +1,2 @@
+{"slot": "brief-a", "track": "compiled", "workflow_id": null, "agent_id": null, "version": null, "exported": "C:\\Users\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\out\\brief-a.workflow.json", "trace": "C:\\Users\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\traces\\brief-a-20261010T192451Z.log", "status": "dry_run", "workflow_file": "C:\\Users\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\out\\brief-a.workflow.json", "tests": {"passed": 1, "total": 1}, "errors": []}
+exit=0 elapsed=97s

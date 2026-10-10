@@ -1,0 +1,925 @@
+{
+  "tests": 1014,
+  "results": {
+    "passed": 1011,
+    "failed": 3
+  },
+  "module_count": 27,
+  "modules": [
+    {
+      "module": "tests.unit.test_brief_loader",
+      "total": 30,
+      "passed": 30,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 0.152
+    },
+    {
+      "module": "tests.unit.test_budget",
+      "total": 12,
+      "passed": 12,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 0.011
+    },
+    {
+      "module": "tests.unit.test_calendar",
+      "total": 109,
+      "passed": 109,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 0.113
+    },
+    {
+      "module": "tests.unit.test_codegen",
+      "total": 95,
+      "passed": 95,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 2.723
+    },
+    {
+      "module": "tests.unit.test_codegen_calendar_parity",
+      "total": 38,
+      "passed": 38,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 0.495
+    },
+    {
+      "module": "tests.unit.test_diagnostics",
+      "total": 29,
+      "passed": 29,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 0.096
+    },
+    {
+      "module": "tests.unit.test_freya_client",
+      "total": 63,
+      "passed": 63,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 0.349
+    },
+    {
+      "module": "tests.unit.test_freya_diff",
+      "total": 19,
+      "passed": 19,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 0.023
+    },
+    {
+      "module": "tests.unit.test_freya_practice",
+      "total": 25,
+      "passed": 25,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 0.17
+    },
+    {
+      "module": "tests.unit.test_grounding",
+      "total": 12,
+      "passed": 12,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 0.103
+    },
+    {
+      "module": "tests.unit.test_inputs",
+      "total": 29,
+      "passed": 29,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 0.28
+    },
+    {
+      "module": "tests.unit.test_llm_errors",
+      "total": 72,
+      "passed": 71,
+      "failed": 1,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 3.906
+    },
+    {
+      "module": "tests.unit.test_llm_gateway",
+      "total": 54,
+      "passed": 54,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 0.56
+    },
+    {
+      "module": "tests.unit.test_llm_keys",
+      "total": 30,
+      "passed": 30,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 0.147
+    },
+    {
+      "module": "tests.unit.test_llm_structured",
+      "total": 31,
+      "passed": 29,
+      "failed": 2,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 0.187
+    },
+    {
+      "module": "tests.unit.test_money",
+      "total": 47,
+      "passed": 47,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 0.078
+    },
+    {
+      "module": "tests.unit.test_outcomes",
+      "total": 61,
+      "passed": 61,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 0.095
+    },
+    {
+      "module": "tests.unit.test_playground",
+      "total": 42,
+      "passed": 42,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 0.139
+    },
+    {
+      "module": "tests.unit.test_policy_ir",
+      "total": 48,
+      "passed": 48,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 0.148
+    },
+    {
+      "module": "tests.unit.test_robustness",
+      "total": 14,
+      "passed": 14,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 0.143
+    },
+    {
+      "module": "tests.unit.test_settings",
+      "total": 33,
+      "passed": 33,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 0.126
+    },
+    {
+      "module": "tests.unit.test_streamlit_app",
+      "total": 10,
+      "passed": 10,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 6.053
+    },
+    {
+      "module": "tests.unit.test_streamlit_monitor",
+      "total": 8,
+      "passed": 8,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 3.673
+    },
+    {
+      "module": "tests.unit.test_tool_api",
+      "total": 22,
+      "passed": 22,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 0.113
+    },
+    {
+      "module": "tests.unit.test_trace",
+      "total": 24,
+      "passed": 24,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 0.324
+    },
+    {
+      "module": "tests.unit.test_understand_fake_llm",
+      "total": 29,
+      "passed": 29,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 1.545
+    },
+    {
+      "module": "tests.unit.test_validate_policy",
+      "total": 28,
+      "passed": 28,
+      "failed": 0,
+      "errors": 0,
+      "skipped": 0,
+      "seconds": 0.176
+    }
+  ],
+  "slowest_20": [
+    {
+      "module": "tests.unit.test_llm_errors",
+      "name": "test_real_anthropic_sdk_errors",
+      "seconds": 2.587,
+      "status": "passed",
+      "message": "",
+      "details": ""
+    },
+    {
+      "module": "tests.unit.test_streamlit_app",
+      "name": "test_every_local_screen_renders_without_errors",
+      "seconds": 1.612,
+      "status": "passed",
+      "message": "",
+      "details": ""
+    },
+    {
+      "module": "tests.unit.test_codegen",
+      "name": "test_decide_agrees_with_the_reference_engine[AB]",
+      "seconds": 1.549,
+      "status": "passed",
+      "message": "",
+      "details": ""
+    },
+    {
+      "module": "tests.unit.test_llm_errors",
+      "name": "test_real_openai_sdk_errors",
+      "seconds": 0.739,
+      "status": "passed",
+      "message": "",
+      "details": ""
+    },
+    {
+      "module": "tests.unit.test_streamlit_app",
+      "name": "test_mocked_custom_conversation_sends_continues_and_ends",
+      "seconds": 0.717,
+      "status": "passed",
+      "message": "",
+      "details": ""
+    },
+    {
+      "module": "tests.unit.test_streamlit_monitor",
+      "name": "test_dashboard_warns_about_stale_draft_after_one_explicit_read",
+      "seconds": 0.593,
+      "status": "passed",
+      "message": "",
+      "details": ""
+    },
+    {
+      "module": "tests.unit.test_streamlit_monitor",
+      "name": "test_robustness_failure_counterexamples_remain_visible_and_report_becomes_stale",
+      "seconds": 0.557,
+      "status": "passed",
+      "message": "",
+      "details": ""
+    },
+    {
+      "module": "tests.unit.test_streamlit_monitor",
+      "name": "test_bundled_robustness_reports_metrics_groups_and_limits_without_network[Brief A + B]",
+      "seconds": 0.53,
+      "status": "passed",
+      "message": "",
+      "details": ""
+    },
+    {
+      "module": "tests.unit.test_streamlit_app",
+      "name": "test_editor_changes_survive_navigating_away_and_back[Policy document]",
+      "seconds": 0.51,
+      "status": "passed",
+      "message": "",
+      "details": ""
+    },
+    {
+      "module": "tests.unit.test_streamlit_app",
+      "name": "test_invalid_call_record_collection_shows_friendly_error[product_order]",
+      "seconds": 0.507,
+      "status": "passed",
+      "message": "",
+      "details": ""
+    },
+    {
+      "module": "tests.unit.test_streamlit_app",
+      "name": "test_invalid_call_record_collection_shows_friendly_error[transfers]",
+      "seconds": 0.498,
+      "status": "passed",
+      "message": "",
+      "details": ""
+    },
+    {
+      "module": "tests.unit.test_streamlit_app",
+      "name": "test_invalid_call_record_collection_shows_friendly_error[notes]",
+      "seconds": 0.49,
+      "status": "passed",
+      "message": "",
+      "details": ""
+    },
+    {
+      "module": "tests.unit.test_streamlit_monitor",
+      "name": "test_bundled_robustness_reports_metrics_groups_and_limits_without_network[Brief A]",
+      "seconds": 0.466,
+      "status": "passed",
+      "message": "",
+      "details": ""
+    },
+    {
+      "module": "tests.unit.test_streamlit_app",
+      "name": "test_invalid_call_record_collection_shows_friendly_error[promises]",
+      "seconds": 0.439,
+      "status": "passed",
+      "message": "",
+      "details": ""
+    },
+    {
+      "module": "tests.unit.test_llm_errors",
+      "name": "test_langchain_wrapped_anthropic_errors",
+      "seconds": 0.438,
+      "status": "failed",
+      "message": "ImportError: DLL load failed while importing _uuid_utils: An Application Control policy has blocked this file.",
+      "details": "def test_langchain_wrapped_anthropic_errors() -> None:\n>       chat_models = pytest.importorskip(\"langchain_anthropic.chat_models\")\n                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\ntests\\unit\\test_llm_errors.py:396: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nname = 'langchain_anthropic.chat_models', package = None\n\n    def import_module(name, package=None):\n        \"\"\"Import a module.\n    \n        The 'package' argument is required when performing a relative import. It\n        specifies the package to use as the anchor point from which to resolve the\n        relative import to an absolute import.\n    \n        \"\"\"\n        level = 0\n        if name.startswith('.'):\n            if not package:\n                raise TypeError(\"the 'package' argument is required to perform a \"\n                                f\"relative import for {name!r}\")\n            for character in name:\n                if character != '.':\n                    break\n                level += 1\n>       return _bootstrap._gcd_import(name[level:], package, level)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n..\\..\\..\\..\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\Lib\\importlib\\__init__.py:90: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nname = 'langchain_anthropic.chat_models', package = None, level = 0\n\n>   ???\n\n<frozen importlib._bootstrap>:1387: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nname = 'langchain_anthropic.chat_models'\nimport_ = <function _gcd_import at 0x0000022D966880E0>\n\n>   ???\n\n<frozen importlib._bootstrap>:1360: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nname = 'langchain_anthropic.chat_models'\nimport_ = <function _gcd_import at 0x0000022D966880E0>\n\n>   ???\n\n<frozen importlib._bootstrap>:1310: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nf = <function _gcd_import at 0x0000022D966880E0>\nargs = ('langchain_anthropic',), kwds = {}\n\n>   ???\n\n<frozen importlib._bootstrap>:488: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nname = 'langchain_anthropic', package = None, level = 0\n\n>   ???\n\n<frozen importlib._bootstrap>:1387: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nname = 'langchain_anthropic'\nimport_ = <function _gcd_import at 0x0000022D966880E0>\n\n>   ???\n\n<frozen importlib._bootstrap>:1360: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nname = 'langchain_anthropic'\nimport_ = <function _gcd_import at 0x0000022D966880E0>\n\n>   ???\n\n<frozen importlib._bootstrap>:1331: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nspec = ModuleSpec(name='langchain_anthropic', loader=<_frozen_importlib_external.SourceFileLoader object at 0x0000022D9D3DFF5...rs\\\\Felladien\\\\Documents\\\\Projects\\\\Python\\\\FreyaHackaton\\\\.venv-playground\\\\Lib\\\\site-packages\\\\langchain_anthropic'])\n\n>   ???\n\n<frozen importlib._bootstrap>:935: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nself = <_frozen_importlib_external.SourceFileLoader object at 0x0000022D9D3DFF50>\nmodule = <module 'langchain_anthropic' from 'C:\\\\Users\\\\Felladien\\\\Documents\\\\Projects\\\\Python\\\\FreyaHackaton\\\\.venv-playground\\\\Lib\\\\site-packages\\\\langchain_anthropic\\\\__init__.py'>\n\n>   ???\n\n<frozen importlib._bootstrap_external>:999: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nf = <built-in function exec>\nargs = (<code object <module> at 0x0000022D9F9B3D30, file \"C:\\Users\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\.venv-p... 'langchain_anthropic', '__loader__': <_frozen_importlib_external.SourceFileLoader object at 0x0000022D9D3DFF50>, ...})\nkwds = {}\n\n>   ???\n\n<frozen importlib._bootstrap>:488: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\n    \"\"\"Claude (Anthropic) partner package for LangChain.\"\"\"\n    \n    from langchain_anthropic._version import __version__\n>   from langchain_anthropic.chat_models import (\n        ChatAnthropic,\n        convert_to_anthropic_tool,\n    )\n\n.venv-playground\\Lib\\site-packages\\langchain_anthropic\\__init__.py:4: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\n    \"\"\"Anthropic chat models.\"\"\"\n    \n    from __future__ import annotations\n    \n    import copy\n    import datetime\n    import hashlib\n    import json\n    import re\n    import warnings\n    from collections.abc import AsyncIterator, Callable, Iterator, Mapping, Sequence\n    from functools import cached_property\n    from operator import itemgetter\n    from typing import Any, Final, Literal, TypeGuard, cast\n    \n    import anthropic\n>   from langchain_core.callbacks import (\n        AsyncCallbackManagerForLLMRun,\n        CallbackManagerForLLMRun,\n    )\n\n.venv-playground\\Lib\\site-packages\\langchain_anthropic\\chat_models.py:17: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nattr_name = 'AsyncCallbackManagerForLLMRun'\n\n    def __getattr__(attr_name: str) -> object:\n        module_name = _dynamic_imports.get(attr_name)\n>       result = import_attr(attr_name, module_name, __spec__.parent)\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n.venv-playground\\Lib\\site-packages\\langchain_core\\callbacks\\__init__.py:126: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nattr_name = 'AsyncCallbackManagerForLLMRun', module_name = 'manager'\npackage = 'langchain_core.callbacks'\n\n    def import_attr(\n        attr_name: str,\n        module_name: str | None,\n        package: str | None,\n    ) -> object:\n        \"\"\"Import an attribute from a module located in a package.\n    \n        This utility function is used in custom `__getattr__` methods within `__init__.py`\n        files to dynamically import attributes.\n    \n        Args:\n            attr_name: The name of the attribute to import.\n            module_name: The name of the module to import from.\n    \n                If `None`, the attribute is imported from the package itself.\n            package: The name of the package where the module is located.\n    \n        Raises:\n            ImportError: If the module cannot be found.\n            AttributeError: If the attribute does not exist in the module or package.\n    \n        Returns:\n            The imported attribute.\n        \"\"\"\n        if module_name == \"__module__\" or module_name is None:\n            try:\n                result = import_module(f\".{attr_name}\", package=package)\n            except ModuleNotFoundError:\n                msg = f\"module '{package!r}' has no attribute {attr_name!r}\"\n                raise AttributeError(msg) from None\n        else:\n            try:\n>               module = import_module(f\".{module_name}\", package=package)\n                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n.venv-playground\\Lib\\site-packages\\langchain_core\\_import_utils.py:36: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nname = '.manager', package = 'langchain_core.callbacks'\n\n    def import_module(name, package=None):\n        \"\"\"Import a module.\n    \n        The 'package' argument is required when performing a relative import. It\n        specifies the package to use as the anchor point from which to resolve the\n        relative import to an absolute import.\n    \n        \"\"\"\n        level = 0\n        if name.startswith('.'):\n            if not package:\n                raise TypeError(\"the 'package' argument is required to perform a \"\n                                f\"relative import for {name!r}\")\n            for character in name:\n                if character != '.':\n                    break\n                level += 1\n>       return _bootstrap._gcd_import(name[level:], package, level)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n..\\..\\..\\..\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\Lib\\importlib\\__init__.py:90: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\n    \"\"\"Run managers.\"\"\"\n    \n    from __future__ import annotations\n    \n    import asyncio\n    import atexit\n    import functools\n    import inspect\n    import logging\n    from abc import ABC, abstractmethod\n    from collections.abc import Callable, Mapping\n    from concurrent.futures import ThreadPoolExecutor\n    from contextlib import asynccontextmanager, contextmanager\n    from contextvars import copy_context\n    from typing import TYPE_CHECKING, Any, TypeVar, cast\n    \n    from typing_extensions import Self, override\n    \n    from langchain_core.callbacks.base import (\n        BaseCallbackHandler,\n        BaseCallbackManager,\n        Callbacks,\n        ChainManagerMixin,\n        LLMManagerMixin,\n        RetrieverManagerMixin,\n        RunManagerMixin,\n        ToolManagerMixin,\n    )\n    from langchain_core.callbacks.stdout import StdOutCallbackHandler\n    from langchain_core.globals import get_debug\n    from langchain_core.messages import BaseMessage, get_buffer_string\n    from langchain_core.utils.env import env_var_is_set\n>   from langchain_core.utils.uuid import uuid7\n\n.venv-playground\\Lib\\site-packages\\langchain_core\\callbacks\\manager.py:33: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\n    \"\"\"UUID utility functions.\n    \n    This module exports a uuid7 function to generate monotonic, time-ordered UUIDs\n    for tracing and similar operations.\n    \"\"\"\n    \n    from __future__ import annotations\n    \n    import typing\n    from uuid import UUID\n    \n>   from uuid_utils.compat import uuid7 as _uuid_utils_uuid7\n\n.venv-playground\\Lib\\site-packages\\langchain_core\\utils\\uuid.py:12: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\n    import os\n    from uuid import SafeUUID\n    \n>   from ._uuid_utils import (\n        MAX,\n        NAMESPACE_DNS,\n        NAMESPACE_OID,\n        NAMESPACE_URL,\n        NAMESPACE_X500,\n        NIL,\n        RESERVED_FUTURE,\n        RESERVED_MICROSOFT,\n        RESERVED_NCS,\n        RFC_4122,\n        UUID,\n        __version__,\n        getnode,\n        uuid1,\n        uuid3,\n        uuid4,\n        uuid5,\n        uuid6,\n        uuid7,\n        uuid8,\n    )\nE   ImportError: DLL load failed while importing _uuid_utils: An Application Control policy has blocked this file.\n\n.venv-playground\\Lib\\site-packages\\uuid_utils\\__init__.py:4: ImportError"
+    },
+    {
+      "module": "tests.unit.test_streamlit_app",
+      "name": "test_editor_changes_survive_navigating_away_and_back[Recorded tools (JSON)]",
+      "seconds": 0.438,
+      "status": "passed",
+      "message": "",
+      "details": ""
+    },
+    {
+      "module": "tests.unit.test_streamlit_app",
+      "name": "test_policy_amount_floor_and_weekend_date_suggestion",
+      "seconds": 0.427,
+      "status": "passed",
+      "message": "",
+      "details": ""
+    },
+    {
+      "module": "tests.unit.test_streamlit_app",
+      "name": "test_invalid_policy_editor_shows_friendly_error",
+      "seconds": 0.415,
+      "status": "passed",
+      "message": "",
+      "details": ""
+    },
+    {
+      "module": "tests.unit.test_streamlit_monitor",
+      "name": "test_recorded_activity_counts_failures_filters_retries_and_masks_raw_details",
+      "seconds": 0.405,
+      "status": "passed",
+      "message": "",
+      "details": ""
+    },
+    {
+      "module": "tests.unit.test_streamlit_monitor",
+      "name": "test_monitor_without_credentials_or_traces_requires_explicit_live_reads",
+      "seconds": 0.376,
+      "status": "passed",
+      "message": "",
+      "details": ""
+    }
+  ],
+  "failures": [
+    {
+      "module": "tests.unit.test_llm_errors",
+      "name": "test_langchain_wrapped_anthropic_errors",
+      "seconds": 0.438,
+      "status": "failed",
+      "message": "ImportError: DLL load failed while importing _uuid_utils: An Application Control policy has blocked this file.",
+      "details": "def test_langchain_wrapped_anthropic_errors() -> None:\n>       chat_models = pytest.importorskip(\"langchain_anthropic.chat_models\")\n                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\ntests\\unit\\test_llm_errors.py:396: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nname = 'langchain_anthropic.chat_models', package = None\n\n    def import_module(name, package=None):\n        \"\"\"Import a module.\n    \n        The 'package' argument is required when performing a relative import. It\n        specifies the package to use as the anchor point from which to resolve the\n        relative import to an absolute import.\n    \n        \"\"\"\n        level = 0\n        if name.startswith('.'):\n            if not package:\n                raise TypeError(\"the 'package' argument is required to perform a \"\n                                f\"relative import for {name!r}\")\n            for character in name:\n                if character != '.':\n                    break\n                level += 1\n>       return _bootstrap._gcd_import(name[level:], package, level)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n..\\..\\..\\..\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\Lib\\importlib\\__init__.py:90: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nname = 'langchain_anthropic.chat_models', package = None, level = 0\n\n>   ???\n\n<frozen importlib._bootstrap>:1387: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nname = 'langchain_anthropic.chat_models'\nimport_ = <function _gcd_import at 0x0000022D966880E0>\n\n>   ???\n\n<frozen importlib._bootstrap>:1360: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nname = 'langchain_anthropic.chat_models'\nimport_ = <function _gcd_import at 0x0000022D966880E0>\n\n>   ???\n\n<frozen importlib._bootstrap>:1310: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nf = <function _gcd_import at 0x0000022D966880E0>\nargs = ('langchain_anthropic',), kwds = {}\n\n>   ???\n\n<frozen importlib._bootstrap>:488: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nname = 'langchain_anthropic', package = None, level = 0\n\n>   ???\n\n<frozen importlib._bootstrap>:1387: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nname = 'langchain_anthropic'\nimport_ = <function _gcd_import at 0x0000022D966880E0>\n\n>   ???\n\n<frozen importlib._bootstrap>:1360: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nname = 'langchain_anthropic'\nimport_ = <function _gcd_import at 0x0000022D966880E0>\n\n>   ???\n\n<frozen importlib._bootstrap>:1331: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nspec = ModuleSpec(name='langchain_anthropic', loader=<_frozen_importlib_external.SourceFileLoader object at 0x0000022D9D3DFF5...rs\\\\Felladien\\\\Documents\\\\Projects\\\\Python\\\\FreyaHackaton\\\\.venv-playground\\\\Lib\\\\site-packages\\\\langchain_anthropic'])\n\n>   ???\n\n<frozen importlib._bootstrap>:935: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nself = <_frozen_importlib_external.SourceFileLoader object at 0x0000022D9D3DFF50>\nmodule = <module 'langchain_anthropic' from 'C:\\\\Users\\\\Felladien\\\\Documents\\\\Projects\\\\Python\\\\FreyaHackaton\\\\.venv-playground\\\\Lib\\\\site-packages\\\\langchain_anthropic\\\\__init__.py'>\n\n>   ???\n\n<frozen importlib._bootstrap_external>:999: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nf = <built-in function exec>\nargs = (<code object <module> at 0x0000022D9F9B3D30, file \"C:\\Users\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\.venv-p... 'langchain_anthropic', '__loader__': <_frozen_importlib_external.SourceFileLoader object at 0x0000022D9D3DFF50>, ...})\nkwds = {}\n\n>   ???\n\n<frozen importlib._bootstrap>:488: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\n    \"\"\"Claude (Anthropic) partner package for LangChain.\"\"\"\n    \n    from langchain_anthropic._version import __version__\n>   from langchain_anthropic.chat_models import (\n        ChatAnthropic,\n        convert_to_anthropic_tool,\n    )\n\n.venv-playground\\Lib\\site-packages\\langchain_anthropic\\__init__.py:4: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\n    \"\"\"Anthropic chat models.\"\"\"\n    \n    from __future__ import annotations\n    \n    import copy\n    import datetime\n    import hashlib\n    import json\n    import re\n    import warnings\n    from collections.abc import AsyncIterator, Callable, Iterator, Mapping, Sequence\n    from functools import cached_property\n    from operator import itemgetter\n    from typing import Any, Final, Literal, TypeGuard, cast\n    \n    import anthropic\n>   from langchain_core.callbacks import (\n        AsyncCallbackManagerForLLMRun,\n        CallbackManagerForLLMRun,\n    )\n\n.venv-playground\\Lib\\site-packages\\langchain_anthropic\\chat_models.py:17: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nattr_name = 'AsyncCallbackManagerForLLMRun'\n\n    def __getattr__(attr_name: str) -> object:\n        module_name = _dynamic_imports.get(attr_name)\n>       result = import_attr(attr_name, module_name, __spec__.parent)\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n.venv-playground\\Lib\\site-packages\\langchain_core\\callbacks\\__init__.py:126: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nattr_name = 'AsyncCallbackManagerForLLMRun', module_name = 'manager'\npackage = 'langchain_core.callbacks'\n\n    def import_attr(\n        attr_name: str,\n        module_name: str | None,\n        package: str | None,\n    ) -> object:\n        \"\"\"Import an attribute from a module located in a package.\n    \n        This utility function is used in custom `__getattr__` methods within `__init__.py`\n        files to dynamically import attributes.\n    \n        Args:\n            attr_name: The name of the attribute to import.\n            module_name: The name of the module to import from.\n    \n                If `None`, the attribute is imported from the package itself.\n            package: The name of the package where the module is located.\n    \n        Raises:\n            ImportError: If the module cannot be found.\n            AttributeError: If the attribute does not exist in the module or package.\n    \n        Returns:\n            The imported attribute.\n        \"\"\"\n        if module_name == \"__module__\" or module_name is None:\n            try:\n                result = import_module(f\".{attr_name}\", package=package)\n            except ModuleNotFoundError:\n                msg = f\"module '{package!r}' has no attribute {attr_name!r}\"\n                raise AttributeError(msg) from None\n        else:\n            try:\n>               module = import_module(f\".{module_name}\", package=package)\n                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n.venv-playground\\Lib\\site-packages\\langchain_core\\_import_utils.py:36: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nname = '.manager', package = 'langchain_core.callbacks'\n\n    def import_module(name, package=None):\n        \"\"\"Import a module.\n    \n        The 'package' argument is required when performing a relative import. It\n        specifies the package to use as the anchor point from which to resolve the\n        relative import to an absolute import.\n    \n        \"\"\"\n        level = 0\n        if name.startswith('.'):\n            if not package:\n                raise TypeError(\"the 'package' argument is required to perform a \"\n                                f\"relative import for {name!r}\")\n            for character in name:\n                if character != '.':\n                    break\n                level += 1\n>       return _bootstrap._gcd_import(name[level:], package, level)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n..\\..\\..\\..\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\Lib\\importlib\\__init__.py:90: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\n    \"\"\"Run managers.\"\"\"\n    \n    from __future__ import annotations\n    \n    import asyncio\n    import atexit\n    import functools\n    import inspect\n    import logging\n    from abc import ABC, abstractmethod\n    from collections.abc import Callable, Mapping\n    from concurrent.futures import ThreadPoolExecutor\n    from contextlib import asynccontextmanager, contextmanager\n    from contextvars import copy_context\n    from typing import TYPE_CHECKING, Any, TypeVar, cast\n    \n    from typing_extensions import Self, override\n    \n    from langchain_core.callbacks.base import (\n        BaseCallbackHandler,\n        BaseCallbackManager,\n        Callbacks,\n        ChainManagerMixin,\n        LLMManagerMixin,\n        RetrieverManagerMixin,\n        RunManagerMixin,\n        ToolManagerMixin,\n    )\n    from langchain_core.callbacks.stdout import StdOutCallbackHandler\n    from langchain_core.globals import get_debug\n    from langchain_core.messages import BaseMessage, get_buffer_string\n    from langchain_core.utils.env import env_var_is_set\n>   from langchain_core.utils.uuid import uuid7\n\n.venv-playground\\Lib\\site-packages\\langchain_core\\callbacks\\manager.py:33: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\n    \"\"\"UUID utility functions.\n    \n    This module exports a uuid7 function to generate monotonic, time-ordered UUIDs\n    for tracing and similar operations.\n    \"\"\"\n    \n    from __future__ import annotations\n    \n    import typing\n    from uuid import UUID\n    \n>   from uuid_utils.compat import uuid7 as _uuid_utils_uuid7\n\n.venv-playground\\Lib\\site-packages\\langchain_core\\utils\\uuid.py:12: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\n    import os\n    from uuid import SafeUUID\n    \n>   from ._uuid_utils import (\n        MAX,\n        NAMESPACE_DNS,\n        NAMESPACE_OID,\n        NAMESPACE_URL,\n        NAMESPACE_X500,\n        NIL,\n        RESERVED_FUTURE,\n        RESERVED_MICROSOFT,\n        RESERVED_NCS,\n        RFC_4122,\n        UUID,\n        __version__,\n        getnode,\n        uuid1,\n        uuid3,\n        uuid4,\n        uuid5,\n        uuid6,\n        uuid7,\n        uuid8,\n    )\nE   ImportError: DLL load failed while importing _uuid_utils: An Application Control policy has blocked this file.\n\n.venv-playground\\Lib\\site-packages\\uuid_utils\\__init__.py:4: ImportError"
+    },
+    {
+      "module": "tests.unit.test_llm_structured",
+      "name": "test_recursive_schema_is_accepted_by_langchain_function_conversion",
+      "seconds": 0.07,
+      "status": "failed",
+      "message": "ImportError: DLL load failed while importing _uuid_utils: An Application Control policy has blocked this file.",
+      "details": "def test_recursive_schema_is_accepted_by_langchain_function_conversion() -> None:\n        function_calling = pytest.importorskip(\"langchain_core.utils.function_calling\")\n>       function = function_calling.convert_to_openai_function(schema_for_llm(Node))\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\ntests\\unit\\test_llm_structured.py:153: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nfunction = {'description': 'Recursive tree node.', 'properties': {'value': {'type': 'integer'}, 'children': {'items': {'$ref': '#/$defs/Node'}, 'type': 'array'}}, 'required': ['value'], 'type': 'object', ...}\nstrict = None\n\n    def convert_to_openai_function(\n        function: Mapping[str, Any] | type | Callable[..., Any] | BaseTool,\n        *,\n        strict: bool | None = None,\n    ) -> dict[str, Any]:\n        \"\"\"Convert a raw function/class to an OpenAI function.\n    \n        Args:\n            function: A dictionary, Pydantic `BaseModel` class, `TypedDict` class, a\n                LangChain `Tool` object, or a Python function.\n    \n                If a dictionary is passed in, it is assumed to already be a valid OpenAI\n                function, a JSON schema with top-level `title` key specified, an Anthropic\n                format tool, or an Amazon Bedrock Converse format tool.\n            strict: If `True`, model output is guaranteed to exactly match the JSON Schema\n                provided in the function definition.\n    \n                If `None`, `strict` argument will not be included in function definition.\n    \n        Returns:\n            A dict version of the passed in function which is compatible with the OpenAI\n                function-calling API.\n    \n        Raises:\n            ValueError: If function is not in a supported format.\n    \n        !!! warning \"Behavior changed in `langchain-core` 0.3.16\"\n    \n            `description` and `parameters` keys are now optional. Only `name` is\n            required and guaranteed to be part of the output.\n        \"\"\"\n        # Import locally to prevent circular import\n>       from langchain_core.tools import BaseTool  # noqa: PLC0415\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n.venv-playground\\Lib\\site-packages\\langchain_core\\utils\\function_calling.py:409: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nattr_name = 'BaseTool'\n\n    def __getattr__(attr_name: str) -> object:\n        module_name = _dynamic_imports.get(attr_name)\n>       result = import_attr(attr_name, module_name, __spec__.parent)\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n.venv-playground\\Lib\\site-packages\\langchain_core\\tools\\__init__.py:89: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nattr_name = 'BaseTool', module_name = 'base', package = 'langchain_core.tools'\n\n    def import_attr(\n        attr_name: str,\n        module_name: str | None,\n        package: str | None,\n    ) -> object:\n        \"\"\"Import an attribute from a module located in a package.\n    \n        This utility function is used in custom `__getattr__` methods within `__init__.py`\n        files to dynamically import attributes.\n    \n        Args:\n            attr_name: The name of the attribute to import.\n            module_name: The name of the module to import from.\n    \n                If `None`, the attribute is imported from the package itself.\n            package: The name of the package where the module is located.\n    \n        Raises:\n            ImportError: If the module cannot be found.\n            AttributeError: If the attribute does not exist in the module or package.\n    \n        Returns:\n            The imported attribute.\n        \"\"\"\n        if module_name == \"__module__\" or module_name is None:\n            try:\n                result = import_module(f\".{attr_name}\", package=package)\n            except ModuleNotFoundError:\n                msg = f\"module '{package!r}' has no attribute {attr_name!r}\"\n                raise AttributeError(msg) from None\n        else:\n            try:\n>               module = import_module(f\".{module_name}\", package=package)\n                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n.venv-playground\\Lib\\site-packages\\langchain_core\\_import_utils.py:36: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nname = '.base', package = 'langchain_core.tools'\n\n    def import_module(name, package=None):\n        \"\"\"Import a module.\n    \n        The 'package' argument is required when performing a relative import. It\n        specifies the package to use as the anchor point from which to resolve the\n        relative import to an absolute import.\n    \n        \"\"\"\n        level = 0\n        if name.startswith('.'):\n            if not package:\n                raise TypeError(\"the 'package' argument is required to perform a \"\n                                f\"relative import for {name!r}\")\n            for character in name:\n                if character != '.':\n                    break\n                level += 1\n>       return _bootstrap._gcd_import(name[level:], package, level)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n..\\..\\..\\..\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\Lib\\importlib\\__init__.py:90: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\n    \"\"\"Base classes and utilities for LangChain tools.\"\"\"\n    \n    from __future__ import annotations\n    \n    import functools\n    import inspect\n    import json\n    import logging\n    import typing\n    import warnings\n    from abc import ABC, abstractmethod\n    from collections.abc import Callable, Mapping, Sequence\n    from typing import (\n        TYPE_CHECKING,\n        Annotated,\n        Any,\n        Literal,\n        TypeVar,\n        cast,\n        get_args,\n        get_origin,\n    )\n    \n    import typing_extensions\n    from pydantic import (\n        BaseModel,\n        ConfigDict,\n        Field,\n        PrivateAttr,\n        PydanticDeprecationWarning,\n        SkipValidation,\n        ValidationError,\n        validate_arguments,\n    )\n    from pydantic.fields import FieldInfo\n    from pydantic.v1 import BaseModel as BaseModelV1\n    from pydantic.v1 import ValidationError as ValidationErrorV1\n    from pydantic.v1 import validate_arguments as validate_arguments_v1\n    from typing_extensions import Self, get_type_hints, override\n    \n>   from langchain_core.callbacks import (\n        AsyncCallbackManager,\n        CallbackManager,\n        Callbacks,\n    )\n\n.venv-playground\\Lib\\site-packages\\langchain_core\\tools\\base.py:41: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nattr_name = 'AsyncCallbackManager'\n\n    def __getattr__(attr_name: str) -> object:\n        module_name = _dynamic_imports.get(attr_name)\n>       result = import_attr(attr_name, module_name, __spec__.parent)\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n.venv-playground\\Lib\\site-packages\\langchain_core\\callbacks\\__init__.py:126: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nattr_name = 'AsyncCallbackManager', module_name = 'manager'\npackage = 'langchain_core.callbacks'\n\n    def import_attr(\n        attr_name: str,\n        module_name: str | None,\n        package: str | None,\n    ) -> object:\n        \"\"\"Import an attribute from a module located in a package.\n    \n        This utility function is used in custom `__getattr__` methods within `__init__.py`\n        files to dynamically import attributes.\n    \n        Args:\n            attr_name: The name of the attribute to import.\n            module_name: The name of the module to import from.\n    \n                If `None`, the attribute is imported from the package itself.\n            package: The name of the package where the module is located.\n    \n        Raises:\n            ImportError: If the module cannot be found.\n            AttributeError: If the attribute does not exist in the module or package.\n    \n        Returns:\n            The imported attribute.\n        \"\"\"\n        if module_name == \"__module__\" or module_name is None:\n            try:\n                result = import_module(f\".{attr_name}\", package=package)\n            except ModuleNotFoundError:\n                msg = f\"module '{package!r}' has no attribute {attr_name!r}\"\n                raise AttributeError(msg) from None\n        else:\n            try:\n>               module = import_module(f\".{module_name}\", package=package)\n                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n.venv-playground\\Lib\\site-packages\\langchain_core\\_import_utils.py:36: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nname = '.manager', package = 'langchain_core.callbacks'\n\n    def import_module(name, package=None):\n        \"\"\"Import a module.\n    \n        The 'package' argument is required when performing a relative import. It\n        specifies the package to use as the anchor point from which to resolve the\n        relative import to an absolute import.\n    \n        \"\"\"\n        level = 0\n        if name.startswith('.'):\n            if not package:\n                raise TypeError(\"the 'package' argument is required to perform a \"\n                                f\"relative import for {name!r}\")\n            for character in name:\n                if character != '.':\n                    break\n                level += 1\n>       return _bootstrap._gcd_import(name[level:], package, level)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n..\\..\\..\\..\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\Lib\\importlib\\__init__.py:90: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\n    \"\"\"Run managers.\"\"\"\n    \n    from __future__ import annotations\n    \n    import asyncio\n    import atexit\n    import functools\n    import inspect\n    import logging\n    from abc import ABC, abstractmethod\n    from collections.abc import Callable, Mapping\n    from concurrent.futures import ThreadPoolExecutor\n    from contextlib import asynccontextmanager, contextmanager\n    from contextvars import copy_context\n    from typing import TYPE_CHECKING, Any, TypeVar, cast\n    \n    from typing_extensions import Self, override\n    \n    from langchain_core.callbacks.base import (\n        BaseCallbackHandler,\n        BaseCallbackManager,\n        Callbacks,\n        ChainManagerMixin,\n        LLMManagerMixin,\n        RetrieverManagerMixin,\n        RunManagerMixin,\n        ToolManagerMixin,\n    )\n    from langchain_core.callbacks.stdout import StdOutCallbackHandler\n    from langchain_core.globals import get_debug\n    from langchain_core.messages import BaseMessage, get_buffer_string\n    from langchain_core.utils.env import env_var_is_set\n>   from langchain_core.utils.uuid import uuid7\n\n.venv-playground\\Lib\\site-packages\\langchain_core\\callbacks\\manager.py:33: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\n    \"\"\"UUID utility functions.\n    \n    This module exports a uuid7 function to generate monotonic, time-ordered UUIDs\n    for tracing and similar operations.\n    \"\"\"\n    \n    from __future__ import annotations\n    \n    import typing\n    from uuid import UUID\n    \n>   from uuid_utils.compat import uuid7 as _uuid_utils_uuid7\n\n.venv-playground\\Lib\\site-packages\\langchain_core\\utils\\uuid.py:12: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\n    import os\n    from uuid import SafeUUID\n    \n>   from ._uuid_utils import (\n        MAX,\n        NAMESPACE_DNS,\n        NAMESPACE_OID,\n        NAMESPACE_URL,\n        NAMESPACE_X500,\n        NIL,\n        RESERVED_FUTURE,\n        RESERVED_MICROSOFT,\n        RESERVED_NCS,\n        RFC_4122,\n        UUID,\n        __version__,\n        getnode,\n        uuid1,\n        uuid3,\n        uuid4,\n        uuid5,\n        uuid6,\n        uuid7,\n        uuid8,\n    )\nE   ImportError: DLL load failed while importing _uuid_utils: An Application Control policy has blocked this file.\n\n.venv-playground\\Lib\\site-packages\\uuid_utils\\__init__.py:4: ImportError"
+    },
+    {
+      "module": "tests.unit.test_llm_structured",
+      "name": "test_schema_is_accepted_by_langchain_openai_function_conversion",
+      "seconds": 0.057,
+      "status": "failed",
+      "message": "ImportError: DLL load failed while importing _uuid_utils: An Application Control policy has blocked this file.",
+      "details": "def test_schema_is_accepted_by_langchain_openai_function_conversion() -> None:\n        function_calling = pytest.importorskip(\"langchain_core.utils.function_calling\")\n>       function = function_calling.convert_to_openai_function(schema_for_llm(Person))\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\ntests\\unit\\test_llm_structured.py:176: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nfunction = {'description': 'A person record.', 'properties': {'name': {'type': 'string'}, 'kind': {'type': 'string', 'enum': ['cu...treet', 'number'], 'type': 'object', ...}, 'type': 'array'}, ...}, 'required': ['name', 'home'], 'type': 'object', ...}\nstrict = None\n\n    def convert_to_openai_function(\n        function: Mapping[str, Any] | type | Callable[..., Any] | BaseTool,\n        *,\n        strict: bool | None = None,\n    ) -> dict[str, Any]:\n        \"\"\"Convert a raw function/class to an OpenAI function.\n    \n        Args:\n            function: A dictionary, Pydantic `BaseModel` class, `TypedDict` class, a\n                LangChain `Tool` object, or a Python function.\n    \n                If a dictionary is passed in, it is assumed to already be a valid OpenAI\n                function, a JSON schema with top-level `title` key specified, an Anthropic\n                format tool, or an Amazon Bedrock Converse format tool.\n            strict: If `True`, model output is guaranteed to exactly match the JSON Schema\n                provided in the function definition.\n    \n                If `None`, `strict` argument will not be included in function definition.\n    \n        Returns:\n            A dict version of the passed in function which is compatible with the OpenAI\n                function-calling API.\n    \n        Raises:\n            ValueError: If function is not in a supported format.\n    \n        !!! warning \"Behavior changed in `langchain-core` 0.3.16\"\n    \n            `description` and `parameters` keys are now optional. Only `name` is\n            required and guaranteed to be part of the output.\n        \"\"\"\n        # Import locally to prevent circular import\n>       from langchain_core.tools import BaseTool  # noqa: PLC0415\n        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n.venv-playground\\Lib\\site-packages\\langchain_core\\utils\\function_calling.py:409: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nattr_name = 'BaseTool'\n\n    def __getattr__(attr_name: str) -> object:\n        module_name = _dynamic_imports.get(attr_name)\n>       result = import_attr(attr_name, module_name, __spec__.parent)\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n.venv-playground\\Lib\\site-packages\\langchain_core\\tools\\__init__.py:89: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nattr_name = 'BaseTool', module_name = 'base', package = 'langchain_core.tools'\n\n    def import_attr(\n        attr_name: str,\n        module_name: str | None,\n        package: str | None,\n    ) -> object:\n        \"\"\"Import an attribute from a module located in a package.\n    \n        This utility function is used in custom `__getattr__` methods within `__init__.py`\n        files to dynamically import attributes.\n    \n        Args:\n            attr_name: The name of the attribute to import.\n            module_name: The name of the module to import from.\n    \n                If `None`, the attribute is imported from the package itself.\n            package: The name of the package where the module is located.\n    \n        Raises:\n            ImportError: If the module cannot be found.\n            AttributeError: If the attribute does not exist in the module or package.\n    \n        Returns:\n            The imported attribute.\n        \"\"\"\n        if module_name == \"__module__\" or module_name is None:\n            try:\n                result = import_module(f\".{attr_name}\", package=package)\n            except ModuleNotFoundError:\n                msg = f\"module '{package!r}' has no attribute {attr_name!r}\"\n                raise AttributeError(msg) from None\n        else:\n            try:\n>               module = import_module(f\".{module_name}\", package=package)\n                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n.venv-playground\\Lib\\site-packages\\langchain_core\\_import_utils.py:36: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nname = '.base', package = 'langchain_core.tools'\n\n    def import_module(name, package=None):\n        \"\"\"Import a module.\n    \n        The 'package' argument is required when performing a relative import. It\n        specifies the package to use as the anchor point from which to resolve the\n        relative import to an absolute import.\n    \n        \"\"\"\n        level = 0\n        if name.startswith('.'):\n            if not package:\n                raise TypeError(\"the 'package' argument is required to perform a \"\n                                f\"relative import for {name!r}\")\n            for character in name:\n                if character != '.':\n                    break\n                level += 1\n>       return _bootstrap._gcd_import(name[level:], package, level)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n..\\..\\..\\..\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\Lib\\importlib\\__init__.py:90: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\n    \"\"\"Base classes and utilities for LangChain tools.\"\"\"\n    \n    from __future__ import annotations\n    \n    import functools\n    import inspect\n    import json\n    import logging\n    import typing\n    import warnings\n    from abc import ABC, abstractmethod\n    from collections.abc import Callable, Mapping, Sequence\n    from typing import (\n        TYPE_CHECKING,\n        Annotated,\n        Any,\n        Literal,\n        TypeVar,\n        cast,\n        get_args,\n        get_origin,\n    )\n    \n    import typing_extensions\n    from pydantic import (\n        BaseModel,\n        ConfigDict,\n        Field,\n        PrivateAttr,\n        PydanticDeprecationWarning,\n        SkipValidation,\n        ValidationError,\n        validate_arguments,\n    )\n    from pydantic.fields import FieldInfo\n    from pydantic.v1 import BaseModel as BaseModelV1\n    from pydantic.v1 import ValidationError as ValidationErrorV1\n    from pydantic.v1 import validate_arguments as validate_arguments_v1\n    from typing_extensions import Self, get_type_hints, override\n    \n>   from langchain_core.callbacks import (\n        AsyncCallbackManager,\n        CallbackManager,\n        Callbacks,\n    )\n\n.venv-playground\\Lib\\site-packages\\langchain_core\\tools\\base.py:41: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nattr_name = 'AsyncCallbackManager'\n\n    def __getattr__(attr_name: str) -> object:\n        module_name = _dynamic_imports.get(attr_name)\n>       result = import_attr(attr_name, module_name, __spec__.parent)\n                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n.venv-playground\\Lib\\site-packages\\langchain_core\\callbacks\\__init__.py:126: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nattr_name = 'AsyncCallbackManager', module_name = 'manager'\npackage = 'langchain_core.callbacks'\n\n    def import_attr(\n        attr_name: str,\n        module_name: str | None,\n        package: str | None,\n    ) -> object:\n        \"\"\"Import an attribute from a module located in a package.\n    \n        This utility function is used in custom `__getattr__` methods within `__init__.py`\n        files to dynamically import attributes.\n    \n        Args:\n            attr_name: The name of the attribute to import.\n            module_name: The name of the module to import from.\n    \n                If `None`, the attribute is imported from the package itself.\n            package: The name of the package where the module is located.\n    \n        Raises:\n            ImportError: If the module cannot be found.\n            AttributeError: If the attribute does not exist in the module or package.\n    \n        Returns:\n            The imported attribute.\n        \"\"\"\n        if module_name == \"__module__\" or module_name is None:\n            try:\n                result = import_module(f\".{attr_name}\", package=package)\n            except ModuleNotFoundError:\n                msg = f\"module '{package!r}' has no attribute {attr_name!r}\"\n                raise AttributeError(msg) from None\n        else:\n            try:\n>               module = import_module(f\".{module_name}\", package=package)\n                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n.venv-playground\\Lib\\site-packages\\langchain_core\\_import_utils.py:36: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\nname = '.manager', package = 'langchain_core.callbacks'\n\n    def import_module(name, package=None):\n        \"\"\"Import a module.\n    \n        The 'package' argument is required when performing a relative import. It\n        specifies the package to use as the anchor point from which to resolve the\n        relative import to an absolute import.\n    \n        \"\"\"\n        level = 0\n        if name.startswith('.'):\n            if not package:\n                raise TypeError(\"the 'package' argument is required to perform a \"\n                                f\"relative import for {name!r}\")\n            for character in name:\n                if character != '.':\n                    break\n                level += 1\n>       return _bootstrap._gcd_import(name[level:], package, level)\n               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\n..\\..\\..\\..\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\python\\Lib\\importlib\\__init__.py:90: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\n    \"\"\"Run managers.\"\"\"\n    \n    from __future__ import annotations\n    \n    import asyncio\n    import atexit\n    import functools\n    import inspect\n    import logging\n    from abc import ABC, abstractmethod\n    from collections.abc import Callable, Mapping\n    from concurrent.futures import ThreadPoolExecutor\n    from contextlib import asynccontextmanager, contextmanager\n    from contextvars import copy_context\n    from typing import TYPE_CHECKING, Any, TypeVar, cast\n    \n    from typing_extensions import Self, override\n    \n    from langchain_core.callbacks.base import (\n        BaseCallbackHandler,\n        BaseCallbackManager,\n        Callbacks,\n        ChainManagerMixin,\n        LLMManagerMixin,\n        RetrieverManagerMixin,\n        RunManagerMixin,\n        ToolManagerMixin,\n    )\n    from langchain_core.callbacks.stdout import StdOutCallbackHandler\n    from langchain_core.globals import get_debug\n    from langchain_core.messages import BaseMessage, get_buffer_string\n    from langchain_core.utils.env import env_var_is_set\n>   from langchain_core.utils.uuid import uuid7\n\n.venv-playground\\Lib\\site-packages\\langchain_core\\callbacks\\manager.py:33: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\n    \"\"\"UUID utility functions.\n    \n    This module exports a uuid7 function to generate monotonic, time-ordered UUIDs\n    for tracing and similar operations.\n    \"\"\"\n    \n    from __future__ import annotations\n    \n    import typing\n    from uuid import UUID\n    \n>   from uuid_utils.compat import uuid7 as _uuid_utils_uuid7\n\n.venv-playground\\Lib\\site-packages\\langchain_core\\utils\\uuid.py:12: \n_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _\n\n    import os\n    from uuid import SafeUUID\n    \n>   from ._uuid_utils import (\n        MAX,\n        NAMESPACE_DNS,\n        NAMESPACE_OID,\n        NAMESPACE_URL,\n        NAMESPACE_X500,\n        NIL,\n        RESERVED_FUTURE,\n        RESERVED_MICROSOFT,\n        RESERVED_NCS,\n        RFC_4122,\n        UUID,\n        __version__,\n        getnode,\n        uuid1,\n        uuid3,\n        uuid4,\n        uuid5,\n        uuid6,\n        uuid7,\n        uuid8,\n    )\nE   ImportError: DLL load failed while importing _uuid_utils: An Application Control policy has blocked this file.\n\n.venv-playground\\Lib\\site-packages\\uuid_utils\\__init__.py:4: ImportError"
+    }
+  ],
+  "lint_findings": [
+    {
+      "cell": null,
+      "code": "SIM905",
+      "end_location": {
+        "column": 10,
+        "row": 42
+      },
+      "filename": "C:\\Users\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\builder\\checks\\code_sandbox.py",
+      "fix": {
+        "applicability": "safe",
+        "edits": [
+          {
+            "content": "[\"abs\", \"all\", \"any\", \"bool\", \"bytes\", \"chr\", \"dict\", \"divmod\", \"enumerate\", \"filter\", \"float\", \"format\", \"frozenset\", \"getattr\", \"hasattr\", \"hash\", \"int\", \"isinstance\", \"issubclass\", \"iter\", \"len\", \"list\", \"map\", \"max\", \"min\", \"next\", \"ord\", \"pow\", \"range\", \"repr\", \"reversed\", \"round\", \"set\", \"slice\", \"sorted\", \"str\", \"sum\", \"tuple\", \"zip\", \"print\", \"callable\", \"ArithmeticError\", \"AssertionError\", \"AttributeError\", \"BaseException\", \"Exception\", \"IndexError\", \"KeyError\", \"LookupError\", \"NameError\", \"OverflowError\", \"RuntimeError\", \"StopIteration\", \"TypeError\", \"ValueError\", \"ZeroDivisionError\", \"True\", \"False\", \"None\", \"NotImplemented\", \"Ellipsis\"]",
+            "end_location": {
+              "column": 10,
+              "row": 42
+            },
+            "location": {
+              "column": 23,
+              "row": 35
+            }
+          }
+        ],
+        "message": "Replace with list literal"
+      },
+      "location": {
+        "column": 23,
+        "row": 35
+      },
+      "message": "Consider using a list literal instead of `str.split`",
+      "name": "split-static-string",
+      "noqa_row": 35,
+      "severity": "error",
+      "url": "https://docs.astral.sh/ruff/rules/split-static-string"
+    },
+    {
+      "cell": null,
+      "code": "RUF100",
+      "end_location": {
+        "column": 52,
+        "row": 81
+      },
+      "filename": "C:\\Users\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\builder\\checks\\code_sandbox.py",
+      "fix": {
+        "applicability": "safe",
+        "edits": [
+          {
+            "content": "",
+            "end_location": {
+              "column": 95,
+              "row": 81
+            },
+            "location": {
+              "column": 38,
+              "row": 81
+            }
+          }
+        ],
+        "message": "Remove unused `noqa` directive"
+      },
+      "location": {
+        "column": 40,
+        "row": 81
+      },
+      "message": "Unused `noqa` directive (non-enabled: `S102`)",
+      "name": "unused-noqa",
+      "noqa_row": 81,
+      "severity": "error",
+      "url": "https://docs.astral.sh/ruff/rules/unused-noqa"
+    },
+    {
+      "cell": null,
+      "code": "RUF100",
+      "end_location": {
+        "column": 106,
+        "row": 97
+      },
+      "filename": "C:\\Users\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\builder\\checks\\code_sandbox.py",
+      "fix": {
+        "applicability": "safe",
+        "edits": [
+          {
+            "content": "",
+            "end_location": {
+              "column": 106,
+              "row": 97
+            },
+            "location": {
+              "column": 92,
+              "row": 97
+            }
+          }
+        ],
+        "message": "Remove unused `noqa` directive"
+      },
+      "location": {
+        "column": 94,
+        "row": 97
+      },
+      "message": "Unused `noqa` directive (non-enabled: `A002`)",
+      "name": "unused-noqa",
+      "noqa_row": 97,
+      "severity": "error",
+      "url": "https://docs.astral.sh/ruff/rules/unused-noqa"
+    },
+    {
+      "cell": null,
+      "code": "RUF100",
+      "end_location": {
+        "column": 54,
+        "row": 115
+      },
+      "filename": "C:\\Users\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\builder\\checks\\code_sandbox.py",
+      "fix": {
+        "applicability": "safe",
+        "edits": [
+          {
+            "content": "",
+            "end_location": {
+              "column": 54,
+              "row": 115
+            },
+            "location": {
+              "column": 40,
+              "row": 115
+            }
+          }
+        ],
+        "message": "Remove unused `noqa` directive"
+      },
+      "location": {
+        "column": 42,
+        "row": 115
+      },
+      "message": "Unused `noqa` directive (non-enabled: `A002`)",
+      "name": "unused-noqa",
+      "noqa_row": 115,
+      "severity": "error",
+      "url": "https://docs.astral.sh/ruff/rules/unused-noqa"
+    },
+    {
+      "cell": null,
+      "code": "UP034",
+      "end_location": {
+        "column": 85,
+        "row": 574
+      },
+      "filename": "C:\\Users\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\builder\\checks\\lint.py",
+      "fix": {
+        "applicability": "safe",
+        "edits": [
+          {
+            "content": "self.wf.get(\"test_variables\") or {}",
+            "end_location": {
+              "column": 85,
+              "row": 574
+            },
+            "location": {
+              "column": 48,
+              "row": 574
+            }
+          }
+        ],
+        "message": "Remove extraneous parentheses"
+      },
+      "location": {
+        "column": 48,
+        "row": 574
+      },
+      "message": "Avoid extraneous parentheses",
+      "name": "extraneous-parentheses",
+      "noqa_row": 574,
+      "severity": "error",
+      "url": "https://docs.astral.sh/ruff/rules/extraneous-parentheses"
+    },
+    {
+      "cell": null,
+      "code": "UP034",
+      "end_location": {
+        "column": 78,
+        "row": 654
+      },
+      "filename": "C:\\Users\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\builder\\checks\\lint.py",
+      "fix": {
+        "applicability": "safe",
+        "edits": [
+          {
+            "content": "(props.get(\"body\") or {}).get(\"properties\") or {}",
+            "end_location": {
+              "column": 78,
+              "row": 654
+            },
+            "location": {
+              "column": 27,
+              "row": 654
+            }
+          }
+        ],
+        "message": "Remove extraneous parentheses"
+      },
+      "location": {
+        "column": 27,
+        "row": 654
+      },
+      "message": "Avoid extraneous parentheses",
+      "name": "extraneous-parentheses",
+      "noqa_row": 654,
+      "severity": "error",
+      "url": "https://docs.astral.sh/ruff/rules/extraneous-parentheses"
+    },
+    {
+      "cell": null,
+      "code": "F541",
+      "end_location": {
+        "column": 121,
+        "row": 227
+      },
+      "filename": "C:\\Users\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\builder\\compiler\\toolset.py",
+      "fix": {
+        "applicability": "safe",
+        "edits": [
+          {
+            "content": "\"Record why ONE product ended without a promise. CALL it once for every product that gets no \"",
+            "end_location": {
+              "column": 121,
+              "row": 227
+            },
+            "location": {
+              "column": 26,
+              "row": 227
+            }
+          }
+        ],
+        "message": "Remove extraneous `f` prefix"
+      },
+      "location": {
+        "column": 26,
+        "row": 227
+      },
+      "message": "f-string without any placeholders",
+      "name": "f-string-missing-placeholders",
+      "noqa_row": 227,
+      "severity": "error",
+      "url": "https://docs.astral.sh/ruff/rules/f-string-missing-placeholders"
+    },
+    {
+      "cell": null,
+      "code": "F541",
+      "end_location": {
+        "column": 72,
+        "row": 228
+      },
+      "filename": "C:\\Users\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\builder\\compiler\\toolset.py",
+      "fix": {
+        "applicability": "safe",
+        "edits": [
+          {
+            "content": "\"promise, with that product's id and reason.\"",
+            "end_location": {
+              "column": 72,
+              "row": 228
+            },
+            "location": {
+              "column": 26,
+              "row": 228
+            }
+          }
+        ],
+        "message": "Remove extraneous `f` prefix"
+      },
+      "location": {
+        "column": 26,
+        "row": 228
+      },
+      "message": "f-string without any placeholders",
+      "name": "f-string-missing-placeholders",
+      "noqa_row": 228,
+      "severity": "error",
+      "url": "https://docs.astral.sh/ruff/rules/f-string-missing-placeholders"
+    },
+    {
+      "cell": null,
+      "code": "RUF100",
+      "end_location": {
+        "column": 38,
+        "row": 735
+      },
+      "filename": "C:\\Users\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\evals\\reference\\brief_a_ref.py",
+      "fix": {
+        "applicability": "safe",
+        "edits": [
+          {
+            "content": "",
+            "end_location": {
+              "column": 73,
+              "row": 735
+            },
+            "location": {
+              "column": 21,
+              "row": 735
+            }
+          }
+        ],
+        "message": "Remove unused `noqa` directive"
+      },
+      "location": {
+        "column": 23,
+        "row": 735
+      },
+      "message": "Unused `noqa` directive (non-enabled: `PLC0415`)",
+      "name": "unused-noqa",
+      "noqa_row": 735,
+      "severity": "error",
+      "url": "https://docs.astral.sh/ruff/rules/unused-noqa"
+    },
+    {
+      "cell": null,
+      "code": "RUF100",
+      "end_location": {
+        "column": 49,
+        "row": 96
+      },
+      "filename": "C:\\Users\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\evals\\triage.py",
+      "fix": {
+        "applicability": "safe",
+        "edits": [
+          {
+            "content": "",
+            "end_location": {
+              "column": 80,
+              "row": 96
+            },
+            "location": {
+              "column": 33,
+              "row": 96
+            }
+          }
+        ],
+        "message": "Remove unused `noqa` directive"
+      },
+      "location": {
+        "column": 35,
+        "row": 96
+      },
+      "message": "Unused `noqa` directive (non-enabled: `BLE001`)",
+      "name": "unused-noqa",
+      "noqa_row": 96,
+      "severity": "error",
+      "url": "https://docs.astral.sh/ruff/rules/unused-noqa"
+    }
+  ],
+  "live_tests_run": 0,
+  "coverage_measurement": null,
+  "environment": {
+    "python": "3.12.14 (main, Aug 25 2026, 14:01:42) [MSC v.1944 64 bit (AMD64)]",
+    "executable": "C:\\Users\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\.venv-playground\\Scripts\\python.exe",
+    "packages": {
+      "pytest": "9.1.1",
+      "pytest-asyncio": "1.4.0",
+      "ruff": "0.17.0",
+      "streamlit": "1.65.0",
+      "pydantic": "2.14.0",
+      "langchain-core": "1.6.9",
+      "langchain-anthropic": "1.7.5",
+      "langchain-openai": "1.7.0",
+      "langgraph": "1.2.14",
+      "anthropic": "1.13.0",
+      "openai": "3.28.0",
+      "pypdf": "6.20.0",
+      "uuid-utils": "0.17.1",
+      "coverage": null,
+      "pytest-cov": null
+    },
+    "coverage_available": false,
+    "plugin_autoload": false,
+    "enabled_plugins": [
+      "pytest_asyncio.plugin"
+    ],
+    "selection": "not live"
+  },
+  "formatting_files": [
+    "builder\\checks\\code_sandbox.py",
+    "builder\\checks\\coverage.py",
+    "builder\\checks\\lint.py",
+    "builder\\compiler\\codegen.py",
+    "builder\\compiler\\context.py",
+    "builder\\compiler\\naming.py",
+    "builder\\compiler\\nodes.py",
+    "builder\\compiler\\prose.py",
+    "builder\\compiler\\tools.py",
+    "builder\\compiler\\toolset.py",
+    "builder\\compiler\\workflow_model.py",
+    "builder\\llm\\providers.py",
+    "builder\\policy\\intents.py",
+    "builder\\policy\\ir.py",
+    "builder\\policy\\outcomes.py",
+    "builder\\understand\\extract.py",
+    "builder\\understand\\fixes.py",
+    "builder\\understand\\grounding.py",
+    "builder\\understand\\ledger.py",
+    "builder\\understand\\prose.py",
+    "builder\\understand\\repair.py",
+    "builder\\understand\\validate.py",
+    "evals\\reference\\brief_a_ref.py",
+    "evals\\triage.py",
+    "tests\\unit\\test_codegen.py",
+    "tests\\unit\\test_grounding.py",
+    "tests\\unit\\test_llm_gateway.py",
+    "tests\\unit\\test_money.py",
+    "tests\\unit\\test_outcomes.py",
+    "tests\\unit\\test_policy_ir.py",
+    "tests\\unit\\test_understand_fake_llm.py",
+    "tests\\unit\\test_validate_policy.py"
+  ],
+  "formatting_file_count": 32,
+  "run_completed_utc": "2026-10-10T18:02:50.385452+00:00",
+  "coverage_gaps": [
+    "No real provider calls, Freya deployment, live practice customers, transcript policy/honesty judge, or hidden cases were executed.",
+    "No integration/e2e/compliance suite exists. The compliance criterion in docs/TASKS.md is not satisfied by this unit suite.",
+    "builder/build.py is absent; a complete automated brief-to-agent build/deploy and the build-time requirement remain unverified.",
+    "New compiler assembly/tool/hook modules and workflow lint/rule-coverage modules lack direct tests; compiler tests concentrate on executable snippets.",
+    "Understanding tests use fixture-backed fake LLM responses; they do not measure extraction quality on unseen raw briefs.",
+    "UI upload paths have less behavioral coverage than bundled input, editor, navigation, and mocked live paths.",
+    "No measured line/branch coverage: coverage and pytest-cov are not installed in this environment."
+  ],
+  "commands": [
+    "$env:PYTEST_DISABLE_PLUGIN_AUTOLOAD = '1'",
+    ".venv-playground/Scripts/python.exe -m pytest tests -m 'not live' -p pytest_asyncio.plugin -o 'addopts=' -vv -ra --tb=long --durations=30 --junitxml='C:/Users/Felladien/Documents/Projects/Python/FreyaHackaton/results/test-runs/20261010175827Z/pytest.xml' --basetemp='C:/Users/Felladien/Documents/Projects/Python/FreyaHackaton/results/test-runs/20261010175827Z/tmp'",
+    ".venv-playground/Scripts/python.exe -m ruff check builder tests streamlit_app.py --output-format json",
+    ".venv-playground/Scripts/python.exe -m ruff check evals --output-format json",
+    ".venv-playground/Scripts/python.exe -m ruff format --check builder tests streamlit_app.py",
+    ".venv-playground/Scripts/python.exe -m ruff format --check evals"
+  ],
+  "groups": [
+    {
+      "area": "Inputs and tool API",
+      "passed": 81,
+      "failed": 0,
+      "total": 81
+    },
+    {
+      "area": "Policy IR and understanding",
+      "passed": 117,
+      "failed": 0,
+      "total": 117
+    },
+    {
+      "area": "Calendar, money, outcomes and robustness",
+      "passed": 231,
+      "failed": 0,
+      "total": 231
+    },
+    {
+      "area": "Generated workflow snippets",
+      "passed": 133,
+      "failed": 0,
+      "total": 133
+    },
+    {
+      "area": "Freya adapters and practice",
+      "passed": 107,
+      "failed": 0,
+      "total": 107
+    },
+    {
+      "area": "Playground, monitor and diagnostics",
+      "passed": 89,
+      "failed": 0,
+      "total": 89
+    },
+    {
+      "area": "LLM subsystem",
+      "passed": 184,
+      "failed": 3,
+      "total": 187
+    },
+    {
+      "area": "Runtime settings, budget and trace",
+      "passed": 69,
+      "failed": 0,
+      "total": 69
+    }
+  ]
+}

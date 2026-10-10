@@ -1,0 +1,18 @@
+MEMO
+
+To:      Digital Channels Team, Collections Operations
+From:    Priya Raman, Head of Collections Operations
+Date:    2 November 2026
+Subject: Two changes to the arrears assistant rules - effective immediately
+
+Team,
+
+after the risk committee meeting on Friday two values in the policy extract (version 3) and in my mail of 26 October change with immediate effect. Everything else stays as written.
+
+1. Identity check: the check now ends after THREE wrong answers in total (not four). The text for the customer after the check ended is unchanged.
+2. Red band (31-60 days overdue): the deadline is the 2nd business day after the call date (replaces the 3rd business day in 4.2). Green and amber are unchanged.
+
+Please do not apply any other change from the draft that circulated on Friday (the 5-band model); it was not approved.
+
+Regards,
+Priya Raman

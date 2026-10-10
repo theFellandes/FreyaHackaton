@@ -1,0 +1,960 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites name="pytest tests"><testsuite name="pytest" errors="0" failures="3" skipped="0" tests="1014" time="25.037" timestamp="2026-10-10T20:59:01.319882+03:00" hostname="DESKTOP-4SB39J1"><testcase classname="tests.unit.test_brief_loader" name="test_kit_markdown_brief_is_loaded_verbatim" time="0.002" /><testcase classname="tests.unit.test_brief_loader" name="test_crlf_bom_and_lone_cr_are_normalised" time="0.003" /><testcase classname="tests.unit.test_brief_loader" name="test_utf16_and_legacy_encodings" time="0.005" /><testcase classname="tests.unit.test_brief_loader" name="test_large_text_is_never_truncated" time="0.012" /><testcase classname="tests.unit.test_brief_loader" name="test_csv_and_tsv_are_kept_raw" time="0.004" /><testcase classname="tests.unit.test_brief_loader" name="test_json_is_pretty_printed_and_invalid_json_kept" time="0.003" /><testcase classname="tests.unit.test_brief_loader" name="test_html_is_stripped_with_line_structure" time="0.003" /><testcase classname="tests.unit.test_brief_loader" name="test_html_to_text_handles_self_closing_breaks" time="0.001" /><testcase classname="tests.unit.test_brief_loader" name="test_email_headers_body_and_attachments" time="0.075" /><testcase classname="tests.unit.test_brief_loader" name="test_html_only_email_and_forwarded_message" time="0.006" /><testcase classname="tests.unit.test_brief_loader" name="test_pdf_pages_are_extracted" time="0.004" /><testcase classname="tests.unit.test_brief_loader" name="test_pdf_without_pypdf_is_an_input_error" time="0.002" /><testcase classname="tests.unit.test_brief_loader" name="test_damaged_pdf_is_an_input_error" time="0.002" /><testcase classname="tests.unit.test_brief_loader" name="test_docx_and_unknown_extensions" time="0.006" /><testcase classname="tests.unit.test_brief_loader" name="test_kind_for[a.md-markdown]" time="0.001" /><testcase classname="tests.unit.test_brief_loader" name="test_kind_for[a.MARKDOWN-markdown]" time="0.001" /><testcase classname="tests.unit.test_brief_loader" name="test_kind_for[a.txt-text]" time="0.001" /><testcase classname="tests.unit.test_brief_loader" name="test_kind_for[a.eml-email]" time="0.001" /><testcase classname="tests.unit.test_brief_loader" name="test_kind_for[a.csv-csv]" time="0.001" /><testcase classname="tests.unit.test_brief_loader" name="test_kind_for[a.json-json]" time="0.001" /><testcase classname="tests.unit.test_brief_loader" name="test_kind_for[a.pdf-pdf]" time="0.001" /><testcase classname="tests.unit.test_brief_loader" name="test_kind_for[a.htm-html]" time="0.001" /><testcase classname="tests.unit.test_brief_loader" name="test_kind_for[a.xhtml-html]" time="0.001" /><testcase classname="tests.unit.test_brief_loader" name="test_kind_for[a.rtf-other]" time="0.001" /><testcase classname="tests.unit.test_brief_loader" name="test_kind_for[a-other]" time="0.001" /><testcase classname="tests.unit.test_brief_loader" name="test_bundle_combined_text_format_and_order" time="0.003" /><testcase classname="tests.unit.test_brief_loader" name="test_bundle_hash_is_content_based_and_order_sensitive" time="0.004" /><testcase classname="tests.unit.test_brief_loader" name="test_bundle_round_trips_through_json" time="0.001" /><testcase classname="tests.unit.test_brief_loader" name="test_errors" time="0.002" /><testcase classname="tests.unit.test_brief_loader" name="test_empty_file_loads_with_a_warning" time="0.003" /><testcase classname="tests.unit.test_budget" name="test_stage_estimates_match_the_contract" time="0.001" /><testcase classname="tests.unit.test_budget" name="test_elapsed_remaining_and_expiry_follow_the_clock" time="0.001" /><testcase classname="tests.unit.test_budget" name="test_allows_keeps_the_reserve_free" time="0.001" /><testcase classname="tests.unit.test_budget" name="test_allows_rejects_negative_inputs" time="0.001" /><testcase classname="tests.unit.test_budget" name="test_allows_stage_uses_estimates" time="0.001" /><testcase classname="tests.unit.test_budget" name="test_deadline_is_on_the_budget_clock" time="0.001" /><testcase classname="tests.unit.test_budget" name="test_invalid_totals_are_rejected[0]" time="0.001" /><testcase classname="tests.unit.test_budget" name="test_invalid_totals_are_rejected[-1]" time="0.001" /><testcase classname="tests.unit.test_budget" name="test_invalid_totals_are_rejected[nan]" time="0.001" /><testcase classname="tests.unit.test_budget" name="test_infinite_budget_never_expires" time="0.001" /><testcase classname="tests.unit.test_budget" name="test_snapshot_and_repr" time="0.001" /><testcase classname="tests.unit.test_budget" name="test_default_clock_is_monotonic_and_real" time="0.000" /><testcase classname="tests.unit.test_calendar" name="test_calendar_from_ir" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_is_business_day[2026-10-14-True-business day]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_is_business_day[2026-10-17-False-weekend]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_is_business_day[2026-10-18-False-weekend]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_is_business_day[2026-10-26-False-holiday]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_is_business_day[2026-10-27-True-business day]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_is_business_day[2026-11-11-False-holiday]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_is_business_day[2026-12-25-False-holiday]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_is_business_day[2027-01-01-False-holiday]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_is_business_day[2027-01-04-True-business day]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_next_business_day[2026-10-26-2026-10-27]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_next_business_day[2026-10-23-2026-10-27]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_next_business_day[2026-10-24-2026-10-27]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_next_business_day[2026-11-10-2026-11-12]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_next_business_day[2026-11-25-2026-11-27]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_next_business_day[2026-12-24-2026-12-28]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_next_business_day[2026-12-31-2027-01-04]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_next_and_previous_business_day_include_self" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_add_business_days_strictly_after_today" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_business_days_between_is_the_inverse_of_add" time="0.003" /><testcase classname="tests.unit.test_calendar" name="test_list_business_days" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_signed_business_day_count_from_a_non_business_day" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_promise_date_suggestions_never_offer_forbidden_today[2032-01-20]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_promise_date_suggestions_never_offer_forbidden_today[2032-01-10]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_callback_midnight_window_endpoint_is_supported[False]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_callback_midnight_window_endpoint_is_supported[True]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_last_business_day_of_week" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_weekday_phrases_following_calendar_week[2026-10-14-friday-this-2026-10-16]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_weekday_phrases_following_calendar_week[2026-10-14-friday-next-2026-10-23]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_weekday_phrases_following_calendar_week[2026-10-14-monday-next-2026-10-19]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_weekday_phrases_following_calendar_week[2026-10-14-monday-this-2026-10-12]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_weekday_phrases_following_calendar_week[2026-10-14-saturday-this-2026-10-17]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_weekday_phrases_following_calendar_week[2026-10-14-sunday-next-2026-10-25]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_weekday_phrases_following_calendar_week[2026-10-14-wednesday-this-2026-10-14]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_weekday_phrases_following_calendar_week[2026-10-16-friday-this-2026-10-16]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_weekday_phrases_following_calendar_week[2026-10-16-friday-next-2026-10-23]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_weekday_phrases_following_calendar_week[2026-10-22-monday-next-2026-10-26]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_weekday_phrases_following_calendar_week[2026-12-23-friday-this-2026-12-25]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_weekday_phrases_following_calendar_week[2026-12-23-friday-next-2027-01-01]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_weekday_phrases_following_calendar_week[2026-10-18-friday-this-2026-10-16]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_weekday_phrases_following_calendar_week[2026-10-18-friday-next-2026-10-23]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_weekday_phrases_next_occurrence" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_weekday_number" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_calendar_rejects_empty_weekdays_and_endless_scans" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_parse_now[2026-10-14T11:00-expected0]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_parse_now[2026-10-14T11:00:00-expected1]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_parse_now[2026-10-14T11:00:30.250-expected2]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_parse_now[2026-10-14 11:00-expected3]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_parse_now[2026-10-14T11:00Z-expected4]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_parse_now[2026-10-14T11:00:00+02:00-expected5]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_parse_now[ 2026-10-14T11:00 -expected6]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_parse_now[2026-10-14-expected7]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_parse_now_other_inputs" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_parse_hhmm_and_as_date" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_deadlines_and_attempt_dates[2026-10-14-2026-10-23-2026-11-02-2026-10-16-2026-10-15]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_deadlines_and_attempt_dates[2026-10-15-2026-10-27-2026-11-03-2026-10-16-2026-10-16]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_deadlines_and_attempt_dates[2026-10-16-2026-10-28-2026-11-04-2026-10-23-2026-10-19]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_deadlines_and_attempt_dates[2026-10-17-2026-10-28-2026-11-04-2026-10-23-2026-10-19]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_deadlines_and_attempt_dates[2026-10-18-2026-10-28-2026-11-04-2026-10-23-2026-10-19]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_deadlines_and_attempt_dates[2026-10-19-2026-10-29-2026-11-05-2026-10-23-2026-10-20]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_deadlines_and_attempt_dates[2026-10-22-2026-11-03-2026-11-10-2026-10-23-2026-10-23]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_deadlines_and_attempt_dates[2026-10-23-2026-11-04-2026-11-12-2026-10-30-2026-10-27]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_deadlines_and_attempt_dates[2026-10-26-2026-11-04-2026-11-12-2026-10-30-2026-10-27]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_deadlines_and_attempt_dates[2026-10-30-2026-11-10-2026-11-18-2026-11-06-2026-11-02]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_deadlines_and_attempt_dates[2026-11-09-2026-11-19-2026-11-27-2026-11-13-2026-11-10]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_deadlines_and_attempt_dates[2026-11-10-2026-11-20-2026-11-30-2026-11-13-2026-11-12]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_deadlines_and_attempt_dates[2026-11-23-2026-12-03-2026-12-10-2026-11-27-2026-11-24]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_deadlines_and_attempt_dates[2026-11-25-2026-12-07-2026-12-14-2026-11-27-2026-11-27]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_deadlines_and_attempt_dates[2026-12-23-2027-01-05-2027-01-12-2026-12-24-2026-12-24]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_deadlines_and_attempt_dates[2026-12-24-2027-01-06-2027-01-13-2026-12-31-2026-12-28]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_deadlines_and_attempt_dates[2026-12-31-2027-01-12-2027-01-19-2027-01-08-2027-01-04]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_practice_set_dates" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_other_deadline_kinds" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_resolve_proposal_date_kinds" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_proposal_dates_are_capped_at_the_deadline" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_check_promise_date_practice_vectors[2026-10-14-deadline0-ok-None]" time="0.002" /><testcase classname="tests.unit.test_calendar" name="test_check_promise_date_practice_vectors[2026-10-15-deadline1-ok-None]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_check_promise_date_practice_vectors[2026-10-16-deadline2-ok-None]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_check_promise_date_practice_vectors[2026-10-23-deadline3-ok-None]" time="0.002" /><testcase classname="tests.unit.test_calendar" name="test_check_promise_date_practice_vectors[2026-11-06-deadline4-after_deadline-2026-10-23]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_check_promise_date_practice_vectors[2026-10-26-deadline5-not_business_day-2026-10-27]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_check_promise_date_practice_vectors[2026-10-30-deadline6-ok-None]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_check_promise_date_practice_vectors[2026-10-30-deadline7-after_deadline-2026-10-23]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_check_promise_date_practice_vectors[2026-10-17-deadline8-not_business_day-2026-10-19]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_check_promise_date_practice_vectors[2026-10-25-deadline9-not_business_day-2026-10-27]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_check_promise_date_practice_vectors[2026-10-25-deadline10-after_deadline-2026-10-23]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_check_promise_date_practice_vectors[2026-10-13-deadline11-before_today-2026-10-14]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_check_promise_date_practice_vectors[2026-10-12-deadline12-before_today-2026-10-14]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_check_promise_date_rule_variants" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_check_promise_date_year_end" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_check_callback[2026-10-14T11:00-2026-10-15-11:00-ok]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_check_callback[2026-10-14T11:00-2026-10-14-15:00-ok]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_check_callback[2026-10-14T11:00-2026-10-14-10:30-not_after_now]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_check_callback[2026-10-14T11:00-2026-10-14-11:00-not_after_now]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_check_callback[2026-10-14T11:00-2026-10-15-09:00-outside_window]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_check_callback[2026-10-14T11:00-2026-10-15-10:00-ok]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_check_callback[2026-10-14T11:00-2026-10-15-19:00-ok]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_check_callback[2026-10-14T11:00-2026-10-15-19:01-outside_window]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_check_callback[2026-10-14T11:00-2026-10-16-12:00-not_allowed_day]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_check_callback[2026-10-14T19:30-2026-10-14-19:00-not_after_now]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_check_callback[2026-10-14T19:30-2026-10-15-10:00-ok]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_check_callback[2026-10-23T18:00-2026-10-26-11:00-not_allowed_day]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_check_callback[2026-10-23T18:00-2026-10-27-11:00-ok]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_check_callback[2026-10-23T18:00-2026-10-23-18:30-ok]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_check_callback[2026-10-17T12:00-2026-10-17-15:00-ok]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_check_callback[2026-10-17T12:00-2026-10-19-15:00-ok]" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_callback_rule_variants" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_allowed_callback_days" time="0.001" /><testcase classname="tests.unit.test_calendar" name="test_spoken_date" time="0.001" /><testcase classname="tests.unit.test_codegen" name="test_every_snippet_follows_the_code_rules[A]" time="0.011" /><testcase classname="tests.unit.test_codegen" name="test_every_snippet_follows_the_code_rules[AB]" time="0.010" /><testcase classname="tests.unit.test_codegen" name="test_ir_data_with_braces_never_reaches_the_source_as_braces" time="0.012" /><testcase classname="tests.unit.test_codegen" name="test_setup_today_facts_and_deadlines" time="0.015" /><testcase classname="tests.unit.test_codegen" name="test_setup_date_table_labels_weeks_weekends_and_holidays" time="0.015" /><testcase classname="tests.unit.test_codegen" name="test_setup_callback_facts_follow_the_rule_and_the_clock" time="0.078" /><testcase classname="tests.unit.test_codegen" name="test_setup_weekend_call_proposes_the_following_week" time="0.005" /><testcase classname="tests.unit.test_codegen" name="test_setup_survives_odd_now_values[]" time="0.005" /><testcase classname="tests.unit.test_codegen" name="test_setup_survives_odd_now_values[garbage]" time="0.006" /><testcase classname="tests.unit.test_codegen" name="test_setup_survives_odd_now_values[2026-10-14]" time="0.006" /><testcase classname="tests.unit.test_codegen" name="test_setup_survives_odd_now_values[2026-10-14T11:00:30Z]" time="0.063" /><testcase classname="tests.unit.test_codegen" name="test_setup_survives_odd_now_values[2026-10-14 11:00]" time="0.006" /><testcase classname="tests.unit.test_codegen" name="test_setup_without_now_uses_the_clock_and_says_so" time="0.006" /><testcase classname="tests.unit.test_codegen" name="test_account_facts_match_the_policy_modules[PUB-01]" time="0.011" /><testcase classname="tests.unit.test_codegen" name="test_account_facts_match_the_policy_modules[PUB-02]" time="0.027" /><testcase classname="tests.unit.test_codegen" name="test_account_facts_match_the_policy_modules[PUB-03]" time="0.012" /><testcase classname="tests.unit.test_codegen" name="test_account_facts_match_the_policy_modules[PUB-04]" time="0.009" /><testcase classname="tests.unit.test_codegen" name="test_account_facts_match_the_policy_modules[PUB-05]" time="0.009" /><testcase classname="tests.unit.test_codegen" name="test_account_facts_match_the_policy_modules[PUB-06]" time="0.007" /><testcase classname="tests.unit.test_codegen" name="test_account_facts_match_the_policy_modules[PUB-07]" time="0.009" /><testcase classname="tests.unit.test_codegen" name="test_account_facts_match_the_policy_modules[PUB-08]" time="0.009" /><testcase classname="tests.unit.test_codegen" name="test_account_facts_match_the_policy_modules[PUB-09]" time="0.008" /><testcase classname="tests.unit.test_codegen" name="test_account_facts_match_the_policy_modules[PUB-10]" time="0.008" /><testcase classname="tests.unit.test_codegen" name="test_account_facts_match_the_policy_modules[PUB-11]" time="0.007" /><testcase classname="tests.unit.test_codegen" name="test_account_facts_match_the_policy_modules[PUB-12]" time="0.008" /><testcase classname="tests.unit.test_codegen" name="test_account_facts_match_the_policy_modules[PUB-13]" time="0.007" /><testcase classname="tests.unit.test_codegen" name="test_account_facts_allowed_dates_stop_at_the_deadline" time="0.007" /><testcase classname="tests.unit.test_codegen" name="test_account_facts_attempt_scripts_use_the_ir_steps" time="0.015" /><testcase classname="tests.unit.test_codegen" name="test_debt_statement_single_and_multiple_products" time="0.015" /><testcase classname="tests.unit.test_codegen" name="test_currency_word_is_spoken_after_amounts_only_when_the_brief_has_one" time="0.013" /><testcase classname="tests.unit.test_codegen" name="test_products_can_arrive_as_json_text_or_flattened_keys" time="0.015" /><testcase classname="tests.unit.test_codegen" name="test_account_facts_never_raises_and_always_sets_the_spoken_line[None]" time="0.006" /><testcase classname="tests.unit.test_codegen" name="test_account_facts_never_raises_and_always_sets_the_spoken_line[products1]" time="0.008" /><testcase classname="tests.unit.test_codegen" name="test_account_facts_never_raises_and_always_sets_the_spoken_line[not json]" time="0.007" /><testcase classname="tests.unit.test_codegen" name="test_account_facts_never_raises_and_always_sets_the_spoken_line[products3]" time="0.011" /><testcase classname="tests.unit.test_codegen" name="test_account_facts_never_raises_and_always_sets_the_spoken_line[products4]" time="0.007" /><testcase classname="tests.unit.test_codegen" name="test_account_facts_with_an_unreadable_now_and_no_products_still_speaks" time="0.004" /><testcase classname="tests.unit.test_codegen" name="test_unknown_product_type_and_missing_floor_are_handled" time="0.008" /><testcase classname="tests.unit.test_codegen" name="test_custom_deadline_rule_prints_the_rule_text" time="0.008" /><testcase classname="tests.unit.test_codegen" name="test_other_deadline_kinds_agree_with_the_policy_module[rule0]" time="0.009" /><testcase classname="tests.unit.test_codegen" name="test_other_deadline_kinds_agree_with_the_policy_module[rule1]" time="0.008" /><testcase classname="tests.unit.test_codegen" name="test_other_deadline_kinds_agree_with_the_policy_module[rule2]" time="0.008" /><testcase classname="tests.unit.test_codegen" name="test_check_callback_agrees_with_the_policy_module[2026-10-14T11:00]" time="0.066" /><testcase classname="tests.unit.test_codegen" name="test_check_callback_agrees_with_the_policy_module[2026-10-14T19:30]" time="0.058" /><testcase classname="tests.unit.test_codegen" name="test_check_callback_agrees_with_the_policy_module[2026-10-16T09:00]" time="0.054" /><testcase classname="tests.unit.test_codegen" name="test_check_callback_unreadable_and_custom" time="0.005" /><testcase classname="tests.unit.test_codegen" name="test_check_promise_date_agrees_with_the_policy_module[2026-10-13]" time="0.009" /><testcase classname="tests.unit.test_codegen" name="test_check_promise_date_agrees_with_the_policy_module[2026-10-14]" time="0.009" /><testcase classname="tests.unit.test_codegen" name="test_check_promise_date_agrees_with_the_policy_module[2026-10-17]" time="0.009" /><testcase classname="tests.unit.test_codegen" name="test_check_promise_date_agrees_with_the_policy_module[2026-10-18]" time="0.010" /><testcase classname="tests.unit.test_codegen" name="test_check_promise_date_agrees_with_the_policy_module[2026-10-23]" time="0.009" /><testcase classname="tests.unit.test_codegen" name="test_check_promise_date_agrees_with_the_policy_module[2026-10-24]" time="0.009" /><testcase classname="tests.unit.test_codegen" name="test_check_promise_date_agrees_with_the_policy_module[2026-10-26]" time="0.009" /><testcase classname="tests.unit.test_codegen" name="test_check_promise_date_agrees_with_the_policy_module[2026-10-27]" time="0.010" /><testcase classname="tests.unit.test_codegen" name="test_check_promise_date_agrees_with_the_policy_module[2026-11-02]" time="0.010" /><testcase classname="tests.unit.test_codegen" name="test_check_promise_date_agrees_with_the_policy_module[2026-11-03]" time="0.010" /><testcase classname="tests.unit.test_codegen" name="test_check_promise_amount_agrees_with_the_policy_module[1250.0]" time="0.009" /><testcase classname="tests.unit.test_codegen" name="test_check_promise_amount_agrees_with_the_policy_module[1250.01]" time="0.009" /><testcase classname="tests.unit.test_codegen" name="test_check_promise_amount_agrees_with_the_policy_module[1000]" time="0.010" /><testcase classname="tests.unit.test_codegen" name="test_check_promise_amount_agrees_with_the_policy_module[417.0]" time="0.009" /><testcase classname="tests.unit.test_codegen" name="test_check_promise_amount_agrees_with_the_policy_module[416.99]" time="0.009" /><testcase classname="tests.unit.test_codegen" name="test_check_promise_amount_agrees_with_the_policy_module[300]" time="0.009" /><testcase classname="tests.unit.test_codegen" name="test_check_promise_amount_agrees_with_the_policy_module[0]" time="0.009" /><testcase classname="tests.unit.test_codegen" name="test_check_promise_amount_agrees_with_the_policy_module[-5]" time="0.010" /><testcase classname="tests.unit.test_codegen" name="test_check_promise_amount_agrees_with_the_policy_module[1,250.00]" time="0.048" /><testcase classname="tests.unit.test_codegen" name="test_check_promise_amount_agrees_with_the_policy_module[$900]" time="0.010" /><testcase classname="tests.unit.test_codegen" name="test_check_promise_unknown_product_and_unreadable_values" time="0.011" /><testcase classname="tests.unit.test_codegen" name="test_check_promise_date_verdict_wins_over_amount" time="0.009" /><testcase classname="tests.unit.test_codegen" name="test_decide_gives_the_expected_outcome_of_every_practice_case[PUB-01]" time="0.003" /><testcase classname="tests.unit.test_codegen" name="test_decide_gives_the_expected_outcome_of_every_practice_case[PUB-02]" time="0.003" /><testcase classname="tests.unit.test_codegen" name="test_decide_gives_the_expected_outcome_of_every_practice_case[PUB-03]" time="0.003" /><testcase classname="tests.unit.test_codegen" name="test_decide_gives_the_expected_outcome_of_every_practice_case[PUB-04]" time="0.003" /><testcase classname="tests.unit.test_codegen" name="test_decide_gives_the_expected_outcome_of_every_practice_case[PUB-05]" time="0.003" /><testcase classname="tests.unit.test_codegen" name="test_decide_gives_the_expected_outcome_of_every_practice_case[PUB-06]" time="0.003" /><testcase classname="tests.unit.test_codegen" name="test_decide_gives_the_expected_outcome_of_every_practice_case[PUB-07]" time="0.003" /><testcase classname="tests.unit.test_codegen" name="test_decide_gives_the_expected_outcome_of_every_practice_case[PUB-08]" time="0.003" /><testcase classname="tests.unit.test_codegen" name="test_decide_gives_the_expected_outcome_of_every_practice_case[PUB-09]" time="0.003" /><testcase classname="tests.unit.test_codegen" name="test_decide_gives_the_expected_outcome_of_every_practice_case[PUB-10]" time="0.003" /><testcase classname="tests.unit.test_codegen" name="test_decide_gives_the_expected_outcome_of_every_practice_case[PUB-11]" time="0.003" /><testcase classname="tests.unit.test_codegen" name="test_decide_gives_the_expected_outcome_of_every_practice_case[PUB-12]" time="0.003" /><testcase classname="tests.unit.test_codegen" name="test_decide_gives_the_expected_outcome_of_every_practice_case[PUB-13]" time="0.003" /><testcase classname="tests.unit.test_codegen" name="test_decide_omits_the_reason_when_the_outcome_has_none" time="0.003" /><testcase classname="tests.unit.test_codegen" name="test_decide_fallbacks[variables0-expected0]" time="0.003" /><testcase classname="tests.unit.test_codegen" name="test_decide_fallbacks[variables1-expected1]" time="0.003" /><testcase classname="tests.unit.test_codegen" name="test_decide_fallbacks[variables2-expected2]" time="0.003" /><testcase classname="tests.unit.test_codegen" name="test_decide_fallbacks[variables3-expected3]" time="0.003" /><testcase classname="tests.unit.test_codegen" name="test_decide_fallbacks[variables4-expected4]" time="0.003" /><testcase classname="tests.unit.test_codegen" name="test_decide_auto_uses_the_extracted_call_situation" time="0.006" /><testcase classname="tests.unit.test_codegen" name="test_decide_promise_that_failed_twice_is_a_recording_failure" time="0.003" /><testcase classname="tests.unit.test_codegen" name="test_decide_never_raises_on_garbage" time="0.003" /><testcase classname="tests.unit.test_codegen" name="test_decide_notes_fall_back_to_the_tool_arguments" time="0.003" /><testcase classname="tests.unit.test_codegen" name="test_decide_agrees_with_the_reference_engine[A]" time="0.146" /><testcase classname="tests.unit.test_codegen" name="test_decide_agrees_with_the_reference_engine[AB]" time="1.549" /><testcase classname="tests.unit.test_codegen" name="test_decide_snippet_for_the_generic_example_ir" time="0.007" /><testcase classname="tests.unit.test_codegen" name="test_the_sandbox_reports_errors_as_snippet_errors" time="0.002" /><testcase classname="tests.unit.test_codegen_calendar_parity" name="test_promise_date_status_and_suggestion_match_reference[2032-01-09-2032-01-11-2032-01-20-updates0]" time="0.007" /><testcase classname="tests.unit.test_codegen_calendar_parity" name="test_promise_date_status_and_suggestion_match_reference[2032-01-09-2032-01-11-2032-01-10-updates1]" time="0.006" /><testcase classname="tests.unit.test_codegen_calendar_parity" name="test_promise_date_status_and_suggestion_match_reference[2032-01-09-2032-01-08-2032-01-10-updates2]" time="0.008" /><testcase classname="tests.unit.test_codegen_calendar_parity" name="test_promise_date_status_and_suggestion_match_reference[2032-01-10-2032-01-10-2032-01-20-updates3]" time="0.008" /><testcase classname="tests.unit.test_codegen_calendar_parity" name="test_promise_date_status_and_suggestion_match_reference[2032-01-10-2032-01-11-2032-01-20-updates4]" time="0.007" /><testcase classname="tests.unit.test_codegen_calendar_parity" name="test_promise_date_status_and_suggestion_match_reference[2032-01-09-2032-01-18-2032-01-10-updates5]" time="0.007" /><testcase classname="tests.unit.test_codegen_calendar_parity" name="test_promise_date_status_and_suggestion_match_reference[2032-01-09-2032-01-11-2032-01-10-updates6]" time="0.007" /><testcase classname="tests.unit.test_codegen_calendar_parity" name="test_promise_date_status_and_suggestion_match_reference[2032-01-08-2032-01-10-2032-01-10-updates7]" time="0.008" /><testcase classname="tests.unit.test_codegen_calendar_parity" name="test_promise_date_status_and_suggestion_match_reference[2032-01-09-2032-01-08-2032-01-08-updates8]" time="0.007" /><testcase classname="tests.unit.test_codegen_calendar_parity" name="test_promise_date_status_and_suggestion_match_reference[2032-01-09-2032-01-11-2032-01-20-updates9]" time="0.008" /><testcase classname="tests.unit.test_codegen_calendar_parity" name="test_promise_date_status_and_suggestion_match_reference[2032-01-09-2032-01-21-2032-01-20-updates10]" time="0.007" /><testcase classname="tests.unit.test_codegen_calendar_parity" name="test_promise_date_status_and_suggestion_match_reference[2032-01-09-2032-01-11-2032-01-20-updates11]" time="0.008" /><testcase classname="tests.unit.test_codegen_calendar_parity" name="test_promise_date_status_and_suggestion_match_reference[2032-01-09-2032-01-11-2032-01-10-updates12]" time="0.007" /><testcase classname="tests.unit.test_codegen_calendar_parity" name="test_nonstandard_calendar_and_holidays_preserve_suggestion_parity" time="0.018" /><testcase classname="tests.unit.test_codegen_calendar_parity" name="test_invalid_callback_time_is_unreadable_instead_of_accepted_or_crashing[False-25:00]" time="0.006" /><testcase classname="tests.unit.test_codegen_calendar_parity" name="test_invalid_callback_time_is_unreadable_instead_of_accepted_or_crashing[False-24:00]" time="0.007" /><testcase classname="tests.unit.test_codegen_calendar_parity" name="test_invalid_callback_time_is_unreadable_instead_of_accepted_or_crashing[False-11:60]" time="0.007" /><testcase classname="tests.unit.test_codegen_calendar_parity" name="test_invalid_callback_time_is_unreadable_instead_of_accepted_or_crashing[False-11]" time="0.007" /><testcase classname="tests.unit.test_codegen_calendar_parity" name="test_invalid_callback_time_is_unreadable_instead_of_accepted_or_crashing[False-11:]" time="0.007" /><testcase classname="tests.unit.test_codegen_calendar_parity" name="test_invalid_callback_time_is_unreadable_instead_of_accepted_or_crashing[False--1:00]" time="0.007" /><testcase classname="tests.unit.test_codegen_calendar_parity" name="test_invalid_callback_time_is_unreadable_instead_of_accepted_or_crashing[False-11: 00]" time="0.006" /><testcase classname="tests.unit.test_codegen_calendar_parity" name="test_invalid_callback_time_is_unreadable_instead_of_accepted_or_crashing[False-11:00x]" time="0.007" /><testcase classname="tests.unit.test_codegen_calendar_parity" name="test_invalid_callback_time_is_unreadable_instead_of_accepted_or_crashing[False-11:00:invalid]" time="0.006" /><testcase classname="tests.unit.test_codegen_calendar_parity" name="test_invalid_callback_time_is_unreadable_instead_of_accepted_or_crashing[False-11:00:00:00]" time="0.007" /><testcase classname="tests.unit.test_codegen_calendar_parity" name="test_invalid_callback_time_is_unreadable_instead_of_accepted_or_crashing[True-25:00]" time="0.006" /><testcase classname="tests.unit.test_codegen_calendar_parity" name="test_invalid_callback_time_is_unreadable_instead_of_accepted_or_crashing[True-24:00]" time="0.007" /><testcase classname="tests.unit.test_codegen_calendar_parity" name="test_invalid_callback_time_is_unreadable_instead_of_accepted_or_crashing[True-11:60]" time="0.006" /><testcase classname="tests.unit.test_codegen_calendar_parity" name="test_invalid_callback_time_is_unreadable_instead_of_accepted_or_crashing[True-11]" time="0.006" /><testcase classname="tests.unit.test_codegen_calendar_parity" name="test_invalid_callback_time_is_unreadable_instead_of_accepted_or_crashing[True-11:]" time="0.006" /><testcase classname="tests.unit.test_codegen_calendar_parity" name="test_invalid_callback_time_is_unreadable_instead_of_accepted_or_crashing[True--1:00]" time="0.007" /><testcase classname="tests.unit.test_codegen_calendar_parity" name="test_invalid_callback_time_is_unreadable_instead_of_accepted_or_crashing[True-11: 00]" time="0.007" /><testcase classname="tests.unit.test_codegen_calendar_parity" name="test_invalid_callback_time_is_unreadable_instead_of_accepted_or_crashing[True-11:00x]" time="0.008" /><testcase classname="tests.unit.test_codegen_calendar_parity" name="test_invalid_callback_time_is_unreadable_instead_of_accepted_or_crashing[True-11:00:invalid]" time="0.007" /><testcase classname="tests.unit.test_codegen_calendar_parity" name="test_invalid_callback_time_is_unreadable_instead_of_accepted_or_crashing[True-11:00:00:00]" time="0.007" /><testcase classname="tests.unit.test_codegen_calendar_parity" name="test_callback_normalization_and_window_boundaries_match_reference[False-17:00]" time="0.071" /><testcase classname="tests.unit.test_codegen_calendar_parity" name="test_callback_normalization_and_window_boundaries_match_reference[False-24:00]" time="0.058" /><testcase classname="tests.unit.test_codegen_calendar_parity" name="test_callback_normalization_and_window_boundaries_match_reference[True-17:00]" time="0.061" /><testcase classname="tests.unit.test_codegen_calendar_parity" name="test_callback_normalization_and_window_boundaries_match_reference[True-24:00]" time="0.058" /><testcase classname="tests.unit.test_diagnostics" name="test_redaction_masks_credentials_but_preserves_customer_ids_and_usage" time="0.003" /><testcase classname="tests.unit.test_diagnostics" name="test_unknown_custom_header_credentials_are_masked_inside_json_strings" time="0.002" /><testcase classname="tests.unit.test_diagnostics" name="test_nested_json_strings_and_known_secret_substrings_are_masked" time="0.002" /><testcase classname="tests.unit.test_diagnostics" name="test_plain_header_strings_and_generic_key_shapes_are_masked" time="0.001" /><testcase classname="tests.unit.test_diagnostics" name="test_query_credentials_are_masked_and_customer_id_remains_visible" time="0.001" /><testcase classname="tests.unit.test_diagnostics" name="test_relative_url_query_credentials_are_masked_without_configuration[/request]" time="0.002" /><testcase classname="tests.unit.test_diagnostics" name="test_relative_url_query_credentials_are_masked_without_configuration[]" time="0.001" /><testcase classname="tests.unit.test_diagnostics" name="test_relative_url_query_credentials_are_masked_without_configuration[//bank.test/request]" time="0.002" /><testcase classname="tests.unit.test_diagnostics" name="test_unknown_url_credentials_inside_error_prose_are_masked[https://bank.test/request]" time="0.001" /><testcase classname="tests.unit.test_diagnostics" name="test_unknown_url_credentials_inside_error_prose_are_masked[/request]" time="0.002" /><testcase classname="tests.unit.test_diagnostics" name="test_unknown_url_credentials_inside_error_prose_are_masked[]" time="0.001" /><testcase classname="tests.unit.test_diagnostics" name="test_embedded_url_redaction_handles_multiple_urls_and_preserves_safe_prose" time="0.002" /><testcase classname="tests.unit.test_diagnostics" name="test_unreadable_embedded_json_never_returns_unknown_credentials" time="0.001" /><testcase classname="tests.unit.test_diagnostics" name="test_redaction_is_bounded_for_recursive_and_nonfinite_values" time="0.002" /><testcase classname="tests.unit.test_diagnostics" name="test_call_events_retain_tool_arguments_routes_results_and_snapshots" time="0.002" /><testcase classname="tests.unit.test_diagnostics" name="test_call_envelopes_and_malformed_messages_do_not_hide_valid_events" time="0.001" /><testcase classname="tests.unit.test_diagnostics" name="test_read_trace_accepts_final_complete_record_and_redacts_each_line" time="0.006" /><testcase classname="tests.unit.test_diagnostics" name="test_secret_iterator_applies_to_every_trace_line" time="0.005" /><testcase classname="tests.unit.test_diagnostics" name="test_read_trace_tolerates_incomplete_final_write[{&quot;kind&quot;:]" time="0.006" /><testcase classname="tests.unit.test_diagnostics" name="test_read_trace_tolerates_incomplete_final_write[{&quot;kind&quot;:&quot;req]" time="0.006" /><testcase classname="tests.unit.test_diagnostics" name="test_read_trace_tolerates_incomplete_final_write[{&quot;kind&quot;: tru]" time="0.006" /><testcase classname="tests.unit.test_diagnostics" name="test_read_trace_reports_complete_malformed_lines_without_echoing_content" time="0.005" /><testcase classname="tests.unit.test_diagnostics" name="test_read_trace_reports_malformed_final_complete_object" time="0.006" /><testcase classname="tests.unit.test_diagnostics" name="test_read_trace_rejects_oversized_integer_and_recovers_next_record" time="0.007" /><testcase classname="tests.unit.test_diagnostics" name="test_read_trace_limit_and_utf8_truncation_are_visible" time="0.005" /><testcase classname="tests.unit.test_diagnostics" name="test_read_trace_reports_invalid_utf8_and_handles_bom" time="0.006" /><testcase classname="tests.unit.test_diagnostics" name="test_missing_trace_is_a_safe_error_and_invalid_limit_is_rejected" time="0.007" /><testcase classname="tests.unit.test_diagnostics" name="test_trace_rows_and_summary_count_attempts_without_double_counting_other_events" time="0.003" /><testcase classname="tests.unit.test_diagnostics" name="test_summary_handles_unknown_status_and_old_freya_sink_records" time="0.002" /><testcase classname="tests.unit.test_freya_client" name="test_first_save_creates_sets_event_model_and_publishes" time="0.008" /><testcase classname="tests.unit.test_freya_client" name="test_first_save_publishes_version_one_when_the_model_is_already_right" time="0.006" /><testcase classname="tests.unit.test_freya_client" name="test_second_save_updates_the_same_workflow_without_republishing" time="0.010" /><testcase classname="tests.unit.test_freya_client" name="test_save_recreates_a_slot_whose_workflow_was_deleted" time="0.009" /><testcase classname="tests.unit.test_freya_client" name="test_a_404_from_another_route_never_creates_a_second_workflow" time="0.009" /><testcase classname="tests.unit.test_freya_client" name="test_save_failure_is_not_retried_and_carries_the_status" time="0.005" /><testcase classname="tests.unit.test_freya_client" name="test_save_refuses_null_values_without_calling_freya" time="0.004" /><testcase classname="tests.unit.test_freya_client" name="test_save_with_a_corrupt_state_file_fails_before_any_call" time="0.006" /><testcase classname="tests.unit.test_freya_client" name="test_save_reports_an_unconfirmed_publish" time="0.008" /><testcase classname="tests.unit.test_freya_client" name="test_save_rejects_an_empty_slot" time="0.004" /><testcase classname="tests.unit.test_freya_client" name="test_save_argument_overrides_the_client_state_file" time="0.007" /><testcase classname="tests.unit.test_freya_client" name="test_validate_returns_the_dry_run_result" time="0.006" /><testcase classname="tests.unit.test_freya_client" name="test_validate_maps_a_422_to_a_validation_error_with_problems" time="0.005" /><testcase classname="tests.unit.test_freya_client" name="test_validate_keeps_a_plain_text_error_body_as_the_problem" time="0.002" /><testcase classname="tests.unit.test_freya_client" name="test_validate_does_not_blame_the_workflow_for_an_auth_error" time="0.005" /><testcase classname="tests.unit.test_freya_client" name="test_validate_reads_an_explicit_invalid_result" time="0.006" /><testcase classname="tests.unit.test_freya_client" name="test_validate_ignores_an_empty_error_list" time="0.004" /><testcase classname="tests.unit.test_freya_client" name="test_validate_retries_a_server_error" time="0.005" /><testcase classname="tests.unit.test_freya_client" name="test_validate_refuses_null_values" time="0.004" /><testcase classname="tests.unit.test_freya_client" name="test_get_workflow_returns_the_inner_definition" time="0.004" /><testcase classname="tests.unit.test_freya_client" name="test_get_workflow_with_an_unexpected_shape_raises" time="0.002" /><testcase classname="tests.unit.test_freya_client" name="test_get_workflow_404_is_not_retried" time="0.005" /><testcase classname="tests.unit.test_freya_client" name="test_export_writes_through_the_kit_and_creates_directories" time="0.009" /><testcase classname="tests.unit.test_freya_client" name="test_get_call_retries_network_errors_then_gives_up" time="0.002" /><testcase classname="tests.unit.test_freya_client" name="test_get_call_returns_the_call" time="0.005" /><testcase classname="tests.unit.test_freya_client" name="test_workspace_id_comes_from_the_kit" time="0.004" /><testcase classname="tests.unit.test_freya_client" name="test_workflow_status_reports_newest_draft_separately_from_published_version" time="0.005" /><testcase classname="tests.unit.test_freya_client" name="test_workflow_status_reports_published_newest_version" time="0.005" /><testcase classname="tests.unit.test_freya_client" name="test_workflow_status_with_ambiguous_publication_flag_stays_unknown[None]" time="0.006" /><testcase classname="tests.unit.test_freya_client" name="test_workflow_status_with_ambiguous_publication_flag_stays_unknown[true]" time="0.005" /><testcase classname="tests.unit.test_freya_client" name="test_workflow_status_with_ambiguous_publication_flag_stays_unknown[false]" time="0.005" /><testcase classname="tests.unit.test_freya_client" name="test_workflow_status_with_ambiguous_publication_flag_stays_unknown[0]" time="0.005" /><testcase classname="tests.unit.test_freya_client" name="test_workflow_status_with_ambiguous_publication_flag_stays_unknown[1]" time="0.005" /><testcase classname="tests.unit.test_freya_client" name="test_workflow_status_with_missing_publication_flag_stays_unknown" time="0.004" /><testcase classname="tests.unit.test_freya_client" name="test_workflow_status_without_versions_reports_unknown_version" time="0.005" /><testcase classname="tests.unit.test_freya_client" name="test_simulation_status_reads_once_without_starting_or_polling[True]" time="0.052" /><testcase classname="tests.unit.test_freya_client" name="test_simulation_status_reads_once_without_starting_or_polling[False]" time="0.002" /><testcase classname="tests.unit.test_freya_client" name="test_simulation_status_rejects_invalid_response[response0]" time="0.002" /><testcase classname="tests.unit.test_freya_client" name="test_simulation_status_rejects_invalid_response[response1]" time="0.002" /><testcase classname="tests.unit.test_freya_client" name="test_simulation_status_rejects_invalid_response[response2]" time="0.002" /><testcase classname="tests.unit.test_freya_client" name="test_request_telemetry_records_successful_chat_without_payload" time="0.002" /><testcase classname="tests.unit.test_freya_client" name="test_request_telemetry_records_each_read_retry_with_duration_and_shared_id" time="0.002" /><testcase classname="tests.unit.test_freya_client" name="test_failed_chat_request_telemetry_does_not_retry_or_include_error_body" time="0.005" /><testcase classname="tests.unit.test_freya_client" name="test_wrapper_request_telemetry_preserves_unexpected_exception_type" time="0.001" /><testcase classname="tests.unit.test_freya_client" name="test_request_telemetry_failure_does_not_break_successful_call" time="0.003" /><testcase classname="tests.unit.test_freya_client" name="test_chat_first_turn_sends_variables_without_nulls" time="0.005" /><testcase classname="tests.unit.test_freya_client" name="test_chat_next_turn_continues_the_call" time="0.005" /><testcase classname="tests.unit.test_freya_client" name="test_chat_turn_flags" time="0.004" /><testcase classname="tests.unit.test_freya_client" name="test_chat_without_a_call_id_in_the_response_fails" time="0.004" /><testcase classname="tests.unit.test_freya_client" name="test_chat_turns_are_never_retried" time="0.005" /><testcase classname="tests.unit.test_freya_client" name="test_end_chat_posts_the_call_id" time="0.005" /><testcase classname="tests.unit.test_freya_client" name="test_long_chat_text_is_clipped_in_the_trace" time="0.006" /><testcase classname="tests.unit.test_freya_client" name="test_counts_on_the_kit_example" time="0.002" /><testcase classname="tests.unit.test_freya_client" name="test_tool_names_cover_pre_actions_global_nodes_and_workflow_tools_but_not_terminals" time="0.002" /><testcase classname="tests.unit.test_freya_client" name="test_http_error_text_is_parsed" time="0.001" /><testcase classname="tests.unit.test_freya_client" name="test_default_state_file_follows_settings" time="0.005" /><testcase classname="tests.unit.test_freya_client" name="test_client_without_a_state_file_uses_the_default" time="0.008" /><testcase classname="tests.unit.test_freya_client" name="test_kit_is_loaded_lazily" time="0.001" /><testcase classname="tests.unit.test_freya_client" name="test_wrapper_agrees_with_the_real_kit_semantics" time="0.013" /><testcase classname="tests.unit.test_freya_client" name="test_load_kit_executes_the_kit_file_once_with_the_environment" time="0.004" /><testcase classname="tests.unit.test_freya_client" name="test_load_kit_does_not_clobber_a_foreign_freya_module" time="0.003" /><testcase classname="tests.unit.test_freya_client" name="test_load_kit_without_the_kit_file_fails_clearly" time="0.005" /><testcase classname="tests.unit.test_freya_client" name="test_load_kit_rejects_a_file_that_is_not_the_kit" time="0.009" /><testcase classname="tests.unit.test_freya_diff" name="test_identical_documents_have_no_stripped_fields" time="0.002" /><testcase classname="tests.unit.test_freya_diff" name="test_keys_added_by_the_platform_are_ignored" time="0.001" /><testcase classname="tests.unit.test_freya_diff" name="test_platform_owned_top_level_keys_are_not_compared" time="0.001" /><testcase classname="tests.unit.test_freya_diff" name="test_tools_stripped_from_a_node_are_reported_per_item" time="0.001" /><testcase classname="tests.unit.test_freya_diff" name="test_a_missing_key_is_reported_once_not_per_descendant" time="0.001" /><testcase classname="tests.unit.test_freya_diff" name="test_dropped_hook_and_changed_scalar_are_reported_at_their_paths" time="0.001" /><testcase classname="tests.unit.test_freya_diff" name="test_context_variables_dropped_on_save_is_detected" time="0.002" /><testcase classname="tests.unit.test_freya_diff" name="test_reordered_scalar_lists_are_not_a_difference_but_a_lost_value_is" time="0.002" /><testcase classname="tests.unit.test_freya_diff" name="test_duplicate_scalars_are_compared_as_a_multiset" time="0.001" /><testcase classname="tests.unit.test_freya_diff" name="test_booleans_are_not_equal_to_numbers_or_strings" time="0.001" /><testcase classname="tests.unit.test_freya_diff" name="test_type_change_of_a_container_is_reported" time="0.001" /><testcase classname="tests.unit.test_freya_diff" name="test_empty_sent_values_dropped_by_the_platform_are_ignored_by_default" time="0.001" /><testcase classname="tests.unit.test_freya_diff" name="test_value_replaced_by_null_is_reported" time="0.001" /><testcase classname="tests.unit.test_freya_diff" name="test_nothing_stored_reports_every_top_level_key" time="0.001" /><testcase classname="tests.unit.test_freya_diff" name="test_custom_ignored_keys" time="0.001" /><testcase classname="tests.unit.test_freya_diff" name="test_odd_keys_are_quoted_in_paths" time="0.001" /><testcase classname="tests.unit.test_freya_diff" name="test_join_path" time="0.001" /><testcase classname="tests.unit.test_freya_diff" name="test_null_paths_finds_every_null" time="0.001" /><testcase classname="tests.unit.test_freya_diff" name="test_kit_example_against_itself_and_with_tools_stripped[base-agent.json]" time="0.002" /><testcase classname="tests.unit.test_freya_practice" name="test_run_practice_builds_the_harness_command_and_parses_the_results" time="0.005" /><testcase classname="tests.unit.test_freya_practice" name="test_run_practice_without_letter_or_filters_runs_every_case" time="0.007" /><testcase classname="tests.unit.test_freya_practice" name="test_run_practice_accepts_a_comma_separated_only" time="0.006" /><testcase classname="tests.unit.test_freya_practice" name="test_run_practice_needs_the_credentials[FREYA_API_KEY]" time="0.004" /><testcase classname="tests.unit.test_freya_practice" name="test_run_practice_needs_the_credentials[FREYA_BANK_TEAM_KEY]" time="0.004" /><testcase classname="tests.unit.test_freya_practice" name="test_run_practice_reports_a_failed_harness" time="0.004" /><testcase classname="tests.unit.test_freya_practice" name="test_run_practice_never_returns_a_stale_result" time="0.009" /><testcase classname="tests.unit.test_freya_practice" name="test_run_practice_timeout" time="0.005" /><testcase classname="tests.unit.test_freya_practice" name="test_run_practice_cannot_start" time="0.005" /><testcase classname="tests.unit.test_freya_practice" name="test_run_practice_rejects_unusable_results[not json-cannot read]" time="0.007" /><testcase classname="tests.unit.test_freya_practice" name="test_run_practice_rejects_unusable_results[[1, 2]-not a JSON object]" time="0.007" /><testcase classname="tests.unit.test_freya_practice" name="test_run_practice_rejects_unusable_results[payload2-passed/total]" time="0.007" /><testcase classname="tests.unit.test_freya_practice" name="test_run_practice_default_output_goes_to_results" time="0.008" /><testcase classname="tests.unit.test_freya_practice" name="test_run_practice_anchors_a_relative_output_at_the_repository" time="0.008" /><testcase classname="tests.unit.test_freya_practice" name="test_run_practice_validates_arguments" time="0.005" /><testcase classname="tests.unit.test_freya_practice" name="test_parse_results_with_several_runs" time="0.007" /><testcase classname="tests.unit.test_freya_practice" name="test_practice_env_adds_settings_without_touching_os_environ" time="0.004" /><testcase classname="tests.unit.test_freya_practice" name="test_kit_brief_letters_lists_only_brief_files" time="0.009" /><testcase classname="tests.unit.test_freya_practice" name="test_only_the_first_kit_brief_gives_a" time="0.009" /><testcase classname="tests.unit.test_freya_practice" name="test_the_later_kit_brief_wins" time="0.009" /><testcase classname="tests.unit.test_freya_practice" name="test_matching_ignores_bom_line_endings_and_surrounding_whitespace" time="0.010" /><testcase classname="tests.unit.test_freya_practice" name="test_matching_by_the_loader_sha256" time="0.010" /><testcase classname="tests.unit.test_freya_practice" name="test_an_edited_or_unknown_brief_gets_no_letter" time="0.009" /><testcase classname="tests.unit.test_freya_practice" name="test_a_dumped_bundle_dict_works" time="0.008" /><testcase classname="tests.unit.test_freya_practice" name="test_the_real_kit_briefs_are_recognised" time="0.004" /><testcase classname="tests.unit.test_grounding" name="test_normalisation_ignores_case_quotes_dashes_markup_and_whitespace" time="0.002" /><testcase classname="tests.unit.test_grounding" name="test_normalisation_offsets_map_back_to_the_original" time="0.001" /><testcase classname="tests.unit.test_grounding" name="test_exact_quotes_survive_markup_and_whitespace_differences" time="0.002" /><testcase classname="tests.unit.test_grounding" name="test_invented_and_empty_quotes_are_reported" time="0.002" /><testcase classname="tests.unit.test_grounding" name="test_fuzzy_quote_is_accepted_and_snapped_to_the_source_text" time="0.019" /><testcase classname="tests.unit.test_grounding" name="test_quote_from_another_file_is_grounded_and_its_source_corrected" time="0.002" /><testcase classname="tests.unit.test_grounding" name="test_short_quotes_need_an_exact_hit" time="0.002" /><testcase classname="tests.unit.test_grounding" name="test_kit_fixture_ledgers_are_fully_grounded_in_the_kit_briefs" time="0.049" /><testcase classname="tests.unit.test_grounding" name="test_uncovered_passages_find_the_line_no_rule_quotes" time="0.003" /><testcase classname="tests.unit.test_grounding" name="test_headings_separators_and_short_lines_are_not_worklist_items" time="0.002" /><testcase classname="tests.unit.test_grounding" name="test_kit_ledger_leaves_only_harmless_passages_uncovered" time="0.015" /><testcase classname="tests.unit.test_grounding" name="test_phrase_grounding_accepts_templates_and_flags_invented_sentences" time="0.004" /><testcase classname="tests.unit.test_inputs" name="test_organiser_command_line_shape" time="0.016" /><testcase classname="tests.unit.test_inputs" name="test_tool_api_may_come_first_and_brief_order_is_kept" time="0.015" /><testcase classname="tests.unit.test_inputs" name="test_directory_is_expanded_sorted_without_junk" time="0.026" /><testcase classname="tests.unit.test_inputs" name="test_duplicate_arguments_are_collapsed" time="0.016" /><testcase classname="tests.unit.test_inputs" name="test_yaml_tool_api_with_any_extension" time="0.010" /><testcase classname="tests.unit.test_inputs" name="test_non_api_files_are_briefs[{&quot;title&quot;: &quot;a JSON code list&quot;, &quot;codes&quot;: [&quot;A&quot;, &quot;B&quot;]}]" time="0.009" /><testcase classname="tests.unit.test_inputs" name="test_non_api_files_are_briefs[openapi_version: 3\nnot: the tool api\n]" time="0.006" /><testcase classname="tests.unit.test_inputs" name="test_non_api_files_are_briefs[# Markdown\n\nopenapi: mentioned in prose\n]" time="0.007" /><testcase classname="tests.unit.test_inputs" name="test_non_api_files_are_briefs[- openapi\n- swagger\n]" time="0.006" /><testcase classname="tests.unit.test_inputs" name="test_non_api_files_are_briefs[]" time="0.007" /><testcase classname="tests.unit.test_inputs" name="test_binary_and_swagger_detection" time="0.010" /><testcase classname="tests.unit.test_inputs" name="test_missing_input_is_reported" time="0.007" /><testcase classname="tests.unit.test_inputs" name="test_no_tool_api_is_reported" time="0.004" /><testcase classname="tests.unit.test_inputs" name="test_two_tool_apis_are_reported" time="0.018" /><testcase classname="tests.unit.test_inputs" name="test_tool_api_alone_is_not_enough" time="0.002" /><testcase classname="tests.unit.test_inputs" name="test_empty_inputs_are_reported" time="0.008" /><testcase classname="tests.unit.test_inputs" name="test_explicit_slot_beats_configured_slot" time="0.018" /><testcase classname="tests.unit.test_inputs" name="test_slot_falls_back_to_get_settings" time="0.014" /><testcase classname="tests.unit.test_inputs" name="test_unsafe_explicit_slots_are_rejected[has space]" time="0.014" /><testcase classname="tests.unit.test_inputs" name="test_unsafe_explicit_slots_are_rejected[../escape]" time="0.015" /><testcase classname="tests.unit.test_inputs" name="test_unsafe_explicit_slots_are_rejected[a/b]" time="0.015" /><testcase classname="tests.unit.test_inputs" name="test_unsafe_explicit_slots_are_rejected[-leading]" time="0.013" /><testcase classname="tests.unit.test_inputs" name="test_unsafe_explicit_slots_are_rejected[xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx]" time="0.016" /><testcase classname="tests.unit.test_inputs" name="test_slug_rules[stems0-brief-a]" time="0.001" /><testcase classname="tests.unit.test_inputs" name="test_slug_rules[stems1-brief-a-brief-b]" time="0.001" /><testcase classname="tests.unit.test_inputs" name="test_slug_rules[stems2-politika-v2-final]" time="0.001" /><testcase classname="tests.unit.test_inputs" name="test_slug_rules[stems3-brief]" time="0.001" /><testcase classname="tests.unit.test_inputs" name="test_slug_rules[stems4-aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa-bbbbbbbbbbbbbbbbb]" time="0.002" /><testcase classname="tests.unit.test_inputs" name="test_slug_rules[stems5-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx]" time="0.002" /><testcase classname="tests.unit.test_llm_errors" name="test_classification_table[anthropic credit balance (400 invalid_request_error)]" time="0.001" /><testcase classname="tests.unit.test_llm_errors" name="test_classification_table[openai insufficient_quota (429)]" time="0.001" /><testcase classname="tests.unit.test_llm_errors" name="test_classification_table[http 402]" time="0.001" /><testcase classname="tests.unit.test_llm_errors" name="test_classification_table[anthropic billing_error type]" time="0.002" /><testcase classname="tests.unit.test_llm_errors" name="test_classification_table[anthropic spend limit reached]" time="0.002" /><testcase classname="tests.unit.test_llm_errors" name="test_classification_table[anthropic 401 invalid x-api-key]" time="0.002" /><testcase classname="tests.unit.test_llm_errors" name="test_classification_table[anthropic 403 permission_error]" time="0.002" /><testcase classname="tests.unit.test_llm_errors" name="test_classification_table[openai 401 incorrect key]" time="0.002" /><testcase classname="tests.unit.test_llm_errors" name="test_classification_table[anthropic 429 rate_limit_error]" time="0.002" /><testcase classname="tests.unit.test_llm_errors" name="test_classification_table[openai 429 rate_limit_exceeded]" time="0.001" /><testcase classname="tests.unit.test_llm_errors" name="test_classification_table[anthropic 529 overloaded]" time="0.001" /><testcase classname="tests.unit.test_llm_errors" name="test_classification_table[503 service unavailable]" time="0.001" /><testcase classname="tests.unit.test_llm_errors" name="test_classification_table[500 internal]" time="0.002" /><testcase classname="tests.unit.test_llm_errors" name="test_classification_table[502 bad gateway]" time="0.002" /><testcase classname="tests.unit.test_llm_errors" name="test_classification_table[504 gateway timeout]" time="0.001" /><testcase classname="tests.unit.test_llm_errors" name="test_classification_table[408 request timeout]" time="0.001" /><testcase classname="tests.unit.test_llm_errors" name="test_classification_table[404 model not found]" time="0.001" /><testcase classname="tests.unit.test_llm_errors" name="test_classification_table[422 unprocessable]" time="0.001" /><testcase classname="tests.unit.test_llm_errors" name="test_classification_table[400 unsupported parameter]" time="0.001" /><testcase classname="tests.unit.test_llm_errors" name="test_classification_table[anthropic prompt too long]" time="0.001" /><testcase classname="tests.unit.test_llm_errors" name="test_classification_table[openai context_length_exceeded]" time="0.002" /><testcase classname="tests.unit.test_llm_errors" name="test_classification_table[413 request too large]" time="0.002" /><testcase classname="tests.unit.test_llm_errors" name="test_classification_table[asyncio.TimeoutError]" time="0.001" /><testcase classname="tests.unit.test_llm_errors" name="test_classification_table[builtin TimeoutError]" time="0.001" /><testcase classname="tests.unit.test_llm_errors" name="test_classification_table[ConnectionResetError]" time="0.001" /><testcase classname="tests.unit.test_llm_errors" name="test_classification_table[duck APITimeoutError subclass of APIConnectionError]" time="0.001" /><testcase classname="tests.unit.test_llm_errors" name="test_classification_table[duck APIConnectionError]" time="0.002" /><testcase classname="tests.unit.test_llm_errors" name="test_classification_table[pydantic ValidationError]" time="0.002" /><testcase classname="tests.unit.test_llm_errors" name="test_classification_table[json decode error]" time="0.002" /><testcase classname="tests.unit.test_llm_errors" name="test_classification_table[our ParseError]" time="0.002" /><testcase classname="tests.unit.test_llm_errors" name="test_classification_table[ProviderError with kind]" time="0.001" /><testcase classname="tests.unit.test_llm_errors" name="test_classification_table[ProviderError with status only]" time="0.001" /><testcase classname="tests.unit.test_llm_errors" name="test_classification_table[ResultError-like 529]" time="0.001" /><testcase classname="tests.unit.test_llm_errors" name="test_classification_table[CLI not found]" time="0.002" /><testcase classname="tests.unit.test_llm_errors" name="test_classification_table[login missing message]" time="0.002" /><testcase classname="tests.unit.test_llm_errors" name="test_classification_table[not logged in message]" time="0.002" /><testcase classname="tests.unit.test_llm_errors" name="test_classification_table[subscription limit message]" time="0.001" /><testcase classname="tests.unit.test_llm_errors" name="test_classification_table[status in message 429]" time="0.001" /><testcase classname="tests.unit.test_llm_errors" name="test_classification_table[status in message 503]" time="0.002" /><testcase classname="tests.unit.test_llm_errors" name="test_classification_table[overloaded message]" time="0.002" /><testcase classname="tests.unit.test_llm_errors" name="test_classification_table[credit message]" time="0.002" /><testcase classname="tests.unit.test_llm_errors" name="test_classification_table[generic RuntimeError]" time="0.002" /><testcase classname="tests.unit.test_llm_errors" name="test_classification_table[generic ValueError]" time="0.002" /><testcase classname="tests.unit.test_llm_errors" name="test_wrapped_exception_uses_typed_cause" time="0.002" /><testcase classname="tests.unit.test_llm_errors" name="test_typed_inner_error_beats_vague_outer_message" time="0.001" /><testcase classname="tests.unit.test_llm_errors" name="test_exception_group_members_are_inspected" time="0.001" /><testcase classname="tests.unit.test_llm_errors" name="test_cyclic_exception_chain_terminates" time="0.002" /><testcase classname="tests.unit.test_llm_errors" name="test_httpx_transport_errors" time="0.040" /><testcase classname="tests.unit.test_llm_errors" name="test_real_anthropic_sdk_errors" time="2.587" /><testcase classname="tests.unit.test_llm_errors" name="test_real_openai_sdk_errors" time="0.739" /><testcase classname="tests.unit.test_llm_errors" name="test_langchain_wrapped_anthropic_errors" time="0.438"><failure message="ImportError: DLL load failed while importing _uuid_utils: An Application Control policy has blocked this file.">def test_langchain_wrapped_anthropic_errors() -&gt; None:
+&gt;       chat_models = pytest.importorskip("langchain_anthropic.chat_models")
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\unit\test_llm_errors.py:396: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+name = 'langchain_anthropic.chat_models', package = None
+
+    def import_module(name, package=None):
+        """Import a module.
+    
+        The 'package' argument is required when performing a relative import. It
+        specifies the package to use as the anchor point from which to resolve the
+        relative import to an absolute import.
+    
+        """
+        level = 0
+        if name.startswith('.'):
+            if not package:
+                raise TypeError("the 'package' argument is required to perform a "
+                                f"relative import for {name!r}")
+            for character in name:
+                if character != '.':
+                    break
+                level += 1
+&gt;       return _bootstrap._gcd_import(name[level:], package, level)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+..\..\..\..\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\importlib\__init__.py:90: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+name = 'langchain_anthropic.chat_models', package = None, level = 0
+
+&gt;   ???
+
+&lt;frozen importlib._bootstrap&gt;:1387: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+name = 'langchain_anthropic.chat_models'
+import_ = &lt;function _gcd_import at 0x0000022D966880E0&gt;
+
+&gt;   ???
+
+&lt;frozen importlib._bootstrap&gt;:1360: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+name = 'langchain_anthropic.chat_models'
+import_ = &lt;function _gcd_import at 0x0000022D966880E0&gt;
+
+&gt;   ???
+
+&lt;frozen importlib._bootstrap&gt;:1310: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+f = &lt;function _gcd_import at 0x0000022D966880E0&gt;
+args = ('langchain_anthropic',), kwds = {}
+
+&gt;   ???
+
+&lt;frozen importlib._bootstrap&gt;:488: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+name = 'langchain_anthropic', package = None, level = 0
+
+&gt;   ???
+
+&lt;frozen importlib._bootstrap&gt;:1387: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+name = 'langchain_anthropic'
+import_ = &lt;function _gcd_import at 0x0000022D966880E0&gt;
+
+&gt;   ???
+
+&lt;frozen importlib._bootstrap&gt;:1360: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+name = 'langchain_anthropic'
+import_ = &lt;function _gcd_import at 0x0000022D966880E0&gt;
+
+&gt;   ???
+
+&lt;frozen importlib._bootstrap&gt;:1331: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+spec = ModuleSpec(name='langchain_anthropic', loader=&lt;_frozen_importlib_external.SourceFileLoader object at 0x0000022D9D3DFF5...rs\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\.venv-playground\\Lib\\site-packages\\langchain_anthropic'])
+
+&gt;   ???
+
+&lt;frozen importlib._bootstrap&gt;:935: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+self = &lt;_frozen_importlib_external.SourceFileLoader object at 0x0000022D9D3DFF50&gt;
+module = &lt;module 'langchain_anthropic' from 'C:\\Users\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\.venv-playground\\Lib\\site-packages\\langchain_anthropic\\__init__.py'&gt;
+
+&gt;   ???
+
+&lt;frozen importlib._bootstrap_external&gt;:999: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+f = &lt;built-in function exec&gt;
+args = (&lt;code object &lt;module&gt; at 0x0000022D9F9B3D30, file "C:\Users\Felladien\Documents\Projects\Python\FreyaHackaton\.venv-p... 'langchain_anthropic', '__loader__': &lt;_frozen_importlib_external.SourceFileLoader object at 0x0000022D9D3DFF50&gt;, ...})
+kwds = {}
+
+&gt;   ???
+
+&lt;frozen importlib._bootstrap&gt;:488: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    """Claude (Anthropic) partner package for LangChain."""
+    
+    from langchain_anthropic._version import __version__
+&gt;   from langchain_anthropic.chat_models import (
+        ChatAnthropic,
+        convert_to_anthropic_tool,
+    )
+
+.venv-playground\Lib\site-packages\langchain_anthropic\__init__.py:4: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    """Anthropic chat models."""
+    
+    from __future__ import annotations
+    
+    import copy
+    import datetime
+    import hashlib
+    import json
+    import re
+    import warnings
+    from collections.abc import AsyncIterator, Callable, Iterator, Mapping, Sequence
+    from functools import cached_property
+    from operator import itemgetter
+    from typing import Any, Final, Literal, TypeGuard, cast
+    
+    import anthropic
+&gt;   from langchain_core.callbacks import (
+        AsyncCallbackManagerForLLMRun,
+        CallbackManagerForLLMRun,
+    )
+
+.venv-playground\Lib\site-packages\langchain_anthropic\chat_models.py:17: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+attr_name = 'AsyncCallbackManagerForLLMRun'
+
+    def __getattr__(attr_name: str) -&gt; object:
+        module_name = _dynamic_imports.get(attr_name)
+&gt;       result = import_attr(attr_name, module_name, __spec__.parent)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.venv-playground\Lib\site-packages\langchain_core\callbacks\__init__.py:126: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+attr_name = 'AsyncCallbackManagerForLLMRun', module_name = 'manager'
+package = 'langchain_core.callbacks'
+
+    def import_attr(
+        attr_name: str,
+        module_name: str | None,
+        package: str | None,
+    ) -&gt; object:
+        """Import an attribute from a module located in a package.
+    
+        This utility function is used in custom `__getattr__` methods within `__init__.py`
+        files to dynamically import attributes.
+    
+        Args:
+            attr_name: The name of the attribute to import.
+            module_name: The name of the module to import from.
+    
+                If `None`, the attribute is imported from the package itself.
+            package: The name of the package where the module is located.
+    
+        Raises:
+            ImportError: If the module cannot be found.
+            AttributeError: If the attribute does not exist in the module or package.
+    
+        Returns:
+            The imported attribute.
+        """
+        if module_name == "__module__" or module_name is None:
+            try:
+                result = import_module(f".{attr_name}", package=package)
+            except ModuleNotFoundError:
+                msg = f"module '{package!r}' has no attribute {attr_name!r}"
+                raise AttributeError(msg) from None
+        else:
+            try:
+&gt;               module = import_module(f".{module_name}", package=package)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.venv-playground\Lib\site-packages\langchain_core\_import_utils.py:36: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+name = '.manager', package = 'langchain_core.callbacks'
+
+    def import_module(name, package=None):
+        """Import a module.
+    
+        The 'package' argument is required when performing a relative import. It
+        specifies the package to use as the anchor point from which to resolve the
+        relative import to an absolute import.
+    
+        """
+        level = 0
+        if name.startswith('.'):
+            if not package:
+                raise TypeError("the 'package' argument is required to perform a "
+                                f"relative import for {name!r}")
+            for character in name:
+                if character != '.':
+                    break
+                level += 1
+&gt;       return _bootstrap._gcd_import(name[level:], package, level)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+..\..\..\..\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\importlib\__init__.py:90: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    """Run managers."""
+    
+    from __future__ import annotations
+    
+    import asyncio
+    import atexit
+    import functools
+    import inspect
+    import logging
+    from abc import ABC, abstractmethod
+    from collections.abc import Callable, Mapping
+    from concurrent.futures import ThreadPoolExecutor
+    from contextlib import asynccontextmanager, contextmanager
+    from contextvars import copy_context
+    from typing import TYPE_CHECKING, Any, TypeVar, cast
+    
+    from typing_extensions import Self, override
+    
+    from langchain_core.callbacks.base import (
+        BaseCallbackHandler,
+        BaseCallbackManager,
+        Callbacks,
+        ChainManagerMixin,
+        LLMManagerMixin,
+        RetrieverManagerMixin,
+        RunManagerMixin,
+        ToolManagerMixin,
+    )
+    from langchain_core.callbacks.stdout import StdOutCallbackHandler
+    from langchain_core.globals import get_debug
+    from langchain_core.messages import BaseMessage, get_buffer_string
+    from langchain_core.utils.env import env_var_is_set
+&gt;   from langchain_core.utils.uuid import uuid7
+
+.venv-playground\Lib\site-packages\langchain_core\callbacks\manager.py:33: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    """UUID utility functions.
+    
+    This module exports a uuid7 function to generate monotonic, time-ordered UUIDs
+    for tracing and similar operations.
+    """
+    
+    from __future__ import annotations
+    
+    import typing
+    from uuid import UUID
+    
+&gt;   from uuid_utils.compat import uuid7 as _uuid_utils_uuid7
+
+.venv-playground\Lib\site-packages\langchain_core\utils\uuid.py:12: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    import os
+    from uuid import SafeUUID
+    
+&gt;   from ._uuid_utils import (
+        MAX,
+        NAMESPACE_DNS,
+        NAMESPACE_OID,
+        NAMESPACE_URL,
+        NAMESPACE_X500,
+        NIL,
+        RESERVED_FUTURE,
+        RESERVED_MICROSOFT,
+        RESERVED_NCS,
+        RFC_4122,
+        UUID,
+        __version__,
+        getnode,
+        uuid1,
+        uuid3,
+        uuid4,
+        uuid5,
+        uuid6,
+        uuid7,
+        uuid8,
+    )
+E   ImportError: DLL load failed while importing _uuid_utils: An Application Control policy has blocked this file.
+
+.venv-playground\Lib\site-packages\uuid_utils\__init__.py:4: ImportError</failure></testcase><testcase classname="tests.unit.test_llm_errors" name="test_retry_after_seconds_from_headers_and_attributes" time="0.001" /><testcase classname="tests.unit.test_llm_errors" name="test_retry_after_http_date" time="0.001" /><testcase classname="tests.unit.test_llm_errors" name="test_retry_after_from_real_sdk_response_headers" time="0.002" /><testcase classname="tests.unit.test_llm_errors" name="test_retry_after_found_through_wrapper" time="0.002" /><testcase classname="tests.unit.test_llm_errors" name="test_policy_covers_every_kind" time="0.002" /><testcase classname="tests.unit.test_llm_errors" name="test_dead_key_kinds_rotate[quota]" time="0.001" /><testcase classname="tests.unit.test_llm_errors" name="test_dead_key_kinds_rotate[auth]" time="0.001" /><testcase classname="tests.unit.test_llm_errors" name="test_rate_limit_cools_and_rotates" time="0.001" /><testcase classname="tests.unit.test_llm_errors" name="test_transient_kinds_retry_same_key_with_backoff[overloaded]" time="0.001" /><testcase classname="tests.unit.test_llm_errors" name="test_transient_kinds_retry_same_key_with_backoff[server]" time="0.002" /><testcase classname="tests.unit.test_llm_errors" name="test_transient_kinds_retry_same_key_with_backoff[timeout]" time="0.001" /><testcase classname="tests.unit.test_llm_errors" name="test_transient_kinds_retry_same_key_with_backoff[connection]" time="0.001" /><testcase classname="tests.unit.test_llm_errors" name="test_request_errors_go_to_next_provider[bad_request]" time="0.002" /><testcase classname="tests.unit.test_llm_errors" name="test_request_errors_go_to_next_provider[context]" time="0.002" /><testcase classname="tests.unit.test_llm_errors" name="test_parse_retries_once_then_next_provider" time="0.002" /><testcase classname="tests.unit.test_llm_errors" name="test_unknown_rotates_and_counts_for_circuit" time="0.002" /><testcase classname="tests.unit.test_llm_errors" name="test_scrub_secrets_masks_known_and_key_shaped_values" time="0.002" /><testcase classname="tests.unit.test_llm_errors" name="test_scrub_secrets_ignores_tiny_values" time="0.002" /><testcase classname="tests.unit.test_llm_errors" name="test_describe_error_is_one_line_capped_and_secret_free" time="0.001" /><testcase classname="tests.unit.test_llm_errors" name="test_all_providers_failed_summary" time="0.001" /><testcase classname="tests.unit.test_llm_errors" name="test_all_providers_failed_without_attempts" time="0.001" /><testcase classname="tests.unit.test_llm_gateway" name="test_quota_on_first_key_rotates_to_second_key" time="0.013" /><testcase classname="tests.unit.test_llm_gateway" name="test_key_marked_dead_is_skipped_in_the_next_run" time="0.012" /><testcase classname="tests.unit.test_llm_gateway" name="test_all_anthropic_keys_dead_falls_back_to_openai" time="0.013" /><testcase classname="tests.unit.test_llm_gateway" name="test_rate_limited_key_rotates_without_waiting" time="0.009" /><testcase classname="tests.unit.test_llm_gateway" name="test_rate_limit_cooldown_then_reuse_same_key" time="0.008" /><testcase classname="tests.unit.test_llm_gateway" name="test_rate_limit_without_header_uses_configured_cooldown" time="0.009" /><testcase classname="tests.unit.test_llm_gateway" name="test_other_provider_preferred_over_waiting_for_cooldown" time="0.008" /><testcase classname="tests.unit.test_llm_gateway" name="test_cooldown_longer_than_max_wait_fails_fast" time="0.008" /><testcase classname="tests.unit.test_llm_gateway" name="test_transient_errors_retried_on_same_key_with_backoff" time="0.008" /><testcase classname="tests.unit.test_llm_gateway" name="test_transient_retries_exhausted_then_next_key" time="0.008" /><testcase classname="tests.unit.test_llm_gateway" name="test_circuit_opens_after_three_provider_failures" time="0.010" /><testcase classname="tests.unit.test_llm_gateway" name="test_unknown_errors_rotate_keys_then_provider" time="0.007" /><testcase classname="tests.unit.test_llm_gateway" name="test_bad_request_moves_to_next_provider_without_touching_keys" time="0.009" /><testcase classname="tests.unit.test_llm_gateway" name="test_context_overflow_moves_to_next_provider" time="0.008" /><testcase classname="tests.unit.test_llm_gateway" name="test_parse_error_retried_once_with_repair_message" time="0.008" /><testcase classname="tests.unit.test_llm_gateway" name="test_parse_error_twice_moves_to_next_provider" time="0.008" /><testcase classname="tests.unit.test_llm_gateway" name="test_transient_retry_does_not_consume_the_parse_repair" time="0.008" /><testcase classname="tests.unit.test_llm_gateway" name="test_gateway_validates_structured_values" time="0.009" /><testcase classname="tests.unit.test_llm_gateway" name="test_empty_text_reply_is_retried_then_next_provider" time="0.008" /><testcase classname="tests.unit.test_llm_gateway" name="test_deadline_caps_attempt_timeout" time="0.009" /><testcase classname="tests.unit.test_llm_gateway" name="test_deadline_stops_new_attempts" time="0.009" /><testcase classname="tests.unit.test_llm_gateway" name="test_expired_deadline_makes_no_attempt" time="0.008" /><testcase classname="tests.unit.test_llm_gateway" name="test_everything_dead_raises_with_all_attempts" time="0.018" /><testcase classname="tests.unit.test_llm_gateway" name="test_no_keys_at_all" time="0.008" /><testcase classname="tests.unit.test_llm_gateway" name="test_keys_dead_from_previous_run_are_revived_as_last_resort" time="0.017" /><testcase classname="tests.unit.test_llm_gateway" name="test_claude_code_not_logged_in_is_auth_dead_and_persisted" time="0.012" /><testcase classname="tests.unit.test_llm_gateway" name="test_trace_has_one_model_call_per_attempt_and_no_secrets" time="0.013" /><testcase classname="tests.unit.test_llm_gateway" name="test_real_null_trace_lines_have_no_secrets" time="0.014" /><testcase classname="tests.unit.test_llm_gateway" name="test_parse_provider_order" time="0.002" /><testcase classname="tests.unit.test_llm_gateway" name="test_gateway_config_from_partial_settings_disables_health_file" time="0.001" /><testcase classname="tests.unit.test_llm_gateway" name="test_gateway_config_from_real_settings" time="0.006" /><testcase classname="tests.unit.test_llm_gateway" name="test_describe_lists_models_and_masked_keys" time="0.006" /><testcase classname="tests.unit.test_llm_gateway" name="test_registry_providers_are_built_in_configured_order" time="0.006" /><testcase classname="tests.unit.test_llm_gateway" name="test_custom_registered_provider_with_own_keys" time="0.008" /><testcase classname="tests.unit.test_llm_gateway" name="test_register_provider_validates_name" time="0.001" /><testcase classname="tests.unit.test_llm_gateway" name="test_probe_reports_each_provider" time="0.015" /><testcase classname="tests.unit.test_llm_gateway" name="test_circuit_breaker_state_machine" time="0.002" /><testcase classname="tests.unit.test_llm_gateway" name="test_anthropic_text_builds_chat_without_sampling_params" time="0.004" /><testcase classname="tests.unit.test_llm_gateway" name="test_empty_system_prompt_is_omitted" time="0.004" /><testcase classname="tests.unit.test_llm_gateway" name="test_anthropic_structured_uses_native_json_schema" time="0.004" /><testcase classname="tests.unit.test_llm_gateway" name="test_structured_falls_back_to_raw_text_parsing" time="0.004" /><testcase classname="tests.unit.test_llm_gateway" name="test_structured_invalid_parsed_value_falls_back_then_raises" time="0.004" /><testcase classname="tests.unit.test_llm_gateway" name="test_anthropic_free_form_schema_uses_prompted_json" time="0.005" /><testcase classname="tests.unit.test_llm_gateway" name="test_openai_provider_kwargs" time="0.005" /><testcase classname="tests.unit.test_llm_gateway" name="test_model_for_reads_settings_with_defaults" time="0.001" /><testcase classname="tests.unit.test_llm_gateway" name="test_claude_code_text_one_turn_no_tools" time="0.003" /><testcase classname="tests.unit.test_llm_gateway" name="test_claude_code_with_real_key_passes_it_to_the_cli" time="0.003" /><testcase classname="tests.unit.test_llm_gateway" name="test_claude_code_billing_error_is_quota" time="0.003" /><testcase classname="tests.unit.test_llm_gateway" name="test_claude_code_not_logged_in_text_is_auth" time="0.003" /><testcase classname="tests.unit.test_llm_gateway" name="test_claude_code_not_logged_in_result_error_is_auth" time="0.003" /><testcase classname="tests.unit.test_llm_gateway" name="test_claude_code_api_error_status_is_classified" time="0.003" /><testcase classname="tests.unit.test_llm_gateway" name="test_claude_code_structured_is_prompted_json" time="0.004" /><testcase classname="tests.unit.test_llm_gateway" name="test_importing_builder_llm_does_not_import_provider_sdks" time="0.180" /><testcase classname="tests.unit.test_llm_gateway" name="test_registry_has_the_three_builtin_providers" time="0.001" /><testcase classname="tests.unit.test_llm_keys" name="test_api_key_label_repr_and_str_are_masked" time="0.001" /><testcase classname="tests.unit.test_llm_keys" name="test_short_secret_label_shows_no_characters" time="0.001" /><testcase classname="tests.unit.test_llm_keys" name="test_fingerprint_is_stable_short_and_not_the_secret" time="0.001" /><testcase classname="tests.unit.test_llm_keys" name="test_login_pseudo_key" time="0.002" /><testcase classname="tests.unit.test_llm_keys" name="test_discovery_order_dedupe_and_numbering" time="0.001" /><testcase classname="tests.unit.test_llm_keys" name="test_discovery_strips_quotes_and_skips_empty_and_placeholders" time="0.001" /><testcase classname="tests.unit.test_llm_keys" name="test_discovery_reads_numbered_keys_up_to_20_only" time="0.002" /><testcase classname="tests.unit.test_llm_keys" name="test_discovery_without_keys_is_empty" time="0.002" /><testcase classname="tests.unit.test_llm_keys" name="test_discover_all_keys_excludes_claude_code_by_default" time="0.006" /><testcase classname="tests.unit.test_llm_keys" name="test_llm_secrets_lists_keys_and_oauth_token_but_never_login" time="0.001" /><testcase classname="tests.unit.test_llm_keys" name="test_claude_code_needs_sdk_and_login" time="0.007" /><testcase classname="tests.unit.test_llm_keys" name="test_claude_code_available_with_oauth_token_or_config_dir" time="0.008" /><testcase classname="tests.unit.test_llm_keys" name="test_default_env_reads_dotenv_and_environment_wins" time="0.007" /><testcase classname="tests.unit.test_llm_keys" name="test_default_env_without_file_is_process_environment" time="0.006" /><testcase classname="tests.unit.test_llm_keys" name="test_pool_prefers_active_keys_in_discovery_order" time="0.002" /><testcase classname="tests.unit.test_llm_keys" name="test_pool_prefers_fewest_consecutive_failures" time="0.002" /><testcase classname="tests.unit.test_llm_keys" name="test_pool_deduplicates_identical_secrets" time="0.001" /><testcase classname="tests.unit.test_llm_keys" name="test_cooling_key_returns_after_expiry_but_after_active_keys" time="0.002" /><testcase classname="tests.unit.test_llm_keys" name="test_mark_cooling_has_a_minimum_and_never_resurrects_dead_keys" time="0.002" /><testcase classname="tests.unit.test_llm_keys" name="test_dead_keys_are_never_returned" time="0.001" /><testcase classname="tests.unit.test_llm_keys" name="test_mark_success_clears_failures_and_cooling_flag" time="0.001" /><testcase classname="tests.unit.test_llm_keys" name="test_snapshot_contains_no_secret" time="0.002" /><testcase classname="tests.unit.test_llm_keys" name="test_health_store_persists_dead_keys_without_secrets" time="0.011" /><testcase classname="tests.unit.test_llm_keys" name="test_health_store_entries_expire_after_ttl" time="0.013" /><testcase classname="tests.unit.test_llm_keys" name="test_health_store_is_per_provider" time="0.008" /><testcase classname="tests.unit.test_llm_keys" name="test_health_store_tolerates_corrupt_file" time="0.011" /><testcase classname="tests.unit.test_llm_keys" name="test_health_store_ignores_malformed_entries" time="0.008" /><testcase classname="tests.unit.test_llm_keys" name="test_health_store_write_failure_does_not_raise" time="0.008" /><testcase classname="tests.unit.test_llm_keys" name="test_revive_persisted_dead_keys_and_forget_on_success" time="0.016" /><testcase classname="tests.unit.test_llm_keys" name="test_forget_removes_entry" time="0.013" /><testcase classname="tests.unit.test_llm_structured" name="test_schema_inlines_refs_and_closes_objects" time="0.003" /><testcase classname="tests.unit.test_llm_structured" name="test_schema_drops_unsupported_keywords_everywhere" time="0.003" /><testcase classname="tests.unit.test_llm_structured" name="test_schema_const_becomes_enum_and_titles_only_at_root" time="0.003" /><testcase classname="tests.unit.test_llm_structured" name="test_schema_keeps_properties_named_like_keywords" time="0.002" /><testcase classname="tests.unit.test_llm_structured" name="test_schema_keeps_free_form_maps_open" time="0.004" /><testcase classname="tests.unit.test_llm_structured" name="test_schema_keeps_recursive_definitions_and_spells_out_the_root" time="0.002" /><testcase classname="tests.unit.test_llm_structured" name="test_recursive_schema_is_accepted_by_langchain_function_conversion" time="0.070"><failure message="ImportError: DLL load failed while importing _uuid_utils: An Application Control policy has blocked this file.">def test_recursive_schema_is_accepted_by_langchain_function_conversion() -&gt; None:
+        function_calling = pytest.importorskip("langchain_core.utils.function_calling")
+&gt;       function = function_calling.convert_to_openai_function(schema_for_llm(Node))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\unit\test_llm_structured.py:153: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+function = {'description': 'Recursive tree node.', 'properties': {'value': {'type': 'integer'}, 'children': {'items': {'$ref': '#/$defs/Node'}, 'type': 'array'}}, 'required': ['value'], 'type': 'object', ...}
+strict = None
+
+    def convert_to_openai_function(
+        function: Mapping[str, Any] | type | Callable[..., Any] | BaseTool,
+        *,
+        strict: bool | None = None,
+    ) -&gt; dict[str, Any]:
+        """Convert a raw function/class to an OpenAI function.
+    
+        Args:
+            function: A dictionary, Pydantic `BaseModel` class, `TypedDict` class, a
+                LangChain `Tool` object, or a Python function.
+    
+                If a dictionary is passed in, it is assumed to already be a valid OpenAI
+                function, a JSON schema with top-level `title` key specified, an Anthropic
+                format tool, or an Amazon Bedrock Converse format tool.
+            strict: If `True`, model output is guaranteed to exactly match the JSON Schema
+                provided in the function definition.
+    
+                If `None`, `strict` argument will not be included in function definition.
+    
+        Returns:
+            A dict version of the passed in function which is compatible with the OpenAI
+                function-calling API.
+    
+        Raises:
+            ValueError: If function is not in a supported format.
+    
+        !!! warning "Behavior changed in `langchain-core` 0.3.16"
+    
+            `description` and `parameters` keys are now optional. Only `name` is
+            required and guaranteed to be part of the output.
+        """
+        # Import locally to prevent circular import
+&gt;       from langchain_core.tools import BaseTool  # noqa: PLC0415
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.venv-playground\Lib\site-packages\langchain_core\utils\function_calling.py:409: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+attr_name = 'BaseTool'
+
+    def __getattr__(attr_name: str) -&gt; object:
+        module_name = _dynamic_imports.get(attr_name)
+&gt;       result = import_attr(attr_name, module_name, __spec__.parent)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.venv-playground\Lib\site-packages\langchain_core\tools\__init__.py:89: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+attr_name = 'BaseTool', module_name = 'base', package = 'langchain_core.tools'
+
+    def import_attr(
+        attr_name: str,
+        module_name: str | None,
+        package: str | None,
+    ) -&gt; object:
+        """Import an attribute from a module located in a package.
+    
+        This utility function is used in custom `__getattr__` methods within `__init__.py`
+        files to dynamically import attributes.
+    
+        Args:
+            attr_name: The name of the attribute to import.
+            module_name: The name of the module to import from.
+    
+                If `None`, the attribute is imported from the package itself.
+            package: The name of the package where the module is located.
+    
+        Raises:
+            ImportError: If the module cannot be found.
+            AttributeError: If the attribute does not exist in the module or package.
+    
+        Returns:
+            The imported attribute.
+        """
+        if module_name == "__module__" or module_name is None:
+            try:
+                result = import_module(f".{attr_name}", package=package)
+            except ModuleNotFoundError:
+                msg = f"module '{package!r}' has no attribute {attr_name!r}"
+                raise AttributeError(msg) from None
+        else:
+            try:
+&gt;               module = import_module(f".{module_name}", package=package)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.venv-playground\Lib\site-packages\langchain_core\_import_utils.py:36: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+name = '.base', package = 'langchain_core.tools'
+
+    def import_module(name, package=None):
+        """Import a module.
+    
+        The 'package' argument is required when performing a relative import. It
+        specifies the package to use as the anchor point from which to resolve the
+        relative import to an absolute import.
+    
+        """
+        level = 0
+        if name.startswith('.'):
+            if not package:
+                raise TypeError("the 'package' argument is required to perform a "
+                                f"relative import for {name!r}")
+            for character in name:
+                if character != '.':
+                    break
+                level += 1
+&gt;       return _bootstrap._gcd_import(name[level:], package, level)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+..\..\..\..\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\importlib\__init__.py:90: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    """Base classes and utilities for LangChain tools."""
+    
+    from __future__ import annotations
+    
+    import functools
+    import inspect
+    import json
+    import logging
+    import typing
+    import warnings
+    from abc import ABC, abstractmethod
+    from collections.abc import Callable, Mapping, Sequence
+    from typing import (
+        TYPE_CHECKING,
+        Annotated,
+        Any,
+        Literal,
+        TypeVar,
+        cast,
+        get_args,
+        get_origin,
+    )
+    
+    import typing_extensions
+    from pydantic import (
+        BaseModel,
+        ConfigDict,
+        Field,
+        PrivateAttr,
+        PydanticDeprecationWarning,
+        SkipValidation,
+        ValidationError,
+        validate_arguments,
+    )
+    from pydantic.fields import FieldInfo
+    from pydantic.v1 import BaseModel as BaseModelV1
+    from pydantic.v1 import ValidationError as ValidationErrorV1
+    from pydantic.v1 import validate_arguments as validate_arguments_v1
+    from typing_extensions import Self, get_type_hints, override
+    
+&gt;   from langchain_core.callbacks import (
+        AsyncCallbackManager,
+        CallbackManager,
+        Callbacks,
+    )
+
+.venv-playground\Lib\site-packages\langchain_core\tools\base.py:41: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+attr_name = 'AsyncCallbackManager'
+
+    def __getattr__(attr_name: str) -&gt; object:
+        module_name = _dynamic_imports.get(attr_name)
+&gt;       result = import_attr(attr_name, module_name, __spec__.parent)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.venv-playground\Lib\site-packages\langchain_core\callbacks\__init__.py:126: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+attr_name = 'AsyncCallbackManager', module_name = 'manager'
+package = 'langchain_core.callbacks'
+
+    def import_attr(
+        attr_name: str,
+        module_name: str | None,
+        package: str | None,
+    ) -&gt; object:
+        """Import an attribute from a module located in a package.
+    
+        This utility function is used in custom `__getattr__` methods within `__init__.py`
+        files to dynamically import attributes.
+    
+        Args:
+            attr_name: The name of the attribute to import.
+            module_name: The name of the module to import from.
+    
+                If `None`, the attribute is imported from the package itself.
+            package: The name of the package where the module is located.
+    
+        Raises:
+            ImportError: If the module cannot be found.
+            AttributeError: If the attribute does not exist in the module or package.
+    
+        Returns:
+            The imported attribute.
+        """
+        if module_name == "__module__" or module_name is None:
+            try:
+                result = import_module(f".{attr_name}", package=package)
+            except ModuleNotFoundError:
+                msg = f"module '{package!r}' has no attribute {attr_name!r}"
+                raise AttributeError(msg) from None
+        else:
+            try:
+&gt;               module = import_module(f".{module_name}", package=package)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.venv-playground\Lib\site-packages\langchain_core\_import_utils.py:36: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+name = '.manager', package = 'langchain_core.callbacks'
+
+    def import_module(name, package=None):
+        """Import a module.
+    
+        The 'package' argument is required when performing a relative import. It
+        specifies the package to use as the anchor point from which to resolve the
+        relative import to an absolute import.
+    
+        """
+        level = 0
+        if name.startswith('.'):
+            if not package:
+                raise TypeError("the 'package' argument is required to perform a "
+                                f"relative import for {name!r}")
+            for character in name:
+                if character != '.':
+                    break
+                level += 1
+&gt;       return _bootstrap._gcd_import(name[level:], package, level)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+..\..\..\..\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\importlib\__init__.py:90: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    """Run managers."""
+    
+    from __future__ import annotations
+    
+    import asyncio
+    import atexit
+    import functools
+    import inspect
+    import logging
+    from abc import ABC, abstractmethod
+    from collections.abc import Callable, Mapping
+    from concurrent.futures import ThreadPoolExecutor
+    from contextlib import asynccontextmanager, contextmanager
+    from contextvars import copy_context
+    from typing import TYPE_CHECKING, Any, TypeVar, cast
+    
+    from typing_extensions import Self, override
+    
+    from langchain_core.callbacks.base import (
+        BaseCallbackHandler,
+        BaseCallbackManager,
+        Callbacks,
+        ChainManagerMixin,
+        LLMManagerMixin,
+        RetrieverManagerMixin,
+        RunManagerMixin,
+        ToolManagerMixin,
+    )
+    from langchain_core.callbacks.stdout import StdOutCallbackHandler
+    from langchain_core.globals import get_debug
+    from langchain_core.messages import BaseMessage, get_buffer_string
+    from langchain_core.utils.env import env_var_is_set
+&gt;   from langchain_core.utils.uuid import uuid7
+
+.venv-playground\Lib\site-packages\langchain_core\callbacks\manager.py:33: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    """UUID utility functions.
+    
+    This module exports a uuid7 function to generate monotonic, time-ordered UUIDs
+    for tracing and similar operations.
+    """
+    
+    from __future__ import annotations
+    
+    import typing
+    from uuid import UUID
+    
+&gt;   from uuid_utils.compat import uuid7 as _uuid_utils_uuid7
+
+.venv-playground\Lib\site-packages\langchain_core\utils\uuid.py:12: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    import os
+    from uuid import SafeUUID
+    
+&gt;   from ._uuid_utils import (
+        MAX,
+        NAMESPACE_DNS,
+        NAMESPACE_OID,
+        NAMESPACE_URL,
+        NAMESPACE_X500,
+        NIL,
+        RESERVED_FUTURE,
+        RESERVED_MICROSOFT,
+        RESERVED_NCS,
+        RFC_4122,
+        UUID,
+        __version__,
+        getnode,
+        uuid1,
+        uuid3,
+        uuid4,
+        uuid5,
+        uuid6,
+        uuid7,
+        uuid8,
+    )
+E   ImportError: DLL load failed while importing _uuid_utils: An Application Control policy has blocked this file.
+
+.venv-playground\Lib\site-packages\uuid_utils\__init__.py:4: ImportError</failure></testcase><testcase classname="tests.unit.test_llm_structured" name="test_schema_root_title_is_a_safe_name" time="0.003" /><testcase classname="tests.unit.test_llm_structured" name="test_schema_does_not_mutate_pydantic_cache" time="0.004" /><testcase classname="tests.unit.test_llm_structured" name="test_schema_is_accepted_by_anthropic_transform" time="0.003" /><testcase classname="tests.unit.test_llm_structured" name="test_schema_is_accepted_by_langchain_openai_function_conversion" time="0.057"><failure message="ImportError: DLL load failed while importing _uuid_utils: An Application Control policy has blocked this file.">def test_schema_is_accepted_by_langchain_openai_function_conversion() -&gt; None:
+        function_calling = pytest.importorskip("langchain_core.utils.function_calling")
+&gt;       function = function_calling.convert_to_openai_function(schema_for_llm(Person))
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+tests\unit\test_llm_structured.py:176: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+function = {'description': 'A person record.', 'properties': {'name': {'type': 'string'}, 'kind': {'type': 'string', 'enum': ['cu...treet', 'number'], 'type': 'object', ...}, 'type': 'array'}, ...}, 'required': ['name', 'home'], 'type': 'object', ...}
+strict = None
+
+    def convert_to_openai_function(
+        function: Mapping[str, Any] | type | Callable[..., Any] | BaseTool,
+        *,
+        strict: bool | None = None,
+    ) -&gt; dict[str, Any]:
+        """Convert a raw function/class to an OpenAI function.
+    
+        Args:
+            function: A dictionary, Pydantic `BaseModel` class, `TypedDict` class, a
+                LangChain `Tool` object, or a Python function.
+    
+                If a dictionary is passed in, it is assumed to already be a valid OpenAI
+                function, a JSON schema with top-level `title` key specified, an Anthropic
+                format tool, or an Amazon Bedrock Converse format tool.
+            strict: If `True`, model output is guaranteed to exactly match the JSON Schema
+                provided in the function definition.
+    
+                If `None`, `strict` argument will not be included in function definition.
+    
+        Returns:
+            A dict version of the passed in function which is compatible with the OpenAI
+                function-calling API.
+    
+        Raises:
+            ValueError: If function is not in a supported format.
+    
+        !!! warning "Behavior changed in `langchain-core` 0.3.16"
+    
+            `description` and `parameters` keys are now optional. Only `name` is
+            required and guaranteed to be part of the output.
+        """
+        # Import locally to prevent circular import
+&gt;       from langchain_core.tools import BaseTool  # noqa: PLC0415
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.venv-playground\Lib\site-packages\langchain_core\utils\function_calling.py:409: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+attr_name = 'BaseTool'
+
+    def __getattr__(attr_name: str) -&gt; object:
+        module_name = _dynamic_imports.get(attr_name)
+&gt;       result = import_attr(attr_name, module_name, __spec__.parent)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.venv-playground\Lib\site-packages\langchain_core\tools\__init__.py:89: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+attr_name = 'BaseTool', module_name = 'base', package = 'langchain_core.tools'
+
+    def import_attr(
+        attr_name: str,
+        module_name: str | None,
+        package: str | None,
+    ) -&gt; object:
+        """Import an attribute from a module located in a package.
+    
+        This utility function is used in custom `__getattr__` methods within `__init__.py`
+        files to dynamically import attributes.
+    
+        Args:
+            attr_name: The name of the attribute to import.
+            module_name: The name of the module to import from.
+    
+                If `None`, the attribute is imported from the package itself.
+            package: The name of the package where the module is located.
+    
+        Raises:
+            ImportError: If the module cannot be found.
+            AttributeError: If the attribute does not exist in the module or package.
+    
+        Returns:
+            The imported attribute.
+        """
+        if module_name == "__module__" or module_name is None:
+            try:
+                result = import_module(f".{attr_name}", package=package)
+            except ModuleNotFoundError:
+                msg = f"module '{package!r}' has no attribute {attr_name!r}"
+                raise AttributeError(msg) from None
+        else:
+            try:
+&gt;               module = import_module(f".{module_name}", package=package)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.venv-playground\Lib\site-packages\langchain_core\_import_utils.py:36: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+name = '.base', package = 'langchain_core.tools'
+
+    def import_module(name, package=None):
+        """Import a module.
+    
+        The 'package' argument is required when performing a relative import. It
+        specifies the package to use as the anchor point from which to resolve the
+        relative import to an absolute import.
+    
+        """
+        level = 0
+        if name.startswith('.'):
+            if not package:
+                raise TypeError("the 'package' argument is required to perform a "
+                                f"relative import for {name!r}")
+            for character in name:
+                if character != '.':
+                    break
+                level += 1
+&gt;       return _bootstrap._gcd_import(name[level:], package, level)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+..\..\..\..\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\importlib\__init__.py:90: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    """Base classes and utilities for LangChain tools."""
+    
+    from __future__ import annotations
+    
+    import functools
+    import inspect
+    import json
+    import logging
+    import typing
+    import warnings
+    from abc import ABC, abstractmethod
+    from collections.abc import Callable, Mapping, Sequence
+    from typing import (
+        TYPE_CHECKING,
+        Annotated,
+        Any,
+        Literal,
+        TypeVar,
+        cast,
+        get_args,
+        get_origin,
+    )
+    
+    import typing_extensions
+    from pydantic import (
+        BaseModel,
+        ConfigDict,
+        Field,
+        PrivateAttr,
+        PydanticDeprecationWarning,
+        SkipValidation,
+        ValidationError,
+        validate_arguments,
+    )
+    from pydantic.fields import FieldInfo
+    from pydantic.v1 import BaseModel as BaseModelV1
+    from pydantic.v1 import ValidationError as ValidationErrorV1
+    from pydantic.v1 import validate_arguments as validate_arguments_v1
+    from typing_extensions import Self, get_type_hints, override
+    
+&gt;   from langchain_core.callbacks import (
+        AsyncCallbackManager,
+        CallbackManager,
+        Callbacks,
+    )
+
+.venv-playground\Lib\site-packages\langchain_core\tools\base.py:41: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+attr_name = 'AsyncCallbackManager'
+
+    def __getattr__(attr_name: str) -&gt; object:
+        module_name = _dynamic_imports.get(attr_name)
+&gt;       result = import_attr(attr_name, module_name, __spec__.parent)
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.venv-playground\Lib\site-packages\langchain_core\callbacks\__init__.py:126: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+attr_name = 'AsyncCallbackManager', module_name = 'manager'
+package = 'langchain_core.callbacks'
+
+    def import_attr(
+        attr_name: str,
+        module_name: str | None,
+        package: str | None,
+    ) -&gt; object:
+        """Import an attribute from a module located in a package.
+    
+        This utility function is used in custom `__getattr__` methods within `__init__.py`
+        files to dynamically import attributes.
+    
+        Args:
+            attr_name: The name of the attribute to import.
+            module_name: The name of the module to import from.
+    
+                If `None`, the attribute is imported from the package itself.
+            package: The name of the package where the module is located.
+    
+        Raises:
+            ImportError: If the module cannot be found.
+            AttributeError: If the attribute does not exist in the module or package.
+    
+        Returns:
+            The imported attribute.
+        """
+        if module_name == "__module__" or module_name is None:
+            try:
+                result = import_module(f".{attr_name}", package=package)
+            except ModuleNotFoundError:
+                msg = f"module '{package!r}' has no attribute {attr_name!r}"
+                raise AttributeError(msg) from None
+        else:
+            try:
+&gt;               module = import_module(f".{module_name}", package=package)
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.venv-playground\Lib\site-packages\langchain_core\_import_utils.py:36: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+name = '.manager', package = 'langchain_core.callbacks'
+
+    def import_module(name, package=None):
+        """Import a module.
+    
+        The 'package' argument is required when performing a relative import. It
+        specifies the package to use as the anchor point from which to resolve the
+        relative import to an absolute import.
+    
+        """
+        level = 0
+        if name.startswith('.'):
+            if not package:
+                raise TypeError("the 'package' argument is required to perform a "
+                                f"relative import for {name!r}")
+            for character in name:
+                if character != '.':
+                    break
+                level += 1
+&gt;       return _bootstrap._gcd_import(name[level:], package, level)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+..\..\..\..\.cache\codex-runtimes\codex-primary-runtime\dependencies\python\Lib\importlib\__init__.py:90: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    """Run managers."""
+    
+    from __future__ import annotations
+    
+    import asyncio
+    import atexit
+    import functools
+    import inspect
+    import logging
+    from abc import ABC, abstractmethod
+    from collections.abc import Callable, Mapping
+    from concurrent.futures import ThreadPoolExecutor
+    from contextlib import asynccontextmanager, contextmanager
+    from contextvars import copy_context
+    from typing import TYPE_CHECKING, Any, TypeVar, cast
+    
+    from typing_extensions import Self, override
+    
+    from langchain_core.callbacks.base import (
+        BaseCallbackHandler,
+        BaseCallbackManager,
+        Callbacks,
+        ChainManagerMixin,
+        LLMManagerMixin,
+        RetrieverManagerMixin,
+        RunManagerMixin,
+        ToolManagerMixin,
+    )
+    from langchain_core.callbacks.stdout import StdOutCallbackHandler
+    from langchain_core.globals import get_debug
+    from langchain_core.messages import BaseMessage, get_buffer_string
+    from langchain_core.utils.env import env_var_is_set
+&gt;   from langchain_core.utils.uuid import uuid7
+
+.venv-playground\Lib\site-packages\langchain_core\callbacks\manager.py:33: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    """UUID utility functions.
+    
+    This module exports a uuid7 function to generate monotonic, time-ordered UUIDs
+    for tracing and similar operations.
+    """
+    
+    from __future__ import annotations
+    
+    import typing
+    from uuid import UUID
+    
+&gt;   from uuid_utils.compat import uuid7 as _uuid_utils_uuid7
+
+.venv-playground\Lib\site-packages\langchain_core\utils\uuid.py:12: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _
+
+    import os
+    from uuid import SafeUUID
+    
+&gt;   from ._uuid_utils import (
+        MAX,
+        NAMESPACE_DNS,
+        NAMESPACE_OID,
+        NAMESPACE_URL,
+        NAMESPACE_X500,
+        NIL,
+        RESERVED_FUTURE,
+        RESERVED_MICROSOFT,
+        RESERVED_NCS,
+        RFC_4122,
+        UUID,
+        __version__,
+        getnode,
+        uuid1,
+        uuid3,
+        uuid4,
+        uuid5,
+        uuid6,
+        uuid7,
+        uuid8,
+    )
+E   ImportError: DLL load failed while importing _uuid_utils: An Application Control policy has blocked this file.
+
+.venv-playground\Lib\site-packages\uuid_utils\__init__.py:4: ImportError</failure></testcase><testcase classname="tests.unit.test_llm_structured" name="test_extract_json_variants[{&quot;a&quot;: 1}-expected0]" time="0.002" /><testcase classname="tests.unit.test_llm_structured" name="test_extract_json_variants[  \n{&quot;a&quot;: 1}\n -expected1]" time="0.001" /><testcase classname="tests.unit.test_llm_structured" name="test_extract_json_variants[```json\n{&quot;a&quot;: 1}\n```-expected2]" time="0.002" /><testcase classname="tests.unit.test_llm_structured" name="test_extract_json_variants[Here you go:\n```\n{&quot;a&quot;: 2}\n```\nThanks-expected3]" time="0.002" /><testcase classname="tests.unit.test_llm_structured" name="test_extract_json_variants[Sure! The answer is {&quot;a&quot;: {&quot;b&quot;: [1, 2]}} - done.-expected4]" time="0.002" /><testcase classname="tests.unit.test_llm_structured" name="test_extract_json_variants[{&quot;text&quot;: &quot;braces } and { inside \\&quot; strings&quot;}-expected5]" time="0.002" /><testcase classname="tests.unit.test_llm_structured" name="test_extract_json_variants[```json\n{broken\n```\nfixed: {&quot;a&quot;: 3}-expected6]" time="0.002" /><testcase classname="tests.unit.test_llm_structured" name="test_extract_json_prefers_objects_when_asked" time="0.002" /><testcase classname="tests.unit.test_llm_structured" name="test_extract_json_array" time="0.002" /><testcase classname="tests.unit.test_llm_structured" name="test_extract_json_raises_parse_error[]" time="0.002" /><testcase classname="tests.unit.test_llm_structured" name="test_extract_json_raises_parse_error[   ]" time="0.002" /><testcase classname="tests.unit.test_llm_structured" name="test_extract_json_raises_parse_error[no json here]" time="0.002" /><testcase classname="tests.unit.test_llm_structured" name="test_extract_json_raises_parse_error[{not: json}]" time="0.001" /><testcase classname="tests.unit.test_llm_structured" name="test_extract_json_raises_parse_error[[1, 2]" time="0.001" /><testcase classname="tests.unit.test_llm_structured" name="test_parse_json_model_success" time="0.001" /><testcase classname="tests.unit.test_llm_structured" name="test_parse_json_model_validation_failure_names_the_fields" time="0.001" /><testcase classname="tests.unit.test_llm_structured" name="test_parse_json_model_enforces_dropped_constraints" time="0.002" /><testcase classname="tests.unit.test_llm_structured" name="test_parse_json_model_without_json" time="0.001" /><testcase classname="tests.unit.test_llm_structured" name="test_json_instruction_embeds_schema" time="0.002" /><testcase classname="tests.unit.test_llm_structured" name="test_repair_instruction_quotes_error_and_is_bounded" time="0.001" /><testcase classname="tests.unit.test_money" name="test_to_money[637.5-637.50_0]" time="0.001" /><testcase classname="tests.unit.test_money" name="test_to_money[2125.1-2125.10]" time="0.001" /><testcase classname="tests.unit.test_money" name="test_to_money[420-420.00]" time="0.002" /><testcase classname="tests.unit.test_money" name="test_to_money[637.5-637.50_1]" time="0.002" /><testcase classname="tests.unit.test_money" name="test_to_money[637.50-637.50]" time="0.001" /><testcase classname="tests.unit.test_money" name="test_to_money[raw5-1250.00]" time="0.001" /><testcase classname="tests.unit.test_money" name="test_to_money[$1,250-1250.00]" time="0.001" /><testcase classname="tests.unit.test_money" name="test_to_money[1,250.75-1250.75]" time="0.002" /><testcase classname="tests.unit.test_money" name="test_to_money[1.250,50-1250.50]" time="0.001" /><testcase classname="tests.unit.test_money" name="test_to_money[637,50-637.50]" time="0.002" /><testcase classname="tests.unit.test_money" name="test_to_money[637,5-637.50]" time="0.002" /><testcase classname="tests.unit.test_money" name="test_to_money[1,250-1250.00]" time="0.001" /><testcase classname="tests.unit.test_money" name="test_to_money[1,250,000-1250000.00]" time="0.002" /><testcase classname="tests.unit.test_money" name="test_to_money[1.250.000-1250000.00]" time="0.001" /><testcase classname="tests.unit.test_money" name="test_to_money[637.50 dollars-637.50]" time="0.002" /><testcase classname="tests.unit.test_money" name="test_to_money[  420  -420.00]" time="0.002" /><testcase classname="tests.unit.test_money" name="test_to_money[-5--5.00]" time="0.001" /><testcase classname="tests.unit.test_money" name="test_to_money[0.125-0.13_0]" time="0.002" /><testcase classname="tests.unit.test_money" name="test_to_money[0.125-0.13_1]" time="0.001" /><testcase classname="tests.unit.test_money" name="test_to_money[1.005-1.01]" time="0.001" /><testcase classname="tests.unit.test_money" name="test_to_money[2.675-2.68]" time="0.001" /><testcase classname="tests.unit.test_money" name="test_to_money_rejects_non_amounts[True]" time="0.001" /><testcase classname="tests.unit.test_money" name="test_to_money_rejects_non_amounts[False]" time="0.001" /><testcase classname="tests.unit.test_money" name="test_to_money_rejects_non_amounts[nan]" time="0.002" /><testcase classname="tests.unit.test_money" name="test_to_money_rejects_non_amounts[inf]" time="0.002" /><testcase classname="tests.unit.test_money" name="test_to_money_rejects_non_amounts[abc]" time="0.002" /><testcase classname="tests.unit.test_money" name="test_to_money_rejects_non_amounts[]" time="0.002" /><testcase classname="tests.unit.test_money" name="test_to_money_rejects_non_amounts[1-2]" time="0.002" /><testcase classname="tests.unit.test_money" name="test_to_money_rejects_non_amounts[--]" time="0.001" /><testcase classname="tests.unit.test_money" name="test_to_money_rejects_non_amounts[bad8]" time="0.002" /><testcase classname="tests.unit.test_money" name="test_formatting" time="0.002" /><testcase classname="tests.unit.test_money" name="test_amount_equal_and_in_range" time="0.002" /><testcase classname="tests.unit.test_money" name="test_effective_floor" time="0.001" /><testcase classname="tests.unit.test_money" name="test_check_promise_amount[2125.1-2125.1-637.5-ok]" time="0.002" /><testcase classname="tests.unit.test_money" name="test_check_promise_amount[1000-2125.1-637.5-ok]" time="0.002" /><testcase classname="tests.unit.test_money" name="test_check_promise_amount[637.5-2125.1-637.5-ok]" time="0.002" /><testcase classname="tests.unit.test_money" name="test_check_promise_amount[637.49-2125.1-637.5-below_floor]" time="0.002" /><testcase classname="tests.unit.test_money" name="test_check_promise_amount[500-2125.1-637.5-below_floor]" time="0.002" /><testcase classname="tests.unit.test_money" name="test_check_promise_amount[2200-2125.1-637.5-above_full]" time="0.002" /><testcase classname="tests.unit.test_money" name="test_check_promise_amount[2125.11-2125.1-637.5-above_full]" time="0.002" /><testcase classname="tests.unit.test_money" name="test_check_promise_amount[0-2125.1-637.5-below_floor]" time="0.002" /><testcase classname="tests.unit.test_money" name="test_check_promise_amount[-10-2125.1-637.5-below_floor]" time="0.002" /><testcase classname="tests.unit.test_money" name="test_check_promise_amount[20-20-25-ok]" time="0.002" /><testcase classname="tests.unit.test_money" name="test_check_promise_amount[300-300-None-ok]" time="0.002" /><testcase classname="tests.unit.test_money" name="test_check_promise_amount[299.99-300-None-below_floor]" time="0.002" /><testcase classname="tests.unit.test_money" name="test_check_promise_amount[420-420.0-126.0-ok]" time="0.002" /><testcase classname="tests.unit.test_money" name="test_check_promise_amount_without_partial_amounts" time="0.002" /><testcase classname="tests.unit.test_outcomes" name="test_every_practice_case_has_script_facts" time="0.002" /><testcase classname="tests.unit.test_outcomes" name="test_practice_case_outcome[PUB-01]" time="0.002" /><testcase classname="tests.unit.test_outcomes" name="test_practice_case_outcome[PUB-02]" time="0.001" /><testcase classname="tests.unit.test_outcomes" name="test_practice_case_outcome[PUB-03]" time="0.001" /><testcase classname="tests.unit.test_outcomes" name="test_practice_case_outcome[PUB-04]" time="0.002" /><testcase classname="tests.unit.test_outcomes" name="test_practice_case_outcome[PUB-05]" time="0.002" /><testcase classname="tests.unit.test_outcomes" name="test_practice_case_outcome[PUB-06]" time="0.002" /><testcase classname="tests.unit.test_outcomes" name="test_practice_case_outcome[PUB-07]" time="0.002" /><testcase classname="tests.unit.test_outcomes" name="test_practice_case_outcome[PUB-08]" time="0.002" /><testcase classname="tests.unit.test_outcomes" name="test_practice_case_outcome[PUB-09]" time="0.001" /><testcase classname="tests.unit.test_outcomes" name="test_practice_case_outcome[PUB-10]" time="0.001" /><testcase classname="tests.unit.test_outcomes" name="test_practice_case_outcome[PUB-11]" time="0.002" /><testcase classname="tests.unit.test_outcomes" name="test_practice_case_outcome[PUB-12]" time="0.001" /><testcase classname="tests.unit.test_outcomes" name="test_practice_case_outcome[PUB-13]" time="0.002" /><testcase classname="tests.unit.test_outcomes" name="test_brief_a_cases_under_the_merged_policy[PUB-01]" time="0.002" /><testcase classname="tests.unit.test_outcomes" name="test_brief_a_cases_under_the_merged_policy[PUB-02]" time="0.002" /><testcase classname="tests.unit.test_outcomes" name="test_brief_a_cases_under_the_merged_policy[PUB-03]" time="0.001" /><testcase classname="tests.unit.test_outcomes" name="test_brief_a_cases_under_the_merged_policy[PUB-04]" time="0.002" /><testcase classname="tests.unit.test_outcomes" name="test_brief_a_cases_under_the_merged_policy[PUB-05]" time="0.001" /><testcase classname="tests.unit.test_outcomes" name="test_brief_a_cases_under_the_merged_policy[PUB-06]" time="0.002" /><testcase classname="tests.unit.test_outcomes" name="test_brief_a_cases_under_the_merged_policy[PUB-07]" time="0.002" /><testcase classname="tests.unit.test_outcomes" name="test_brief_a_cases_under_the_merged_policy[PUB-08]" time="0.001" /><testcase classname="tests.unit.test_outcomes" name="test_brief_a_cases_under_the_merged_policy[PUB-09]" time="0.001" /><testcase classname="tests.unit.test_outcomes" name="test_brief_a_cases_under_the_merged_policy[PUB-10]" time="0.001" /><testcase classname="tests.unit.test_outcomes" name="test_transfer_after_a_recorded_promise_is_transferred[support-support]" time="0.001" /><testcase classname="tests.unit.test_outcomes" name="test_transfer_after_a_recorded_promise_is_transferred[general-human]" time="0.001" /><testcase classname="tests.unit.test_outcomes" name="test_transfer_after_a_recorded_promise_is_transferred[restructuring-restructuring]" time="0.002" /><testcase classname="tests.unit.test_outcomes" name="test_brief_b_restructuring_after_recorded_promise" time="0.001" /><testcase classname="tests.unit.test_outcomes" name="test_brief_b_no_promise_first_non_paid_note_decides" time="0.002" /><testcase classname="tests.unit.test_outcomes" name="test_brief_b_notes_follow_get_account_order_not_recording_order" time="0.001" /><testcase classname="tests.unit.test_outcomes" name="test_brief_b_all_products_noted_paid_is_paid" time="0.001" /><testcase classname="tests.unit.test_outcomes" name="test_brief_b_promise_wins_over_notes" time="0.001" /><testcase classname="tests.unit.test_outcomes" name="test_create_promise_failing_twice_with_nothing_recorded" time="0.001" /><testcase classname="tests.unit.test_outcomes" name="test_brief_b_failed_product_does_not_cancel_recorded_promises" time="0.001" /><testcase classname="tests.unit.test_outcomes" name="test_hardship_paths" time="0.001" /><testcase classname="tests.unit.test_outcomes" name="test_refusal_to_talk_depends_on_verification" time="0.002" /><testcase classname="tests.unit.test_outcomes" name="test_human_request_before_and_after_verification" time="0.001" /><testcase classname="tests.unit.test_outcomes" name="test_pre_verification_outcomes[facts0-expected0]" time="0.001" /><testcase classname="tests.unit.test_outcomes" name="test_pre_verification_outcomes[facts1-expected1]" time="0.002" /><testcase classname="tests.unit.test_outcomes" name="test_pre_verification_outcomes[facts2-expected2]" time="0.001" /><testcase classname="tests.unit.test_outcomes" name="test_pre_verification_outcomes[facts3-expected3]" time="0.002" /><testcase classname="tests.unit.test_outcomes" name="test_pre_verification_outcomes[facts4-expected4]" time="0.001" /><testcase classname="tests.unit.test_outcomes" name="test_pre_verification_outcomes[facts5-expected5]" time="0.002" /><testcase classname="tests.unit.test_outcomes" name="test_pre_verification_outcomes[facts6-expected6]" time="0.002" /><testcase classname="tests.unit.test_outcomes" name="test_pre_verification_outcomes[facts7-expected7]" time="0.002" /><testcase classname="tests.unit.test_outcomes" name="test_situations_that_need_verification_are_ignored_before_it" time="0.001" /><testcase classname="tests.unit.test_outcomes" name="test_brief_a_ignores_notes" time="0.002" /><testcase classname="tests.unit.test_outcomes" name="test_fallbacks_when_no_situation_applies" time="0.002" /><testcase classname="tests.unit.test_outcomes" name="test_intent_outcomes_match_the_outcome_table[A]" time="0.002" /><testcase classname="tests.unit.test_outcomes" name="test_intent_outcomes_match_the_outcome_table[AB]" time="0.002" /><testcase classname="tests.unit.test_outcomes" name="test_promise_wins_false_lets_precedence_decide" time="0.002" /><testcase classname="tests.unit.test_outcomes" name="test_without_transfer_after_promise_rule_promise_wins" time="0.002" /><testcase classname="tests.unit.test_outcomes" name="test_transfer_after_promise_with_fixed_reason" time="0.001" /><testcase classname="tests.unit.test_outcomes" name="test_rows_keyed_by_the_transfer_intent" time="0.002" /><testcase classname="tests.unit.test_outcomes" name="test_structural_keys_fall_back_to_section_outcomes" time="0.002" /><testcase classname="tests.unit.test_outcomes" name="test_notes_rule_variants" time="0.002" /><testcase classname="tests.unit.test_outcomes" name="test_requires_verified_rows" time="0.002" /><testcase classname="tests.unit.test_outcomes" name="test_example_minimal_ir" time="0.002" /><testcase classname="tests.unit.test_outcomes" name="test_from_records" time="0.001" /><testcase classname="tests.unit.test_outcomes" name="test_active_situations" time="0.002" /><testcase classname="tests.unit.test_outcomes" name="test_decision_explains_itself" time="0.001" /><testcase classname="tests.unit.test_playground" name="test_chat_continues_same_workflow_and_sends_initial_configuration_once" time="0.002" /><testcase classname="tests.unit.test_playground" name="test_agent_ending_call_prevents_more_messages_or_duplicate_end" time="0.002" /><testcase classname="tests.unit.test_playground" name="test_blank_chat_message_makes_no_request[]" time="0.002" /><testcase classname="tests.unit.test_playground" name="test_blank_chat_message_makes_no_request[   ]" time="0.002" /><testcase classname="tests.unit.test_playground" name="test_blank_chat_message_makes_no_request[\n\t]" time="0.002" /><testcase classname="tests.unit.test_playground" name="test_failed_chat_preserves_transcript_and_call_id[None]" time="0.002" /><testcase classname="tests.unit.test_playground" name="test_failed_chat_preserves_transcript_and_call_id[existing-call]" time="0.002" /><testcase classname="tests.unit.test_playground" name="test_end_is_idempotent_for_started_chat" time="0.002" /><testcase classname="tests.unit.test_playground" name="test_end_before_first_message_makes_no_request" time="0.002" /><testcase classname="tests.unit.test_playground" name="test_failed_end_keeps_chat_active_and_can_be_retried" time="0.002" /><testcase classname="tests.unit.test_playground" name="test_practice_session_posts_case_and_returns_customer_variables" time="0.004" /><testcase classname="tests.unit.test_playground" name="test_practice_ledger_get_encodes_customer_id_as_one_path_segment" time="0.003" /><testcase classname="tests.unit.test_playground" name="test_invalid_practice_session_does_not_retry_post[payload0-non-object response]" time="0.005" /><testcase classname="tests.unit.test_playground" name="test_invalid_practice_session_does_not_retry_post[payload1-unknown case]" time="0.004" /><testcase classname="tests.unit.test_playground" name="test_invalid_practice_session_does_not_retry_post[payload2-no customer variables/customer_id]" time="0.003" /><testcase classname="tests.unit.test_playground" name="test_invalid_practice_session_does_not_retry_post[payload3-no customer variables/customer_id]" time="0.003" /><testcase classname="tests.unit.test_playground" name="test_invalid_practice_session_does_not_retry_post[payload4-no customer variables/customer_id]" time="0.004" /><testcase classname="tests.unit.test_playground" name="test_practice_network_failure_is_reported_without_retrying" time="0.003" /><testcase classname="tests.unit.test_playground" name="test_practice_request_telemetry_records_duration_status_and_no_credentials_or_body" time="0.003" /><testcase classname="tests.unit.test_playground" name="test_practice_http_error_telemetry_has_status_without_retries_or_headers" time="0.003" /><testcase classname="tests.unit.test_playground" name="test_practice_transport_error_telemetry_keeps_status_unknown" time="0.003" /><testcase classname="tests.unit.test_playground" name="test_practice_response_error_traces_redact_team_key_even_without_configured_trace_redactor" time="0.003" /><testcase classname="tests.unit.test_playground" name="test_practice_trace_failure_does_not_break_successful_request" time="0.005" /><testcase classname="tests.unit.test_playground" name="test_practice_bank_requires_team_key" time="0.003" /><testcase classname="tests.unit.test_playground" name="test_practice_bank_requires_http_url[]" time="0.003" /><testcase classname="tests.unit.test_playground" name="test_practice_bank_requires_http_url[bank.example.invalid]" time="0.003" /><testcase classname="tests.unit.test_playground" name="test_practice_bank_requires_http_url[file:///tmp/bank]" time="0.003" /><testcase classname="tests.unit.test_playground" name="test_saved_workflows_ignores_invalid_state[{broken]" time="0.007" /><testcase classname="tests.unit.test_playground" name="test_saved_workflows_ignores_invalid_state[[]]" time="0.007" /><testcase classname="tests.unit.test_playground" name="test_saved_workflows_ignores_invalid_state[null]" time="0.007" /><testcase classname="tests.unit.test_playground" name="test_saved_workflows_ignores_invalid_state[&quot;workflow-id&quot;]" time="0.006" /><testcase classname="tests.unit.test_playground" name="test_saved_workflows_missing_file_is_empty" time="0.007" /><testcase classname="tests.unit.test_playground" name="test_saved_workflows_keeps_valid_entries_and_skips_malformed_records" time="0.008" /><testcase classname="tests.unit.test_playground" name="test_json_editor_accepts_object_with_nested_values" time="0.002" /><testcase classname="tests.unit.test_playground" name="test_json_editor_rejects_non_object[[]]" time="0.002" /><testcase classname="tests.unit.test_playground" name="test_json_editor_rejects_non_object[null]" time="0.002" /><testcase classname="tests.unit.test_playground" name="test_json_editor_rejects_non_object[&quot;customer-7&quot;]" time="0.002" /><testcase classname="tests.unit.test_playground" name="test_json_editor_rejects_non_object[123]" time="0.002" /><testcase classname="tests.unit.test_playground" name="test_json_editor_rejects_non_object[true]" time="0.001" /><testcase classname="tests.unit.test_playground" name="test_json_editor_rejects_malformed_json" time="0.001" /><testcase classname="tests.unit.test_playground" name="test_public_error_redacts_configured_and_environment_credentials" time="0.004" /><testcase classname="tests.unit.test_playground" name="test_public_error_preserves_useful_message_without_secrets" time="0.003" /><testcase classname="tests.unit.test_policy_ir" name="test_ir_fixture_validates_and_is_canonical[brief_a_ir.json]" time="0.003" /><testcase classname="tests.unit.test_policy_ir" name="test_ir_fixture_validates_and_is_canonical[brief_ab_ir.json]" time="0.003" /><testcase classname="tests.unit.test_policy_ir" name="test_ledger_fixture_validates_and_is_canonical[brief_a_ledger.json]" time="0.003" /><testcase classname="tests.unit.test_policy_ir" name="test_ledger_fixture_validates_and_is_canonical[brief_ab_ledger.json]" time="0.004" /><testcase classname="tests.unit.test_policy_ir" name="test_every_quote_is_verbatim_in_its_brief[brief_a_ledger.json]" time="0.003" /><testcase classname="tests.unit.test_policy_ir" name="test_every_quote_is_verbatim_in_its_brief[brief_ab_ledger.json]" time="0.004" /><testcase classname="tests.unit.test_policy_ir" name="test_every_numbered_rule_has_ledger_entries[brief_a_ledger.json-brief-a.md-A]" time="0.005" /><testcase classname="tests.unit.test_policy_ir" name="test_every_numbered_rule_has_ledger_entries[brief_ab_ledger.json-brief-a.md-A]" time="0.003" /><testcase classname="tests.unit.test_policy_ir" name="test_every_numbered_rule_has_ledger_entries[brief_ab_ledger.json-brief-b.md-B]" time="0.004" /><testcase classname="tests.unit.test_policy_ir" name="test_brief_a_special_entries_present" time="0.003" /><testcase classname="tests.unit.test_policy_ir" name="test_brief_ab_ledger_holds_all_a_rules_and_b_rules" time="0.003" /><testcase classname="tests.unit.test_policy_ir" name="test_brief_a_ledger_has_no_supersession" time="0.002" /><testcase classname="tests.unit.test_policy_ir" name="test_brief_ab_supersessions_are_the_expected_replacements" time="0.004" /><testcase classname="tests.unit.test_policy_ir" name="test_ir_covers_every_active_rule_and_nothing_else[brief_a_ir.json-brief_a_ledger.json]" time="0.004" /><testcase classname="tests.unit.test_policy_ir" name="test_ir_covers_every_active_rule_and_nothing_else[brief_ab_ir.json-brief_ab_ledger.json]" time="0.005" /><testcase classname="tests.unit.test_policy_ir" name="test_ambiguities_cite_known_rules[brief_a_ledger.json]" time="0.003" /><testcase classname="tests.unit.test_policy_ir" name="test_ambiguities_cite_known_rules[brief_ab_ledger.json]" time="0.003" /><testcase classname="tests.unit.test_policy_ir" name="test_ab_ambiguities_include_the_brief_b_conflicts" time="0.003" /><testcase classname="tests.unit.test_policy_ir" name="test_ir_values_are_allowed_by_the_tool_api[brief_a_ir.json]" time="0.003" /><testcase classname="tests.unit.test_policy_ir" name="test_ir_values_are_allowed_by_the_tool_api[brief_ab_ir.json]" time="0.004" /><testcase classname="tests.unit.test_policy_ir" name="test_outcome_rows_are_exactly_the_brief_a_table[brief_a_ir.json]" time="0.002" /><testcase classname="tests.unit.test_policy_ir" name="test_outcome_rows_are_exactly_the_brief_a_table[brief_ab_ir.json]" time="0.002" /><testcase classname="tests.unit.test_policy_ir" name="test_precedence_keys_resolve_and_rows_are_reachable[brief_a_ir.json]" time="0.002" /><testcase classname="tests.unit.test_policy_ir" name="test_precedence_keys_resolve_and_rows_are_reachable[brief_ab_ir.json]" time="0.003" /><testcase classname="tests.unit.test_policy_ir" name="test_bands_are_contiguous_and_cover_1_to_45[brief_a_ir.json]" time="0.002" /><testcase classname="tests.unit.test_policy_ir" name="test_bands_are_contiguous_and_cover_1_to_45[brief_ab_ir.json]" time="0.003" /><testcase classname="tests.unit.test_policy_ir" name="test_phrase_placeholders_are_call_variables[brief_a_ir.json]" time="0.002" /><testcase classname="tests.unit.test_policy_ir" name="test_phrase_placeholders_are_call_variables[brief_ab_ir.json]" time="0.002" /><testcase classname="tests.unit.test_policy_ir" name="test_brief_a_ir_key_values" time="0.003" /><testcase classname="tests.unit.test_policy_ir" name="test_brief_ab_ir_differs_from_a_only_where_b_says_so" time="0.003" /><testcase classname="tests.unit.test_policy_ir" name="test_ir_intent_keys_are_catalog_keys[brief_a_ir.json]" time="0.002" /><testcase classname="tests.unit.test_policy_ir" name="test_ir_intent_keys_are_catalog_keys[brief_ab_ir.json]" time="0.002" /><testcase classname="tests.unit.test_policy_ir" name="test_band_lookup" time="0.002" /><testcase classname="tests.unit.test_policy_ir" name="test_intent_lookup_by_verification_state" time="0.003" /><testcase classname="tests.unit.test_policy_ir" name="test_persuasion_steps_per_band" time="0.003" /><testcase classname="tests.unit.test_policy_ir" name="test_outcome_refs_include_rows_and_section_refs" time="0.003" /><testcase classname="tests.unit.test_policy_ir" name="test_product_naming" time="0.002" /><testcase classname="tests.unit.test_policy_ir" name="test_template_helpers" time="0.002" /><testcase classname="tests.unit.test_policy_ir" name="test_example_minimal_is_valid_and_generic" time="0.002" /><testcase classname="tests.unit.test_policy_ir" name="test_json_schema_is_closed_for_structured_output" time="0.019" /><testcase classname="tests.unit.test_policy_ir" name="test_callback_rule_normalises_and_checks_times" time="0.002" /><testcase classname="tests.unit.test_policy_ir" name="test_deadline_rule_requires_its_parameters" time="0.002" /><testcase classname="tests.unit.test_policy_ir" name="test_band_range_must_be_ordered" time="0.001" /><testcase classname="tests.unit.test_policy_ir" name="test_calendar_normalises_weekdays_and_holidays" time="0.002" /><testcase classname="tests.unit.test_policy_ir" name="test_unknown_keys_and_bad_vocabulary_are_rejected" time="0.002" /><testcase classname="tests.unit.test_policy_ir" name="test_with_consistent_supersessions_fills_both_directions" time="0.002" /><testcase classname="tests.unit.test_policy_ir" name="test_for_scope_and_duplicates" time="0.001" /><testcase classname="tests.unit.test_policy_ir" name="test_ab_ledger_scopes_route_rules_to_stages" time="0.003" /><testcase classname="tests.unit.test_robustness" name="test_generic_policy_has_hundreds_of_checks_and_json_ready_summary" time="0.010" /><testcase classname="tests.unit.test_robustness" name="test_audited_policies_and_real_api_have_no_invariant_failures[brief_a_ir.json]" time="0.021" /><testcase classname="tests.unit.test_robustness" name="test_audited_policies_and_real_api_have_no_invariant_failures[brief_ab_ir.json]" time="0.024" /><testcase classname="tests.unit.test_robustness" name="test_custom_prose_and_absent_api_are_explicitly_unchecked" time="0.004" /><testcase classname="tests.unit.test_robustness" name="test_large_deadline_counts_are_bounded_and_unchecked" time="0.007" /><testcase classname="tests.unit.test_robustness" name="test_nonstandard_business_week_and_leap_month_rule_work" time="0.010" /><testcase classname="tests.unit.test_robustness" name="test_midnight_callback_endpoint_is_supported" time="0.007" /><testcase classname="tests.unit.test_robustness" name="test_misclassified_dates_produce_named_bounded_counterexamples" time="0.008" /><testcase classname="tests.unit.test_robustness" name="test_invalid_suggested_date_is_caught_independently" time="0.006" /><testcase classname="tests.unit.test_robustness" name="test_helper_exceptions_are_counterexamples_and_other_checks_continue" time="0.007" /><testcase classname="tests.unit.test_robustness" name="test_outcome_and_identity_values_are_checked_against_supplied_enums" time="0.010" /><testcase classname="tests.unit.test_robustness" name="test_renamed_api_field_mapping_is_unchecked_not_invented" time="0.008" /><testcase classname="tests.unit.test_robustness" name="test_an_intent_referencing_an_absent_tool_is_a_counterexample" time="0.010" /><testcase classname="tests.unit.test_robustness" name="test_outcome_names_can_change_without_changing_sampler_code" time="0.011" /><testcase classname="tests.unit.test_settings" name="test_defaults_match_the_contract" time="0.003" /><testcase classname="tests.unit.test_settings" name="test_environment_variables_override_defaults" time="0.003" /><testcase classname="tests.unit.test_settings" name="test_freya_key_alias_is_accepted" time="0.003" /><testcase classname="tests.unit.test_settings" name="test_freya_api_key_wins_over_alias_and_blank_primary_falls_back" time="0.003" /><testcase classname="tests.unit.test_settings" name="test_blank_values_fall_back_to_defaults" time="0.002" /><testcase classname="tests.unit.test_settings" name="test_blank_secrets_and_strings_given_directly_are_unset" time="0.002" /><testcase classname="tests.unit.test_settings" name="test_dotenv_file_is_read_and_environment_wins" time="0.010" /><testcase classname="tests.unit.test_settings" name="test_hermetic_fixture_hides_the_repository_dotenv" time="0.002" /><testcase classname="tests.unit.test_settings" name="test_invalid_values_are_rejected[BUILDER_TRACK-hybrid]" time="0.003" /><testcase classname="tests.unit.test_settings" name="test_invalid_values_are_rejected[AGENT_PROFILE-fat]" time="0.003" /><testcase classname="tests.unit.test_settings" name="test_invalid_values_are_rejected[SELF_TEST-always]" time="0.003" /><testcase classname="tests.unit.test_settings" name="test_invalid_values_are_rejected[LLM_TIMEOUT_S-0]" time="0.002" /><testcase classname="tests.unit.test_settings" name="test_invalid_values_are_rejected[LLM_MAX_TOKENS--5]" time="0.003" /><testcase classname="tests.unit.test_settings" name="test_invalid_values_are_rejected[LLM_RETRIES_PER_KEY--1]" time="0.003" /><testcase classname="tests.unit.test_settings" name="test_invalid_values_are_rejected[BUILD_TIME_BUDGET_S-0]" time="0.003" /><testcase classname="tests.unit.test_settings" name="test_invalid_values_are_rejected[MAX_POLICY_REPAIRS--1]" time="0.003" /><testcase classname="tests.unit.test_settings" name="test_invalid_values_are_rejected[FREYA_API_URL-staging-app.freyavoice.ai]" time="0.003" /><testcase classname="tests.unit.test_settings" name="test_invalid_values_are_rejected[LLM_PROVIDERS- , ;]" time="0.003" /><testcase classname="tests.unit.test_settings" name="test_invalid_values_are_rejected[DRY_RUN-maybe]" time="0.003" /><testcase classname="tests.unit.test_settings" name="test_provider_order_is_normalised" time="0.002" /><testcase classname="tests.unit.test_settings" name="test_relative_paths_are_anchored_at_the_repo_root" time="0.008" /><testcase classname="tests.unit.test_settings" name="test_secrets_never_appear_in_repr_or_public_summary" time="0.004" /><testcase classname="tests.unit.test_settings" name="test_get_settings_is_cached_until_cleared" time="0.003" /><testcase classname="tests.unit.test_settings" name="test_apply_kit_env_exports_known_values_only" time="0.003" /><testcase classname="tests.unit.test_settings" name="test_apply_kit_env_defaults_to_os_environ" time="0.003" /><testcase classname="tests.unit.test_settings" name="test_effective_env_overlays_process_environment_on_dotenv" time="0.009" /><testcase classname="tests.unit.test_settings" name="test_effective_env_defaults_to_the_repository_dotenv_looked_up_at_call_time" time="0.009" /><testcase classname="tests.unit.test_settings" name="test_secret_values_collects_freya_llm_and_credential_like_values" time="0.003" /><testcase classname="tests.unit.test_settings" name="test_secret_values_skips_the_login_pseudo_key" time="0.003" /><testcase classname="tests.unit.test_settings" name="test_secret_values_without_llm_keys_module" time="0.003" /><testcase classname="tests.unit.test_settings" name="test_secret_values_survives_a_failing_discovery" time="0.003" /><testcase classname="tests.unit.test_settings" name="test_secret_values_reads_dotenv_by_default" time="0.010" /><testcase classname="tests.unit.test_settings" name="test_secret_values_uses_the_real_key_discovery_when_available" time="0.003" /><testcase classname="tests.unit.test_streamlit_app" name="test_every_local_screen_renders_without_errors" time="1.612" /><testcase classname="tests.unit.test_streamlit_app" name="test_policy_amount_floor_and_weekend_date_suggestion" time="0.427" /><testcase classname="tests.unit.test_streamlit_app" name="test_invalid_policy_editor_shows_friendly_error" time="0.415" /><testcase classname="tests.unit.test_streamlit_app" name="test_invalid_call_record_collection_shows_friendly_error[promises]" time="0.439" /><testcase classname="tests.unit.test_streamlit_app" name="test_invalid_call_record_collection_shows_friendly_error[notes]" time="0.490" /><testcase classname="tests.unit.test_streamlit_app" name="test_invalid_call_record_collection_shows_friendly_error[transfers]" time="0.498" /><testcase classname="tests.unit.test_streamlit_app" name="test_invalid_call_record_collection_shows_friendly_error[product_order]" time="0.507" /><testcase classname="tests.unit.test_streamlit_app" name="test_editor_changes_survive_navigating_away_and_back[Policy document]" time="0.510" /><testcase classname="tests.unit.test_streamlit_app" name="test_editor_changes_survive_navigating_away_and_back[Recorded tools (JSON)]" time="0.438" /><testcase classname="tests.unit.test_streamlit_app" name="test_mocked_custom_conversation_sends_continues_and_ends" time="0.717" /><testcase classname="tests.unit.test_streamlit_monitor" name="test_monitor_without_credentials_or_traces_requires_explicit_live_reads" time="0.376" /><testcase classname="tests.unit.test_streamlit_monitor" name="test_recorded_activity_counts_failures_filters_retries_and_masks_raw_details" time="0.405" /><testcase classname="tests.unit.test_streamlit_monitor" name="test_dashboard_warns_about_stale_draft_after_one_explicit_read" time="0.593" /><testcase classname="tests.unit.test_streamlit_monitor" name="test_call_inspection_shows_tool_routes_snapshots_and_only_redacted_raw_call" time="0.376" /><testcase classname="tests.unit.test_streamlit_monitor" name="test_saved_practice_case_opens_monitor_with_call_id_without_fetching" time="0.370" /><testcase classname="tests.unit.test_streamlit_monitor" name="test_bundled_robustness_reports_metrics_groups_and_limits_without_network[Brief A]" time="0.466" /><testcase classname="tests.unit.test_streamlit_monitor" name="test_bundled_robustness_reports_metrics_groups_and_limits_without_network[Brief A + B]" time="0.530" /><testcase classname="tests.unit.test_streamlit_monitor" name="test_robustness_failure_counterexamples_remain_visible_and_report_becomes_stale" time="0.557" /><testcase classname="tests.unit.test_tool_api" name="test_kit_api_has_the_seven_tools_in_order" time="0.004" /><testcase classname="tests.unit.test_tool_api" name="test_kit_urls_methods_and_errors" time="0.003" /><testcase classname="tests.unit.test_tool_api" name="test_kit_enums" time="0.002" /><testcase classname="tests.unit.test_tool_api" name="test_kit_request_fields" time="0.002" /><testcase classname="tests.unit.test_tool_api" name="test_kit_nested_products" time="0.002" /><testcase classname="tests.unit.test_tool_api" name="test_missing_tools_and_fields_raise_helpful_errors" time="0.003" /><testcase classname="tests.unit.test_tool_api" name="test_describe_lists_fields_and_enums" time="0.002" /><testcase classname="tests.unit.test_tool_api" name="test_dump_round_trip" time="0.003" /><testcase classname="tests.unit.test_tool_api" name="test_refs_allof_nullable_and_server_variables" time="0.007" /><testcase classname="tests.unit.test_tool_api" name="test_recursive_schema_terminates" time="0.008" /><testcase classname="tests.unit.test_tool_api" name="test_yaml_keeps_yes_no_strings_and_int_status_codes" time="0.008" /><testcase classname="tests.unit.test_tool_api" name="test_swagger2_body_and_query_parameters" time="0.008" /><testcase classname="tests.unit.test_tool_api" name="test_missing_and_extra_tools_warn_but_load" time="0.006" /><testcase classname="tests.unit.test_tool_api" name="test_invalid_documents_raise_tool_api_error[# just markdown\n\n- a list\n- b-not an OpenAPI/Swagger document]" time="0.008" /><testcase classname="tests.unit.test_tool_api" name="test_invalid_documents_raise_tool_api_error[{&quot;openapi&quot;: &quot;3.0.0&quot;, &quot;paths&quot;: {}}-no paths]" time="0.007" /><testcase classname="tests.unit.test_tool_api" name="test_invalid_documents_raise_tool_api_error[{&quot;openapi&quot;: &quot;3.0.0&quot;, &quot;paths&quot;: {&quot;/x&quot;: {&quot;post&quot;: {&quot;requestBody&quot;: {&quot;$ref&quot;: &quot;#/nope&quot;}}}}}-Unresolvable]" time="0.007" /><testcase classname="tests.unit.test_tool_api" name="test_invalid_documents_raise_tool_api_error[{&quot;openapi&quot;: &quot;3.0.0&quot;, &quot;paths&quot;: {&quot;/x&quot;: {&quot;post&quot;: {&quot;requestBody&quot;: {&quot;$ref&quot;: &quot;other.json#/a&quot;}}}}}-External]" time="0.008" /><testcase classname="tests.unit.test_tool_api" name="test_invalid_documents_raise_tool_api_error[{&quot;openapi&quot;: &quot;3.0.0&quot;, &quot;paths&quot;: {&quot;/x&quot;: {&quot;parameters&quot;: []}}}-no usable operations]" time="0.007" /><testcase classname="tests.unit.test_tool_api" name="test_invalid_documents_raise_tool_api_error[: : :\n\t- [-neither valid JSON nor valid YAML]" time="0.007" /><testcase classname="tests.unit.test_tool_api" name="test_unreadable_file" time="0.007" /><testcase classname="tests.unit.test_tool_api" name="test_parse_tool_api_accepts_parsed_documents" time="0.002" /><testcase classname="tests.unit.test_tool_api" name="test_field_spec_child_lookup" time="0.002" /><testcase classname="tests.unit.test_trace" name="test_files_are_named_after_slot_and_utc_start" time="0.010" /><testcase classname="tests.unit.test_trace" name="test_existing_trace_is_never_overwritten" time="0.012" /><testcase classname="tests.unit.test_trace" name="test_unsafe_slot_characters_are_replaced_in_file_names" time="0.011" /><testcase classname="tests.unit.test_trace" name="test_default_directory_is_read_from_paths_at_call_time" time="0.011" /><testcase classname="tests.unit.test_trace" name="test_start_line_and_jsonl_record" time="0.009" /><testcase classname="tests.unit.test_trace" name="test_model_call_line_matches_the_contract_example" time="0.010" /><testcase classname="tests.unit.test_trace" name="test_failed_model_call_shows_kind_attempt_and_one_line_error" time="0.009" /><testcase classname="tests.unit.test_trace" name="test_every_event_is_exactly_one_text_line" time="0.011" /><testcase classname="tests.unit.test_trace" name="test_stage_reports_duration_between_start_and_end" time="0.012" /><testcase classname="tests.unit.test_trace" name="test_freya_test_and_ambiguity_lines" time="0.011" /><testcase classname="tests.unit.test_trace" name="test_secrets_are_redacted_everywhere" time="0.010" /><testcase classname="tests.unit.test_trace" name="test_key_shaped_tokens_are_masked_without_configuration" time="0.006" /><testcase classname="tests.unit.test_trace" name="test_secrets_added_later_and_short_secrets" time="0.006" /><testcase classname="tests.unit.test_trace" name="test_overlapping_secrets_are_redacted_whole" time="0.002" /><testcase classname="tests.unit.test_trace" name="test_non_json_data_is_converted" time="0.012" /><testcase classname="tests.unit.test_trace" name="test_summary_contains_everything_the_hackathon_requires" time="0.015" /><testcase classname="tests.unit.test_trace" name="test_summary_caller_values_win_and_nothing_created" time="0.011" /><testcase classname="tests.unit.test_trace" name="test_close_writes_end_line_and_is_idempotent" time="0.013" /><testcase classname="tests.unit.test_trace" name="test_context_manager_closes" time="0.012" /><testcase classname="tests.unit.test_trace" name="test_concurrent_writers_produce_intact_lines" time="0.087" /><testcase classname="tests.unit.test_trace" name="test_echo_stream_survives_unencodable_characters" time="0.014" /><testcase classname="tests.unit.test_trace" name="test_write_errors_are_logged_not_raised" time="0.012" /><testcase classname="tests.unit.test_trace" name="test_null_trace_keeps_events_in_memory_and_writes_no_files" time="0.007" /><testcase classname="tests.unit.test_trace" name="test_summary_survives_odd_caller_data" time="0.011" /><testcase classname="tests.unit.test_understand_fake_llm" name="test_ledger_of_two_briefs_reproduces_the_fixture" time="0.152" /><testcase classname="tests.unit.test_understand_fake_llm" name="test_single_brief_without_amendment_wording_skips_the_reconcile_call" time="0.078" /><testcase classname="tests.unit.test_understand_fake_llm" name="test_completeness_pass_adds_a_rule_the_first_pass_skipped" time="0.117" /><testcase classname="tests.unit.test_understand_fake_llm" name="test_invented_rule_is_dropped_and_a_miscopied_quote_is_rescued" time="0.120" /><testcase classname="tests.unit.test_understand_fake_llm" name="test_nothing_is_dropped_when_grounding_looks_unreliable" time="0.306" /><testcase classname="tests.unit.test_understand_fake_llm" name="test_an_empty_ledger_raises" time="0.007" /><testcase classname="tests.unit.test_understand_fake_llm" name="test_a_failed_passage_call_fails_the_ledger" time="0.006" /><testcase classname="tests.unit.test_understand_fake_llm" name="test_links_to_unknown_rules_and_cycles_are_cleaned" time="0.104" /><testcase classname="tests.unit.test_understand_fake_llm" name="test_plan_chunks_covers_each_document_within_the_limit" time="0.016" /><testcase classname="tests.unit.test_understand_fake_llm" name="test_document_prefixes_come_from_file_names" time="0.001" /><testcase classname="tests.unit.test_understand_fake_llm" name="test_extract_policy_prompt_carries_contract_ledger_and_schema" time="0.151" /><testcase classname="tests.unit.test_understand_fake_llm" name="test_extract_policy_marks_superseded_rules_in_the_prompt" time="0.217" /><testcase classname="tests.unit.test_understand_fake_llm" name="test_extract_policy_fixes_mechanical_defects_and_traces_them" time="0.126" /><testcase classname="tests.unit.test_understand_fake_llm" name="test_repair_without_issues_is_a_no_op" time="0.009" /><testcase classname="tests.unit.test_understand_fake_llm" name="test_repair_skips_the_model_when_safe_fixes_remove_every_error" time="0.017" /><testcase classname="tests.unit.test_understand_fake_llm" name="test_repair_sends_the_remaining_issues_to_the_model" time="0.045" /><testcase classname="tests.unit.test_understand_fake_llm" name="test_draft_prose_builds_node_texts_and_sanitises_them" time="0.014" /><testcase classname="tests.unit.test_understand_fake_llm" name="test_sanitize_prose_drops_superseded_ids_and_caps_length" time="0.009" /><testcase classname="tests.unit.test_understand_fake_llm" name="test_prompt_helpers_are_strict" time="0.010" /><testcase classname="tests.unit.test_understand_fake_llm" name="test_every_shipped_prompt_has_both_blocks_and_no_brief_values[understand/rule_ledger.v1.j2]" time="0.003" /><testcase classname="tests.unit.test_understand_fake_llm" name="test_every_shipped_prompt_has_both_blocks_and_no_brief_values[understand/ledger_reconcile.v1.j2]" time="0.003" /><testcase classname="tests.unit.test_understand_fake_llm" name="test_every_shipped_prompt_has_both_blocks_and_no_brief_values[understand/ledger_complete.v1.j2]" time="0.002" /><testcase classname="tests.unit.test_understand_fake_llm" name="test_every_shipped_prompt_has_both_blocks_and_no_brief_values[understand/ledger_requote.v1.j2]" time="0.002" /><testcase classname="tests.unit.test_understand_fake_llm" name="test_every_shipped_prompt_has_both_blocks_and_no_brief_values[extract/policy_ir.v1.j2]" time="0.003" /><testcase classname="tests.unit.test_understand_fake_llm" name="test_every_shipped_prompt_has_both_blocks_and_no_brief_values[repair/policy_repair.v1.j2]" time="0.003" /><testcase classname="tests.unit.test_understand_fake_llm" name="test_every_shipped_prompt_has_both_blocks_and_no_brief_values[compile/node_prose.v1.j2]" time="0.002" /><testcase classname="tests.unit.test_understand_fake_llm" name="test_every_shipped_prompt_has_both_blocks_and_no_brief_values[audit/walkthrough.v1.j2]" time="0.005" /><testcase classname="tests.unit.test_understand_fake_llm" name="test_the_walkthrough_prompt_renders" time="0.002" /><testcase classname="tests.unit.test_understand_fake_llm" name="test_plan_chunks_splits_one_endless_line_at_sentence_ends" time="0.015" /><testcase classname="tests.unit.test_validate_policy" name="test_kit_fixture_irs_have_no_issues[brief_a]" time="0.006" /><testcase classname="tests.unit.test_validate_policy" name="test_kit_fixture_irs_have_no_issues[brief_ab]" time="0.005" /><testcase classname="tests.unit.test_validate_policy" name="test_vocabulary_is_read_from_the_tool_api" time="0.002" /><testcase classname="tests.unit.test_validate_policy" name="test_a_tool_api_without_the_tools_skips_vocabulary_checks" time="0.006" /><testcase classname="tests.unit.test_validate_policy" name="test_identity_field_must_be_a_verify_identity_value" time="0.007" /><testcase classname="tests.unit.test_validate_policy" name="test_outcome_and_reason_must_be_close_call_values" time="0.007" /><testcase classname="tests.unit.test_validate_policy" name="test_reason_is_required_except_for_the_outcomes_the_api_names" time="0.006" /><testcase classname="tests.unit.test_validate_policy" name="test_transfer_after_promise_outcome_may_omit_the_reason" time="0.006" /><testcase classname="tests.unit.test_validate_policy" name="test_note_reason_queue_and_action_parameters" time="0.007" /><testcase classname="tests.unit.test_validate_policy" name="test_product_types_and_fields_must_exist" time="0.006" /><testcase classname="tests.unit.test_validate_policy" name="test_unknown_placeholder_in_an_opening_phrase_is_a_warning" time="0.006" /><testcase classname="tests.unit.test_validate_policy" name="test_bands_overlap_is_an_error_and_a_gap_a_warning" time="0.010" /><testcase classname="tests.unit.test_validate_policy" name="test_band_names_must_be_unique_and_known_to_the_persuasion_ladder" time="0.007" /><testcase classname="tests.unit.test_validate_policy" name="test_no_bands_and_too_few_persuasion_steps" time="0.010" /><testcase classname="tests.unit.test_validate_policy" name="test_implausible_holidays_are_flagged" time="0.003" /><testcase classname="tests.unit.test_validate_policy" name="test_identity_needs_questions_and_a_limit" time="0.007" /><testcase classname="tests.unit.test_validate_policy" name="test_outcome_table_is_required" time="0.007" /><testcase classname="tests.unit.test_validate_policy" name="test_unknown_precedence_key_is_a_warning" time="0.007" /><testcase classname="tests.unit.test_validate_policy" name="test_duplicate_intents_are_a_warning" time="0.006" /><testcase classname="tests.unit.test_validate_policy" name="test_uncovered_active_rules_are_listed_in_one_warning" time="0.005" /><testcase classname="tests.unit.test_validate_policy" name="test_a_residual_rule_covers_a_ledger_rule" time="0.006" /><testcase classname="tests.unit.test_validate_policy" name="test_superseded_rules_must_not_be_cited" time="0.006" /><testcase classname="tests.unit.test_validate_policy" name="test_unknown_rule_ids_and_dangling_supersessions" time="0.008" /><testcase classname="tests.unit.test_validate_policy" name="test_an_empty_ledger_is_an_error" time="0.003" /><testcase classname="tests.unit.test_validate_policy" name="test_issue_helpers" time="0.001" /><testcase classname="tests.unit.test_validate_policy" name="test_safe_fixes_respell_vocabulary_and_catalog_keys" time="0.007" /><testcase classname="tests.unit.test_validate_policy" name="test_safe_fixes_clean_rule_ids_and_cover_every_active_rule" time="0.011" /><testcase classname="tests.unit.test_validate_policy" name="test_safe_fixes_keep_a_valid_ir_unchanged" time="0.008" /></testsuite></testsuites>

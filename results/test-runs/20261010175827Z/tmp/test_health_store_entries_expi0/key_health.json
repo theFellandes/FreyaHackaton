@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "entries": [
+    {
+      "provider": "openai",
+      "fingerprint": "def456def456",
+      "label": "",
+      "reason": "auth: y",
+      "marked_at": 1760000101.0,
+      "marked_at_utc": "2025-10-09T08:55:01Z"
+    }
+  ]
+}

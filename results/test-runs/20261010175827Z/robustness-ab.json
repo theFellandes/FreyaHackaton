@@ -1,0 +1,186 @@
+{
+  "kind": "offline invariant sampling",
+  "passed": 17,
+  "failed": 0,
+  "unchecked": 1,
+  "cases_tested": 1670,
+  "calendar_anchors": [
+    "2032-01-05",
+    "2032-01-06",
+    "2032-01-07",
+    "2032-01-08",
+    "2032-01-09",
+    "2032-01-10",
+    "2032-01-11",
+    "2032-02-28",
+    "2032-02-29",
+    "2032-12-31",
+    "2033-01-01",
+    "2026-10-25",
+    "2026-10-26",
+    "2026-10-27",
+    "2026-11-10",
+    "2026-11-11",
+    "2026-11-12",
+    "2026-11-25",
+    "2026-11-26",
+    "2026-11-27",
+    "2026-12-31",
+    "2027-01-01",
+    "2027-01-02"
+  ],
+  "checks": [
+    {
+      "name": "calendar.steps_and_intervals",
+      "status": "pass",
+      "cases_tested": 115,
+      "failures": 0,
+      "counterexamples": [],
+      "unchecked": []
+    },
+    {
+      "name": "deadlines.rules",
+      "status": "pass",
+      "cases_tested": 46,
+      "failures": 0,
+      "counterexamples": [],
+      "unchecked": []
+    },
+    {
+      "name": "promise_dates.boundaries_and_suggestions",
+      "status": "pass",
+      "cases_tested": 300,
+      "failures": 0,
+      "counterexamples": [],
+      "unchecked": []
+    },
+    {
+      "name": "amounts.cent_boundaries",
+      "status": "pass",
+      "cases_tested": 82,
+      "failures": 0,
+      "counterexamples": [],
+      "unchecked": []
+    },
+    {
+      "name": "amounts.localized_parsing",
+      "status": "pass",
+      "cases_tested": 4,
+      "failures": 0,
+      "counterexamples": [],
+      "unchecked": []
+    },
+    {
+      "name": "amounts.invalid_inputs",
+      "status": "pass",
+      "cases_tested": 5,
+      "failures": 0,
+      "counterexamples": [],
+      "unchecked": []
+    },
+    {
+      "name": "callbacks.slot_boundaries",
+      "status": "pass",
+      "cases_tested": 981,
+      "failures": 0,
+      "counterexamples": [],
+      "unchecked": []
+    },
+    {
+      "name": "outcomes.table_precedence",
+      "status": "pass",
+      "cases_tested": 62,
+      "failures": 0,
+      "counterexamples": [],
+      "unchecked": []
+    },
+    {
+      "name": "outcomes.empty_call_fallback",
+      "status": "pass",
+      "cases_tested": 2,
+      "failures": 0,
+      "counterexamples": [],
+      "unchecked": []
+    },
+    {
+      "name": "outcomes.promise_dominance",
+      "status": "pass",
+      "cases_tested": 23,
+      "failures": 0,
+      "counterexamples": [],
+      "unchecked": []
+    },
+    {
+      "name": "outcomes.transfer_after_promise",
+      "status": "pass",
+      "cases_tested": 3,
+      "failures": 0,
+      "counterexamples": [],
+      "unchecked": []
+    },
+    {
+      "name": "outcomes.note_order_invariance",
+      "status": "pass",
+      "cases_tested": 25,
+      "failures": 0,
+      "counterexamples": [],
+      "unchecked": []
+    },
+    {
+      "name": "contracts.close_call.outcome",
+      "status": "pass",
+      "cases_tested": 6,
+      "failures": 0,
+      "counterexamples": [],
+      "unchecked": []
+    },
+    {
+      "name": "contracts.close_call.reason",
+      "status": "unchecked",
+      "cases_tested": 0,
+      "failures": 0,
+      "counterexamples": [],
+      "unchecked": [
+        "No named request enum available; field mapping or unconstrained values are unchecked"
+      ]
+    },
+    {
+      "name": "contracts.verify_identity.field",
+      "status": "pass",
+      "cases_tested": 2,
+      "failures": 0,
+      "counterexamples": [],
+      "unchecked": []
+    },
+    {
+      "name": "contracts.transfer_to_agent.queue",
+      "status": "pass",
+      "cases_tested": 6,
+      "failures": 0,
+      "counterexamples": [],
+      "unchecked": []
+    },
+    {
+      "name": "contracts.add_note.reason",
+      "status": "pass",
+      "cases_tested": 5,
+      "failures": 0,
+      "counterexamples": [],
+      "unchecked": []
+    },
+    {
+      "name": "contracts.intent_tools",
+      "status": "pass",
+      "cases_tested": 3,
+      "failures": 0,
+      "counterexamples": [],
+      "unchecked": []
+    }
+  ],
+  "limitations": [
+    "Cases tested counts invariant evaluations, not customers or hidden benchmark cases.",
+    "No workflow execution, transcript policy/honesty judging, model behavior, or tool side effects.",
+    "Custom deadline/callback prose and renamed semantic API fields need additional interpretation.",
+    "Sampling is bounded; a passing report does not establish exhaustive coverage."
+  ]
+}

@@ -1,0 +1,26 @@
+From: a@bank.example
+Subject: Fwd: rule
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="===============8285005754024381164=="
+
+--===============8285005754024381164==
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+
+See below.
+
+--===============8285005754024381164==
+Content-Type: message/rfc822
+Content-Transfer-Encoding: 8bit
+MIME-Version: 1.0
+Content-Disposition: attachment
+
+From: manager@bank.example
+Subject: Original rule
+Content-Type: text/html; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+
+<p>Deadline is the <b>7th</b> business day.</p>
+
+--===============8285005754024381164==--

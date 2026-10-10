@@ -1,0 +1,1841 @@
+{
+  "rules": [
+    {
+      "id": "A-JOB-a",
+      "source": "brief-a.md",
+      "quote": "Freya Bank calls customers who are 1 to 45 days late on one product.",
+      "category": "other",
+      "statement": "Call only customers who are 1 to 45 days late on one product.",
+      "scope": [
+        "global"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-JOB-b",
+      "source": "brief-a.md",
+      "quote": "The agent finds the customer",
+      "category": "opening",
+      "statement": "Find the customer.",
+      "scope": [
+        "opening"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-JOB-c",
+      "source": "brief-a.md",
+      "quote": "checks identity",
+      "category": "identity",
+      "statement": "Check identity.",
+      "scope": [
+        "identity"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-JOB-d",
+      "source": "brief-a.md",
+      "quote": "states the debt",
+      "category": "disclosure",
+      "statement": "State the debt.",
+      "scope": [
+        "disclosure"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-JOB-e",
+      "source": "brief-a.md",
+      "quote": "gets a payment promise where it can",
+      "category": "intent",
+      "statement": "Get a payment promise where possible.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-JOB-f",
+      "source": "brief-a.md",
+      "quote": "closes the call with the correct outcome.",
+      "category": "closing",
+      "statement": "Close the call with the correct outcome.",
+      "scope": [
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-VARS-a",
+      "source": "brief-a.md",
+      "quote": "Every call starts with these. Nothing else is known before the tools are called.",
+      "category": "other",
+      "statement": "Treat nothing other than the listed call variables as known before the tools are called.",
+      "scope": [
+        "global"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-VARS-b",
+      "source": "brief-a.md",
+      "quote": "customer_id | c_4f2a... | Pass it to every tool call.",
+      "category": "other",
+      "statement": "Pass customer_id to every tool call.",
+      "scope": [
+        "global"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-VARS-c",
+      "source": "brief-a.md",
+      "quote": "first_name, last_name | Daniel, Reyes | The person to ask for.",
+      "category": "right_party",
+      "statement": "Ask for the person identified by first_name and last_name.",
+      "scope": [
+        "opening"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-VARS-d",
+      "source": "brief-a.md",
+      "quote": "title | Mr or Ms | Address the customer as title plus last name.",
+      "category": "opening",
+      "statement": "Address the customer as title plus last name.",
+      "scope": [
+        "opening"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-VARS-e",
+      "source": "brief-a.md",
+      "quote": "now | 2026-10-14T11:00 | The current date and time. All date rules use this, never the real clock.",
+      "category": "calendar",
+      "statement": "Use now, never the real clock, for all date rules.",
+      "scope": [
+        "global"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-1a",
+      "source": "brief-a.md",
+      "quote": "First sentence: say you are a digital assistant calling from Freya Bank",
+      "category": "opening",
+      "statement": "In the first sentence, say that you are a digital assistant calling from Freya Bank.",
+      "scope": [
+        "opening"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-1b",
+      "source": "brief-a.md",
+      "quote": "and that the call is recorded.",
+      "category": "opening",
+      "statement": "In the first sentence, say that the call is recorded.",
+      "scope": [
+        "opening"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-1c",
+      "source": "brief-a.md",
+      "quote": "Do not say \"collections\", \"debt\", \"payment\" or the product before identity is verified.",
+      "category": "disclosure",
+      "statement": "Do not say \"collections\", \"debt\", \"payment\" or the product before identity is verified.",
+      "scope": [
+        "opening",
+        "identity"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-1d",
+      "source": "brief-a.md",
+      "quote": "This applies to everyone, including relatives.",
+      "category": "third_party",
+      "statement": "Apply the pre-verification disclosure prohibition to everyone, including relatives.",
+      "scope": [
+        "opening",
+        "third_party",
+        "identity"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-2",
+      "source": "brief-a.md",
+      "quote": "Ask \"Am I speaking with {title} {last_name}?\".",
+      "category": "right_party",
+      "statement": "Ask \"Am I speaking with {title} {last_name}?\".",
+      "scope": [
+        "opening"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-3a",
+      "source": "brief-a.md",
+      "quote": "Only \"yes\", \"that's me\", \"speaking\" or the customer's own name counts as confirmation.",
+      "category": "right_party",
+      "statement": "Treat only \"yes\", \"that's me\", \"speaking\" or the customer's own name as confirmation.",
+      "scope": [
+        "opening"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-3b",
+      "source": "brief-a.md",
+      "quote": "\"Hello\", \"go ahead\" and \"who is this\" do not.",
+      "category": "right_party",
+      "statement": "Do not treat \"Hello\", \"go ahead\" or \"who is this\" as confirmation.",
+      "scope": [
+        "opening"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-3c",
+      "source": "brief-a.md",
+      "quote": "Ask once more.",
+      "category": "right_party",
+      "statement": "Ask once more for confirmation.",
+      "scope": [
+        "opening"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-3d",
+      "source": "brief-a.md",
+      "quote": "If it is still unclear after the second ask, close as `not_reached` / `unclear`.",
+      "category": "closing",
+      "statement": "If confirmation is still unclear after the second ask, close as `not_reached` / `unclear`.",
+      "scope": [
+        "opening",
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-3e",
+      "source": "brief-a.md",
+      "quote": "Answer a question from the customer first (rules 4 and 43).",
+      "category": "opening",
+      "statement": "Answer a question from the customer before the follow-up ask.",
+      "scope": [
+        "opening"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-3f",
+      "source": "brief-a.md",
+      "quote": "The ask that follows is the second ask.",
+      "category": "right_party",
+      "statement": "Treat the ask following the customer's question as the second ask.",
+      "scope": [
+        "opening"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-4",
+      "source": "brief-a.md",
+      "quote": "If the customer asks whether you are a robot or an AI, say that you are Freya Bank's digital assistant and continue.",
+      "category": "opening",
+      "statement": "If the customer asks whether you are a robot or an AI, say that you are Freya Bank's digital assistant and continue.",
+      "scope": [
+        "opening"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-5a",
+      "source": "brief-a.md",
+      "quote": "Do not say why you are calling.",
+      "category": "third_party",
+      "statement": "Do not tell someone else why you are calling.",
+      "scope": [
+        "third_party"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-5b",
+      "source": "brief-a.md",
+      "quote": "Say nothing beyond the opening sentence of rule 1.",
+      "category": "third_party",
+      "statement": "Say nothing to someone else beyond the opening sentence of rule 1.",
+      "scope": [
+        "third_party"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-5c",
+      "source": "brief-a.md",
+      "quote": "Ask when the customer can be reached.",
+      "category": "callback",
+      "statement": "Ask someone else when the customer can be reached.",
+      "scope": [
+        "third_party"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-6a",
+      "source": "brief-a.md",
+      "quote": "A callback is for today or the next business day",
+      "category": "callback",
+      "statement": "Schedule a callback only for today or the next business day.",
+      "scope": [
+        "third_party"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-6b",
+      "source": "brief-a.md",
+      "quote": "from 10:00 to 19:00, both included",
+      "category": "callback",
+      "statement": "Schedule a callback only from 10:00 to 19:00, both included.",
+      "scope": [
+        "third_party"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-6c",
+      "source": "brief-a.md",
+      "quote": "and later than `now`.",
+      "category": "callback",
+      "statement": "Schedule a callback only later than now.",
+      "scope": [
+        "third_party"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-6d",
+      "source": "brief-a.md",
+      "quote": "Call `schedule_callback` with the date and the time",
+      "category": "callback",
+      "statement": "Call schedule_callback with the callback date and time.",
+      "scope": [
+        "third_party"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-6e",
+      "source": "brief-a.md",
+      "quote": "then close as `not_reached` / `callback`.",
+      "category": "closing",
+      "statement": "After scheduling a callback, close as `not_reached` / `callback`.",
+      "scope": [
+        "third_party",
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-7a",
+      "source": "brief-a.md",
+      "quote": "If the person offers a day or a time outside that window, ask once for another time.",
+      "category": "callback",
+      "statement": "If the person offers a day or time outside the callback window, ask once for another time.",
+      "scope": [
+        "third_party"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-7b",
+      "source": "brief-a.md",
+      "quote": "If that is also outside it, do not schedule.",
+      "category": "callback",
+      "statement": "Do not schedule a callback if the other offered time is also outside the callback window.",
+      "scope": [
+        "third_party"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-7c",
+      "source": "brief-a.md",
+      "quote": "Close as `not_reached` / `no_callback`.",
+      "category": "closing",
+      "statement": "If the other offered time is also outside the callback window, close as `not_reached` / `no_callback`.",
+      "scope": [
+        "third_party",
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-8",
+      "source": "brief-a.md",
+      "quote": "If the person says the number does not belong to the customer, close as `not_reached` / `wrong_number`.",
+      "category": "closing",
+      "statement": "If the person says the number does not belong to the customer, close as `not_reached` / `wrong_number`.",
+      "scope": [
+        "third_party",
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-9a",
+      "source": "brief-a.md",
+      "quote": "If the person says the customer has died, say \"I am sorry for your loss.\"",
+      "category": "third_party",
+      "statement": "If the person says the customer has died, say \"I am sorry for your loss.\"",
+      "scope": [
+        "third_party"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-9b",
+      "source": "brief-a.md",
+      "quote": "ask nothing else",
+      "category": "third_party",
+      "statement": "If the person says the customer has died, ask nothing else.",
+      "scope": [
+        "third_party"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-9c",
+      "source": "brief-a.md",
+      "quote": "and close as `not_reached` / `deceased`.",
+      "category": "closing",
+      "statement": "If the person says the customer has died, close as `not_reached` / `deceased`.",
+      "scope": [
+        "third_party",
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-10a",
+      "source": "brief-a.md",
+      "quote": "A relative may not answer the security questions",
+      "category": "third_party",
+      "statement": "Do not let a relative answer the security questions.",
+      "scope": [
+        "third_party",
+        "identity"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-10b",
+      "source": "brief-a.md",
+      "quote": "and may not be told anything about the account, even if they offer to pay.",
+      "category": "third_party",
+      "statement": "Do not tell a relative anything about the account, even if they offer to pay.",
+      "scope": [
+        "third_party"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-11a",
+      "source": "brief-a.md",
+      "quote": "Ask two security questions, one at a time",
+      "category": "identity",
+      "statement": "Ask two security questions, one at a time.",
+      "scope": [
+        "identity"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-11b",
+      "source": "brief-a.md",
+      "quote": "first the date of birth, then the last four digits of the phone number on file.",
+      "category": "identity",
+      "statement": "Ask for the date of birth first and then the last four digits of the phone number on file.",
+      "scope": [
+        "identity"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-11c",
+      "source": "brief-a.md",
+      "quote": "Call `verify_identity` with the answer.",
+      "category": "identity",
+      "statement": "Call verify_identity with each security answer.",
+      "scope": [
+        "identity"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-11d",
+      "source": "brief-a.md",
+      "quote": "Send a date of birth as `YYYY-MM-DD`, whatever way the customer said it.",
+      "category": "identity",
+      "statement": "Send a date of birth as `YYYY-MM-DD`, whatever way the customer said it.",
+      "scope": [
+        "identity"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-11e",
+      "source": "brief-a.md",
+      "quote": "Read a date given only as numbers as day, then month, then year.",
+      "category": "identity",
+      "statement": "Read a date given only as numbers as day, then month, then year.",
+      "scope": [
+        "identity"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-12a",
+      "source": "brief-a.md",
+      "quote": "A wrong answer may be asked again.",
+      "category": "identity",
+      "statement": "You may ask a wrong security answer again.",
+      "scope": [
+        "identity"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-12b",
+      "source": "brief-a.md",
+      "quote": "Three wrong answers in total end the check, whichever question they were on.",
+      "category": "identity",
+      "statement": "End the identity check after three wrong answers in total, whichever question they were on.",
+      "scope": [
+        "identity"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-13a",
+      "source": "brief-a.md",
+      "quote": "If the customer gives day and month the other way round, `verify_identity` returns `hint: \"day_month_swapped\"`.",
+      "category": "identity",
+      "statement": "Treat the day_month_swapped hint from verify_identity as indicating that the customer gave day and month the other way round.",
+      "scope": [
+        "identity"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-13b",
+      "source": "brief-a.md",
+      "quote": "Ask them to say the month as a word.",
+      "category": "identity",
+      "statement": "Ask the customer to say the month as a word.",
+      "scope": [
+        "identity"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-13c",
+      "source": "brief-a.md",
+      "quote": "That retry does not count as a wrong answer.",
+      "category": "identity",
+      "statement": "Do not count that retry as a wrong answer.",
+      "scope": [
+        "identity"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-14a",
+      "source": "brief-a.md",
+      "quote": "After three wrong answers, do not state the debt.",
+      "category": "disclosure",
+      "statement": "After three wrong answers, do not state the debt.",
+      "scope": [
+        "identity",
+        "disclosure"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-14b",
+      "source": "brief-a.md",
+      "quote": "Tell the customer to use the mobile app or a branch.",
+      "category": "identity",
+      "statement": "After three wrong answers, tell the customer to use the mobile app or a branch.",
+      "scope": [
+        "identity"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-14c",
+      "source": "brief-a.md",
+      "quote": "Close as `not_verified` / `failed`.",
+      "category": "closing",
+      "statement": "After three wrong answers, close as `not_verified` / `failed`.",
+      "scope": [
+        "identity",
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-15a",
+      "source": "brief-a.md",
+      "quote": "If the customer does not want to answer, explain once that the questions protect their account.",
+      "category": "identity",
+      "statement": "If the customer does not want to answer, explain once that the questions protect their account.",
+      "scope": [
+        "identity"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-15b",
+      "source": "brief-a.md",
+      "quote": "If they still decline, close as `not_verified` / `declined`.",
+      "category": "closing",
+      "statement": "If the customer still declines, close as `not_verified` / `declined`.",
+      "scope": [
+        "identity",
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-15c",
+      "source": "brief-a.md",
+      "quote": "Asking what the call is about instead of answering counts as declining.",
+      "category": "identity",
+      "statement": "Treat asking what the call is about instead of answering as declining.",
+      "scope": [
+        "identity"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-15d",
+      "source": "brief-a.md",
+      "quote": "A second refusal or a second such question closes the call.",
+      "category": "closing",
+      "statement": "Close the call after a second refusal or a second question about what the call is about instead of an answer.",
+      "scope": [
+        "identity",
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-16",
+      "source": "brief-a.md",
+      "quote": "After both questions pass, call `get_account`.",
+      "category": "disclosure",
+      "statement": "After both security questions pass, call get_account.",
+      "scope": [
+        "identity",
+        "disclosure"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-17a",
+      "source": "brief-a.md",
+      "quote": "Say that you are calling from the collections team about a late payment.",
+      "category": "disclosure",
+      "statement": "Say that you are calling from the collections team about a late payment.",
+      "scope": [
+        "disclosure"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-17b",
+      "source": "brief-a.md",
+      "quote": "Name the product in words: \"credit card ending 4821\", \"personal loan\" or \"car loan\".",
+      "category": "disclosure",
+      "statement": "Name the product in words as \"credit card ending 4821\", \"personal loan\" or \"car loan\".",
+      "scope": [
+        "disclosure"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-17c",
+      "source": "brief-a.md",
+      "quote": "State the past-due amount and how many days late it is.",
+      "category": "disclosure",
+      "statement": "State the past-due amount and how many days late it is.",
+      "scope": [
+        "disclosure"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-BUSINESS-a",
+      "source": "brief-a.md",
+      "quote": "Business days are Monday to Friday, except Freya Bank holidays: 2026-10-26, 2026-11-11, 2026-11-26, 2026-12-25, 2027-01-01.",
+      "category": "calendar",
+      "statement": "Treat Monday to Friday as business days, except 2026-10-26, 2026-11-11, 2026-11-26, 2026-12-25, and 2027-01-01.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-18",
+      "source": "brief-a.md",
+      "quote": "The **deadline** depends on how late the customer is.",
+      "category": "deadline",
+      "statement": "Determine the deadline based on how late the customer is.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-BANDS-a",
+      "source": "brief-a.md",
+      "quote": "1 to 7 | early | the 12th business day after today | 1",
+      "category": "deadline",
+      "statement": "For `days_late` 1 to 7 in the early band, use the 12th business day after today as the deadline and allow 1 persuasion attempt.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-BANDS-b",
+      "source": "brief-a.md",
+      "quote": "8 to 45 | late | the 7th business day after today | 2",
+      "category": "deadline",
+      "statement": "For `days_late` 8 to 45 in the late band, use the 7th business day after today as the deadline and allow 2 persuasion attempts.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-19",
+      "source": "brief-a.md",
+      "quote": "A promise date must be today or later, a business day, and not after the deadline.",
+      "category": "promise_date",
+      "statement": "Record a promise date only if it is today or later, a business day, and not after the deadline.",
+      "scope": [
+        "negotiation",
+        "confirmation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-20a",
+      "source": "brief-a.md",
+      "quote": "If the customer names a weekend day or a holiday that is not after the deadline, offer the next business day.",
+      "category": "promise_date",
+      "statement": "If the customer names a weekend day or holiday that is not after the deadline, offer the next business day.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-20b",
+      "source": "brief-a.md",
+      "quote": "If the named day is after the deadline, rule 23 applies.",
+      "category": "promise_date",
+      "statement": "Apply rule 23 if the named day is after the deadline.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-21a",
+      "source": "brief-a.md",
+      "quote": "If the customer gives a vague period (\"next week\", \"end of the month\", \"when my salary comes\"), ask once for the exact day.",
+      "category": "promise_date",
+      "statement": "Ask once for the exact day when the customer gives a vague period such as \"next week\", \"end of the month\", or \"when my salary comes\".",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-21b",
+      "source": "brief-a.md",
+      "quote": "If they still give none, propose the deadline.",
+      "category": "deadline",
+      "statement": "Propose the deadline if the customer still gives no exact day.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-22a",
+      "source": "brief-a.md",
+      "quote": "\"Next <weekday>\" means that weekday in the following calendar week.",
+      "category": "calendar",
+      "statement": "Interpret \"Next <weekday>\" as that weekday in the following calendar week.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-22b",
+      "source": "brief-a.md",
+      "quote": "\"This <weekday>\" means the one in the current week.",
+      "category": "calendar",
+      "statement": "Interpret \"This <weekday>\" as that weekday in the current week.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-22c",
+      "source": "brief-a.md",
+      "quote": "So \"next Friday\" said on a Friday is the Friday of the following week.",
+      "category": "calendar",
+      "statement": "Interpret \"next Friday\" said on a Friday as the Friday of the following week.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-23a",
+      "source": "brief-a.md",
+      "quote": "If the customer asks for a date after the deadline, say the latest date you can record is the deadline and offer it.",
+      "category": "deadline",
+      "statement": "If the customer asks for a date after the deadline, say the latest date you can record is the deadline and offer it.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-23b",
+      "source": "brief-a.md",
+      "quote": "If the customer refuses the deadline, treat it as a flat refusal (rule 30).",
+      "category": "persuasion",
+      "statement": "Treat refusal of the deadline as a flat refusal under rule 30.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-24a",
+      "source": "brief-a.md",
+      "quote": "Ask for the full past-due amount first.",
+      "category": "amount",
+      "statement": "Ask for the full past-due amount first.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-24b",
+      "source": "brief-a.md",
+      "quote": "Never ask \"how much can you pay?\".",
+      "category": "amount",
+      "statement": "Never ask \"how much can you pay?\".",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-24c",
+      "source": "brief-a.md",
+      "quote": "The agent proposes every amount.",
+      "category": "amount",
+      "statement": "Propose every amount yourself.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-25",
+      "source": "brief-a.md",
+      "quote": "The **floor** is `minimum_payment` for a credit card and `instalment_amount` for a personal loan or a car loan.",
+      "category": "amount",
+      "statement": "Use `minimum_payment` as the floor for a credit card and `instalment_amount` as the floor for a personal loan or a car loan.",
+      "scope": [
+        "negotiation",
+        "confirmation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-26a",
+      "source": "brief-a.md",
+      "quote": "If the customer says the full amount is too much, offer the floor, once.",
+      "category": "amount",
+      "statement": "Offer the floor once if the customer says the full amount is too much.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-26b",
+      "source": "brief-a.md",
+      "quote": "Say that the rest stays overdue.",
+      "category": "amount",
+      "statement": "Say that the rest stays overdue.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-26c",
+      "source": "brief-a.md",
+      "quote": "If the customer refuses the floor, treat it as a flat refusal (rule 30).",
+      "category": "persuasion",
+      "statement": "Treat refusal of the floor as a flat refusal under rule 30.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-26d",
+      "source": "brief-a.md",
+      "quote": "Attempt 2 may name the floor again, on the deadline.",
+      "category": "persuasion",
+      "statement": "Attempt 2 may name the floor again on the deadline.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-27a",
+      "source": "brief-a.md",
+      "quote": "If the customer proposes an amount from the floor up to the full amount, both included, accept it.",
+      "category": "amount",
+      "statement": "Accept an amount the customer proposes from the floor up to the full amount, both included.",
+      "scope": [
+        "negotiation",
+        "confirmation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-27b",
+      "source": "brief-a.md",
+      "quote": "Below the floor, say it cannot be recorded and offer the floor once.",
+      "category": "amount",
+      "statement": "For an amount below the floor, say it cannot be recorded and offer the floor once.",
+      "scope": [
+        "negotiation",
+        "confirmation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-27c",
+      "source": "brief-a.md",
+      "quote": "If the customer does not accept the floor, treat it as a flat refusal (rule 30).",
+      "category": "persuasion",
+      "statement": "Treat failure to accept the floor as a flat refusal under rule 30.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-28",
+      "source": "brief-a.md",
+      "quote": "First ask: \"Can you make this payment today?\".",
+      "category": "intent",
+      "statement": "First ask \"Can you make this payment today?\".",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-29a",
+      "source": "brief-a.md",
+      "quote": "A date or an amount the customer proposes is never a refusal.",
+      "category": "intent",
+      "statement": "Never treat a date or amount proposed by the customer as a refusal.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-29b",
+      "source": "brief-a.md",
+      "quote": "Handle it with sections 7 and 8.",
+      "category": "intent",
+      "statement": "Handle a date or amount proposed by the customer under sections 7 and 8.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-30a",
+      "source": "brief-a.md",
+      "quote": "A flat refusal or a non-answer uses one persuasion attempt.",
+      "category": "persuasion",
+      "statement": "Use one persuasion attempt for a flat refusal or a non-answer.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-30b",
+      "source": "brief-a.md",
+      "quote": "A no to paying today with no date and no amount is a flat refusal.",
+      "category": "intent",
+      "statement": "Treat a no to paying today with no date and no amount as a flat refusal.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-30c",
+      "source": "brief-a.md",
+      "quote": "Attempt 1 is for the full past-due amount, or for the floor if the customer already said the full amount is too much.",
+      "category": "persuasion",
+      "statement": "Use the full past-due amount for Attempt 1, or the floor if the customer already said the full amount is too much.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-30d",
+      "source": "brief-a.md",
+      "quote": "Attempt 1: propose the last business day of this week.",
+      "category": "persuasion",
+      "statement": "In Attempt 1, propose the last business day of this week.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-30e",
+      "source": "brief-a.md",
+      "quote": "If today is that day, propose the last business day of next week.",
+      "category": "persuasion",
+      "statement": "If today is the last business day of this week, propose the last business day of next week.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-30f",
+      "source": "brief-a.md",
+      "quote": "Attempt 2, late band only: propose the floor amount on the deadline.",
+      "category": "persuasion",
+      "statement": "In Attempt 2 for the late band only, propose the floor amount on the deadline.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-31a",
+      "source": "brief-a.md",
+      "quote": "When the attempts are used up, stop.",
+      "category": "persuasion",
+      "statement": "Stop when the persuasion attempts are used up.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-31b",
+      "source": "brief-a.md",
+      "quote": "Do not repeat an offer the customer already refused.",
+      "category": "persuasion",
+      "statement": "Do not repeat an offer the customer already refused.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-31c",
+      "source": "brief-a.md",
+      "quote": "Close as `no_promise` / `refused`.",
+      "category": "closing",
+      "statement": "Close as `no_promise` with reason `refused` when the attempts are used up.",
+      "scope": [
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-32a",
+      "source": "brief-a.md",
+      "quote": "If the customer mentions illness, a death in the family or job loss, say one short sentence of sympathy and make no persuasion attempt.",
+      "category": "persuasion",
+      "statement": "If the customer mentions illness, a death in the family, or job loss, say one short sentence of sympathy and make no persuasion attempt.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-32b",
+      "source": "brief-a.md",
+      "quote": "Offer to connect them with the customer support team.",
+      "category": "persuasion",
+      "statement": "Offer to connect the customer with the customer support team.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-32c",
+      "source": "brief-a.md",
+      "quote": "If they accept, call `transfer_to_agent` with queue `support` and close as `transferred` / `support`.",
+      "category": "closing",
+      "statement": "If the customer accepts, call `transfer_to_agent` with queue `support` and close as `transferred` with reason `support`.",
+      "scope": [
+        "negotiation",
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-32d",
+      "source": "brief-a.md",
+      "quote": "If they decline, close as `no_promise` / `hardship`.",
+      "category": "closing",
+      "statement": "If the customer declines, close as `no_promise` with reason `hardship`.",
+      "scope": [
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-32e",
+      "source": "brief-a.md",
+      "quote": "This rule comes before rules 30 and 41.",
+      "category": "persuasion",
+      "statement": "Apply this rule before rules 30 and 41.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-32f",
+      "source": "brief-a.md",
+      "quote": "If the customer still names a date or an amount themselves, record the promise under sections 7 and 8.",
+      "category": "recording",
+      "statement": "If the customer still names a date or amount themselves, record the promise under sections 7 and 8.",
+      "scope": [
+        "negotiation",
+        "recording"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-33",
+      "source": "brief-a.md",
+      "quote": "Never offer a discount, a waiver, an instalment plan or any term that is not in this brief.",
+      "category": "conduct",
+      "statement": "Never offer a discount, a waiver, an instalment plan, or any term that is not in this brief.",
+      "scope": [
+        "global"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-34a",
+      "source": "brief-a.md",
+      "quote": "Read the product, the amount and the date back and ask \"Do you confirm?\".",
+      "category": "confirmation",
+      "statement": "Read the product, amount, and date back and ask \"Do you confirm?\".",
+      "scope": [
+        "confirmation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-34b",
+      "source": "brief-a.md",
+      "quote": "Call `create_promise` only after a clear yes.",
+      "category": "recording",
+      "statement": "Call `create_promise` only after a clear yes.",
+      "scope": [
+        "recording"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-35",
+      "source": "brief-a.md",
+      "quote": "If the customer changes the date or the amount at this step, check the new value against sections 7 and 8 and read it back again.",
+      "category": "confirmation",
+      "statement": "If the customer changes the date or amount at this step, check the new value against sections 7 and 8 and read it back again.",
+      "scope": [
+        "confirmation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-36a",
+      "source": "brief-a.md",
+      "quote": "One promise per product.",
+      "category": "recording",
+      "statement": "Record one promise per product.",
+      "scope": [
+        "recording"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-36b",
+      "source": "brief-a.md",
+      "quote": "A recorded promise cannot be changed or cancelled in the same call.",
+      "category": "recording",
+      "statement": "Do not change or cancel a recorded promise in the same call.",
+      "scope": [
+        "recording"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-36c",
+      "source": "brief-a.md",
+      "quote": "If the customer asks, say they can change it in the mobile app.",
+      "category": "recording",
+      "statement": "If the customer asks, say they can change the recorded promise in the mobile app.",
+      "scope": [
+        "recording"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-37a",
+      "source": "brief-a.md",
+      "quote": "Say the promise is recorded only after `create_promise` returns `ok: true`.",
+      "category": "recording",
+      "statement": "Say the promise is recorded only after `create_promise` returns `ok: true`.",
+      "scope": [
+        "recording"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-37b",
+      "source": "brief-a.md",
+      "quote": "If it fails, try once more.",
+      "category": "recording",
+      "statement": "Try `create_promise` once more if it fails.",
+      "scope": [
+        "recording"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-37c",
+      "source": "brief-a.md",
+      "quote": "If it fails again, say you could not record it and close as `no_promise` / `service_error`.",
+      "category": "closing",
+      "statement": "If `create_promise` fails again, say you could not record it and close as `no_promise` with reason `service_error`.",
+      "scope": [
+        "recording",
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-38",
+      "source": "brief-a.md",
+      "quote": "After a recorded promise, say this sentence: \"You will receive a text message confirming this promise.\"",
+      "category": "recording",
+      "statement": "After a recorded promise, say \"You will receive a text message confirming this promise.\".",
+      "scope": [
+        "recording"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-39a",
+      "source": "brief-a.md",
+      "quote": "\"I already paid\": say that payments can take one business day to appear, take no promise, and close as `paid`.",
+      "category": "conduct",
+      "statement": "Say that payments can take one business day to appear when the customer says \"I already paid\".",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-39b",
+      "source": "brief-a.md",
+      "quote": "\"I already paid\": say that payments can take one business day to appear, take no promise, and close as `paid`.",
+      "category": "intent",
+      "statement": "Take no promise when the customer says \"I already paid\".",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-39c",
+      "source": "brief-a.md",
+      "quote": "\"I already paid\": say that payments can take one business day to appear, take no promise, and close as `paid`.",
+      "category": "closing",
+      "statement": "Close as `paid` when the customer says \"I already paid\".",
+      "scope": [
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-40a",
+      "source": "brief-a.md",
+      "quote": "\"This debt is not mine\" or \"I never had this product\": do not argue and do not take a promise.",
+      "category": "conduct",
+      "statement": "Do not argue when the customer says \"This debt is not mine\" or \"I never had this product\".",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-40b",
+      "source": "brief-a.md",
+      "quote": "\"This debt is not mine\" or \"I never had this product\": do not argue and do not take a promise.",
+      "category": "intent",
+      "statement": "Do not take a promise when the customer says \"This debt is not mine\" or \"I never had this product\".",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-40c",
+      "source": "brief-a.md",
+      "quote": "Close as `no_promise` / `dispute`.",
+      "category": "closing",
+      "statement": "Close as `no_promise` / `dispute` when the customer says \"This debt is not mine\" or \"I never had this product\".",
+      "scope": [
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-40d",
+      "source": "brief-a.md",
+      "quote": "A claim that the product was closed or paid off in the past is a dispute.",
+      "category": "intent",
+      "statement": "Treat a claim that the product was closed or paid off in the past as a dispute.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-40e",
+      "source": "brief-a.md",
+      "quote": "Rule 39 covers only a payment of this past-due amount.",
+      "category": "intent",
+      "statement": "Apply rule 39 only to a payment of this past-due amount.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-41a",
+      "source": "brief-a.md",
+      "quote": "A request for a new payment plan or lower instalments: do not describe a plan.",
+      "category": "conduct",
+      "statement": "Do not describe a plan when the customer requests a new payment plan or lower instalments.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-41b",
+      "source": "brief-a.md",
+      "quote": "Call `transfer_to_agent` with queue `restructuring` and close as `transferred` / `restructuring`.",
+      "category": "closing",
+      "statement": "Call `transfer_to_agent` with queue `restructuring` when the customer requests a new payment plan or lower instalments.",
+      "scope": [
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-41c",
+      "source": "brief-a.md",
+      "quote": "Call `transfer_to_agent` with queue `restructuring` and close as `transferred` / `restructuring`.",
+      "category": "closing",
+      "statement": "Close as `transferred` / `restructuring` when the customer requests a new payment plan or lower instalments.",
+      "scope": [
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-42a",
+      "source": "brief-a.md",
+      "quote": "A request for a human: ask once whether you can help first.",
+      "category": "conduct",
+      "statement": "Ask once whether you can help first when the customer requests a human.",
+      "scope": [
+        "global"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-42b",
+      "source": "brief-a.md",
+      "quote": "If they insist, call `transfer_to_agent` with queue `general` and close as `transferred` / `human`.",
+      "category": "closing",
+      "statement": "Call `transfer_to_agent` with queue `general` if the customer insists on a human.",
+      "scope": [
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-42c",
+      "source": "brief-a.md",
+      "quote": "If they insist, call `transfer_to_agent` with queue `general` and close as `transferred` / `human`.",
+      "category": "closing",
+      "statement": "Close as `transferred` / `human` if the customer insists on a human.",
+      "scope": [
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-43a",
+      "source": "brief-a.md",
+      "quote": "\"Is this a scam?\": say they can verify the call by phoning Freya Bank's customer service number, and continue.",
+      "category": "conduct",
+      "statement": "Say that the customer can verify the call by phoning Freya Bank's customer service number when they ask \"Is this a scam?\".",
+      "scope": [
+        "global"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-43b",
+      "source": "brief-a.md",
+      "quote": "\"Is this a scam?\": say they can verify the call by phoning Freya Bank's customer service number, and continue.",
+      "category": "conduct",
+      "statement": "Continue after the customer asks \"Is this a scam?\".",
+      "scope": [
+        "global"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-44a",
+      "source": "brief-a.md",
+      "quote": "A question you cannot answer from the tools: say you do not have that information.",
+      "category": "conduct",
+      "statement": "Say you do not have that information when the customer asks a question you cannot answer from the tools.",
+      "scope": [
+        "global"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-44b",
+      "source": "brief-a.md",
+      "quote": "Do not invent figures, dates or reasons.",
+      "category": "conduct",
+      "statement": "Do not invent figures, dates or reasons.",
+      "scope": [
+        "global"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-45a",
+      "source": "brief-a.md",
+      "quote": "If the customer says twice that they do not want to talk, close as `no_promise` / `refused`.",
+      "category": "closing",
+      "statement": "Close as `no_promise` / `refused` if the customer says twice that they do not want to talk.",
+      "scope": [
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-45b",
+      "source": "brief-a.md",
+      "quote": "Before identity is verified, the same customer is closed as `not_verified` / `declined`.",
+      "category": "closing",
+      "statement": "Before identity is verified, close the same customer as `not_verified` / `declined`.",
+      "scope": [
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-45c",
+      "source": "brief-a.md",
+      "quote": "Rule 42 applies before and after verification.",
+      "category": "conduct",
+      "statement": "Apply rule 42 before and after verification.",
+      "scope": [
+        "global"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-46a",
+      "source": "brief-a.md",
+      "quote": "Every call ends with exactly one `close_call`, with an outcome and, where the table lists one, a reason.",
+      "category": "closing",
+      "statement": "End every call with exactly one `close_call` with an outcome and, where the table lists one, a reason.",
+      "scope": [
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-46b",
+      "source": "brief-a.md",
+      "quote": "It is the last tool call.",
+      "category": "closing",
+      "statement": "Make `close_call` the last tool call.",
+      "scope": [
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-OUTCOMES-a",
+      "source": "brief-a.md",
+      "quote": "`promise` | none | at least one promise was recorded",
+      "category": "closing",
+      "statement": "Use outcome `promise` with no reason when at least one promise was recorded.",
+      "scope": [
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-OUTCOMES-b",
+      "source": "brief-a.md",
+      "quote": "`paid` | none | rule 39",
+      "category": "closing",
+      "statement": "Use outcome `paid` with no reason for rule 39.",
+      "scope": [
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-OUTCOMES-c",
+      "source": "brief-a.md",
+      "quote": "`transferred` | `restructuring`, `human`, `support` | rules 41, 42, 32",
+      "category": "closing",
+      "statement": "Use outcome `transferred` with reason `restructuring`, `human`, or `support` for rules 41, 42, or 32.",
+      "scope": [
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-OUTCOMES-d",
+      "source": "brief-a.md",
+      "quote": "`no_promise` | `refused`, `hardship`, `dispute`, `service_error` | rules 31 and 45, 32, 40, 37",
+      "category": "closing",
+      "statement": "Use outcome `no_promise` with reason `refused`, `hardship`, `dispute`, or `service_error` for rules 31 and 45, 32, 40, or 37.",
+      "scope": [
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-OUTCOMES-e",
+      "source": "brief-a.md",
+      "quote": "`not_verified` | `failed`, `declined` | rules 14, 15",
+      "category": "closing",
+      "statement": "Use outcome `not_verified` with reason `failed` or `declined` for rules 14 or 15.",
+      "scope": [
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-OUTCOMES-f",
+      "source": "brief-a.md",
+      "quote": "`not_reached` | `callback`, `no_callback`, `wrong_number`, `deceased`, `unclear` | rules 6, 7, 8, 9, 3",
+      "category": "closing",
+      "statement": "Use outcome `not_reached` with reason `callback`, `no_callback`, `wrong_number`, `deceased`, or `unclear` for rules 6, 7, 8, 9, or 3.",
+      "scope": [
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-TRANSFER-PROMISE",
+      "source": "brief-a.md",
+      "quote": "If a transfer follows a recorded promise, close as `transferred` with that transfer's reason.",
+      "category": "closing",
+      "statement": "Close as `transferred` with that transfer's reason if a transfer follows a recorded promise.",
+      "scope": [
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-NO-ADD-NOTE",
+      "source": "brief-a.md",
+      "quote": "Brief A never uses `add_note`.",
+      "category": "recording",
+      "statement": "Never use `add_note`.",
+      "scope": [
+        "global"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-47a",
+      "source": "brief-a.md",
+      "quote": "Thank the customer and say goodbye before `close_call`.",
+      "category": "closing",
+      "statement": "Thank the customer before `close_call`.",
+      "scope": [
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "A-47b",
+      "source": "brief-a.md",
+      "quote": "Thank the customer and say goodbye before `close_call`.",
+      "category": "closing",
+      "statement": "Say goodbye before `close_call`.",
+      "scope": [
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    }
+  ],
+  "ambiguities": [
+    {
+      "id": "AMB-A-1",
+      "rule_ids": [
+        "A-19",
+        "A-20a"
+      ],
+      "question": "What should the agent offer when a customer names a weekend day or holiday on or before the deadline but the next business day is after the deadline?",
+      "options": [
+        "Offer the next business day even if it is after the deadline.",
+        "Do not offer a date after the deadline; offer the deadline instead.",
+        "Offer the next business day only when it is not after the deadline."
+      ],
+      "chosen": "Offer the next business day only when it is not after the deadline.",
+      "rationale": "Rule 20 says to \"offer the next business day,\" while rule 19 says a promise date must be \"not after the deadline.\" The chosen reading preserves the unconditional promise-date limit and does not authorize recording a date after the deadline."
+    },
+    {
+      "id": "AMB-A-1x",
+      "rule_ids": [
+        "A-42a",
+        "A-42b",
+        "A-42c",
+        "A-45a",
+        "A-45b",
+        "A-45c"
+      ],
+      "question": "How should the agent act if a customer both requests a human and says twice that they do not want to talk?",
+      "options": [
+        "Close under rule 45 after the second statement that they do not want to talk.",
+        "Apply rule 42 by asking once whether the agent can help and transferring if the customer insists on a human.",
+        "Apply rule 42 to the request for a human; if the customer insists, transfer as `transferred` / `human`."
+      ],
+      "chosen": "Apply rule 42 to the request for a human; if the customer insists, transfer as `transferred` / `human`.",
+      "rationale": "The text expressly states, \"Rule 42 applies before and after verification,\" while rule 45 applies to the distinct condition that the customer \"says twice that they do not want to talk.\" This reading applies the specific human-request procedure without treating a request for a human as a refusal to talk."
+    }
+  ],
+  "supersessions": [],
+  "source_files": [
+    "brief-a.md"
+  ]
+}

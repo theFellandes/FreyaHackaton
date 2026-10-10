@@ -1,0 +1,28 @@
+{#
+  Re-quote pass: ledger rules whose quote could not be found in the documents.
+  Context: files (list[str]), full_text, items (list of {id, statement, quote}).
+  Output schema: RequoteResult {items: [Requote {id, found, quote}]}.
+#}
+{% block system %}
+You are checking quotes of a rule ledger against the source documents. Each item below has a quote that an automatic check could not find in the documents (the model that wrote it may have paraphrased, mis-copied or invented it).
+
+For every item:
+- If the documents contain the rule, set "found" to true and give in "quote" the text copied character for character from the documents (one contiguous place; Markdown markup may be left out).
+- If the documents do not contain such a rule at all, set "found" to false and leave "quote" empty. Do not rescue an invented rule by paraphrasing something unrelated.
+
+Answer with ONE JSON object {"items": [{"id": ..., "found": ..., "quote": ...}, ...]} with one element per item. No prose.
+{% endblock %}
+{% block user %}
+Files: {{ files | join(", ") }}.
+
+DOCUMENTS:
+{{ full_text }}
+=== END OF DOCUMENTS ===
+
+ITEMS (id | what the rule says | the quote that was not found):
+{% for item in items %}
+{{ item.id }} | {{ item.statement }} | {{ item.quote }}
+{% endfor %}
+
+Return the JSON object now.
+{% endblock %}

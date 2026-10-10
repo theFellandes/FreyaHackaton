@@ -1,0 +1,64 @@
+From: Policy Team <policy@bank.example>
+To: builders@bank.example
+Date: Mon, 12 Oct 2026 09:30:00 +0000
+Subject: Amendment =?utf-8?b?4oCT?= callbacks
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="===============4122767983953439660=="
+
+--===============4122767983953439660==
+Content-Type: multipart/alternative;
+ boundary="===============1332580611336023096=="
+
+--===============1332580611336023096==
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+
+Hello,
+
+Rule 6 changes: callbacks end at 18:00.
+
+--===============1332580611336023096==
+Content-Type: text/html; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+MIME-Version: 1.0
+
+<p>HTML <b>copy</b> that must not duplicate the text.</p>
+
+--===============1332580611336023096==--
+
+--===============4122767983953439660==
+Content-Type: text/csv; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename="codes.csv"
+MIME-Version: 1.0
+
+code,meaning
+X1,refused
+
+--===============4122767983953439660==
+Content-Type: application/pdf
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="annex.pdf"
+MIME-Version: 1.0
+
+JVBERi0xLjQKMSAwIG9iago8PCAvVHlwZSAvQ2F0YWxvZyAvUGFnZXMgMiAwIFIgPj4KZW5kb2Jq
+CjIgMCBvYmoKPDwgL1R5cGUgL1BhZ2VzIC9LaWRzIFszIDAgUl0gL0NvdW50IDEgPj4KZW5kb2Jq
+CjMgMCBvYmoKPDwgL1R5cGUgL1BhZ2UgL1BhcmVudCAyIDAgUiAvTWVkaWFCb3ggWzAgMCA2MTIg
+NzkyXSAvQ29udGVudHMgNCAwIFIgL1Jlc291cmNlcyA8PCAvRm9udCA8PCAvRjEgNSAwIFIgPj4g
+Pj4gPj4KZW5kb2JqCjQgMCBvYmoKPDwgL0xlbmd0aCA0OCA+PgpzdHJlYW0KQlQgL0YxIDEyIFRm
+IDcyIDcyMCBUZCAoQXR0YWNoZWQgUERGIHJ1bGUpIFRqIEVUCmVuZHN0cmVhbQplbmRvYmoKNSAw
+IG9iago8PCAvVHlwZSAvRm9udCAvU3VidHlwZSAvVHlwZTEgL0Jhc2VGb250IC9IZWx2ZXRpY2Eg
+Pj4KZW5kb2JqCnhyZWYKMCA2CjAwMDAwMDAwMDAgNjU1MzUgZiAKMDAwMDAwMDAwOSAwMDAwMCBu
+IAowMDAwMDAwMDU4IDAwMDAwIG4gCjAwMDAwMDAxMTUgMDAwMDAgbiAKMDAwMDAwMDI0MSAwMDAw
+MCBuIAowMDAwMDAwMzM5IDAwMDAwIG4gCnRyYWlsZXIKPDwgL1NpemUgNiAvUm9vdCAxIDAgUiA+
+PgpzdGFydHhyZWYKNDA5CiUlRU9GCg==
+
+--===============4122767983953439660==
+Content-Type: image/png
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="logo.png"
+MIME-Version: 1.0
+
+iVBORw0K
+
+--===============4122767983953439660==--

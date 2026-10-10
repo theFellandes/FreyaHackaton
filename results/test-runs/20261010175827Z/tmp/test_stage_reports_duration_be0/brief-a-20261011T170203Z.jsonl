@@ -1,0 +1,5 @@
+{"ts": "2026-10-11T17:02:03.123Z", "seq": 1, "t_s": 0.0, "run_id": "run-1", "slot": "brief-a", "kind": "start", "message": "run run-1 started (slot brief-a)", "data": {"started_at": "2026-10-11T17:02:03.123Z", "builder_version": "0.1.0", "python": "3.12.14", "platform": "Windows-11"}}
+{"ts": "2026-10-11T17:02:03.123Z", "seq": 2, "t_s": 0.0, "run_id": "run-1", "slot": "brief-a", "kind": "stage", "message": "compile_workflow start", "data": {"stage": "compile_workflow", "status": "start"}}
+{"ts": "2026-10-11T17:02:05.433Z", "seq": 3, "t_s": 2.31, "run_id": "run-1", "slot": "brief-a", "kind": "stage", "message": "compile_workflow end", "data": {"stage": "compile_workflow", "status": "end", "nodes": 12, "duration_s": 2.31}}
+{"ts": "2026-10-11T17:02:05.433Z", "seq": 4, "t_s": 2.31, "run_id": "run-1", "slot": "brief-a", "kind": "stage", "message": "never_started failed", "data": {"stage": "never_started", "status": "failed"}}
+{"ts": "2026-10-11T17:02:05.433Z", "seq": 5, "t_s": 2.31, "run_id": "run-1", "slot": "brief-a", "kind": "end", "message": "run run-1 closed after 2.3 s", "data": {"duration_s": 2.31}}

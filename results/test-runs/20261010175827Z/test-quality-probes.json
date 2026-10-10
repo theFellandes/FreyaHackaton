@@ -1,0 +1,47 @@
+[
+  {
+    "case": "money-helper-vs-generated",
+    "amount": "1.005",
+    "floor_and_full": "1.01",
+    "helper": "ok",
+    "generated": "below_floor"
+  },
+  {
+    "case": "money-helper-vs-generated",
+    "amount": "637,50",
+    "floor_and_full": "637.50",
+    "helper": "ok",
+    "generated": "above_full"
+  },
+  {
+    "case": "incomplete-product-paid-notes",
+    "product_order": [
+      "p1",
+      "p2"
+    ],
+    "notes": [
+      {
+        "product_id": "p1",
+        "reason": "paid"
+      }
+    ],
+    "helper": {
+      "outcome": "paid",
+      "reason": null
+    },
+    "generated": [
+      "paid",
+      null
+    ],
+    "required_invariant": "Paid requires a paid note for every known product; p2 is missing."
+  },
+  {
+    "case": "status-only-monitor-filter",
+    "reported_failed_attempts": 1,
+    "rows_after_error_filter": 0
+  },
+  {
+    "case": "malformed-embedded-json-redaction",
+    "unknown_header_value_survives": true
+  }
+]

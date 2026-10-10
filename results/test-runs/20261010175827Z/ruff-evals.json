@@ -1,0 +1,72 @@
+[
+  {
+    "cell": null,
+    "code": "RUF100",
+    "end_location": {
+      "column": 38,
+      "row": 735
+    },
+    "filename": "C:\\Users\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\evals\\reference\\brief_a_ref.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 73,
+            "row": 735
+          },
+          "location": {
+            "column": 21,
+            "row": 735
+          }
+        }
+      ],
+      "message": "Remove unused `noqa` directive"
+    },
+    "location": {
+      "column": 23,
+      "row": 735
+    },
+    "message": "Unused `noqa` directive (non-enabled: `PLC0415`)",
+    "name": "unused-noqa",
+    "noqa_row": 735,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unused-noqa"
+  },
+  {
+    "cell": null,
+    "code": "RUF100",
+    "end_location": {
+      "column": 49,
+      "row": 96
+    },
+    "filename": "C:\\Users\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\evals\\triage.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 80,
+            "row": 96
+          },
+          "location": {
+            "column": 33,
+            "row": 96
+          }
+        }
+      ],
+      "message": "Remove unused `noqa` directive"
+    },
+    "location": {
+      "column": 35,
+      "row": 96
+    },
+    "message": "Unused `noqa` directive (non-enabled: `BLE001`)",
+    "name": "unused-noqa",
+    "noqa_row": 96,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unused-noqa"
+  }
+]

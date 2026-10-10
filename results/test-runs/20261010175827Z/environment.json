@@ -1,0 +1,27 @@
+{
+  "python": "3.12.14 (main, Aug 25 2026, 14:01:42) [MSC v.1944 64 bit (AMD64)]",
+  "executable": "C:\\Users\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\.venv-playground\\Scripts\\python.exe",
+  "packages": {
+    "pytest": "9.1.1",
+    "pytest-asyncio": "1.4.0",
+    "ruff": "0.17.0",
+    "streamlit": "1.65.0",
+    "pydantic": "2.14.0",
+    "langchain-core": "1.6.9",
+    "langchain-anthropic": "1.7.5",
+    "langchain-openai": "1.7.0",
+    "langgraph": "1.2.14",
+    "anthropic": "1.13.0",
+    "openai": "3.28.0",
+    "pypdf": "6.20.0",
+    "uuid-utils": "0.17.1",
+    "coverage": null,
+    "pytest-cov": null
+  },
+  "coverage_available": false,
+  "plugin_autoload": false,
+  "enabled_plugins": [
+    "pytest_asyncio.plugin"
+  ],
+  "selection": "not live"
+}

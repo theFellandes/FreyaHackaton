@@ -1,0 +1,162 @@
+{
+ "agent_id": "4b0c9003-d157-4cc0-828f-1f9512a92e46",
+ "simulation_id": "d38c19c8-fa6b-4c03-8b3b-7c85972345ca",
+ "iteration_id": "60f07622-5085-4613-aa9d-6243cc1eb72f",
+ "seconds": 105,
+ "passed": 2,
+ "total": 3,
+ "runs": 1,
+ "final": [
+  {
+   "id": "PUB-11",
+   "family": "Multi-product",
+   "passes": 1,
+   "runs": 1,
+   "pass": true
+  },
+  {
+   "id": "PUB-12",
+   "family": "Multi-product",
+   "passes": 1,
+   "runs": 1,
+   "pass": true
+  },
+  {
+   "id": "PUB-13",
+   "family": "Multi-product",
+   "passes": 0,
+   "runs": 1,
+   "pass": false
+  }
+ ],
+ "rows": [
+  {
+   "id": "PUB-11",
+   "level": "medium",
+   "family": "Multi-product",
+   "pass": true,
+   "failed": [],
+   "call_id": "7ad88dac-0f80-41d4-94b7-78cd6ba34bc2",
+   "tools": [
+    "verify_identity",
+    "verify_identity",
+    "get_account",
+    "create_promise",
+    "create_promise",
+    "create_promise",
+    "close_call"
+   ],
+   "customer_id": "c_c3f7be82-ccb",
+   "slowest_turn_s": 2.3,
+   "ended": "assistant-ended-call"
+  },
+  {
+   "id": "PUB-12",
+   "level": "hard",
+   "family": "Multi-product",
+   "pass": true,
+   "failed": [],
+   "call_id": "37520dd8-6b41-42d9-ab41-1e834ab04f4a",
+   "tools": [
+    "verify_identity",
+    "verify_identity",
+    "verify_identity",
+    "get_account",
+    "create_promise",
+    "add_note",
+    "add_note",
+    "close_call"
+   ],
+   "customer_id": "c_37f2a9e3-015",
+   "slowest_turn_s": 6.8,
+   "ended": "assistant-ended-call"
+  },
+  {
+   "id": "PUB-13",
+   "level": "hard",
+   "family": "Multi-product",
+   "pass": false,
+   "failed": [
+    "conversation: The assistant successfully recorded the credit card promise for 30 October (Message 16) and the personal loan promise for 23 October (Message 30), which was the stated deadline (Message 22). However, the success criteria require that 'the read-back names both dates'. The assistant confirmed each date individually in separate turns but failed to provide a single summary or read-back that named both"
+   ],
+   "call_id": "e53936c6-0cfe-4bd3-950d-39b0997a06c7",
+   "tools": [
+    "verify_identity",
+    "verify_identity",
+    "get_account",
+    "create_promise",
+    "create_promise",
+    "close_call"
+   ],
+   "customer_id": "c_10bb9b1e-5d7",
+   "slowest_turn_s": 6.0,
+   "ended": "assistant-ended-call"
+  }
+ ],
+ "all_rows": [
+  [
+   {
+    "id": "PUB-11",
+    "level": "medium",
+    "family": "Multi-product",
+    "pass": true,
+    "failed": [],
+    "call_id": "7ad88dac-0f80-41d4-94b7-78cd6ba34bc2",
+    "tools": [
+     "verify_identity",
+     "verify_identity",
+     "get_account",
+     "create_promise",
+     "create_promise",
+     "create_promise",
+     "close_call"
+    ],
+    "customer_id": "c_c3f7be82-ccb",
+    "slowest_turn_s": 2.3,
+    "ended": "assistant-ended-call"
+   },
+   {
+    "id": "PUB-12",
+    "level": "hard",
+    "family": "Multi-product",
+    "pass": true,
+    "failed": [],
+    "call_id": "37520dd8-6b41-42d9-ab41-1e834ab04f4a",
+    "tools": [
+     "verify_identity",
+     "verify_identity",
+     "verify_identity",
+     "get_account",
+     "create_promise",
+     "add_note",
+     "add_note",
+     "close_call"
+    ],
+    "customer_id": "c_37f2a9e3-015",
+    "slowest_turn_s": 6.8,
+    "ended": "assistant-ended-call"
+   },
+   {
+    "id": "PUB-13",
+    "level": "hard",
+    "family": "Multi-product",
+    "pass": false,
+    "failed": [
+     "conversation: The assistant successfully recorded the credit card promise for 30 October (Message 16) and the personal loan promise for 23 October (Message 30), which was the stated deadline (Message 22). However, the success criteria require that 'the read-back names both dates'. The assistant confirmed each date individually in separate turns but failed to provide a single summary or read-back that named both"
+    ],
+    "call_id": "e53936c6-0cfe-4bd3-950d-39b0997a06c7",
+    "tools": [
+     "verify_identity",
+     "verify_identity",
+     "get_account",
+     "create_promise",
+     "create_promise",
+     "close_call"
+    ],
+    "customer_id": "c_10bb9b1e-5d7",
+    "slowest_turn_s": 6.0,
+    "ended": "assistant-ended-call"
+   }
+  ]
+ ]
+}

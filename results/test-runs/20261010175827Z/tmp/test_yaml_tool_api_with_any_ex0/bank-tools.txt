@@ -1,0 +1,6 @@
+openapi: 3.0.3
+info: {title: Bank tools, version: "1"}
+paths:
+  /close_call:
+    post:
+      summary: End the call.

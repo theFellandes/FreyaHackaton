@@ -1,0 +1,87 @@
+# Run the Freya builder in a container, with the same entry point as natively (python builder/build.py ...).
+#
+#   docker compose build                                                   # image freya-builder:latest
+#   docker compose run --rm builder briefs/brief-a.md tools/openapi.json   # build + deploy one brief
+#   docker compose run --rm builder briefs/brief-a.md briefs/brief-b.md tools/openapi.json --slot brief-b
+#   docker compose run --rm builder inputs/<brief>.md inputs/<tool-api>.json --dry-run   # files from ./inputs
+#   docker compose run --rm -e LLM_PROVIDERS=openai builder ...           # any other setting: -e NAME=value
+#   docker compose run --rm --build tests                                  # unit tests (no network, no keys)
+#
+# Paths given to the builder are container paths relative to /app: the kit files (briefs/, tools/, docs/, ...) are
+# baked into the image, and ./inputs is mounted read-only for brief and tool API files added later.
+#
+# Secrets. Compose reads ./.env (and your shell) only to fill the ${VAR} references below; nothing else from .env
+# reaches the container, so unrelated secrets in that file stay on the host. Never switch to `env_file: .env`.
+# Do not add kit variables that are optional by design (FREYA_SIM_CONCURRENCY, FREYA_BANK_HOST,
+# FREYA_AGENT_PROVIDER, FREYA_AGENT_MODEL) with an empty default: freya.py and tools/ read them with
+# os.environ.get(name, default), and an empty string is not "unset" (it would replace the default or crash int()).
+name: freya-builder
+
+services:
+  builder:
+    build:
+      context: .
+      target: runtime
+      args:
+        APP_UID: ${APP_UID:-1000}   # Linux hosts: set APP_UID/APP_GID to `id -u`/`id -g` so bind mounts stay writable
+        APP_GID: ${APP_GID:-1000}
+    image: freya-builder:latest
+    init: true                      # tini as PID 1: forwards Ctrl+C/SIGTERM and reaps the Claude CLI subprocesses
+    stop_grace_period: 30s          # time to finalise the trace when stopped
+    environment:
+      # --- Freya platform (kit) ---
+      FREYA_API_KEY: ${FREYA_API_KEY:-${FREYA_KEY:-}}   # FREYA_KEY is accepted as an alias of FREYA_API_KEY
+      FREYA_API_URL: ${FREYA_API_URL:-https://staging-app.freyavoice.ai}   # never empty: freya.py uses it as-is
+      FREYA_BANK_TEAM_KEY: ${FREYA_BANK_TEAM_KEY:-}     # practice runs (tools/run_cases.py) read the bank ledger
+      FREYA_WORKSPACE_ID: ${FREYA_WORKSPACE_ID:-}       # optional; looked up from the key when empty
+      # Kit state (slot -> workflow id) lives in the mounted state/ directory; /app/.freya-agents.json links there.
+      FREYA_STATE_FILE: /app/state/.freya-agents.json
+      # --- LLM keys for the key changer (empty values are skipped). Use the *_KEYS list form for more keys. ---
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      ANTHROPIC_API_KEY_1: ${ANTHROPIC_API_KEY_1:-}
+      ANTHROPIC_API_KEY_2: ${ANTHROPIC_API_KEY_2:-}
+      ANTHROPIC_API_KEY_3: ${ANTHROPIC_API_KEY_3:-}
+      ANTHROPIC_API_KEY_4: ${ANTHROPIC_API_KEY_4:-}
+      ANTHROPIC_API_KEY_5: ${ANTHROPIC_API_KEY_5:-}
+      ANTHROPIC_API_KEYS: ${ANTHROPIC_API_KEYS:-}       # comma, semicolon or newline separated
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      OPENAI_API_KEY_1: ${OPENAI_API_KEY_1:-}
+      OPENAI_API_KEY_2: ${OPENAI_API_KEY_2:-}
+      OPENAI_API_KEY_3: ${OPENAI_API_KEY_3:-}
+      OPENAI_API_KEY_4: ${OPENAI_API_KEY_4:-}
+      OPENAI_API_KEY_5: ${OPENAI_API_KEY_5:-}
+      OPENAI_API_KEYS: ${OPENAI_API_KEYS:-}
+      # claude_code provider (Claude Agent SDK): a long-lived token from `claude setup-token` is the simplest way to
+      # log the bundled Claude CLI in inside a container. Alternatively mount your login (see volumes below).
+      CLAUDE_CODE_OAUTH_TOKEN: ${CLAUDE_CODE_OAUTH_TOKEN:-}
+    volumes:
+      - ./out:/app/out             # compiled + exported workflows
+      - ./traces:/app/traces       # run traces (.log + .jsonl) -- part of the submission
+      - ./results:/app/results     # practice-run results and results/log.jsonl
+      - ./data:/app/data           # data/key_health.json: keys known to be dead are skipped on the next run
+      - ./state:/app/state         # .freya-agents.json + .personas.json, so re-runs update the same workflow
+      - ./inputs:/app/inputs:ro    # extra brief / tool API files to build from (created empty if missing)
+      # Optional -- claude_code provider with your existing Claude login instead of CLAUDE_CODE_OAUTH_TOKEN.
+      # Uncomment ONE of the two lines. ${USERPROFILE} is your profile folder on Windows; ${HOME} elsewhere.
+      # (macOS keeps the login in the Keychain, not in ~/.claude, so use CLAUDE_CODE_OAUTH_TOKEN there.)
+      # a) The whole ~/.claude folder, read-only. The CLI cannot write its session files or refresh an expired
+      #    login there, so it may stop working once the host login's access token expires.
+      # - ${USERPROFILE:-${HOME}}/.claude:/home/app/.claude:ro
+      # b) Only the credentials file, read-only, inside the image's writable /home/app/.claude (same refresh caveat).
+      # - ${USERPROFILE:-${HOME}}/.claude/.credentials.json:/home/app/.claude/.credentials.json:ro
+
+  tests:
+    profiles: ["test"]             # not started by `docker compose up`; `docker compose run tests` enables it
+    build:
+      context: .
+      target: dev                  # runtime dependencies + the `dev` extra (pytest, pytest-asyncio, ruff)
+      args:
+        APP_UID: ${APP_UID:-1000}
+        APP_GID: ${APP_GID:-1000}
+    image: freya-builder:tests
+    network_mode: none             # unit tests must never touch the network (Freya, the mock bank or an LLM)
+    command: ["-m", "not live", "tests"]
+    # No environment and no secrets: tests use fakes. To test the working tree without rebuilding, uncomment:
+    # volumes:
+    #   - ./builder:/app/builder:ro
+    #   - ./tests:/app/tests:ro

@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "entries": [
+    {
+      "provider": "anthropic",
+      "fingerprint": "abc123abc123",
+      "label": "",
+      "reason": "quota",
+      "marked_at": 1760000000.0,
+      "marked_at_utc": "2025-10-09T08:53:20Z"
+    }
+  ]
+}

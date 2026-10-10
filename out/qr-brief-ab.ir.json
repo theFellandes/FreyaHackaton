@@ -1,0 +1,1219 @@
+{
+  "rule_ids": [
+    "A-JOB-a",
+    "A-VARS-a",
+    "A-VARS-b",
+    "A-VARS-c",
+    "A-VARS-d",
+    "A-33",
+    "A-44b",
+    "B-M1",
+    "B-M2"
+  ],
+  "bank_name": "Freya Bank",
+  "language": "en",
+  "currency_word": "",
+  "call_variables": [
+    {
+      "name": "customer_id",
+      "meaning": "Pass it to every tool call.",
+      "example": "c_4f2a..."
+    },
+    {
+      "name": "first_name",
+      "meaning": "The person to ask for.",
+      "example": "Daniel"
+    },
+    {
+      "name": "last_name",
+      "meaning": "The person to ask for.",
+      "example": "Reyes"
+    },
+    {
+      "name": "title",
+      "meaning": "Address the customer as title plus last name.",
+      "example": "Mr"
+    },
+    {
+      "name": "now",
+      "meaning": "The current date and time. All date rules use this, never the real clock.",
+      "example": "2026-10-14T11:00"
+    }
+  ],
+  "phrases": {
+    "rule_ids": [
+      "A-1a",
+      "A-2",
+      "A-4",
+      "A-9a",
+      "A-14b",
+      "A-15a",
+      "A-17a",
+      "A-23a",
+      "A-26b",
+      "A-27b",
+      "A-32a",
+      "A-32b",
+      "A-36c",
+      "B-11a",
+      "A-38",
+      "A-39a",
+      "A-43",
+      "A-44a",
+      "A-47a",
+      "A-47b",
+      "A-M1",
+      "B-4a"
+    ],
+    "opening_sentence": "Hello, I am Freya Bank's digital assistant calling, and we record this call.",
+    "right_party_question": "Am I speaking with {title} {last_name}?",
+    "robot_answer": "I am Freya Bank's digital assistant.",
+    "scam_answer": "You can verify this call by phoning Freya Bank's customer service number.",
+    "confirm_question": "Do you confirm?",
+    "today_question": "Can you pay all of them today?",
+    "recorded_sentence": "You will receive a text message confirming this promise.",
+    "identity_failed_sentence": "Please use the mobile app or a branch.",
+    "deceased_sentence": "I am sorry for your loss.",
+    "paid_sentence": "Payments can take one business day to appear.",
+    "goodbye_sentence": "Thank you, and goodbye.",
+    "extra": {
+      "decline_verification": "These questions protect your account.",
+      "after_deadline": "The latest date I can record is {deadline}.",
+      "floor_note": "The rest stays overdue.",
+      "below_floor": "That amount cannot be recorded.",
+      "hardship_sympathy": "I am sorry to hear that.",
+      "support_offer": "Would you like me to connect you with the customer support team?",
+      "immutable_promise": "You can change it in the mobile app.",
+      "recording_failure": "I could not record it.",
+      "unknown_answer": "I do not have that information."
+    }
+  },
+  "right_party": {
+    "rule_ids": [
+      "A-3a",
+      "A-3b",
+      "A-3c",
+      "A-3d",
+      "A-3e",
+      "A-3f"
+    ],
+    "confirm_examples": [
+      "yes",
+      "that's me",
+      "speaking",
+      "the customer's own name"
+    ],
+    "not_confirm_examples": [
+      "Hello",
+      "go ahead",
+      "who is this"
+    ],
+    "max_asks": 2,
+    "unclear_outcome": {
+      "outcome": "not_reached",
+      "reason": "unclear"
+    }
+  },
+  "third_party": {
+    "rule_ids": [
+      "A-1c",
+      "A-5a",
+      "A-5b",
+      "A-5c",
+      "A-6a",
+      "A-6b",
+      "A-7a",
+      "A-7b",
+      "A-7c",
+      "A-8",
+      "A-9b",
+      "A-9c",
+      "A-10a",
+      "A-10b"
+    ],
+    "disclose_nothing": true,
+    "ask_when_reachable": true,
+    "callback": {
+      "rule_ids": [
+        "A-6a",
+        "A-6b",
+        "A-7a",
+        "A-7b",
+        "A-7c"
+      ],
+      "allowed_days": "today_or_next_business_day",
+      "window_start": "10:00",
+      "window_end": "19:00",
+      "inclusive": true,
+      "must_be_after_now": true,
+      "max_extra_asks": 1,
+      "success": {
+        "outcome": "not_reached",
+        "reason": "callback"
+      },
+      "failure": {
+        "outcome": "not_reached",
+        "reason": "no_callback"
+      },
+      "custom_rule_text": "Call schedule_callback with the date and the time."
+    },
+    "wrong_number": {
+      "outcome": "not_reached",
+      "reason": "wrong_number"
+    },
+    "deceased": {
+      "outcome": "not_reached",
+      "reason": "deceased"
+    },
+    "notes": [
+      "Say nothing beyond the opening sentence to someone else.",
+      "A relative may not answer the security questions or be told anything about the account, even if they offer to pay."
+    ]
+  },
+  "identity": {
+    "rule_ids": [
+      "A-11a",
+      "A-11b",
+      "A-11c",
+      "A-11d",
+      "A-12a",
+      "A-12b",
+      "A-13a",
+      "A-13b",
+      "A-13c",
+      "A-14a",
+      "A-14b",
+      "A-14c",
+      "A-15a",
+      "A-15b",
+      "A-15c",
+      "A-15d"
+    ],
+    "questions": [
+      {
+        "field": "date_of_birth",
+        "ask": "What is your date of birth?",
+        "answer_format": "date_iso",
+        "normalisation": "Convert to YYYY-MM-DD. Read an all-numeric date as day, then month, then year."
+      },
+      {
+        "field": "phone_last4",
+        "ask": "What are the last four digits of the phone number on file?",
+        "answer_format": "digits",
+        "digits": 4,
+        "normalisation": "Send four digits."
+      }
+    ],
+    "one_at_a_time": true,
+    "max_wrong_total": 3,
+    "hints": [
+      {
+        "value": "day_month_swapped",
+        "instruction": "Ask the customer to say the month as a word.",
+        "counts_as_wrong": false
+      }
+    ],
+    "on_failed": {
+      "outcome": "not_verified",
+      "reason": "failed"
+    },
+    "failed_instruction": "Please use the mobile app or a branch.",
+    "decline_explanation": "These questions protect your account.",
+    "decline_max": 2,
+    "on_declined": {
+      "outcome": "not_verified",
+      "reason": "declined"
+    }
+  },
+  "disclosure": {
+    "rule_ids": [
+      "A-16",
+      "A-17a",
+      "A-17b",
+      "A-17c",
+      "B-2"
+    ],
+    "team_phrase": "I am calling from the collections team about a late payment.",
+    "product_naming": {
+      "credit_card": "credit card ending {card_last4}",
+      "personal_loan": "personal loan",
+      "car_loan": "car loan"
+    },
+    "state_fields": [
+      "past_due",
+      "days_late"
+    ]
+  },
+  "calendar": {
+    "rule_ids": [
+      "A-VARS-d",
+      "A-BUSINESS-DAYS",
+      "A-11d",
+      "A-22a",
+      "A-22b",
+      "A-22c"
+    ],
+    "business_weekdays": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "holidays": [
+      "2026-10-26",
+      "2026-11-11",
+      "2026-11-26",
+      "2026-12-25",
+      "2027-01-01"
+    ],
+    "date_input_order": "DMY",
+    "notes": [
+      "Use now, never the real clock, for all date rules.",
+      "Next <weekday> means that weekday in the following calendar week. This <weekday> means the one in the current week."
+    ]
+  },
+  "bands": [
+    {
+      "rule_ids": [
+        "A-18",
+        "A-BANDS-a",
+        "B-3a",
+        "B-3b"
+      ],
+      "name": "early",
+      "days_late_min": 1,
+      "days_late_max": 7,
+      "deadline": {
+        "kind": "nth_business_day_after_today",
+        "n": 12,
+        "custom_rule_text": ""
+      },
+      "persuasion_attempts": 1
+    },
+    {
+      "rule_ids": [
+        "A-18",
+        "A-BANDS-b",
+        "B-3a",
+        "B-3b"
+      ],
+      "name": "late",
+      "days_late_min": 8,
+      "days_late_max": 45,
+      "deadline": {
+        "kind": "nth_business_day_after_today",
+        "n": 7,
+        "custom_rule_text": ""
+      },
+      "persuasion_attempts": 2
+    }
+  ],
+  "promise_dates": {
+    "rule_ids": [
+      "A-19",
+      "A-20a",
+      "A-20b",
+      "A-21a",
+      "A-21b",
+      "A-22a",
+      "A-22b",
+      "A-22c",
+      "A-23a",
+      "A-23b",
+      "A-29a",
+      "A-29b",
+      "A-32f",
+      "B-6a",
+      "B-6b"
+    ],
+    "allow_today": true,
+    "business_days_only": true,
+    "not_after_deadline": true,
+    "non_business_day_shift": "next_business_day",
+    "vague_period": "ask_once_then_deadline",
+    "next_weekday_semantics": "following_calendar_week",
+    "after_deadline": "offer_deadline",
+    "refuse_deadline_is_refusal": true
+  },
+  "amounts": {
+    "rule_ids": [
+      "A-24a",
+      "A-24b",
+      "A-24c",
+      "A-25",
+      "A-26a",
+      "A-26b",
+      "A-26c",
+      "A-27a",
+      "A-27b",
+      "A-27c"
+    ],
+    "ask_full_first": true,
+    "never_ask_open_amount": true,
+    "floor_field_by_type": {
+      "credit_card": "minimum_payment",
+      "personal_loan": "instalment_amount",
+      "car_loan": "instalment_amount"
+    },
+    "floor_offer_times": 1,
+    "floor_note": "The rest stays overdue.",
+    "accept_between_floor_and_full": true,
+    "below_floor": "offer_floor_once"
+  },
+  "persuasion": {
+    "rule_ids": [
+      "A-30a",
+      "A-30b",
+      "A-30c",
+      "A-30d",
+      "A-30e",
+      "A-30f",
+      "A-31a",
+      "A-31b",
+      "A-32a",
+      "A-32e",
+      "B-4d",
+      "B-5"
+    ],
+    "first_ask": "Can you pay all of them today?",
+    "non_answer_counts": true,
+    "steps": [
+      {
+        "attempt": 1,
+        "bands": [],
+        "amount": "current",
+        "date": "last_business_day_this_week",
+        "text": "Propose the last business day of this week. If today is that day, propose the last business day of next week."
+      },
+      {
+        "attempt": 2,
+        "bands": [
+          "late"
+        ],
+        "amount": "floor",
+        "date": "deadline",
+        "text": "Propose the floor amount on the deadline."
+      }
+    ],
+    "stop_outcome": {
+      "outcome": "no_promise",
+      "reason": "refused"
+    }
+  },
+  "intents": [
+    {
+      "rule_ids": [
+        "A-4"
+      ],
+      "key": "robot_question",
+      "description": "Asks whether the caller is a robot or an AI.",
+      "examples": [],
+      "scope": "any",
+      "response": "I am Freya Bank's digital assistant.",
+      "actions": [],
+      "precedence": 50,
+      "overrides": [],
+      "offer": "",
+      "min_occurrences": 1
+    },
+    {
+      "rule_ids": [
+        "A-43"
+      ],
+      "key": "scam_question",
+      "description": "Doubts that the call is genuine or asks how to check it.",
+      "examples": [
+        "Is this a scam?"
+      ],
+      "scope": "any",
+      "response": "You can verify this call by phoning Freya Bank's customer service number.",
+      "actions": [],
+      "precedence": 50,
+      "overrides": [],
+      "offer": "",
+      "min_occurrences": 1
+    },
+    {
+      "rule_ids": [
+        "A-44a",
+        "A-44b"
+      ],
+      "key": "unknown_question",
+      "description": "Asks a question that cannot be answered from the tools.",
+      "examples": [],
+      "scope": "any",
+      "response": "I do not have that information.",
+      "actions": [],
+      "precedence": 50,
+      "overrides": [],
+      "offer": "",
+      "min_occurrences": 1
+    },
+    {
+      "rule_ids": [
+        "A-15a",
+        "A-15b",
+        "A-15c",
+        "A-15d"
+      ],
+      "key": "decline_verification",
+      "description": "Will not answer a security question, or asks what the call is about instead of answering.",
+      "examples": [],
+      "scope": "before_verification",
+      "response": "These questions protect your account.",
+      "actions": [],
+      "outcome": {
+        "outcome": "not_verified",
+        "reason": "declined"
+      },
+      "precedence": 50,
+      "overrides": [],
+      "offer": "",
+      "min_occurrences": 2
+    },
+    {
+      "rule_ids": [
+        "A-32a",
+        "A-32b",
+        "A-32c",
+        "A-32d",
+        "A-32e",
+        "A-32f"
+      ],
+      "key": "hardship",
+      "description": "Mentions illness, a death in the family, or job loss.",
+      "examples": [],
+      "scope": "after_verification",
+      "response": "I am sorry to hear that.",
+      "actions": [
+        {
+          "tool": "transfer_to_agent",
+          "params": {
+            "queue": "support"
+          }
+        }
+      ],
+      "outcome": {
+        "outcome": "transferred",
+        "reason": "support"
+      },
+      "note_reason": "hardship",
+      "precedence": 90,
+      "overrides": [
+        "flat_refusal",
+        "restructuring"
+      ],
+      "offer": "Would you like me to connect you with the customer support team?",
+      "declined_outcome": {
+        "outcome": "no_promise",
+        "reason": "hardship"
+      },
+      "min_occurrences": 1
+    },
+    {
+      "rule_ids": [
+        "A-39a",
+        "A-39b",
+        "A-40e",
+        "B-9a",
+        "B-9b"
+      ],
+      "key": "already_paid",
+      "description": "Says the past-due amount has already been paid.",
+      "examples": [
+        "I already paid"
+      ],
+      "scope": "after_verification",
+      "response": "Payments can take one business day to appear.",
+      "actions": [],
+      "note_reason": "paid",
+      "precedence": 50,
+      "overrides": [],
+      "offer": "",
+      "min_occurrences": 1
+    },
+    {
+      "rule_ids": [
+        "A-40a",
+        "A-40b",
+        "A-40d",
+        "B-9a",
+        "B-9b"
+      ],
+      "key": "dispute",
+      "description": "Denies owing the debt or having the product, or says the product was closed or paid off in the past.",
+      "examples": [
+        "This debt is not mine",
+        "I never had this product"
+      ],
+      "scope": "after_verification",
+      "response": "Do not argue and do not take a promise.",
+      "actions": [],
+      "note_reason": "dispute",
+      "precedence": 50,
+      "overrides": [],
+      "offer": "",
+      "min_occurrences": 1
+    },
+    {
+      "rule_ids": [
+        "A-41a",
+        "A-41b",
+        "A-41c",
+        "B-10a",
+        "B-10b",
+        "B-10c",
+        "B-10d",
+        "B-10e"
+      ],
+      "key": "restructuring",
+      "description": "Requests a new payment plan or lower instalments.",
+      "examples": [],
+      "scope": "after_verification",
+      "response": "Do not describe a plan.",
+      "actions": [
+        {
+          "tool": "transfer_to_agent",
+          "params": {
+            "queue": "restructuring"
+          }
+        }
+      ],
+      "outcome": {
+        "outcome": "transferred",
+        "reason": "restructuring"
+      },
+      "precedence": 80,
+      "overrides": [],
+      "offer": "",
+      "min_occurrences": 1
+    },
+    {
+      "rule_ids": [
+        "A-42a",
+        "A-42b",
+        "A-42c",
+        "A-45c",
+        "B-10e"
+      ],
+      "key": "human_request",
+      "description": "Requests a human before or after verification.",
+      "examples": [],
+      "scope": "any",
+      "response": "",
+      "actions": [
+        {
+          "tool": "transfer_to_agent",
+          "params": {
+            "queue": "general"
+          }
+        }
+      ],
+      "outcome": {
+        "outcome": "transferred",
+        "reason": "human"
+      },
+      "precedence": 80,
+      "overrides": [],
+      "offer": "Can I help first?",
+      "min_occurrences": 1
+    },
+    {
+      "rule_ids": [
+        "A-26a",
+        "A-26b",
+        "A-26c",
+        "A-26d"
+      ],
+      "key": "cant_afford_full",
+      "description": "Says the full amount is too much.",
+      "examples": [],
+      "scope": "after_verification",
+      "response": "Offer the floor once and say that the rest stays overdue.",
+      "actions": [],
+      "precedence": 50,
+      "overrides": [],
+      "offer": "",
+      "min_occurrences": 1
+    },
+    {
+      "rule_ids": [
+        "A-29a",
+        "A-29b"
+      ],
+      "key": "proposes_date",
+      "description": "Names a specific day to pay.",
+      "examples": [],
+      "scope": "after_verification",
+      "response": "Handle the date under the promise-date rules.",
+      "actions": [],
+      "precedence": 50,
+      "overrides": [],
+      "offer": "",
+      "min_occurrences": 1
+    },
+    {
+      "rule_ids": [
+        "A-27a",
+        "A-27b",
+        "A-27c",
+        "A-29a",
+        "A-29b"
+      ],
+      "key": "proposes_amount",
+      "description": "Names a specific amount they can pay.",
+      "examples": [],
+      "scope": "after_verification",
+      "response": "Handle the amount under the amount rules.",
+      "actions": [],
+      "precedence": 50,
+      "overrides": [],
+      "offer": "",
+      "min_occurrences": 1
+    },
+    {
+      "rule_ids": [
+        "A-21a",
+        "A-21b"
+      ],
+      "key": "vague_period",
+      "description": "Gives a period or event instead of an exact day.",
+      "examples": [
+        "next week",
+        "end of the month",
+        "when my salary comes"
+      ],
+      "scope": "after_verification",
+      "response": "Ask once for the exact day; if there is still none, propose the deadline.",
+      "actions": [],
+      "precedence": 50,
+      "overrides": [],
+      "offer": "",
+      "min_occurrences": 1
+    },
+    {
+      "rule_ids": [
+        "A-30a",
+        "A-30b",
+        "A-31a",
+        "A-31b",
+        "B-4d",
+        "B-5",
+        "B-8a"
+      ],
+      "key": "flat_refusal",
+      "description": "Refuses to pay without naming a date or amount, including a no to paying today with no date and no amount.",
+      "examples": [],
+      "scope": "after_verification",
+      "response": "Use one persuasion attempt.",
+      "actions": [],
+      "note_reason": "refused",
+      "precedence": 50,
+      "overrides": [],
+      "offer": "",
+      "min_occurrences": 1
+    },
+    {
+      "rule_ids": [
+        "A-45a",
+        "A-45b"
+      ],
+      "key": "refuse_to_talk",
+      "description": "Says they do not want to talk.",
+      "examples": [],
+      "scope": "any",
+      "response": "",
+      "actions": [],
+      "outcome": {
+        "outcome": "no_promise",
+        "reason": "refused"
+      },
+      "note_reason": "refused",
+      "precedence": 50,
+      "overrides": [],
+      "offer": "",
+      "min_occurrences": 2
+    },
+    {
+      "rule_ids": [
+        "A-36b",
+        "A-36c"
+      ],
+      "key": "change_promise",
+      "description": "Wants to change or cancel a promise already recorded in this call.",
+      "examples": [],
+      "scope": "after_verification",
+      "response": "You can change it in the mobile app.",
+      "actions": [],
+      "precedence": 50,
+      "overrides": [],
+      "offer": "",
+      "min_occurrences": 1
+    }
+  ],
+  "confirmation": {
+    "rule_ids": [
+      "A-35a",
+      "A-35b",
+      "B-6a",
+      "B-6b",
+      "B-7a"
+    ],
+    "readback_fields": [
+      "product",
+      "amount",
+      "date"
+    ],
+    "question": "Do you confirm?",
+    "on_change": "Check the new value against the date and amount rules and read it back again.",
+    "single_confirmation_for_all_products": true
+  },
+  "recording": {
+    "rule_ids": [
+      "A-34b",
+      "A-36a",
+      "A-36b",
+      "A-36c",
+      "A-37a",
+      "A-37b",
+      "A-38",
+      "B-7b",
+      "B-8b",
+      "B-8c",
+      "B-10b",
+      "B-10c",
+      "B-10e",
+      "B-11a",
+      "B-11b"
+    ],
+    "one_promise_per_product": true,
+    "retries_on_failure": 1,
+    "failure_outcome": {
+      "outcome": "no_promise",
+      "reason": "service_error"
+    },
+    "failure_sentence": "I could not record it.",
+    "success_sentence": "You will receive a text message confirming this promise.",
+    "immutable_sentence": "You can change it in the mobile app."
+  },
+  "multi_product": {
+    "rule_ids": [
+      "B-1a",
+      "B-1b",
+      "B-2",
+      "B-3a",
+      "B-3b",
+      "B-4a",
+      "B-4b",
+      "B-4c",
+      "B-4d",
+      "B-5",
+      "B-6a",
+      "B-6b",
+      "B-7a",
+      "B-7b",
+      "B-8a",
+      "B-8b",
+      "B-8c",
+      "B-9a",
+      "B-9b",
+      "B-10a",
+      "B-10b",
+      "B-10c",
+      "B-10d",
+      "B-10e",
+      "B-11a",
+      "B-11b",
+      "B-CLOSING-a",
+      "B-CLOSING-b",
+      "B-CLOSING-c",
+      "B-M1",
+      "B-M2"
+    ],
+    "enabled": true,
+    "max_products": 3,
+    "state_all_before_asking": true,
+    "order": "as_returned",
+    "ask_all_today_first": true,
+    "per_product_attempts": true,
+    "one_date_after_deadline": "use_product_deadline",
+    "note_tool": "add_note",
+    "note_reasons": [
+      "refused",
+      "hardship",
+      "dispute",
+      "paid",
+      "service_error"
+    ],
+    "notes_on_transfer": false,
+    "closing_reason_rule": "first_non_paid_note",
+    "all_paid_outcome": {
+      "outcome": "paid"
+    },
+    "paid_note_reason": "paid",
+    "notes_outcome": "no_promise"
+  },
+  "closing": {
+    "rule_ids": [
+      "A-3d",
+      "A-6b",
+      "A-7c",
+      "A-8",
+      "A-9c",
+      "A-14c",
+      "A-15b",
+      "A-15d",
+      "A-32c",
+      "A-32d",
+      "A-41b",
+      "A-41c",
+      "A-42b",
+      "A-42c",
+      "A-45a",
+      "A-45b",
+      "A-46a",
+      "A-46b",
+      "A-46c",
+      "A-46d",
+      "A-46e",
+      "A-46f",
+      "A-46g",
+      "A-46h",
+      "A-46i",
+      "A-TRANSFER_PROMISE",
+      "A-47a",
+      "A-47b",
+      "A-M1",
+      "B-10d",
+      "B-10e",
+      "B-CLOSING-a",
+      "B-CLOSING-b",
+      "B-CLOSING-c"
+    ],
+    "rows": [
+      {
+        "outcome": "promise",
+        "situation": "promise_recorded",
+        "when": "at least one promise was recorded",
+        "rule_ids": [
+          "A-46d",
+          "B-CLOSING-c"
+        ],
+        "requires_verified": true
+      },
+      {
+        "outcome": "paid",
+        "situation": "product_notes",
+        "when": "With no promise recorded, every product is noted paid.",
+        "rule_ids": [
+          "A-46e",
+          "B-CLOSING-a"
+        ],
+        "requires_verified": true
+      },
+      {
+        "outcome": "no_promise",
+        "reason": "refused",
+        "situation": "product_notes",
+        "when": "With no promise recorded and not every product noted paid, use the reason of the first product in get_account order whose note is not paid.",
+        "rule_ids": [
+          "A-46g",
+          "B-CLOSING-b"
+        ],
+        "requires_verified": true
+      },
+      {
+        "outcome": "no_promise",
+        "reason": "hardship",
+        "situation": "hardship",
+        "when": "The customer declines customer support after hardship.",
+        "rule_ids": [
+          "A-32d",
+          "A-46g"
+        ],
+        "requires_verified": true
+      },
+      {
+        "outcome": "transferred",
+        "reason": "support",
+        "situation": "transfer:support",
+        "when": "The customer accepts customer support after hardship.",
+        "rule_ids": [
+          "A-32c",
+          "A-46f"
+        ],
+        "requires_verified": true
+      },
+      {
+        "outcome": "transferred",
+        "reason": "restructuring",
+        "situation": "transfer:restructuring",
+        "when": "The customer requests a new payment plan or lower instalments.",
+        "rule_ids": [
+          "A-41b",
+          "A-41c",
+          "A-46f",
+          "B-10a",
+          "B-10d"
+        ],
+        "requires_verified": true
+      },
+      {
+        "outcome": "transferred",
+        "reason": "human",
+        "situation": "transfer:general",
+        "when": "The customer insists on a human.",
+        "rule_ids": [
+          "A-42b",
+          "A-42c",
+          "A-46f"
+        ]
+      },
+      {
+        "outcome": "not_verified",
+        "reason": "failed",
+        "situation": "identity_failed",
+        "when": "After three wrong answers.",
+        "rule_ids": [
+          "A-14c",
+          "A-46h"
+        ],
+        "requires_verified": false
+      },
+      {
+        "outcome": "not_verified",
+        "reason": "declined",
+        "situation": "identity_declined",
+        "when": "The customer still declines identity verification, or says twice they do not want to talk before identity is verified.",
+        "rule_ids": [
+          "A-15b",
+          "A-15d",
+          "A-45b",
+          "A-46h"
+        ],
+        "requires_verified": false
+      },
+      {
+        "outcome": "not_reached",
+        "reason": "wrong_number",
+        "situation": "wrong_number",
+        "when": "The person says the number does not belong to the customer.",
+        "rule_ids": [
+          "A-8",
+          "A-46i"
+        ],
+        "requires_verified": false
+      },
+      {
+        "outcome": "not_reached",
+        "reason": "deceased",
+        "situation": "deceased",
+        "when": "The person says the customer has died.",
+        "rule_ids": [
+          "A-9c",
+          "A-46i"
+        ],
+        "requires_verified": false
+      },
+      {
+        "outcome": "not_reached",
+        "reason": "callback",
+        "situation": "callback_booked",
+        "when": "A callback was scheduled.",
+        "rule_ids": [
+          "A-6b",
+          "A-46i"
+        ],
+        "requires_verified": false
+      },
+      {
+        "outcome": "not_reached",
+        "reason": "no_callback",
+        "situation": "callback_not_booked",
+        "when": "A second offered callback time is outside the callback window.",
+        "rule_ids": [
+          "A-7c",
+          "A-46i"
+        ],
+        "requires_verified": false
+      },
+      {
+        "outcome": "not_reached",
+        "reason": "unclear",
+        "situation": "unclear_party",
+        "when": "It is still unclear who is on the line after the second ask.",
+        "rule_ids": [
+          "A-3d",
+          "A-46i"
+        ],
+        "requires_verified": false
+      },
+      {
+        "outcome": "no_promise",
+        "reason": "refused",
+        "situation": "refuse_to_talk",
+        "when": "The verified customer says twice that they do not want to talk.",
+        "rule_ids": [
+          "A-45a",
+          "A-46g"
+        ],
+        "requires_verified": true
+      },
+      {
+        "outcome": "no_promise",
+        "reason": "service_error",
+        "situation": "recording_failed",
+        "when": "A create_promise fails twice and no promise was recorded.",
+        "rule_ids": [
+          "A-46g",
+          "B-11a",
+          "B-11b"
+        ],
+        "requires_verified": true
+      }
+    ],
+    "precedence": [
+      "transfer:restructuring",
+      "transfer:support",
+      "transfer:general",
+      "hardship",
+      "promise_recorded",
+      "product_notes",
+      "identity_failed",
+      "identity_declined",
+      "wrong_number",
+      "deceased",
+      "callback_booked",
+      "callback_not_booked",
+      "unclear_party",
+      "refuse_to_talk"
+    ],
+    "promise_wins": true,
+    "transfer_after_promise_outcome": {
+      "outcome": "transferred"
+    },
+    "goodbye_before_close": true,
+    "close_last_exactly_once": true
+  },
+  "forbidden_before_verification": [
+    "collections",
+    "debt",
+    "payment",
+    "the product"
+  ],
+  "residual_rules": [
+    {
+      "rule_id": "A-1b",
+      "text": "Do not say \"collections\", \"debt\", \"payment\" or the product before identity is verified.",
+      "scope": [
+        "opening",
+        "identity"
+      ]
+    },
+    {
+      "rule_id": "A-5a",
+      "text": "Do not say why you are calling to someone else.",
+      "scope": [
+        "third_party"
+      ]
+    },
+    {
+      "rule_id": "A-5b",
+      "text": "Say nothing beyond the opening sentence of rule 1 to someone else.",
+      "scope": [
+        "third_party"
+      ]
+    },
+    {
+      "rule_id": "A-9b",
+      "text": "Ask nothing else if someone else says the customer has died.",
+      "scope": [
+        "third_party"
+      ]
+    },
+    {
+      "rule_id": "A-10a",
+      "text": "Do not allow a relative to answer the security questions.",
+      "scope": [
+        "third_party",
+        "identity"
+      ]
+    },
+    {
+      "rule_id": "A-10b",
+      "text": "Do not tell a relative anything about the account, even if they offer to pay.",
+      "scope": [
+        "third_party"
+      ]
+    },
+    {
+      "rule_id": "A-20a",
+      "text": "Do not offer a next business day that is after the deadline.",
+      "scope": [
+        "negotiation"
+      ]
+    },
+    {
+      "rule_id": "A-23a",
+      "text": "If the customer asks for a date after the deadline, say the latest date you can record is the deadline and offer it.",
+      "scope": [
+        "negotiation"
+      ]
+    },
+    {
+      "rule_id": "A-31b",
+      "text": "Do not repeat an offer the customer already refused.",
+      "scope": [
+        "negotiation"
+      ]
+    },
+    {
+      "rule_id": "A-33",
+      "text": "Never offer a discount, a waiver, an instalment plan or any term that is not in this brief.",
+      "scope": [
+        "global"
+      ]
+    },
+    {
+      "rule_id": "A-40a",
+      "text": "Do not argue when the customer says \"This debt is not mine\" or \"I never had this product\".",
+      "scope": [
+        "negotiation"
+      ]
+    },
+    {
+      "rule_id": "A-41a",
+      "text": "Do not describe a plan when the customer requests a new payment plan or lower instalments.",
+      "scope": [
+        "negotiation"
+      ]
+    },
+    {
+      "rule_id": "B-4c",
+      "text": "Do not ask about today again for each product.",
+      "scope": [
+        "negotiation"
+      ]
+    },
+    {
+      "rule_id": "B-10e",
+      "text": "On any transfer (restructuring, support, human) add no notes at all, before or after it.",
+      "scope": [
+        "recording",
+        "closing"
+      ]
+    },
+    {
+      "rule_id": "B-11a",
+      "text": "If one create_promise fails twice, keep the promises that were recorded and continue with later products, retaining recorded promises and noting every product that ends without a promise.",
+      "scope": [
+        "recording"
+      ]
+    }
+  ],
+  "notes": [
+    "One to three products are handled in get_account return order.",
+    "For a common customer-named weekend or holiday date that is after one product's deadline, record that overdue product on its deadline and apply business-day validation to every other product."
+  ]
+}

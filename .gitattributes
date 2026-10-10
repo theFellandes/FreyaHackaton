@@ -1,0 +1,33 @@
+# Line endings: the repository stores LF everywhere and checks text out as LF, also on Windows. The image is built
+# from the working tree, and a CRLF line in a Dockerfile, shell script or Python file breaks it inside Linux.
+* text=auto eol=lf
+
+*.sh       text eol=lf
+Dockerfile text eol=lf
+*.py       text eol=lf
+*.j2       text eol=lf
+*.md       text eol=lf
+*.json     text eol=lf
+*.jsonl    text eol=lf
+*.toml     text eol=lf
+*.lock     text eol=lf
+*.yml      text eol=lf
+*.yaml     text eol=lf
+
+# Windows-only scripts keep CRLF.
+*.ps1 text eol=crlf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Binary files: never normalised or diffed as text.
+*.zip  binary
+*.gz   binary
+*.pdf  binary
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.ico  binary
+*.whl  binary
+*.docx binary
+*.xlsx binary

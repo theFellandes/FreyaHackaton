@@ -1,0 +1,21 @@
+{
+  "slot": "qr-v02-raw",
+  "track": "compiled",
+  "workflow_id": null,
+  "agent_id": null,
+  "version": null,
+  "exported": "C:\\Users\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\out\\qr-v02-raw.workflow.json",
+  "trace": "C:\\Users\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\traces\\qr-v02-raw-20261010T195037Z.log",
+  "status": "dry_run",
+  "workflow_file": "C:\\Users\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\out\\qr-v02-raw.workflow.json",
+  "tests": {
+    "passed": 1,
+    "total": 1
+  },
+  "errors": [],
+  "notes": [
+    "draft_prose: prose blocked by the guard, template-only prompts used",
+    "compiler: the policy declares no 'customer_id' call variable; tool calls bake {{customer_id}} anyway"
+  ],
+  "tests_detail": []
+}

@@ -1,0 +1,26 @@
+<# Task of the opening node: find out who answered. Inputs: question, address, confirm (str), not_confirm (str), max_asks, ordinal, unclear_action, confirmed_action, third_party_action (phrases), exits (list), rules (list of [id, text]), extra #>
+Find out who answered. Your opening line has already been said: it introduced you and asked: "<<question>>"
+- Only <<confirm>> confirms that you are speaking with <<address>>.<% if not_confirm %> <<not_confirm>> do not.<% endif %> A reply that is cut off, or that contains "no" or says who is speaking ("this is her ...", "this is his ..."), is NOT a confirmation: let the person finish ("I understand, go on.") before you decide.
+<% if max_asks > 1 %>
+- If it is not a confirmation, ask once more exactly: "<<question>>" If the person asks a question first, answer it first; the ask that follows is the <<ordinal>> ask. If it is still unclear after the <<ordinal>> ask, thank them, say goodbye and <<unclear_action>>.
+<% else %>
+- If it is not a confirmation, thank them, say goodbye and <<unclear_action>>.
+<% endif %>
+- Do not say why you are calling.
+Decide and act:
+- Confirmed (an explicit, complete confirmation only): <<confirmed_action>>.
+- Someone else answered (a relative, a colleague, anyone who is not the customer): <<third_party_action>>.
+<% for bullet in exits %>
+- <<bullet>>
+<% endfor %>
+<% if rules %>
+
+Other rules of the brief for this step:
+<% for rule in rules %>
+- [<<rule[0]>>] <<rule[1]>>
+<% endfor %>
+<% endif %>
+<% if extra %>
+
+<<extra>>
+<% endif %>

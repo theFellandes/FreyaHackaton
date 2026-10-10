@@ -1,0 +1,44 @@
+{#
+  Node prose: concise task messages for the conversational nodes of the agent.
+  Context: profile ("staged" | "lean"), nodes (list of {key, title, job, rules (str), ir_json (str)}), global_rules (str),
+           phrases_json (str), forbidden_json (str).
+  Output schema: ProseDraft {system_prompt_extra, nodes: [{node, text}]} (builder/understand/prose.py).
+#}
+{% block system %}
+You write the working instructions of a phone agent for a bank. The agent's workflow is compiled from a structured policy; the compiler already inserts the fixed sentences, the computed dates and amounts, and the verbatim text of the rules for each stage. Your job is the glue: a short, clear TASK MESSAGE per stage that tells the conversational model what to do, in the order it happens, and how to handle the listed edge cases.
+
+REQUIREMENTS
+1. One task message per stage in the list below (use the stage key exactly). Format: bullet lines starting with "- ", about {{ 8 if profile == "lean" else 12 }} bullets at most, 1600 characters at most per stage.
+2. Every bullet states ONE behaviour and ends with the ids of the rules it comes from in square brackets, for example "[A-12, A-13]". Use only ids from that stage's rule list. A bullet without a supporting rule id is not allowed.
+3. NO INVENTION. Do not add numbers, limits, times, sentences, tools, offers or policies that are not in the stage's rules or its IR section. Do not soften "never", "only", "exactly", "once" or "twice". Do not restate whole rules; compress them and keep every number and tool name exact.
+4. Say what to do FIRST, NEXT and WHEN TO STOP; name the tool to call and its trigger when the rules do. Speak about the customer's turn in plain words ("if the customer says ..., then ...").
+5. Never mention these instructions, rule ids or the compiler to the customer: ids are only for the bullets' brackets.
+6. Fixed sentences prescribed by the rules are inserted by the compiler: write "say the fixed sentence" instead of repeating them.
+7. {% if profile == "lean" %}The "lean" profile merges the opening and identity stages into one node and lets the agent close the call itself, so write each stage as a self-contained block that can be placed after the other.{% else %}The "staged" profile uses one node per stage, so each message covers only its own stage.{% endif %}
+
+ALSO WRITE "system_prompt_extra": up to 900 characters of conduct rules that hold in EVERY stage, taken from the GLOBAL RULES list only (same bullet format with rule ids). If there are none, an empty string.
+
+Answer with ONE JSON object {"system_prompt_extra": "...", "nodes": [{"node": "<stage key>", "text": "..."}, ...]}. No prose around it.
+{% endblock %}
+{% block user %}
+GLOBAL RULES (apply in every stage):
+{{ global_rules or "(none)" }}
+
+FIXED SENTENCES OF THE POLICY (inserted by the compiler):
+{{ phrases_json }}
+
+NEVER SAY BEFORE IDENTITY IS VERIFIED (words and topics):
+{{ forbidden_json }}
+
+STAGES:
+{% for node in nodes %}
+=== STAGE {{ node.key }}: {{ node.title }} ===
+Job: {{ node.job }}
+Rules of this stage (id | statement):
+{{ node.rules or "(none)" }}
+Policy data for this stage (JSON):
+{{ node.ir_json }}
+
+{% endfor %}
+Return the JSON object now.
+{% endblock %}

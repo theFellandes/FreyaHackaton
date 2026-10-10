@@ -1,0 +1,13 @@
+{
+  "version": 1,
+  "entries": [
+    {
+      "provider": "anthropic",
+      "fingerprint": "ce91a62d847e",
+      "label": "anthropic#2(…2222)",
+      "reason": "auth: invalid",
+      "marked_at": 1760000000.0,
+      "marked_at_utc": "2025-10-09T08:53:20Z"
+    }
+  ]
+}

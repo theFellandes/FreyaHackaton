@@ -1,0 +1,135 @@
+2026-10-10T19:46:59.854Z | START  | run 6cd2849c86d4 started | slot=qr-v02-raw | builder 0.1.0, python 3.13.16
+2026-10-10T19:46:59.854Z | CONFIG | effective configuration | freya_api_url=https://staging-app.freyavoice.ai freya_api_key=set freya_bank_team_key=set freya_workspace_id=auto llm_providers=[anthropic, openai, claude_code] builder_track=compiled agent_profile=staged self_test=none build_time_budget_s=1680 build_slot=auto dry_run=True langfuse=disabled
+2026-10-10T19:46:59.855Z | OBS    | langfuse disabled (no keys)
+2026-10-10T19:46:59.857Z | CONFIG | LLM key changer | order=[anthropic, openai, claude_code] key_health_file=C:\Users\Felladien\Documents\Projects\Python\FreyaHackaton\data\key_health.json
+2026-10-10T19:46:59.869Z | STAGE  | load_inputs | start | budget_left_s=1680
+2026-10-10T19:46:59.873Z | DECIDE | track compiled (requested compiled; agentic fallback off) | profile=staged dry_run=True
+2026-10-10T19:46:59.873Z | INPUT  | 4 brief file(s), tool API with 7 tool(s) | briefs=[Mail_thread_collections_ops.eml, Memo_2026-11-02_changes.txt, Policy_extract_v3.txt, outcome_codes.csv] chars=13654 brief_sha=423e37696fb6 tools=[add_note, close_call, create_promise, get_account, schedule_callback, transfer_to_agent, verify_identity]
+2026-10-10T19:46:59.874Z | STAGE  | load_inputs | end 0.0s | budget_left_s=1680
+2026-10-10T19:46:59.875Z | STAGE  | guard_inputs | start | budget_left_s=1680
+2026-10-10T19:46:59.882Z | GUARD  | inputs | ok | 0 violations | blocked=False violations=[]
+2026-10-10T19:46:59.883Z | STAGE  | guard_inputs | end 0.0s | budget_left_s=1680
+2026-10-10T19:46:59.884Z | STAGE  | understand_brief | start | budget_left_s=1680
+2026-10-10T19:46:59.885Z | LEDGER | reading 4 file(s) in 5 passage(s) | files=[Mail_thread_collections_ops.eml, Memo_2026-11-02_changes.txt, Policy_extract_v3.txt, outcome_codes.csv] passages=5
+2026-10-10T19:47:08.509Z | MODEL  | openai/gpt-5.6-terra | key=openai#1(…yRAA) | ok 7.7s in=6295 out=745 attempt=1 | rule ledger: Memo_2026-11-02_changes.txt passage 2/5
+2026-10-10T19:47:08.516Z | LEDGER | passage 2/5 (Memo_2026-11-02_changes.txt): 6 rules, 0 ambiguities
+2026-10-10T19:47:08.516Z | RATE   | waited 7.7 s for openai#1(…yRAA) | purpose=rule ledger: Policy_extract_v3.txt passage 3/5 provider=openai waited_s=7.73
+2026-10-10T19:47:19.138Z | MODEL  | openai/gpt-5.6-terra | key=openai#1(…yRAA) | ok 19.2s in=7145 out=2947 attempt=1 | rule ledger: Mail_thread_collections_ops.eml passage 1/5
+2026-10-10T19:47:19.146Z | LEDGER | passage 1/5 (Mail_thread_collections_ops.eml): 39 rules, 2 ambiguities
+2026-10-10T19:47:19.146Z | RATE   | waited 10.6 s for openai#1(…yRAA) | purpose=rule ledger: Policy_extract_v3.txt passage 4/5 provider=openai waited_s=10.63
+2026-10-10T19:47:35.378Z | MODEL  | openai/gpt-5.6-terra | key=openai#1(…yRAA) | ok 16.2s in=6638 out=2715 attempt=1 | rule ledger: Policy_extract_v3.txt passage 4/5
+2026-10-10T19:47:35.386Z | LEDGER | passage 4/5 (Policy_extract_v3.txt): 43 rules, 1 ambiguities
+2026-10-10T19:47:35.387Z | RATE   | waited 16.2 s for openai#1(…yRAA) | purpose=rule ledger: outcome_codes.csv passage 5/5 provider=openai waited_s=16.24
+2026-10-10T19:47:37.998Z | MODEL  | openai/gpt-5.6-terra | key=openai#1(…yRAA) | ok 29.5s in=7195 out=5126 attempt=1 | rule ledger: Policy_extract_v3.txt passage 3/5
+2026-10-10T19:47:38.010Z | LEDGER | passage 3/5 (Policy_extract_v3.txt): 65 rules, 2 ambiguities
+2026-10-10T19:47:42.688Z | MODEL  | openai/gpt-5.6-terra | key=openai#1(…yRAA) | ok 7.3s in=6489 out=1189 attempt=1 | rule ledger: outcome_codes.csv passage 5/5
+2026-10-10T19:47:42.696Z | LEDGER | passage 5/5 (outcome_codes.csv): 17 rules, 0 ambiguities
+2026-10-10T19:48:05.992Z | MODEL  | openai/gpt-5.6-terra | key=openai#1(…yRAA) | ok 23.2s in=3821 out=2699 attempt=1 | rule ledger: completeness check 1/1
+2026-10-10T19:48:06.039Z | LEDGER | completeness check added 7 rule(s) | rule_ids=[POL-M1, POL-M2, POL-M3, POL-M4, POL-M5, POL-M6, POL-M7]
+2026-10-10T19:48:15.842Z | MODEL  | openai/gpt-5.6-terra | key=openai#1(…yRAA) | ok 9.8s in=10313 out=1022 attempt=1 | rule ledger: link amendments and cross-document ambiguities
+2026-10-10T19:48:15.853Z | LEDGER | ledger ready: 177 rules (175 active), 7 ambiguities, 2 superseded | rules=177 active=175 ambiguities=7
+2026-10-10T19:48:15.853Z | AMBIG  | [THR-IDENTITY-h] After the wrong-answer limit, must the assistant tell the customer both to go to a branch and to use online banking, or may it give either instruction? -> chosen: Tell the customer to go to a branch or use online banking as alternatives. (because: The instruction says "the customer is told to go to a branch or use online banking," using "or" rather than "and".)
+2026-10-10T19:48:15.853Z | AMBIG  | [THR-IDENTITY-o, THR-IDENTITY-p] Does a question of "what is this about" count with another refusal toward the second-refusal threshold? -> chosen: Count "what is this about" as a refusal, so any second refusal, including that question, ends the call. (because: The passage explicitly states that "Asking \"what is this about\" instead of answering is a refusal.")
+2026-10-10T19:48:15.853Z | AMBIG  | [EXT-4.3c, EXT-4.4a] What date should be offered when a customer names a non-business day that is not after the deadline but the next business day would be after the deadline? -> chosen: Offer no date after the deadline and use the deadline as the latest recordable date. (because: Rule 4.3 says a promise date must be "not later than the deadline," while 4.4 says the next business day is offered for a non-business day "which is not after the deadline." The chosen reading preserves the express recordability limit and avoids offering an unrecordable promise date.)
+2026-10-10T19:48:15.854Z | AMBIG  | [EXT-5.1a, EXT-6.1] Which question must be asked first: the full overdue amount question or "Can you settle this today?" -> chosen: Ask exactly "Can you settle this today?" as the first payment question, then apply the full-overdue-amount rule to amount discussion. (because: 6.1 expressly says "First ask," followed by the exact sentence, while 5.1 says the full overdue amount is asked "first." The chosen reading gives effect to the fixed opening question and limits 5.1 to the subsequent amount discussion.)
+2026-10-10T19:48:15.854Z | AMBIG  | [EXT-8.7a, EXT-8.7b] Which outcome applies if the customer says twice that they do not want to talk before identity is verified? -> chosen: Use unverified / declined_checks before identity is verified. (because: The more specific words "before identity is verified: unverified / declined_checks" qualify the general twice-does-not-want-to-talk outcome and disclose less.)
+2026-10-10T19:48:15.854Z | AMBIG  | [THR-OPENING-c, EXT-9.2a] Must the assistant state each overdue product before asking identity questions, even though the customer is not yet verified? -> chosen: Do not state products until after verification; interpret EXT-9.2a as applying before negotiation questions after identity verification. (because: THR-OPENING-c expressly forbids using product names and overdue-related terms until verification, so withholding product disclosure is the more conservative reading.)
+2026-10-10T19:48:15.854Z | AMBIG  | [THR-OPENING-c, EXT-8.5a, EXT-8.5b] If an unverified caller asks whether the call is a scam, may the assistant say they can verify it using the number on the back of their Meridian card? -> chosen: Do not give that instruction until verification because it uses the prohibited word "card"; continue the call without it. (because: The pre-verification restriction expressly prohibits the word "card" and the conservative reading avoids adding disclosure before verification.)
+2026-10-10T19:48:15.854Z | DECIDE | supersession: D2-1a replaces THR-IDENTITY-f: The identity-check wrong-answer limit changes from four total wrong answers to three.
+2026-10-10T19:48:15.854Z | DECIDE | supersession: D2-2a replaces EXT-4.2c: For the Red band, this replaces only the deadline component, changing it from the 3rd to the 2nd business day after the call date; the three-attempt allowance remains unchanged.
+2026-10-10T19:48:15.897Z | GUARD  | ledger | ok | 0 violations | blocked=False violations=[]
+2026-10-10T19:48:15.897Z | DECIDE | rule ledger: 177 rules (175 active), 7 ambiguities, 2 supersessions
+2026-10-10T19:48:15.898Z | STAGE  | understand_brief | end 76.0s | budget_left_s=1604
+2026-10-10T19:48:15.900Z | STAGE  | extract_policy | start | budget_left_s=1604
+2026-10-10T19:48:55.632Z | MODEL  | openai/gpt-5.6-terra | key=openai#1(…yRAA) | ok 39.7s in=27312 out=6792 attempt=1 | extract policy IR from the rule ledger
+2026-10-10T19:48:55.664Z | EXTRACT | safe fix: dropped 3 rule id(s) that are not in the ledger: AMB-EXT-1x, AMB-X1, AMB-X2
+2026-10-10T19:48:55.664Z | EXTRACT | safe fix: 1 uncovered ledger rule(s) added as residual rules: THR-OPENING-c
+2026-10-10T19:48:56.079Z | GROUNDING | warning: phrases.goodbye_sentence: sentence not found in the briefs: 'Thank you and goodbye.'
+2026-10-10T19:48:56.080Z | GROUNDING | warning: phrases.extra.two_digit_year_request: sentence not found in the briefs: 'Please provide the full year.'
+2026-10-10T19:48:56.080Z | GROUNDING | warning: phrases.extra.below_floor: sentence not found in the briefs: 'That amount cannot be recorded.'
+2026-10-10T19:48:56.080Z | GROUNDING | warning: phrases.extra.hardship_sympathy: sentence not found in the briefs: 'I am sorry to hear that.'
+2026-10-10T19:48:56.080Z | GROUNDING | warning: phrases.extra.hardship_offer: sentence not found in the briefs: 'Would you like me to transfer you to the care team?'
+2026-10-10T19:48:56.080Z | GROUNDING | warning: phrases.extra.human_help_offer: sentence not found in the briefs: 'Can I help?'
+2026-10-10T19:48:56.080Z | GROUNDING | warning: phrases.extra.exact_day_request: sentence not found in the briefs: 'Please tell me the exact day.'
+2026-10-10T19:48:56.080Z | GROUNDING | warning: identity.questions[1].ask: sentence not found in the briefs: 'What is your year of birth?'
+2026-10-10T19:48:56.082Z | EXTRACT | policy IR extracted: 3 band(s), 12 intent(s), 20 outcome row(s), 8 residual rule(s) | cited_rules=175
+2026-10-10T19:48:56.083Z | STAGE  | extract_policy | end 40.2s | budget_left_s=1563.8
+2026-10-10T19:48:56.085Z | STAGE  | validate_policy | start | budget_left_s=1563.8
+2026-10-10T19:48:56.099Z | VALIDATE | policy IR: 1 error(s), 0 warning(s) | codes=[REASON_MISSING]
+2026-10-10T19:48:56.099Z | VALIDATE | issues: - ERROR REASON_MISSING at closing.rows[19]: outcome 'declined' requires a reason (close_call). [THR-OPENING-h, THR-CALLBACK-c, THR-CALLBACK-e, THR-THIRD-c, THR-THIRD-f, THR-IDENTITY-i, THR-IDENTITY-n, THR-IDENTITY-p, EXT-6.3c, EXT-6.4e, EXT-6.4f, EXT-7.3d, EXT-8.1c, EXT-8.2c, EXT-8.3c, EXT-8.4c, EXT-8.7a, EXT-8.7b, EXT-9.6a, EXT-9.6b, EXT-9.6c, EXT-9.6d, EXT-9.6e, EXT-9.6f, EXT-9.6g, EXT-9.6h, EXT-9.7, OUT-OC01, OUT-OC02, OUT-OC03, OUT-OC04, OUT-OC05, OUT-OC06, OUT-OC07, OUT-OC08, OUT-OC09, OUT-OC10, OUT-OC11, OUT-OC12, OUT-OC13, OUT-OC14, OUT-OC15, OUT-OC16, POL-M7]
+2026-10-10T19:48:56.492Z | VALIDATE | 8 fixed sentence(s) not found in the briefs | sentences=[phrases.goodbye_sentence: sentence not found in the briefs: 'Thank you and goodbye.', phrases.extra.two_digit_year_r...
+2026-10-10T19:48:56.517Z | VALIDATE | offline invariants: 17 passed, 0 failed, 1 unchecked | failing=[]
+2026-10-10T19:48:56.518Z | STAGE  | validate_policy | end 0.4s | budget_left_s=1563.3
+2026-10-10T19:48:56.520Z | STAGE  | repair_policy | start | budget_left_s=1563.3
+2026-10-10T19:48:56.522Z | DECIDE | policy repair round 1: 1 issue(s) | codes=[REASON_MISSING]
+2026-10-10T19:48:56.567Z | REPAIR | asking the model to fix 1 issue(s) (round 1) | codes=[REASON_MISSING]
+2026-10-10T19:49:23.755Z | MODEL  | openai/gpt-5.6-terra | key=openai#1(…yRAA) | ok 27.2s in=29524 out=5991 attempt=1 | repair policy IR (round 1, 1 errors)
+2026-10-10T19:49:23.786Z | STAGE  | repair_policy | end 27.3s | budget_left_s=1536.1
+2026-10-10T19:49:23.787Z | STAGE  | validate_policy | start | budget_left_s=1536.1
+2026-10-10T19:49:23.796Z | VALIDATE | policy IR: 0 error(s), 0 warning(s) | codes=[]
+2026-10-10T19:49:24.132Z | VALIDATE | 8 fixed sentence(s) not found in the briefs | sentences=[phrases.goodbye_sentence: sentence not found in the briefs: 'Thank you and goodbye.', phrases.extra.two_digit_year_r...
+2026-10-10T19:49:24.154Z | VALIDATE | offline invariants: 17 passed, 0 failed, 1 unchecked | failing=[]
+2026-10-10T19:49:24.155Z | STAGE  | validate_policy | end 0.4s | budget_left_s=1535.7
+2026-10-10T19:49:24.156Z | STAGE  | guard_policy | start | budget_left_s=1535.7
+2026-10-10T19:49:24.184Z | GUARD  | policy | ok | 0 violations | blocked=False violations=[]
+2026-10-10T19:49:24.184Z | STAGE  | guard_policy | end 0.0s | budget_left_s=1535.7
+2026-10-10T19:49:24.186Z | STAGE  | draft_prose | start | budget_left_s=1535.7
+2026-10-10T19:49:44.276Z | MODEL  | openai/gpt-5.6-luna | key=openai#1(…yRAA) | ok 20.1s in=9236 out=3064 attempt=1 | draft node prose (staged profile)
+2026-10-10T19:49:44.291Z | PROSE  | drafted prose for 4 node(s) | nodes={"opening": 930, "third_party": 1216, "identity": 1323, "negotiate": 2907}
+2026-10-10T19:49:44.324Z | GUARD  | prose | blocked | 43 violations | blocked=True violations=[BLOCK ungrounded_amount [prose.per_node.negotiate]: The amount 9.1 is not in the policy IR (invented?)., BLOCK ungro...
+2026-10-10T19:49:44.325Z | STAGE  | draft_prose | end 20.1s | budget_left_s=1515.5
+2026-10-10T19:49:44.326Z | STAGE  | compile_workflow | start | budget_left_s=1515.5
+2026-10-10T19:49:44.405Z | DECIDE | compiled staged workflow: 29 nodes; rule coverage: 175 of 175 active rules enforced (100%); 2 superseded; uncovered: none | notes=[]
+2026-10-10T19:49:44.406Z | STAGE  | compile_workflow | end 0.1s | budget_left_s=1515.4
+2026-10-10T19:49:44.407Z | STAGE  | static_checks | start | budget_left_s=1515.4
+2026-10-10T19:49:44.423Z | LINT   | static checks: 0 errors, 1 warnings (ok) | errors=[] warnings=[L018 warning nodes.negotiate.task_message: 7817 characters (> 6000); long prompts dilute the rules]
+2026-10-10T19:49:44.424Z | TEST   | PASS static_checks | 0 errors, 1 warnings
+2026-10-10T19:49:44.424Z | STAGE  | static_checks | end 0.0s | budget_left_s=1515.4
+2026-10-10T19:49:44.425Z | STAGE  | guard_workflow | start | budget_left_s=1515.4
+2026-10-10T19:49:44.452Z | GUARD  | workflow | ok | 0 violations | blocked=False violations=[]
+2026-10-10T19:49:44.452Z | STAGE  | guard_workflow | end 0.0s | budget_left_s=1515.4
+2026-10-10T19:49:44.454Z | STAGE  | finalize | start | budget_left_s=1515.4
+2026-10-10T19:49:44.467Z | FINAL  | run 6cd2849c86d4 finished
+====================================================================================================
+BUILD SUMMARY
+run id       : 6cd2849c86d4
+slot         : qr-v02-raw
+track        : compiled
+status       : dry_run
+started      : 2026-10-10T19:46:59.729Z
+ended        : 2026-10-10T19:49:44.467Z
+duration     : 164.7 s (2 min 45 s)
+model calls  : 10 (10 ok, 0 failed)
+  - openai/gpt-5.6-luna: calls=1 (1 ok, 0 failed), tokens in=9236 out=3064
+  - openai/gpt-5.6-terra: calls=9 (9 ok, 0 failed), tokens in=104732 out=29226
+Freya        :
+  - slot: qr-v02-raw
+  - exported: C:\Users\Felladien\Documents\Projects\Python\FreyaHackaton\out\qr-v02-raw.workflow.json
+tests        : 1 (1 passed, 0 failed)
+  - PASS static_checks: 0 errors, 1 warnings
+stages       :
+  - load_inputs: end 0.0s
+  - guard_inputs: end 0.0s
+  - understand_brief: end 76.0s
+  - extract_policy: end 40.2s
+  - validate_policy: end 0.4s
+  - repair_policy: end 27.3s
+  - validate_policy: end 0.4s
+  - guard_policy: end 0.0s
+  - draft_prose: end 20.1s
+  - compile_workflow: end 0.1s
+  - static_checks: end 0.0s
+  - guard_workflow: end 0.0s
+errors       : 0
+workflow_id  : null
+agent_id     : null
+version      : null
+node_count   : null
+tool_count   : null
+profile      : staged
+coverage     : 175 of 175 active rules enforced (100%); 2 superseded; uncovered: none
+notes        : [draft_prose: prose blocked by the guard, template-only prompts used]
+errors_list  : []
+====================================================================================================
+2026-10-10T19:49:44.471Z | STAGE  | finalize | end 0.0s | budget_left_s=1515.4
+2026-10-10T19:49:44.472Z | END    | run 6cd2849c86d4 closed after 164.7 s | duration_s=164.748

@@ -1,0 +1,18 @@
+{
+  "slot": "qr-repo-replay",
+  "track": "compiled",
+  "workflow_id": null,
+  "agent_id": null,
+  "version": null,
+  "exported": null,
+  "trace": "C:\\Users\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\traces\\qr-repo-replay-20261010T201522Z.log",
+  "status": "failed",
+  "workflow_file": null,
+  "tests": {
+    "passed": 0,
+    "total": 0
+  },
+  "errors": [],
+  "notes": [],
+  "tests_detail": []
+}

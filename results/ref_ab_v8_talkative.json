@@ -1,0 +1,227 @@
+{
+ "agent_id": "4b0c9003-d157-4cc0-828f-1f9512a92e46",
+ "simulation_id": "899515ae-73f2-423d-b58b-53b420e004e5",
+ "iteration_id": "e66ae04c-9e70-43f3-b58c-3f518718c6e3",
+ "seconds": 498,
+ "passed": 0,
+ "total": 3,
+ "runs": 2,
+ "final": [
+  {
+   "id": "PUB-11",
+   "family": "Multi-product",
+   "passes": 1,
+   "runs": 2,
+   "pass": false
+  },
+  {
+   "id": "PUB-12",
+   "family": "Multi-product",
+   "passes": 1,
+   "runs": 2,
+   "pass": false
+  },
+  {
+   "id": "PUB-13",
+   "family": "Multi-product",
+   "passes": 1,
+   "runs": 2,
+   "pass": false
+  }
+ ],
+ "rows": [
+  {
+   "id": "PUB-11",
+   "level": "medium",
+   "family": "Multi-product",
+   "pass": true,
+   "failed": [],
+   "call_id": "ac886cde-9378-4994-8115-88e46f4839bb",
+   "tools": [
+    "verify_identity",
+    "verify_identity",
+    "get_account",
+    "create_promise",
+    "create_promise",
+    "create_promise",
+    "close_call"
+   ],
+   "customer_id": "c_972f2752-b87",
+   "slowest_turn_s": 2.7,
+   "ended": "assistant-ended-call"
+  },
+  {
+   "id": "PUB-12",
+   "level": "hard",
+   "family": "Multi-product",
+   "pass": true,
+   "failed": [],
+   "call_id": "48e9228c-ae84-4388-a08a-4995ae6e0677",
+   "tools": [
+    "verify_identity",
+    "verify_identity",
+    "verify_identity",
+    "get_account",
+    "create_promise",
+    "add_note",
+    "add_note",
+    "close_call"
+   ],
+   "customer_id": "c_fdba2e42-b1a",
+   "slowest_turn_s": 4.9,
+   "ended": "assistant-ended-call"
+  },
+  {
+   "id": "PUB-13",
+   "level": "hard",
+   "family": "Multi-product",
+   "pass": true,
+   "failed": [],
+   "call_id": "bb56ff49-2619-4306-8200-461e15f23fa8",
+   "tools": [
+    "verify_identity",
+    "verify_identity",
+    "get_account",
+    "create_promise",
+    "create_promise",
+    "close_call"
+   ],
+   "customer_id": "c_7c72493d-6de",
+   "slowest_turn_s": 4.3,
+   "ended": "assistant-ended-call"
+  }
+ ],
+ "all_rows": [
+  [
+   {
+    "id": "PUB-11",
+    "level": "medium",
+    "family": "Multi-product",
+    "pass": false,
+    "failed": [
+     "outcome (None, None), expected ('promise', None)",
+     "promises [], expected [('p1', 220.0, '2026-10-16'), ('p2', 640.0, '2026-10-16'), ('p3', 75.0, '2026-10-16')]",
+     "the call was not closed with close_call",
+     "conversation: The conversation failed to meet several success criteria: - Although the assistant stated all three products before the first ask in [Message 10], it did not complete the process for the other criteria. - While a read-back was provided in [Message 16], the customer ended the call before a confirmation could be given. - There were no 'create_promise' tool calls recorded in the system events for any"
+    ],
+    "call_id": "9234bf63-c035-45c2-9e97-46a20508557c",
+    "tools": [
+     "verify_identity",
+     "verify_identity",
+     "get_account"
+    ],
+    "customer_id": "c_46d026cd-01a",
+    "slowest_turn_s": 1.1,
+    "ended": "customer-ended-call"
+   },
+   {
+    "id": "PUB-12",
+    "level": "hard",
+    "family": "Multi-product",
+    "pass": false,
+    "failed": [
+     "outcome (None, None), expected ('promise', None)",
+     "the call was not closed with close_call"
+    ],
+    "call_id": "66b8b94f-c4b1-4c67-9987-1dc6ffbeabfb",
+    "tools": [
+     "verify_identity",
+     "verify_identity",
+     "verify_identity",
+     "get_account",
+     "create_promise",
+     "add_note",
+     "add_note"
+    ],
+    "customer_id": "c_ac758e44-87c",
+    "slowest_turn_s": 1.5,
+    "ended": "customer-ended-call"
+   },
+   {
+    "id": "PUB-13",
+    "level": "hard",
+    "family": "Multi-product",
+    "pass": false,
+    "failed": [
+     "outcome ('transferred', 'restructuring'), expected ('promise', None)",
+     "promises [], expected [('p1', 300.0, '2026-10-30'), ('p2', 900.0, '2026-10-23')]",
+     "transfers [{'queue': 'restructuring'}], expected []",
+     "conversation: The call failed all success criteria: 1. No payment was recorded for the credit card on 30 October; the assistant simply transferred the call after the user's request. 2. No payment was recorded for the loan on 23 October. The user requested 30 October for both products, but the assistant did not process this or a payment for the 23rd. 3. There was no read-back of any dates or amounts by the assis"
+    ],
+    "call_id": "b912c69c-ed66-427f-ab57-ec7609a41764",
+    "tools": [
+     "verify_identity",
+     "verify_identity",
+     "get_account",
+     "transfer_to_agent",
+     "close_call"
+    ],
+    "customer_id": "c_6601212a-eed",
+    "slowest_turn_s": 1.4,
+    "ended": "assistant-ended-call"
+   }
+  ],
+  [
+   {
+    "id": "PUB-11",
+    "level": "medium",
+    "family": "Multi-product",
+    "pass": true,
+    "failed": [],
+    "call_id": "ac886cde-9378-4994-8115-88e46f4839bb",
+    "tools": [
+     "verify_identity",
+     "verify_identity",
+     "get_account",
+     "create_promise",
+     "create_promise",
+     "create_promise",
+     "close_call"
+    ],
+    "customer_id": "c_972f2752-b87",
+    "slowest_turn_s": 2.7,
+    "ended": "assistant-ended-call"
+   },
+   {
+    "id": "PUB-12",
+    "level": "hard",
+    "family": "Multi-product",
+    "pass": true,
+    "failed": [],
+    "call_id": "48e9228c-ae84-4388-a08a-4995ae6e0677",
+    "tools": [
+     "verify_identity",
+     "verify_identity",
+     "verify_identity",
+     "get_account",
+     "create_promise",
+     "add_note",
+     "add_note",
+     "close_call"
+    ],
+    "customer_id": "c_fdba2e42-b1a",
+    "slowest_turn_s": 4.9,
+    "ended": "assistant-ended-call"
+   },
+   {
+    "id": "PUB-13",
+    "level": "hard",
+    "family": "Multi-product",
+    "pass": true,
+    "failed": [],
+    "call_id": "bb56ff49-2619-4306-8200-461e15f23fa8",
+    "tools": [
+     "verify_identity",
+     "verify_identity",
+     "get_account",
+     "create_promise",
+     "create_promise",
+     "close_call"
+    ],
+    "customer_id": "c_7c72493d-6de",
+    "slowest_turn_s": 4.3,
+    "ended": "assistant-ended-call"
+   }
+  ]
+ ]
+}

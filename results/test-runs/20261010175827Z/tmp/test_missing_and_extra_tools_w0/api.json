@@ -1,0 +1,1 @@
+{"openapi": "3.0.0", "paths": {"/close_call": {"post": {"responses": {"200": {"description": "ok"}}}}, "/send_letter": {"post": {"responses": {"200": {"description": "ok"}}}}}}

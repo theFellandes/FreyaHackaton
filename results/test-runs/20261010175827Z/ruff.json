@@ -1,0 +1,282 @@
+[
+  {
+    "cell": null,
+    "code": "SIM905",
+    "end_location": {
+      "column": 10,
+      "row": 42
+    },
+    "filename": "C:\\Users\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\builder\\checks\\code_sandbox.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "[\"abs\", \"all\", \"any\", \"bool\", \"bytes\", \"chr\", \"dict\", \"divmod\", \"enumerate\", \"filter\", \"float\", \"format\", \"frozenset\", \"getattr\", \"hasattr\", \"hash\", \"int\", \"isinstance\", \"issubclass\", \"iter\", \"len\", \"list\", \"map\", \"max\", \"min\", \"next\", \"ord\", \"pow\", \"range\", \"repr\", \"reversed\", \"round\", \"set\", \"slice\", \"sorted\", \"str\", \"sum\", \"tuple\", \"zip\", \"print\", \"callable\", \"ArithmeticError\", \"AssertionError\", \"AttributeError\", \"BaseException\", \"Exception\", \"IndexError\", \"KeyError\", \"LookupError\", \"NameError\", \"OverflowError\", \"RuntimeError\", \"StopIteration\", \"TypeError\", \"ValueError\", \"ZeroDivisionError\", \"True\", \"False\", \"None\", \"NotImplemented\", \"Ellipsis\"]",
+          "end_location": {
+            "column": 10,
+            "row": 42
+          },
+          "location": {
+            "column": 23,
+            "row": 35
+          }
+        }
+      ],
+      "message": "Replace with list literal"
+    },
+    "location": {
+      "column": 23,
+      "row": 35
+    },
+    "message": "Consider using a list literal instead of `str.split`",
+    "name": "split-static-string",
+    "noqa_row": 35,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/split-static-string"
+  },
+  {
+    "cell": null,
+    "code": "RUF100",
+    "end_location": {
+      "column": 52,
+      "row": 81
+    },
+    "filename": "C:\\Users\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\builder\\checks\\code_sandbox.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 95,
+            "row": 81
+          },
+          "location": {
+            "column": 38,
+            "row": 81
+          }
+        }
+      ],
+      "message": "Remove unused `noqa` directive"
+    },
+    "location": {
+      "column": 40,
+      "row": 81
+    },
+    "message": "Unused `noqa` directive (non-enabled: `S102`)",
+    "name": "unused-noqa",
+    "noqa_row": 81,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unused-noqa"
+  },
+  {
+    "cell": null,
+    "code": "RUF100",
+    "end_location": {
+      "column": 106,
+      "row": 97
+    },
+    "filename": "C:\\Users\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\builder\\checks\\code_sandbox.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 106,
+            "row": 97
+          },
+          "location": {
+            "column": 92,
+            "row": 97
+          }
+        }
+      ],
+      "message": "Remove unused `noqa` directive"
+    },
+    "location": {
+      "column": 94,
+      "row": 97
+    },
+    "message": "Unused `noqa` directive (non-enabled: `A002`)",
+    "name": "unused-noqa",
+    "noqa_row": 97,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unused-noqa"
+  },
+  {
+    "cell": null,
+    "code": "RUF100",
+    "end_location": {
+      "column": 54,
+      "row": 115
+    },
+    "filename": "C:\\Users\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\builder\\checks\\code_sandbox.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "",
+          "end_location": {
+            "column": 54,
+            "row": 115
+          },
+          "location": {
+            "column": 40,
+            "row": 115
+          }
+        }
+      ],
+      "message": "Remove unused `noqa` directive"
+    },
+    "location": {
+      "column": 42,
+      "row": 115
+    },
+    "message": "Unused `noqa` directive (non-enabled: `A002`)",
+    "name": "unused-noqa",
+    "noqa_row": 115,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/unused-noqa"
+  },
+  {
+    "cell": null,
+    "code": "UP034",
+    "end_location": {
+      "column": 85,
+      "row": 574
+    },
+    "filename": "C:\\Users\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\builder\\checks\\lint.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "self.wf.get(\"test_variables\") or {}",
+          "end_location": {
+            "column": 85,
+            "row": 574
+          },
+          "location": {
+            "column": 48,
+            "row": 574
+          }
+        }
+      ],
+      "message": "Remove extraneous parentheses"
+    },
+    "location": {
+      "column": 48,
+      "row": 574
+    },
+    "message": "Avoid extraneous parentheses",
+    "name": "extraneous-parentheses",
+    "noqa_row": 574,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/extraneous-parentheses"
+  },
+  {
+    "cell": null,
+    "code": "UP034",
+    "end_location": {
+      "column": 78,
+      "row": 654
+    },
+    "filename": "C:\\Users\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\builder\\checks\\lint.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "(props.get(\"body\") or {}).get(\"properties\") or {}",
+          "end_location": {
+            "column": 78,
+            "row": 654
+          },
+          "location": {
+            "column": 27,
+            "row": 654
+          }
+        }
+      ],
+      "message": "Remove extraneous parentheses"
+    },
+    "location": {
+      "column": 27,
+      "row": 654
+    },
+    "message": "Avoid extraneous parentheses",
+    "name": "extraneous-parentheses",
+    "noqa_row": 654,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/extraneous-parentheses"
+  },
+  {
+    "cell": null,
+    "code": "F541",
+    "end_location": {
+      "column": 121,
+      "row": 227
+    },
+    "filename": "C:\\Users\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\builder\\compiler\\toolset.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "\"Record why ONE product ended without a promise. CALL it once for every product that gets no \"",
+          "end_location": {
+            "column": 121,
+            "row": 227
+          },
+          "location": {
+            "column": 26,
+            "row": 227
+          }
+        }
+      ],
+      "message": "Remove extraneous `f` prefix"
+    },
+    "location": {
+      "column": 26,
+      "row": 227
+    },
+    "message": "f-string without any placeholders",
+    "name": "f-string-missing-placeholders",
+    "noqa_row": 227,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/f-string-missing-placeholders"
+  },
+  {
+    "cell": null,
+    "code": "F541",
+    "end_location": {
+      "column": 72,
+      "row": 228
+    },
+    "filename": "C:\\Users\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\builder\\compiler\\toolset.py",
+    "fix": {
+      "applicability": "safe",
+      "edits": [
+        {
+          "content": "\"promise, with that product's id and reason.\"",
+          "end_location": {
+            "column": 72,
+            "row": 228
+          },
+          "location": {
+            "column": 26,
+            "row": 228
+          }
+        }
+      ],
+      "message": "Remove extraneous `f` prefix"
+    },
+    "location": {
+      "column": 26,
+      "row": 228
+    },
+    "message": "f-string without any placeholders",
+    "name": "f-string-missing-placeholders",
+    "noqa_row": 228,
+    "severity": "error",
+    "url": "https://docs.astral.sh/ruff/rules/f-string-missing-placeholders"
+  }
+]

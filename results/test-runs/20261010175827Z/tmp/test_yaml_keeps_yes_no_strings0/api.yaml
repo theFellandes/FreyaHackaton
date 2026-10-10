@@ -1,0 +1,22 @@
+
+openapi: 3.0.3
+info:
+  title: YAML tools
+  version: 2026-10-01
+paths:
+  /transfer_to_agent:
+    post:
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [customer_id, consent]
+              properties:
+                customer_id: {type: string}
+                consent: {type: string, enum: [yes, no, on, off]}
+      responses:
+        200:
+          description: done
+        500:
+          description: failed

@@ -1,0 +1,52 @@
+{#
+  Policy IR repair (current IR + validator issues -> corrected IR).
+  Context: files (list[str]), full_text, vocabulary_text, issues_text, ir_json (compact JSON of the current IR),
+           ledger_lines, ambiguity_lines, schema_json, attempt (int).
+  Output schema: builder.policy.ir.PolicyIR.
+#}
+{% block system %}
+You are repairing a POLICY IR (JSON) that was extracted from a bank's collections-agent documents. An automatic validator found the problems listed below. Return the COMPLETE corrected IR.
+
+HOW TO REPAIR
+1. Change only what the issues require. Keep every other field exactly as it is, including all rule_ids, sentences, dates and numbers.
+2. Take corrections from the DOCUMENTS and the TOOL API, never from general knowledge. When an issue says a value is not allowed, replace it by the allowed value that the documents' own wording or table points to. If no allowed value matches the documents, choose the closest allowed value the documents' table or sentence implies and keep the original wording in the section's notes / custom text field when one exists.
+3. Superseded rules (marked [SUPERSEDED by X] in the ledger) must not be used: follow the replacing rule, take the value from it, and cite the replacing rule's id.
+4. Every ACTIVE ledger rule must be cited in some section's rule_ids or appear in residual_rules (rule_id, text, scope). Cite ids that exist in the ledger only.
+5. Verbatim sentences stay verbatim; placeholders use single braces such as {title}.
+6. NEVER INVENT anything the documents and the tool API do not support.
+7. PHRASE_MISSING issues: a `phrases` field is empty although a ledger rule prescribes the sentence (quoted or only described). Fill exactly the fields the issues name. Copy the documents' wording word for word when they quote the sentence. When they only describe it, COMPOSE one short, natural sentence (two at most when the rule names two separate elements) in the agent's language that contains exactly the elements the rule requires and nothing else: no added promise, consequence, offer, reason, figure or fact. Write the institution's name as in bank_name, use single-brace placeholders for call variables, and add the ids of the prescribing rules to phrases.rule_ids. Composing a sentence from elements the rule names is not inventing; adding anything beyond them is. Do not use a word that another rule restricts at that point of the call: when a rule allows saying that something is "recorded" only after it really was recorded, word a notice that calls are recorded in the active form ("We record this call."), never "This call is recorded.".
+8. GUARD_* issues come from the policy guard, which compares every date, amount, number and enum value of the IR with the documents and the tool API. GUARD_UNGROUNDED_DATE / GUARD_UNGROUNDED_AMOUNT / GUARD_UNGROUNDED_NUMBER: the value at the given path is stated nowhere in the documents or the tool API. Replace it by the value the documents actually state for that field, or remove it (empty list / default) when they state none; never keep it and never invent a substitute. Do not add a date or number to "make up" for a removed one. GUARD_ENUM / GUARD_UNKNOWN_TOOL: use an allowed value from the tool API list.
+
+Answer with ONE JSON object that matches the schema (the whole IR, not a patch). No prose.
+{% endblock %}
+{% block user %}
+{% if attempt > 1 %}
+This is repair attempt {{ attempt }}: the previous attempt did not remove all errors.
+
+{% endif %}
+ISSUES TO FIX:
+{{ issues_text }}
+
+ALLOWED VALUES FROM THE TOOL API:
+{{ vocabulary_text }}
+
+CURRENT IR:
+{{ ir_json }}
+
+DOCUMENTS ({{ files | join(", ") }}):
+{{ full_text }}
+=== END OF DOCUMENTS ===
+
+RULE LEDGER (id | file | category | stages | statement | start of the quote):
+{{ ledger_lines }}
+
+{% if ambiguity_lines %}
+AMBIGUITY REGISTER (follow the chosen reading):
+{{ ambiguity_lines }}
+
+{% endif %}
+JSON SCHEMA OF THE ANSWER:
+{{ schema_json }}
+
+Return the corrected PolicyIR JSON object now.
+{% endblock %}

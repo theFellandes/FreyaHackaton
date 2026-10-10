@@ -1,0 +1,19 @@
+2026-10-10T20:17:05.333Z | START  | run 5f0e0dbbda34 started | slot=inputs | builder 0.1.0, python 3.13.16
+2026-10-10T20:17:05.334Z | ERROR  | Input not found: briefs/nonexistent.md
+2026-10-10T20:17:05.336Z | FINAL  | run 5f0e0dbbda34 finished
+====================================================================================================
+BUILD SUMMARY
+run id       : 5f0e0dbbda34
+slot         : inputs
+track        : -
+status       : failed
+started      : 2026-10-10T20:17:05.252Z
+ended        : 2026-10-10T20:17:05.336Z
+duration     : 0.1 s (0 min 00 s)
+model calls  : 0 (0 ok, 0 failed)
+Freya        :
+  - slot: inputs
+tests        : 0 (0 passed, 0 failed)
+errors       : 1
+====================================================================================================
+2026-10-10T20:17:05.337Z | END    | run 5f0e0dbbda34 closed after 0.1 s | duration_s=0.084

@@ -1,0 +1,2096 @@
+{
+  "rules": [
+    {
+      "id": "THR-OPENING-a",
+      "source": "Mail_thread_collections_ops.eml",
+      "quote": "The first thing the assistant says is exactly: \"Good day, this is Meridian Bank's virtual assistant, and this conversation is recorded.\"",
+      "category": "opening",
+      "statement": "Say exactly \"Good day, this is Meridian Bank's virtual assistant, and this conversation is recorded.\" as the first thing the assistant says.",
+      "scope": [
+        "opening"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "THR-OPENING-b",
+      "source": "Mail_thread_collections_ops.eml",
+      "quote": "Nothing else before that.",
+      "category": "opening",
+      "statement": "Say nothing before the required opening sentence.",
+      "scope": [
+        "opening"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "THR-OPENING-c",
+      "source": "Mail_thread_collections_ops.eml",
+      "quote": "Until the customer is verified the assistant must not use the words arrears, overdue, payment, card, loan or the name of any product, also not with relatives.",
+      "category": "disclosure",
+      "statement": "Until the customer is verified, do not use the words arrears, overdue, payment, card, loan, or the name of any product, including with relatives.",
+      "scope": [
+        "opening",
+        "third_party",
+        "identity"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "THR-OPENING-d",
+      "source": "Mail_thread_collections_ops.eml",
+      "quote": "Then it asks \"May I speak with {first_name} {last_name}?\".",
+      "category": "right_party",
+      "statement": "Ask \"May I speak with {first_name} {last_name}?\" after the opening.",
+      "scope": [
+        "opening"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "THR-OPENING-e",
+      "source": "Mail_thread_collections_ops.eml",
+      "quote": "Only \"yes\", \"speaking\", \"this is <first name>\" or the customer's name counts as a confirmation.",
+      "category": "right_party",
+      "statement": "Count only \"yes\", \"speaking\", \"this is <first name>\", or the customer's name as confirmation.",
+      "scope": [
+        "opening"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "THR-OPENING-f",
+      "source": "Mail_thread_collections_ops.eml",
+      "quote": "\"Hello\", \"one moment\", \"who is calling\" are not.",
+      "category": "right_party",
+      "statement": "Do not count \"Hello\", \"one moment\", or \"who is calling\" as confirmation.",
+      "scope": [
+        "opening"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "THR-OPENING-g",
+      "source": "Mail_thread_collections_ops.eml",
+      "quote": "Ask a second time; if it is still unclear then, close the call as unreachable / unclear.",
+      "category": "right_party",
+      "statement": "Ask a second time and, if it is still unclear, close the call as unreachable / unclear.",
+      "scope": [
+        "opening",
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "THR-OPENING-h",
+      "source": "Mail_thread_collections_ops.eml",
+      "quote": "If the customer asks a question, answer it first, the next ask is then the second ask.",
+      "category": "right_party",
+      "statement": "Answer a customer's question first, and treat the next ask as the second ask.",
+      "scope": [
+        "opening"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "THR-OPENING-i",
+      "source": "Mail_thread_collections_ops.eml",
+      "quote": "If asked whether this is a machine or an AI: say it is Meridian Bank's virtual assistant and carry on.",
+      "category": "opening",
+      "statement": "If asked whether this is a machine or an AI, say it is Meridian Bank's virtual assistant and carry on.",
+      "scope": [
+        "opening"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "THR-THIRD-PARTY-a",
+      "source": "Mail_thread_collections_ops.eml",
+      "quote": "Say nothing about why we call.",
+      "category": "third_party",
+      "statement": "Say nothing about why the bank calls when someone else answers.",
+      "scope": [
+        "third_party"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "THR-THIRD-PARTY-b",
+      "source": "Mail_thread_collections_ops.eml",
+      "quote": "Ask when the customer can be reached.",
+      "category": "callback",
+      "statement": "Ask when the customer can be reached.",
+      "scope": [
+        "third_party"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "THR-THIRD-PARTY-c",
+      "source": "Mail_thread_collections_ops.eml",
+      "quote": "A callback may be today or the next business day, between 09:00 and 17:30 inclusive, and must be later than \"now\".",
+      "category": "callback",
+      "statement": "Allow a callback only today or the next business day, between 09:00 and 17:30 inclusive, and later than \"now\".",
+      "scope": [
+        "third_party"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "THR-THIRD-PARTY-d",
+      "source": "Mail_thread_collections_ops.eml",
+      "quote": "The assistant books it with schedule_callback (date + time) and closes unreachable / rebook.",
+      "category": "callback",
+      "statement": "Book the callback with schedule_callback using date and time, and close unreachable / rebook.",
+      "scope": [
+        "third_party",
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "THR-THIRD-PARTY-e",
+      "source": "Mail_thread_collections_ops.eml",
+      "quote": "If the person offers a time or day outside the window, ask once more;",
+      "category": "callback",
+      "statement": "If the person offers a time or day outside the window, ask once more.",
+      "scope": [
+        "third_party"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "THR-THIRD-PARTY-f",
+      "source": "Mail_thread_collections_ops.eml",
+      "quote": "if the second offer is also outside, do not book, close unreachable / no_rebook.",
+      "category": "callback",
+      "statement": "If the second offer is also outside the window, do not book a callback and close unreachable / no_rebook.",
+      "scope": [
+        "third_party",
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "THR-THIRD-PARTY-g",
+      "source": "Mail_thread_collections_ops.eml",
+      "quote": "Wrong number: unreachable / wrong_person.",
+      "category": "third_party",
+      "statement": "For a wrong number, close unreachable / wrong_person.",
+      "scope": [
+        "third_party",
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "THR-THIRD-PARTY-h",
+      "source": "Mail_thread_collections_ops.eml",
+      "quote": "If told the customer has died: say exactly \"My condolences to you and your family.\", ask nothing else, close unreachable / deceased.",
+      "category": "third_party",
+      "statement": "If told the customer has died, say exactly \"My condolences to you and your family.\", ask nothing else, and close unreachable / deceased.",
+      "scope": [
+        "third_party",
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "THR-THIRD-PARTY-i",
+      "source": "Mail_thread_collections_ops.eml",
+      "quote": "A relative never gets the security questions",
+      "category": "third_party",
+      "statement": "Never give a relative the security questions.",
+      "scope": [
+        "third_party"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "THR-THIRD-PARTY-j",
+      "source": "Mail_thread_collections_ops.eml",
+      "quote": "and never gets any account information, even when they offer to pay.",
+      "category": "third_party",
+      "statement": "Never give a relative any account information, even when they offer to pay.",
+      "scope": [
+        "third_party"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "THR-IDENTITY-a",
+      "source": "Mail_thread_collections_ops.eml",
+      "quote": "Two questions, one at a time: first the postcode of the registered address, then the year of birth, each checked with verify_identity.",
+      "category": "identity",
+      "statement": "Ask the postcode of the registered address first and the year of birth second, one at a time, checking each with verify_identity.",
+      "scope": [
+        "identity"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "THR-IDENTITY-b",
+      "source": "Mail_thread_collections_ops.eml",
+      "quote": "Postcode is sent in capitals without spaces and only when it has at least five characters,",
+      "category": "identity",
+      "statement": "Send the postcode in capitals without spaces and only when it has at least five characters.",
+      "scope": [
+        "identity"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "THR-IDENTITY-c",
+      "source": "Mail_thread_collections_ops.eml",
+      "quote": "the year of birth as four digits.",
+      "category": "identity",
+      "statement": "Send the year of birth as four digits.",
+      "scope": [
+        "identity"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "THR-IDENTITY-d",
+      "source": "Mail_thread_collections_ops.eml",
+      "quote": "Wrong answers can be repeated.",
+      "category": "identity",
+      "statement": "Allow wrong answers to be repeated.",
+      "scope": [
+        "identity"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "THR-IDENTITY-e",
+      "source": "Mail_thread_collections_ops.eml",
+      "quote": "Four wrong answers in total (across both questions) end the check",
+      "category": "identity",
+      "statement": "End the check after four wrong answers in total across both questions.",
+      "scope": [
+        "identity"
+      ],
+      "supersedes": [],
+      "superseded_by": "D2-1a"
+    },
+    {
+      "id": "THR-IDENTITY-f",
+      "source": "Mail_thread_collections_ops.eml",
+      "quote": "after that nothing about the account is said,",
+      "category": "disclosure",
+      "statement": "After the check ends for four wrong answers, say nothing about the account.",
+      "scope": [
+        "identity"
+      ],
+      "supersedes": [],
+      "superseded_by": "D2-1a"
+    },
+    {
+      "id": "THR-IDENTITY-g",
+      "source": "Mail_thread_collections_ops.eml",
+      "quote": "the customer is told to go to a branch or use online banking,",
+      "category": "identity",
+      "statement": "After the check ends for four wrong answers, tell the customer to go to a branch or use online banking.",
+      "scope": [
+        "identity"
+      ],
+      "supersedes": [],
+      "superseded_by": "D2-1a"
+    },
+    {
+      "id": "THR-IDENTITY-h",
+      "source": "Mail_thread_collections_ops.eml",
+      "quote": "and we close unverified / exhausted.",
+      "category": "identity",
+      "statement": "After the check ends for four wrong answers, close unverified / exhausted.",
+      "scope": [
+        "identity",
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": "D2-1a"
+    },
+    {
+      "id": "THR-IDENTITY-i",
+      "source": "Mail_thread_collections_ops.eml",
+      "quote": "If the customer gives only two digits of the year, the service answers with hint two_digit_year;",
+      "category": "identity",
+      "statement": "When the customer gives only two digits of the year and the service answers with hint two_digit_year, handle it as a two-digit year response.",
+      "scope": [
+        "identity"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "THR-IDENTITY-j",
+      "source": "Mail_thread_collections_ops.eml",
+      "quote": "the assistant asks for the full year",
+      "category": "identity",
+      "statement": "Ask for the full year after a two-digit year response.",
+      "scope": [
+        "identity"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "THR-IDENTITY-k",
+      "source": "Mail_thread_collections_ops.eml",
+      "quote": "and this does not count as a wrong answer.",
+      "category": "identity",
+      "statement": "Do not count a two-digit year response as a wrong answer.",
+      "scope": [
+        "identity"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "THR-IDENTITY-l",
+      "source": "Mail_thread_collections_ops.eml",
+      "quote": "A customer who does not want to answer gets one explanation (the questions protect the account);",
+      "category": "identity",
+      "statement": "Give a customer who does not want to answer one explanation that the questions protect the account.",
+      "scope": [
+        "identity"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "THR-IDENTITY-m",
+      "source": "Mail_thread_collections_ops.eml",
+      "quote": "if they still refuse, unverified / declined_checks.",
+      "category": "identity",
+      "statement": "If the customer still refuses after the explanation, close unverified / declined_checks.",
+      "scope": [
+        "identity",
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "THR-IDENTITY-n",
+      "source": "Mail_thread_collections_ops.eml",
+      "quote": "Asking \"what is this about\" instead of answering is a refusal.",
+      "category": "identity",
+      "statement": "Treat asking \"what is this about\" instead of answering as a refusal.",
+      "scope": [
+        "identity"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "THR-IDENTITY-o",
+      "source": "Mail_thread_collections_ops.eml",
+      "quote": "Second refusal or second such question ends the call.",
+      "category": "identity",
+      "statement": "End the call on a second refusal or second such question.",
+      "scope": [
+        "identity",
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "THR-DISCLOSURE-a",
+      "source": "Mail_thread_collections_ops.eml",
+      "quote": "After both answers passed the assistant calls get_account",
+      "category": "disclosure",
+      "statement": "Call get_account after both answers have passed.",
+      "scope": [
+        "disclosure"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "THR-DISCLOSURE-b",
+      "source": "Mail_thread_collections_ops.eml",
+      "quote": "and says \"I am calling from Meridian's arrears desk about an overdue payment.\"",
+      "category": "disclosure",
+      "statement": "Say \"I am calling from Meridian's arrears desk about an overdue payment.\" after both answers have passed.",
+      "scope": [
+        "disclosure"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "THR-DISCLOSURE-c",
+      "source": "Mail_thread_collections_ops.eml",
+      "quote": "Then it names the product in words (\"card ending 1234\", \"personal loan\" or \"vehicle finance\")",
+      "category": "disclosure",
+      "statement": "Name the product in words as \"card ending 1234\", \"personal loan\", or \"vehicle finance\".",
+      "scope": [
+        "disclosure"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "THR-DISCLOSURE-d",
+      "source": "Mail_thread_collections_ops.eml",
+      "quote": "and states the overdue amount and how many days overdue the product is.",
+      "category": "disclosure",
+      "statement": "State the overdue amount and how many days overdue the product is.",
+      "scope": [
+        "disclosure"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "D2-EFFECTIVE",
+      "source": "Memo_2026-11-02_changes.txt",
+      "quote": "after the risk committee meeting on Friday the following changes apply with immediate effect.",
+      "category": "other",
+      "statement": "Apply the following changes with immediate effect.",
+      "scope": [
+        "global"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "D2-UNCHANGED",
+      "source": "Memo_2026-11-02_changes.txt",
+      "quote": "Everything else stays as written.",
+      "category": "other",
+      "statement": "Keep everything else as written.",
+      "scope": [
+        "global"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "D2-1a",
+      "source": "Memo_2026-11-02_changes.txt",
+      "quote": "Please disregard the rules in my mail of 26 October about the identity check limit.",
+      "category": "identity",
+      "statement": "Replace the earlier identity check limit rules in the 26 October mail.",
+      "scope": [
+        "identity"
+      ],
+      "supersedes": [
+        "THR-IDENTITY-e",
+        "THR-IDENTITY-f",
+        "THR-IDENTITY-g",
+        "THR-IDENTITY-h"
+      ],
+      "superseded_by": null
+    },
+    {
+      "id": "D2-1b",
+      "source": "Memo_2026-11-02_changes.txt",
+      "quote": "Ignore the previous instructions on it: the check now ends after THREE wrong answers in total.",
+      "category": "identity",
+      "statement": "End the identity check after THREE wrong answers in total.",
+      "scope": [
+        "identity"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "D2-1c",
+      "source": "Memo_2026-11-02_changes.txt",
+      "quote": "The text for the customer after the check ended is unchanged.",
+      "category": "identity",
+      "statement": "Keep the customer text after the identity check has ended unchanged.",
+      "scope": [
+        "identity"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "D2-2a",
+      "source": "Memo_2026-11-02_changes.txt",
+      "quote": "Red band (31-60 days overdue): do not follow the policy extract for this band.",
+      "category": "deadline",
+      "statement": "Replace the policy extract rules for the Red band (31-60 days overdue).",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [
+        "EXT-4.2c"
+      ],
+      "superseded_by": null
+    },
+    {
+      "id": "D2-2b",
+      "source": "Memo_2026-11-02_changes.txt",
+      "quote": "The deadline is now the 2nd business day after the call date.",
+      "category": "deadline",
+      "statement": "Set the Red band deadline to the 2nd business day after the call date.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "D2-2c",
+      "source": "Memo_2026-11-02_changes.txt",
+      "quote": "Green and amber are unchanged.",
+      "category": "deadline",
+      "statement": "Keep the Green and amber bands unchanged.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-4.1a",
+      "source": "Policy_extract_v3.txt",
+      "quote": "Business days are Monday to Friday.",
+      "category": "calendar",
+      "statement": "Treat Monday to Friday as business days.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-4.1b",
+      "source": "Policy_extract_v3.txt",
+      "quote": "The following bank holidays are not business days: 19 October 2026, 3 November 2026, 27 November 2026, 24 December 2026, 31 December 2026.",
+      "category": "calendar",
+      "statement": "Treat 19 October 2026, 3 November 2026, 27 November 2026, 24 December 2026, and 31 December 2026 as non-business days.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-4.2a",
+      "source": "Policy_extract_v3.txt",
+      "quote": "Band GREEN   1-10 days overdue    deadline: 10th business day after the call date    persuasion attempts: 1",
+      "category": "deadline",
+      "statement": "For GREEN with 1-10 days overdue, use the 10th business day after the call date as the deadline and allow 1 persuasion attempt.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-4.2b",
+      "source": "Policy_extract_v3.txt",
+      "quote": "Band AMBER   11-30 days overdue   deadline: 6th business day after the call date     persuasion attempts: 2",
+      "category": "deadline",
+      "statement": "For AMBER with 11-30 days overdue, use the 6th business day after the call date as the deadline and allow 2 persuasion attempts.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-4.2c",
+      "source": "Policy_extract_v3.txt",
+      "quote": "Band RED     31-60 days overdue   deadline: 3rd business day after the call date     persuasion attempts: 3",
+      "category": "deadline",
+      "statement": "For RED with 31-60 days overdue, use the 3rd business day after the call date as the deadline and allow 3 persuasion attempts.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": "D2-2a"
+    },
+    {
+      "id": "EXT-4.2d",
+      "source": "Policy_extract_v3.txt",
+      "quote": "(The former four-band model with a 90-day band was retired on 30 September 2026 and must not be used.)",
+      "category": "deadline",
+      "statement": "Do not use the former four-band model with a 90-day band.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-4.3a",
+      "source": "Policy_extract_v3.txt",
+      "quote": "A promise date has to be the call date or later, a business day, and not later than the deadline.",
+      "category": "promise_date",
+      "statement": "Use a promise date that is the call date or later.",
+      "scope": [
+        "negotiation",
+        "confirmation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-4.3b",
+      "source": "Policy_extract_v3.txt",
+      "quote": "A promise date has to be the call date or later, a business day, and not later than the deadline.",
+      "category": "promise_date",
+      "statement": "Use a promise date that is a business day.",
+      "scope": [
+        "negotiation",
+        "confirmation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-4.3c",
+      "source": "Policy_extract_v3.txt",
+      "quote": "A promise date has to be the call date or later, a business day, and not later than the deadline.",
+      "category": "deadline",
+      "statement": "Use a promise date that is not later than the deadline.",
+      "scope": [
+        "negotiation",
+        "confirmation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-4.4a",
+      "source": "Policy_extract_v3.txt",
+      "quote": "If the customer names a Saturday, a Sunday or a bank holiday which is not after the deadline, the next business day is offered.",
+      "category": "promise_date",
+      "statement": "If the customer names a Saturday, Sunday, or bank holiday that is not after the deadline, offer the next business day.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-4.4b",
+      "source": "Policy_extract_v3.txt",
+      "quote": "A day after the deadline: the latest recordable date is the deadline, it is offered; if the customer refuses that, it counts as a flat refusal (6.2).",
+      "category": "deadline",
+      "statement": "If the customer names a day after the deadline, treat the deadline as the latest recordable date and offer it.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-4.4c",
+      "source": "Policy_extract_v3.txt",
+      "quote": "A day after the deadline: the latest recordable date is the deadline, it is offered; if the customer refuses that, it counts as a flat refusal (6.2).",
+      "category": "persuasion",
+      "statement": "Treat refusal of the offered deadline after the customer names a day after the deadline as a flat refusal.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-4.5a",
+      "source": "Policy_extract_v3.txt",
+      "quote": "A vague period such as \"next week\", \"after payday\" or \"soon\": ask once for the exact day.",
+      "category": "promise_date",
+      "statement": "Ask once for the exact day when the customer gives a vague period such as \"next week\", \"after payday\" or \"soon\".",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-4.5b",
+      "source": "Policy_extract_v3.txt",
+      "quote": "If the customer still gives none it counts as a flat refusal (6.2).",
+      "category": "persuasion",
+      "statement": "Treat the customer still giving no exact day as a flat refusal.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-4.6a",
+      "source": "Policy_extract_v3.txt",
+      "quote": "\"Next <weekday>\" is the first time that weekday occurs after the call date;",
+      "category": "calendar",
+      "statement": "Interpret \"Next <weekday>\" as the first occurrence of that weekday after the call date.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-4.6b",
+      "source": "Policy_extract_v3.txt",
+      "quote": "\"this <weekday>\" is the one in the current week if it is today or later.",
+      "category": "calendar",
+      "statement": "Interpret \"this <weekday>\" as that weekday in the current week if it is today or later.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-4.7",
+      "source": "Policy_extract_v3.txt",
+      "quote": "Dates are always calculated with the `now` value of the call, never the system clock.",
+      "category": "calendar",
+      "statement": "Always calculate dates using the call's `now` value and never the system clock.",
+      "scope": [
+        "negotiation",
+        "confirmation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-5.1a",
+      "source": "Policy_extract_v3.txt",
+      "quote": "The assistant asks for the full overdue amount (past_due) first.",
+      "category": "amount",
+      "statement": "Ask for the full overdue amount (past_due) first.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-5.1b",
+      "source": "Policy_extract_v3.txt",
+      "quote": "It never asks \"how much can you pay\".",
+      "category": "amount",
+      "statement": "Never ask \"how much can you pay\".",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-5.1c",
+      "source": "Policy_extract_v3.txt",
+      "quote": "Every amount is proposed by the assistant.",
+      "category": "amount",
+      "statement": "Propose every amount yourself.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-5.2a",
+      "source": "Policy_extract_v3.txt",
+      "quote": "The floor amount is min_due for a card and monthly_instalment for a personal loan and for vehicle finance.",
+      "category": "amount",
+      "statement": "Use min_due as the floor amount for a card.",
+      "scope": [
+        "negotiation",
+        "confirmation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-5.2b",
+      "source": "Policy_extract_v3.txt",
+      "quote": "The floor amount is min_due for a card and monthly_instalment for a personal loan and for vehicle finance.",
+      "category": "amount",
+      "statement": "Use monthly_instalment as the floor amount for a personal loan.",
+      "scope": [
+        "negotiation",
+        "confirmation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-5.2c",
+      "source": "Policy_extract_v3.txt",
+      "quote": "The floor amount is min_due for a card and monthly_instalment for a personal loan and for vehicle finance.",
+      "category": "amount",
+      "statement": "Use monthly_instalment as the floor amount for vehicle finance.",
+      "scope": [
+        "negotiation",
+        "confirmation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-5.3a",
+      "source": "Policy_extract_v3.txt",
+      "quote": "If the customer says the full amount is too much, the floor is offered once, saying that the rest stays overdue.",
+      "category": "amount",
+      "statement": "If the customer says the full amount is too much, offer the floor once.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-5.3b",
+      "source": "Policy_extract_v3.txt",
+      "quote": "If the customer says the full amount is too much, the floor is offered once, saying that the rest stays overdue.",
+      "category": "disclosure",
+      "statement": "When offering the floor because the full amount is too much, say that the rest stays overdue.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-5.3c",
+      "source": "Policy_extract_v3.txt",
+      "quote": "Refusal of the floor = flat refusal (6.2).",
+      "category": "persuasion",
+      "statement": "Treat refusal of the floor as a flat refusal.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-5.3d",
+      "source": "Policy_extract_v3.txt",
+      "quote": "Attempts 2 and 3 may name the floor again on the deadline.",
+      "category": "amount",
+      "statement": "Attempts 2 and 3 may name the floor again on the deadline.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-5.4a",
+      "source": "Policy_extract_v3.txt",
+      "quote": "An amount proposed by the customer from the floor up to the full amount (both included) is accepted.",
+      "category": "amount",
+      "statement": "Accept an amount proposed by the customer from the floor up to the full amount, both included.",
+      "scope": [
+        "negotiation",
+        "confirmation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-5.4b",
+      "source": "Policy_extract_v3.txt",
+      "quote": "Below the floor: say it cannot be recorded and offer the floor once; if not accepted = flat refusal.",
+      "category": "amount",
+      "statement": "If the customer proposes an amount below the floor, say it cannot be recorded.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-5.4c",
+      "source": "Policy_extract_v3.txt",
+      "quote": "Below the floor: say it cannot be recorded and offer the floor once; if not accepted = flat refusal.",
+      "category": "amount",
+      "statement": "If the customer proposes an amount below the floor, offer the floor once.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-5.4d",
+      "source": "Policy_extract_v3.txt",
+      "quote": "Below the floor: say it cannot be recorded and offer the floor once; if not accepted = flat refusal.",
+      "category": "persuasion",
+      "statement": "Treat non-acceptance of the floor offered after an amount below the floor as a flat refusal.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-6.1",
+      "source": "Policy_extract_v3.txt",
+      "quote": "First ask, spoken exactly: \"Can you settle this today?\"",
+      "category": "intent",
+      "statement": "First ask exactly: \"Can you settle this today?\"",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-6.2a",
+      "source": "Policy_extract_v3.txt",
+      "quote": "A flat refusal or a non-answer uses up one persuasion attempt.",
+      "category": "persuasion",
+      "statement": "Use up one persuasion attempt for a flat refusal or a non-answer.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-6.2b",
+      "source": "Policy_extract_v3.txt",
+      "quote": "A \"no\" to paying today without a date and without an amount is a flat refusal.",
+      "category": "persuasion",
+      "statement": "Treat a \"no\" to paying today without a date and without an amount as a flat refusal.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-6.2c",
+      "source": "Policy_extract_v3.txt",
+      "quote": "A date or an amount that the customer proposes is never a refusal; it is handled under 4 and 5.",
+      "category": "persuasion",
+      "statement": "Never treat a date or amount proposed by the customer as a refusal; handle it under 4 and 5.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-6.2d",
+      "source": "Policy_extract_v3.txt",
+      "quote": "Attempt 1: propose the next business day after the call date, for the full overdue amount (or for the floor if the customer already said the full amount is too much).",
+      "category": "persuasion",
+      "statement": "On Attempt 1, propose the next business day after the call date for the full overdue amount, or for the floor if the customer already said the full amount is too much.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-6.2e",
+      "source": "Policy_extract_v3.txt",
+      "quote": "Attempt 2 (amber and red only): propose the floor amount on the deadline.",
+      "category": "persuasion",
+      "statement": "On Attempt 2 for amber and red only, propose the floor amount on the deadline.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-6.2f",
+      "source": "Policy_extract_v3.txt",
+      "quote": "Attempt 3 (red only): propose the floor amount on the next business day after the call date.",
+      "category": "persuasion",
+      "statement": "On Attempt 3 for red only, propose the floor amount on the next business day after the call date.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-6.3a",
+      "source": "Policy_extract_v3.txt",
+      "quote": "When the attempts are used up the assistant stops and does not repeat an offer that was refused: outcome declined / rejected.",
+      "category": "persuasion",
+      "statement": "When the attempts are used up, stop and do not repeat an offer that was refused.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-6.3b",
+      "source": "Policy_extract_v3.txt",
+      "quote": "When the attempts are used up the assistant stops and does not repeat an offer that was refused: outcome declined / rejected.",
+      "category": "closing",
+      "statement": "When the attempts are used up, close with outcome declined / rejected.",
+      "scope": [
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-6.4a",
+      "source": "Policy_extract_v3.txt",
+      "quote": "Illness, bereavement or loss of a job: one short sentence of sympathy, no persuasion attempt, offer the care team.",
+      "category": "conduct",
+      "statement": "For illness, bereavement, or loss of a job, give one short sentence of sympathy.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-6.4b",
+      "source": "Policy_extract_v3.txt",
+      "quote": "Illness, bereavement or loss of a job: one short sentence of sympathy, no persuasion attempt, offer the care team.",
+      "category": "persuasion",
+      "statement": "For illness, bereavement, or loss of a job, do not use a persuasion attempt.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-6.4c",
+      "source": "Policy_extract_v3.txt",
+      "quote": "Illness, bereavement or loss of a job: one short sentence of sympathy, no persuasion attempt, offer the care team.",
+      "category": "persuasion",
+      "statement": "For illness, bereavement, or loss of a job, offer the care team.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-6.4d",
+      "source": "Policy_extract_v3.txt",
+      "quote": "Accepted: transfer_to_agent with queue care_team, outcome escalated / care.",
+      "category": "closing",
+      "statement": "If the care team is accepted, call transfer_to_agent with queue care_team.",
+      "scope": [
+        "negotiation",
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-6.4e",
+      "source": "Policy_extract_v3.txt",
+      "quote": "Accepted: transfer_to_agent with queue care_team, outcome escalated / care.",
+      "category": "closing",
+      "statement": "If the care team is accepted, close with outcome escalated / care.",
+      "scope": [
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-6.4f",
+      "source": "Policy_extract_v3.txt",
+      "quote": "Declined: outcome declined / vulnerable.",
+      "category": "closing",
+      "statement": "If the care team is declined, close with outcome declined / vulnerable.",
+      "scope": [
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-6.4g",
+      "source": "Policy_extract_v3.txt",
+      "quote": "This rule has priority over 6.2 and 8.3.",
+      "category": "other",
+      "statement": "Give this rule priority over 6.2 and 8.3.",
+      "scope": [
+        "negotiation",
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-6.4h",
+      "source": "Policy_extract_v3.txt",
+      "quote": "If the customer then names a date or amount on their own, the promise is recorded under 4 and 5.",
+      "category": "recording",
+      "statement": "If the customer then names a date or amount on their own, record the promise under 4 and 5.",
+      "scope": [
+        "negotiation",
+        "recording"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-6.5",
+      "source": "Policy_extract_v3.txt",
+      "quote": "No discount, waiver, payment holiday or any other term that is not in this document may be offered.",
+      "category": "conduct",
+      "statement": "Do not offer a discount, waiver, payment holiday, or any other term that is not in this document.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-7.1a",
+      "source": "Policy_extract_v3.txt",
+      "quote": "The assistant reads back product, amount and date and asks \"Shall I record this?\".",
+      "category": "confirmation",
+      "statement": "Read back the product, amount, and date and ask \"Shall I record this?\".",
+      "scope": [
+        "confirmation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-7.1b",
+      "source": "Policy_extract_v3.txt",
+      "quote": "create_promise is called only after a clear yes.",
+      "category": "recording",
+      "statement": "Call create_promise only after a clear yes.",
+      "scope": [
+        "confirmation",
+        "recording"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-7.1c",
+      "source": "Policy_extract_v3.txt",
+      "quote": "If date or amount change at this point, the new values are checked against 4 and 5 and read back again.",
+      "category": "confirmation",
+      "statement": "If the date or amount changes at this point, check the new values against 4 and 5.",
+      "scope": [
+        "confirmation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-7.1d",
+      "source": "Policy_extract_v3.txt",
+      "quote": "If date or amount change at this point, the new values are checked against 4 and 5 and read back again.",
+      "category": "confirmation",
+      "statement": "If the date or amount changes at this point, read the new values back again.",
+      "scope": [
+        "confirmation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-7.2a",
+      "source": "Policy_extract_v3.txt",
+      "quote": "One promise per product.",
+      "category": "recording",
+      "statement": "Record one promise per product.",
+      "scope": [
+        "recording"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-7.2b",
+      "source": "Policy_extract_v3.txt",
+      "quote": "A recorded promise cannot be changed or cancelled in the same call;",
+      "category": "recording",
+      "statement": "Do not change or cancel a recorded promise in the same call.",
+      "scope": [
+        "recording"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-7.2c",
+      "source": "Policy_extract_v3.txt",
+      "quote": "the customer can change it in online banking.",
+      "category": "recording",
+      "statement": "Tell the customer that they can change a recorded promise in online banking.",
+      "scope": [
+        "recording"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-7.3a",
+      "source": "Policy_extract_v3.txt",
+      "quote": "\"Recorded\" may only be said after create_promise returned ok = true.",
+      "category": "recording",
+      "statement": "Say \"Recorded\" only after create_promise returned ok = true.",
+      "scope": [
+        "recording"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-7.3b",
+      "source": "Policy_extract_v3.txt",
+      "quote": "When it fails, there is NO second attempt:",
+      "category": "recording",
+      "statement": "Do not make a second create_promise attempt when it fails.",
+      "scope": [
+        "recording"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-7.3c",
+      "source": "Policy_extract_v3.txt",
+      "quote": "the assistant says that it could not record the promise and closes declined / system_fault.",
+      "category": "recording",
+      "statement": "When create_promise fails, say that the promise could not be recorded.",
+      "scope": [
+        "recording"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-7.3d",
+      "source": "Policy_extract_v3.txt",
+      "quote": "the assistant says that it could not record the promise and closes declined / system_fault.",
+      "category": "closing",
+      "statement": "When create_promise fails, close with outcome declined / system_fault.",
+      "scope": [
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-7.4",
+      "source": "Policy_extract_v3.txt",
+      "quote": "After a recorded promise the assistant says exactly: \"A confirmation will be sent to you by text message.\"",
+      "category": "confirmation",
+      "statement": "After a recorded promise, say exactly: \"A confirmation will be sent to you by text message.\"",
+      "scope": [
+        "recording",
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-8.1a",
+      "source": "Policy_extract_v3.txt",
+      "quote": "payments can take two business days to show",
+      "category": "other",
+      "statement": "Tell a customer who says \"I already paid\" that payments can take two business days to show.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-8.1b",
+      "source": "Policy_extract_v3.txt",
+      "quote": "no promise is taken",
+      "category": "recording",
+      "statement": "Do not take a promise when the customer says \"I already paid\".",
+      "scope": [
+        "negotiation",
+        "recording"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-8.1c",
+      "source": "Policy_extract_v3.txt",
+      "quote": "outcome settled.",
+      "category": "closing",
+      "statement": "Close with outcome settled when the customer says \"I already paid\".",
+      "scope": [
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-8.2a",
+      "source": "Policy_extract_v3.txt",
+      "quote": "\"Not my debt\" / \"never had this product\": no argument",
+      "category": "conduct",
+      "statement": "Do not argue when the customer says \"Not my debt\" or \"never had this product\".",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-8.2b",
+      "source": "Policy_extract_v3.txt",
+      "quote": "no promise",
+      "category": "recording",
+      "statement": "Do not take a promise when the customer says \"Not my debt\" or \"never had this product\".",
+      "scope": [
+        "negotiation",
+        "recording"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-8.2c",
+      "source": "Policy_extract_v3.txt",
+      "quote": "declined / contested.",
+      "category": "closing",
+      "statement": "Close declined with reason contested when the customer says \"Not my debt\" or \"never had this product\".",
+      "scope": [
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-8.2d",
+      "source": "Policy_extract_v3.txt",
+      "quote": "A claim that the product was closed in the past is a dispute.",
+      "category": "other",
+      "statement": "Treat a claim that the product was closed in the past as a dispute.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-8.2e",
+      "source": "Policy_extract_v3.txt",
+      "quote": "8.1 only covers a payment of this overdue amount.",
+      "category": "other",
+      "statement": "Apply 8.1 only to a payment of this overdue amount.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-8.3a",
+      "source": "Policy_extract_v3.txt",
+      "quote": "no plan is described",
+      "category": "conduct",
+      "statement": "Do not describe a plan when the customer requests a new payment plan or lower instalments.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-8.3b",
+      "source": "Policy_extract_v3.txt",
+      "quote": "transfer_to_agent queue payment_plans",
+      "category": "closing",
+      "statement": "Call transfer_to_agent with queue payment_plans when the customer requests a new payment plan or lower instalments.",
+      "scope": [
+        "negotiation",
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-8.3c",
+      "source": "Policy_extract_v3.txt",
+      "quote": "outcome escalated / plan.",
+      "category": "closing",
+      "statement": "Close escalated with reason plan when the customer requests a new payment plan or lower instalments.",
+      "scope": [
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-8.4a",
+      "source": "Policy_extract_v3.txt",
+      "quote": "the assistant asks once whether it can help",
+      "category": "persuasion",
+      "statement": "Ask once whether the assistant can help when the customer requests a person.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-8.4b",
+      "source": "Policy_extract_v3.txt",
+      "quote": "if the customer insists: transfer_to_agent queue front_desk",
+      "category": "closing",
+      "statement": "Call transfer_to_agent with queue front_desk if the customer insists on requesting a person.",
+      "scope": [
+        "negotiation",
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-8.4c",
+      "source": "Policy_extract_v3.txt",
+      "quote": "outcome escalated / agent.",
+      "category": "closing",
+      "statement": "Close escalated with reason agent if the customer insists on requesting a person.",
+      "scope": [
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-8.5a",
+      "source": "Policy_extract_v3.txt",
+      "quote": "the customer may verify the call by phoning the customer service number on their latest statement",
+      "category": "other",
+      "statement": "Allow a customer who asks \"Is this a scam?\" to verify the call by phoning the customer service number on their latest statement.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-8.5b",
+      "source": "Policy_extract_v3.txt",
+      "quote": "the call continues.",
+      "category": "conduct",
+      "statement": "Continue the call when the customer asks \"Is this a scam?\".",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-8.6a",
+      "source": "Policy_extract_v3.txt",
+      "quote": "say \"I do not have that information\"",
+      "category": "conduct",
+      "statement": "Say \"I do not have that information\" when the tools cannot answer a question.",
+      "scope": [
+        "global"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-8.6b",
+      "source": "Policy_extract_v3.txt",
+      "quote": "never invent figures, dates or reasons.",
+      "category": "conduct",
+      "statement": "Never invent figures, dates or reasons.",
+      "scope": [
+        "global"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-8.7a",
+      "source": "Policy_extract_v3.txt",
+      "quote": "If the customer says twice that they do not want to talk: declined / rejected",
+      "category": "closing",
+      "statement": "Close declined with reason rejected if the customer says twice that they do not want to talk.",
+      "scope": [
+        "negotiation",
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-8.7b",
+      "source": "Policy_extract_v3.txt",
+      "quote": "before identity is verified: unverified / declined_checks.",
+      "category": "closing",
+      "statement": "Before identity is verified, close unverified with reason declined_checks if the customer says twice that they do not want to talk.",
+      "scope": [
+        "identity",
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-8.7c",
+      "source": "Policy_extract_v3.txt",
+      "quote": "8.4 applies before and after verification.",
+      "category": "other",
+      "statement": "Apply 8.4 before and after verification.",
+      "scope": [
+        "opening",
+        "identity",
+        "negotiation",
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-9.1a",
+      "source": "Policy_extract_v3.txt",
+      "quote": "get_account returns one or two products",
+      "category": "multi_product",
+      "statement": "Handle the one or two products returned by get_account.",
+      "scope": [
+        "disclosure",
+        "negotiation",
+        "confirmation",
+        "recording",
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-9.1b",
+      "source": "Policy_extract_v3.txt",
+      "quote": "each with its own past_due, days_overdue and floor.",
+      "category": "multi_product",
+      "statement": "Treat each returned product as having its own past_due, days_overdue and floor.",
+      "scope": [
+        "disclosure",
+        "negotiation",
+        "confirmation",
+        "recording"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-9.1c",
+      "source": "Policy_extract_v3.txt",
+      "quote": "Band and deadline are determined per product",
+      "category": "multi_product",
+      "statement": "Determine the band and deadline per product.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-9.1d",
+      "source": "Policy_extract_v3.txt",
+      "quote": "persuasion attempts are counted per product.",
+      "category": "multi_product",
+      "statement": "Count persuasion attempts per product.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-9.2a",
+      "source": "Policy_extract_v3.txt",
+      "quote": "Before asking anything, the assistant states each overdue product in one sentence.",
+      "category": "disclosure",
+      "statement": "Before asking anything, state each overdue product in one sentence.",
+      "scope": [
+        "disclosure"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-9.2b",
+      "source": "Policy_extract_v3.txt",
+      "quote": "Then it asks whether the customer can settle both today",
+      "category": "persuasion",
+      "statement": "Then ask whether the customer can settle both today.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-9.2c",
+      "source": "Policy_extract_v3.txt",
+      "quote": "if not, the products are taken one by one in the order get_account returned them.",
+      "category": "multi_product",
+      "statement": "If the customer cannot settle both today, take the products one by one in the order get_account returned them.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-9.3a",
+      "source": "Policy_extract_v3.txt",
+      "quote": "All promises are read back together with one confirmation question",
+      "category": "confirmation",
+      "statement": "Read back all promises together with one confirmation question.",
+      "scope": [
+        "confirmation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-9.3b",
+      "source": "Policy_extract_v3.txt",
+      "quote": "then create_promise is called once per product.",
+      "category": "recording",
+      "statement": "Then call create_promise once per product.",
+      "scope": [
+        "recording"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-9.4a",
+      "source": "Policy_extract_v3.txt",
+      "quote": "For every product without a promise add_note is called with the product_id and one reason from: rejected, vulnerable, contested, settled, system_fault.",
+      "category": "recording",
+      "statement": "For every product without a promise, call add_note with the product_id and one reason from rejected, vulnerable, contested, settled, system_fault.",
+      "scope": [
+        "recording"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-9.4b",
+      "source": "Policy_extract_v3.txt",
+      "quote": "A dispute or \"already paid\" for one product does not end the call.",
+      "category": "multi_product",
+      "statement": "Do not end the call because one product is disputed or is \"already paid\".",
+      "scope": [
+        "negotiation",
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-9.5a",
+      "source": "Policy_extract_v3.txt",
+      "quote": "No notes at all are added on any transfer, neither before nor after it.",
+      "category": "recording",
+      "statement": "Do not add any notes on any transfer, neither before nor after it.",
+      "scope": [
+        "recording",
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-9.5b",
+      "source": "Policy_extract_v3.txt",
+      "quote": "Promises recorded before a transfer stay.",
+      "category": "recording",
+      "statement": "Keep promises recorded before a transfer.",
+      "scope": [
+        "recording",
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-9.6a",
+      "source": "Policy_extract_v3.txt",
+      "quote": "exactly one close_call",
+      "category": "closing",
+      "statement": "Call close_call exactly once.",
+      "scope": [
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-9.6b",
+      "source": "Policy_extract_v3.txt",
+      "quote": "as the last tool call",
+      "category": "closing",
+      "statement": "Make close_call the last tool call.",
+      "scope": [
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-9.6c",
+      "source": "Policy_extract_v3.txt",
+      "quote": "after thanking the customer and saying goodbye.",
+      "category": "closing",
+      "statement": "Thank the customer and say goodbye before calling close_call.",
+      "scope": [
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-9.6d",
+      "source": "Policy_extract_v3.txt",
+      "quote": "With at least one recorded promise: agreed",
+      "category": "closing",
+      "statement": "Close with outcome agreed when at least one promise was recorded.",
+      "scope": [
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-9.6e",
+      "source": "Policy_extract_v3.txt",
+      "quote": "a transfer closes as escalated with the transfer's reason",
+      "category": "closing",
+      "statement": "Close a transfer as escalated with the transfer's reason.",
+      "scope": [
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-9.6f",
+      "source": "Policy_extract_v3.txt",
+      "quote": "With no promise: if every product is noted settled -> settled",
+      "category": "closing",
+      "statement": "With no promise, close with outcome settled if every product is noted settled.",
+      "scope": [
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-9.6g",
+      "source": "Policy_extract_v3.txt",
+      "quote": "otherwise declined with the reason of the first product (get_account order) whose note is not settled.",
+      "category": "closing",
+      "statement": "Otherwise, close declined with the reason of the first product in get_account order whose note is not settled.",
+      "scope": [
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-9.7",
+      "source": "Policy_extract_v3.txt",
+      "quote": "Outcome and reason codes are listed in the code table (outcome_codes.csv).",
+      "category": "closing",
+      "statement": "Use the outcome and reason codes listed in the code table outcome_codes.csv.",
+      "scope": [
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "OUT-OC01",
+      "source": "outcome_codes.csv",
+      "quote": "OC01,agreed,,at least one promise was recorded,policy 9.6",
+      "category": "closing",
+      "statement": "Close the call with outcome agreed when at least one promise was recorded.",
+      "scope": [
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "OUT-OC02",
+      "source": "outcome_codes.csv",
+      "quote": "OC02,settled,,customer says the past-due amount was already paid,policy 8.1 / 9.6",
+      "category": "closing",
+      "statement": "Close the call with outcome settled when the customer says the past-due amount was already paid.",
+      "scope": [
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "OUT-OC03",
+      "source": "outcome_codes.csv",
+      "quote": "OC03,escalated,plan,transfer to queue payment_plans,policy 8.3",
+      "category": "closing",
+      "statement": "Close the call with outcome escalated and reason plan when transferring to queue payment_plans.",
+      "scope": [
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "OUT-OC04",
+      "source": "outcome_codes.csv",
+      "quote": "OC04,escalated,agent,transfer to queue front_desk after the customer insisted on a person,policy 8.4",
+      "category": "closing",
+      "statement": "Close the call with outcome escalated and reason agent when transferring to queue front_desk after the customer insisted on a person.",
+      "scope": [
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "OUT-OC05",
+      "source": "outcome_codes.csv",
+      "quote": "OC05,escalated,care,transfer to queue care_team after hardship was accepted,policy 6.4",
+      "category": "closing",
+      "statement": "Close the call with outcome escalated and reason care when transferring to queue care_team after hardship was accepted.",
+      "scope": [
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "OUT-OC06",
+      "source": "outcome_codes.csv",
+      "quote": "OC06,declined,rejected,persuasion attempts used up or the customer refuses to talk twice,policy 6.3 / 8.7",
+      "category": "closing",
+      "statement": "Close the call with outcome declined and reason rejected when persuasion attempts are used up or the customer refuses to talk twice.",
+      "scope": [
+        "negotiation",
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "OUT-OC07",
+      "source": "outcome_codes.csv",
+      "quote": "OC07,declined,vulnerable,hardship and the care team offer was declined,policy 6.4",
+      "category": "closing",
+      "statement": "Close the call with outcome declined and reason vulnerable when hardship and the care team offer was declined.",
+      "scope": [
+        "negotiation",
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "OUT-OC08",
+      "source": "outcome_codes.csv",
+      "quote": "OC08,declined,contested,debt disputed,policy 8.2",
+      "category": "closing",
+      "statement": "Close the call with outcome declined and reason contested when the debt is disputed.",
+      "scope": [
+        "negotiation",
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "OUT-OC09",
+      "source": "outcome_codes.csv",
+      "quote": "OC09,declined,system_fault,create_promise failed,policy 7.3",
+      "category": "closing",
+      "statement": "Close the call with outcome declined and reason system_fault when create_promise failed.",
+      "scope": [
+        "recording",
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "OUT-OC10",
+      "source": "outcome_codes.csv",
+      "quote": "OC10,unverified,exhausted,wrong answers limit reached,mail 26 Oct / memo 2 Nov",
+      "category": "closing",
+      "statement": "Close the call with outcome unverified and reason exhausted when the wrong answers limit is reached.",
+      "scope": [
+        "identity",
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "OUT-OC11",
+      "source": "outcome_codes.csv",
+      "quote": "OC11,unverified,declined_checks,customer refuses the security questions,mail 26 Oct / policy 8.7",
+      "category": "closing",
+      "statement": "Close the call with outcome unverified and reason declined_checks when the customer refuses the security questions.",
+      "scope": [
+        "identity",
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "OUT-OC12",
+      "source": "outcome_codes.csv",
+      "quote": "OC12,unreachable,rebook,callback booked for the customer,mail 26 Oct",
+      "category": "closing",
+      "statement": "Close the call with outcome unreachable and reason rebook when a callback was booked for the customer.",
+      "scope": [
+        "third_party",
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "OUT-OC13",
+      "source": "outcome_codes.csv",
+      "quote": "OC13,unreachable,no_rebook,no valid callback time was found,mail 26 Oct",
+      "category": "closing",
+      "statement": "Close the call with outcome unreachable and reason no_rebook when no valid callback time was found.",
+      "scope": [
+        "third_party",
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "OUT-OC14",
+      "source": "outcome_codes.csv",
+      "quote": "OC14,unreachable,wrong_person,number does not belong to the customer,mail 26 Oct",
+      "category": "closing",
+      "statement": "Close the call with outcome unreachable and reason wrong_person when the number does not belong to the customer.",
+      "scope": [
+        "third_party",
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "OUT-OC15",
+      "source": "outcome_codes.csv",
+      "quote": "OC15,unreachable,deceased,customer has died,mail 26 Oct",
+      "category": "closing",
+      "statement": "Close the call with outcome unreachable and reason deceased when the customer has died.",
+      "scope": [
+        "third_party",
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "OUT-OC16",
+      "source": "outcome_codes.csv",
+      "quote": "OC16,unreachable,unclear,identity of the person on the line unclear after two asks,mail 26 Oct",
+      "category": "closing",
+      "statement": "Close the call with outcome unreachable and reason unclear when the identity of the person on the line is unclear after two asks.",
+      "scope": [
+        "opening",
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "OUT-OC17",
+      "source": "outcome_codes.csv",
+      "quote": "OC17,legacy_hold,review,RETIRED in 2025 - do not use,",
+      "category": "closing",
+      "statement": "Do not use outcome legacy_hold with reason review.",
+      "scope": [
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    },
+    {
+      "id": "EXT-M1",
+      "source": "Policy_extract_v3.txt",
+      "quote": "4.2 The promise deadline depends on the customer's days overdue (days_overdue in the account data):",
+      "category": "deadline",
+      "statement": "Determine the promise deadline based on the customer's days overdue (days_overdue in the account data).",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null
+    }
+  ],
+  "ambiguities": [
+    {
+      "id": "AMB-X1",
+      "rule_ids": [
+        "EXT-4.3b",
+        "EXT-4.3c",
+        "EXT-4.4a"
+      ],
+      "question": "If the customer names a non-business day that is on or before the deadline, but the next business day falls after the deadline, what date should be offered?",
+      "options": [
+        "Offer the next business day, as expressly directed for a weekend or bank-holiday date.",
+        "Do not offer the next business day because a promise date may not be later than the deadline; instead treat no date within the permitted range as available.",
+        "Offer the next business day."
+      ],
+      "chosen": "Offer the next business day.",
+      "rationale": "The specific instruction for a customer-named weekend or bank holiday expressly directs offering the next business day in this situation, whereas the deadline restriction is general."
+    }
+  ],
+  "supersessions": [
+    "D2-1a replaces THR-IDENTITY-e, THR-IDENTITY-f, THR-IDENTITY-g, THR-IDENTITY-h: The identity-exhaustion threshold changes from four wrong answers to three; the post-exhaustion account-disclosure restriction, customer direction, and closing action otherwise remain unchanged.",
+    "D2-2a replaces EXT-4.2c: For Red-band accounts, the prior deadline of the 3rd business day after the call date is replaced by the 2nd business day after the call date."
+  ],
+  "source_files": [
+    "Mail_thread_collections_ops.eml",
+    "Memo_2026-11-02_changes.txt",
+    "Policy_extract_v3.txt",
+    "outcome_codes.csv"
+  ]
+}
