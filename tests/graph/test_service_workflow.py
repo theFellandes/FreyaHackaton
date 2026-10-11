@@ -440,19 +440,49 @@ async def test_node_repairs_plan_and_review_citations_without_changing_runtime_i
                                for item in data["invalid_items"]]}
 
     gateway = make_gateway(responders={"ServicePlan": lambda call: plan, "ServicePolicyReview": lambda call: review,
-                                      "EvidenceSelections": select})
+                                      "EvidenceSelections": select,
+                                      "EvidenceSupportChecks": lambda call: {"checks": [{
+                                          "location": "issues[0].evidence", "supported": True}]}})
     state = {"slot": "elm", "bundle": bundle.model_dump(mode="json"), "tool_api": api.model_dump(mode="json"),
              "service_mode": True, "inputs": {"tool_base_url": "https://elm-mock.example"}}
     update = await service_workflow._body(state, make_ctx(llm=gateway))
     assert update["failed"] == "service_workflow" and update["service_policy_repair_pending"] is True
     assert update["compiled"] == {} and update["compile_repairs"] == 0
     assert [call.schema for call in gateway.calls] == ["ServicePlan", "EvidenceSelections",
-                                                     "ServicePolicyReview", "EvidenceSelections"]
+                                                     "ServicePolicyReview", "EvidenceSelections", "EvidenceSupportChecks"]
     assert update["service_plan"]["stages"] == plan["stages"]
     assert update["service_plan"]["rules"][0]["instruction"] == plan["rules"][0]["instruction"]
     assert update["service_plan"]["rules"][0]["evidence"]["quote"] in BRIEF
     assert review["issues"][0]["problem"] in update["compile_feedback"]
     assert '"target": "supplied mock endpoint"' in gateway.calls[2].user
+
+
+async def test_policy_reviewer_sees_implicit_and_source_grounded_terminal_topology(
+    service_source: Any, make_ctx: Any, make_gateway: Any,
+) -> None:
+    bundle, api, *_ = service_source
+    data = plan_data()
+    data["outcomes"] = [{"name": "request_complete", "reason": "The request is complete.", "evidence": {
+        "document": "BRIEF.md", "quote": "Finish by asking whether any help remains and saying goodbye before ending."}}]
+    data["stages"][1]["exits"][1]["target"] = "request_complete"
+
+    def review(call: Any) -> dict[str, Any]:
+        raw = call.user.split("ACTUAL COMPILED TERMINAL TOPOLOGY (including implicit reserved end_call):\n", 1)[1]
+        topology = json.loads(raw.split("\n\nACTUAL COMPILED TRANSPORT INPUTS", 1)[0])
+        assert topology["end_call"]["node_type"] == "end_call"
+        assert topology["end_call"]["terminal"]["function"]["name"] == "end_call"
+        assert topology["request_complete"]["terminal"]["function"]["name"] == "request_complete"
+        assert topology["lookup"]["transitions"][1]["target_node"] == "end_call"
+        assert topology["activate"]["transitions"][1]["target_node"] == "request_complete"
+        assert "must not be declared" in call.system
+        return {"issues": []}
+
+    gateway = make_gateway(responders={"ServicePlan": lambda call: data, "ServicePolicyReview": review})
+    state = {"slot": "elm", "bundle": bundle.model_dump(mode="json"), "tool_api": api.model_dump(mode="json"),
+             "service_mode": True}
+    update = await service_workflow._body(state, make_ctx(llm=gateway))
+    assert not update.get("failed"), update.get("errors")
+    assert set(update["compiled"]["workflow"]["nodes"]) == {"lookup", "activate", "end_call", "request_complete"}
 
 
 async def test_planner_reads_original_contract_and_reference_without_duplicates(

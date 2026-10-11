@@ -55,6 +55,8 @@ EXPECTED_TOOL_NAMES: tuple[str, ...] = (
 
 #: Preferred HTTP method when a path defines several operations.
 _METHOD_PREFERENCE = ("post", "put", "patch", "get", "delete")
+_PATH_METHODS = frozenset({*_METHOD_PREFERENCE, "head", "options", "trace"})
+_PATH_ITEM_FIELDS = _PATH_METHODS | {"$ref", "summary", "description", "parameters", "servers"}
 _MAX_SCHEMA_DEPTH = 12
 _JSON_TYPES = frozenset({"string", "number", "integer", "boolean", "object", "array"})
 
@@ -357,10 +359,13 @@ def parse_tool_api(document: Mapping[str, Any], sha256: str = "", *, every_opera
     if not isinstance(paths, Mapping) or not paths:
         raise ToolApiError("The tool API defines no paths, so it has no tools.")
     resolver = _Resolver(document)
+    _validate_paths_shape(paths, resolver)
     info = document.get("info") if isinstance(document.get("info"), Mapping) else {}
     base_url = _base_url(document)
     tools: dict[str, ToolContract] = {}
     for raw_path, path_item in paths.items():
+        if str(raw_path).startswith("x-"):
+            continue
         if every_operation:
             item, _ = resolver.resolve(path_item)
             for method in _METHOD_PREFERENCE:
@@ -388,6 +393,42 @@ def parse_tool_api(document: Mapping[str, Any], sha256: str = "", *, every_opera
         tools=tools,
         sha256=sha256,
     )
+
+
+def _validate_paths_shape(paths: Mapping[str, Any], resolver: _Resolver) -> None:
+    """Reject malformed nesting instead of silently dropping documented operations."""
+    for path, item in paths.items():
+        if not isinstance(path, str) or not path.startswith(("/", "x-")):
+            raise ToolApiError(f"Invalid Paths key {path!r}: only '/...' routes and 'x-' extensions belong in paths")
+        if path.startswith("x-"):
+            continue
+        _validate_path_item_shape(path, item, resolver)
+
+
+def _validate_path_item_shape(
+    path: str, item: Any, resolver: _Resolver, seen: frozenset[str] = frozenset(),
+) -> None:
+    if not isinstance(item, Mapping):
+        raise ToolApiError(f"PathItem {path!r} must be an object")
+    for key, value in item.items():
+        if isinstance(key, str) and key.startswith("x-"):
+            continue
+        if key not in _PATH_ITEM_FIELDS:
+            raise ToolApiError(f"Invalid PathItem field {key!r} at {path!r}; routes belong directly in paths, "
+                               "and document metadata belongs at the document root")
+        if key in _PATH_METHODS and not isinstance(value, Mapping):
+            raise ToolApiError(f"Operation {str(key).upper()} {path} must be an object")
+        if key in {"summary", "description", "$ref"} and not isinstance(value, str):
+            raise ToolApiError(f"PathItem {path!r} field {key!r} must be a string")
+        if key in {"parameters", "servers"} and (
+            not isinstance(value, list) or any(not isinstance(entry, Mapping) for entry in value)
+        ):
+            raise ToolApiError(f"PathItem {path!r} field {key!r} must be an array of objects")
+    ref = item.get("$ref")
+    if isinstance(ref, str):
+        if ref in seen:
+            raise ToolApiError(f"Recursive PathItem $ref {ref!r} at {path!r}")
+        _validate_path_item_shape(path, resolver.pointer(ref), resolver, seen | {ref})
 
 
 def _operation_name(path: str, method: str, operation: Mapping[str, Any]) -> str:

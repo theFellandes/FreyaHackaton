@@ -8,8 +8,8 @@
   ],
   "repo": "https://github.com/theFellandes/FreyaHackaton",
   "commit": "",
-  "run_command": "python3 builder/build.py {case_folder} {mock_url}",
+  "run_command": "python3 -B builder/build.py {case_folder} {mock_url} --slot final-statement --track compiled --self-test none --budget-s 1200",
   "workflow": "",
   "trace": "",
-  "mock_url": ""
+  "mock_url": "https://freya-hackathon-bank-oguzhan.freya-submission-bank-preparation.workers.dev"
 }

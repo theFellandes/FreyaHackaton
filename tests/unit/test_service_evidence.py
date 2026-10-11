@@ -11,7 +11,13 @@ from pydantic import ValidationError
 
 from builder.compiler.errors import CompileError
 from builder.compiler.profiles.service import ServicePlan
-from builder.graph.nodes.service_evidence import MAX_SOURCE_CHARACTERS, repair_service_evidence
+from builder.graph.nodes.service_evidence import (
+    MAX_SOURCE_CHARACTERS,
+    MAX_SOURCE_SPANS,
+    _indexed_candidates,
+    _items,
+    repair_service_evidence,
+)
 from builder.graph.nodes.service_review import ServicePolicyReview, require_complete_service_policy
 from builder.ingest.brief_loader import BriefBundle, load_briefs
 
@@ -52,6 +58,22 @@ class Selector:
     async def structured(self, **kwargs: Any) -> dict[str, Any]:
         self.calls.append(kwargs)
         request = json.loads(kwargs["user"])
+        if kwargs["schema"].__name__ == "EvidenceSupportChecks":
+            checks = [{"location": item["location"], "supported": True}
+                      for item in request["repaired_review_items"]]
+            if self.mutation == "support_reject":
+                checks[0]["supported"] = False
+            elif self.mutation == "support_missing":
+                checks.pop()
+            elif self.mutation == "support_duplicate":
+                checks.append(checks[0])
+            elif self.mutation == "support_location":
+                checks[0]["location"] = "issues[999].evidence"
+            elif self.mutation == "support_type":
+                checks[0]["supported"] = "true"
+            elif self.mutation == "support_edit":
+                checks[0]["correction"] = "Change the runtime policy."
+            return {"checks": checks}
         spans = request["indexed_original_source_spans"]
         assert sum(len(json.dumps(span, ensure_ascii=False)) for span in spans) <= MAX_SOURCE_CHARACTERS
         selections = []
@@ -116,10 +138,14 @@ async def test_review_evidence_can_be_fixed_but_the_policy_defect_still_blocks(s
     }]})
     with pytest.raises(CompileError, match="not source-grounded"):
         require_complete_service_policy(review, source)
-    repaired = await repair_service_evidence(review, source, Selector())
+    selector = Selector()
+    repaired = await repair_service_evidence(review, source, selector, deadline=123.5)
     assert repaired.issues[0].problem == review.issues[0].problem
     assert repaired.issues[0].correction == review.issues[0].correction
     assert repaired.issues[0].evidence.document == "update.md"
+    assert [call["schema"].__name__ for call in selector.calls] == ["EvidenceSelections", "EvidenceSupportChecks"]
+    assert selector.calls[1]["deadline"] == 123.5
+    assert "not proof that the candidate is defective" in selector.calls[1]["system"]
     with pytest.raises(CompileError, match="Another member's holdings are exposed"):
         require_complete_service_policy(repaired, source)
 
@@ -143,3 +169,55 @@ async def test_unsupported_claim_is_not_repaired_with_an_unrelated_literal_quote
         await repair_service_evidence(value, source, selector)
     assert value.rules[1].evidence.quote == "Keep other people's accounts secret."
     assert len(selector.calls) == 1
+
+
+def test_exact_alternate_source_outranks_350_wrongly_attributed_paragraphs(tmp_path: Path) -> None:
+    wrong = tmp_path / "wrong.md"
+    wrong.write_text("\n\n".join(f"Routine unrelated reminder line for operators {index}." for index in range(350)),
+                     encoding="utf-8")
+    correct = tmp_path / "correct.md"
+    correct.write_text("Accept changes only after explicit consent.\n", encoding="utf-8")
+    source = load_briefs([wrong, correct])
+    value = plan()
+    value.rules[0].evidence.document = wrong.name
+    candidates = _indexed_candidates([_items(value)[0]], source)
+    assert len(candidates) == MAX_SOURCE_SPANS
+    assert candidates[0].document == correct.name
+    assert candidates[0].text == correct.read_text().rstrip("\r\n")
+    assert sum(len(json.dumps(span.__dict__, ensure_ascii=False)) for span in candidates) <= MAX_SOURCE_CHARACTERS
+
+
+@pytest.mark.asyncio
+async def test_contradictory_valid_span_id_fails_independent_support_gate(source: BriefBundle) -> None:
+    review = ServicePolicyReview.model_validate({"issues": [{
+        "location": "privacy", "problem": "The plan refuses to expose another member's holdings.",
+        "correction": "Expose another member's holdings.",
+        "evidence": {"document": "BRIEF.md", "quote": "Expose all other members' holdings."},
+    }]})
+    original = review.model_dump()
+    selector = Selector("support_reject")
+    with pytest.raises(CompileError, match=r"does not support unchanged policy claims at: issues\[0\]\.evidence"):
+        await repair_service_evidence(review, source, selector)
+    assert review.model_dump() == original
+    assert [call["schema"].__name__ for call in selector.calls] == ["EvidenceSelections", "EvidenceSupportChecks"]
+    supplied = json.loads(selector.calls[1]["user"])["repaired_review_items"][0]
+    assert "Never reveal another member's holdings." in supplied["selected_original_span"]["text"]
+    assert supplied["unchanged_issue"]["correction"] == review.issues[0].correction
+    assert "evidence" not in supplied["unchanged_issue"]
+
+
+@pytest.mark.parametrize("mutation", ["support_missing", "support_duplicate", "support_location",
+                                     "support_type", "support_edit"])
+@pytest.mark.asyncio
+async def test_review_support_gate_requires_strict_complete_results(source: BriefBundle, mutation: str) -> None:
+    review = ServicePolicyReview.model_validate({"issues": [{
+        "location": "privacy", "problem": "Another member's holdings are exposed.",
+        "correction": "Do not expose another member's holdings.",
+        "evidence": {"document": "BRIEF.md", "quote": "Keep other people's accounts secret."},
+    }]})
+    original = review.model_dump()
+    selector = Selector(mutation)
+    with pytest.raises((CompileError, ValidationError)):
+        await repair_service_evidence(review, source, selector)
+    assert review.model_dump() == original
+    assert len(selector.calls) == 2

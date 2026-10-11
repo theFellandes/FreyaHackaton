@@ -1,77 +1,40 @@
 # Final submission procedure
 
-The final on Sunday 11 October 2026 is **one Turkish credit card statement debt case**. Submit one phone agent, one matching run trace and the address of your own Cloudflare Workers bank mock. The official [Submit, Rules and FAQ](https://www.freyavoice.ai/hackathon#submit), checked on 11 October, replace the older two-brief procedure in this repository.
+The released final is one Turkish credit card statement debt case. The deadline is **11 October 2026, 20:00 UTC / 23:00 Istanbul**. The user sends the email. The release follow-up remains paused.
 
-The mock is deployed and verified; final phone-agent verification and packet selection are in progress. The final opened at **17:00 UTC / 20:00 Istanbul** and the deadline is **20:00 UTC / 23:00 Istanbul**. The existing version 3 ZIP in data is practice material.
+## Released inputs and bank service
 
-The released originals are assembled in `submission/case` (18 files), including the service contract, policy sources, PDF, examples and both customer files. Their hashes and download provenance are recorded in `submission/evidence/final-case-acquisition.json`. Keep these inputs unchanged. Split archives are preserved under `submission/incoming`; the practice ZIP is not this case.
+The complete, unchanged 18-file release is in `submission/case`. This includes BRIEF.md, README.md, the flow PDF, policy sources, service contract, examples, mock example and both customer files. `submission/evidence/final-case-acquisition.json` records their hashes and acquisition provenance. Preserved downloads are under `submission/incoming`. No further download is needed.
 
-## Before release
+The live bank mock is:
 
-- [ ] The user completes contact details in the official members field before sending; do not request them again.
-- [x] Wrangler and Codex's Cloudflare MCP are authenticated. See [CLOUDFLARE_SETUP.md](CLOUDFLARE_SETUP.md) for future login checks. Keep API tokens out of chat, traces and Git.
-- [x] A healthy existing runtime is `.venv-playground/Scripts/python.exe`; it imports the OpenAI SDK and tokenizer successfully. The new submission/runtime interpreter hit Windows application control for the optional tokenizer. The original .venv remains preserved with its missing base interpreter.
-- [x] The builder accepts a case folder and mock URL and now has a generic service compiler for APIs without collections roles. The final case dry run compiles. Generic service and contract tests pass; actual Freya conversations are checked separately because legacy collection self-tests do not apply to this case.
-- [ ] Confirm Markdown, Word, PDF and Excel extraction on the released inventory. Compare every derived HTTP method/path and request/response field with the original service contract before accepting the run.
-- [ ] Ensure tools use the supplied mock origin and the actual contract authentication. Fixed contract header values are compiled; unspecified credentials and security schemes are not automatically filled from FREYA_BANK_TEAM_KEY. Verify the final contract's intended binding.
-- [ ] Preserve the existing pre-release checkpoint `3cec449` and later user checkpoint `2189cfe`. Freeze and commit the final builder source used by the selected run; never mass-stage unrelated changes.
-- [x] The released BRIEF.md confirms yavuz@freyavoice.ai. Attach submission.json, the exported workflow and the trace. The user sends the prepared email themselves.
+    https://freya-hackathon-bank-oguzhan.freya-submission-bank-preparation.workers.dev
 
-Unchecked items are readiness blockers. The existing two-brief builder.submission checker must not be used to create the new final form. Use Cloudflare Free services for the mock; this audit has not enabled a paid plan.
+It implements the seven released POST/JSON operations, both canonical `/voice/v1/` paths and root aliases, and the original fixture responses and delays. All 617 response fixtures across the 34 supplied customers passed live comparisons; the complete live suite passed 668 checks. SQLite Durable Objects preserve state across requests and process restarts. `submission/mock-bank/deployment-receipt.json` binds the deployment version, compiled source, contract, fixtures and verification evidence.
 
-## At 20:00 Istanbul
+Wrangler is authenticated. No paid Cloudflare upgrade was enabled. Keep this Worker and its storage available until results are published. Do not reset, reseed or replace evaluation state. See `mock-bank/CALL_COMPATIBILITY.md` for request and session behavior.
 
-1. Run tools/download_release.py using a working Python. It checks the release time, discovers a final ZIP in the official Submit section, refuses the practice v3 ZIP and preserves the download plus SHA256 hashes. If the link arrives only by email, pass --url with that final link. Each download gets a separate incoming folder.
-2. Read **BRIEF.md first**, then README.md. The helper prints them in that order. Follow the actual inventory and contract; keep originals unchanged.
-3. Implement the bank service from the final service contract and test customers in mock-bank. The implemented Worker serves the seven released POST services and has passed all 617 fixture comparisons through both canonical paths and aliases; the live deployment passed668 checks. Its version, hashes and SQLite restart/isolation evidence are in mock-bank/deployment-receipt.json.
-4. Implement persistent call/customer state, the actual error behavior, required authentication and evaluator-facing records. Test the contract's success and failure paths. Do not import practice endpoint names, identity limits or outcome values without checking the final contract.
-5. Deploy to Cloudflare Workers. Record the deployed origin, deployment/version ID, source/fixture/contract hashes, contract test results and persistent-storage check in a deployment receipt.
-6. Probe the live deployment and confirm tool calls will reach it. Deployment and successful contract checks must precede the selected builder run.
+## Builder and verification
 
-## Builder runs and selection
+Use the healthy Windows interpreter `.venv-playground/Scripts/python.exe` (Python 3.12.14). The builder's portable final command is:
 
-Run one command with the released case folder and deployed mock URL after the adaptation checks pass. The official example is:
+    python3 -B builder/build.py {case_folder} {mock_url} --slot final-statement --track compiled --self-test none --budget-s 1200
 
-    python3 builder/build.py {case_folder} {mock_url}
+The supplied case folder and mock URL are the only placeholders. The generic service path reads the original policy and contract, validates source evidence and response dependencies, and requires an independent source-policy review before deployment. The deterministic compiler constructs the platform workflow and actual API requests. Preserve every failed and successful capture; never edit generated plans, prompts, workflows or exports to repair a final agent.
 
-Use tools/capture_run.py to keep everything printed to stdout and stderr in a unique raw trace and record the exact command, UTC times and exit status. Its --help describes the actual arguments. The wrapper is only capture infrastructure; it is not a builder.
+Collection-specific self-tests do not apply to this inbound service case. `--self-test none` therefore does **not** mean that live phone-agent verification passed. Record actual Freya conversations separately with `tools/check_phone_chat.py`. Check policy amounts and dates, card selection, registered-address consent, preview and consent before a week change, linked cards, no-data and error routes, instruction injection, and the 12-second fixture delay. A deployed export alone is insufficient for selecting a final run.
 
-Use `.venv-playground/Scripts/python.exe` explicitly for builder runs on this Windows machine. The exact capture, readiness and sealing commands are in [tools/README.md](tools/README.md). Preserve the downloaded originals under incoming, and run from a reviewed case folder whose exact input files can be committed; packet validation requires the case files and deployment evidence in the submitted commit.
+Before the selected build, commit the exact runtime source and verify its raw bytes against Git. Probe the deployed mock using `mock-bank/tools/verify-ready.mjs`. Then use `tools/capture_run.py` to capture the complete console bytes, exact argv, UTC times, source/input hashes, mock probe and builder result. Source and case files must stay unchanged throughout the captured run. See `tools/README.md` for the capture command.
 
-Preserve every run. Select one successful run whose workflow export, builder result, platform IDs and trace agree. The builder already calls freya.export_workflow through its Freya client. If export did not succeed, retry through the builder and capture a new run. Do not edit the phone agent, export, policy, tool binding or prompt after the selected run.
+Select a successful, published run only after source review and live conversations pass. Workflow IDs, published version, export, result and trace must agree. Rebuild through the builder if a generic repair is needed; do not patch the export.
 
-Inspect the bank contract and policy extraction, tool URLs and authentication, publication/export evidence, and self-test failures before accepting the run. A platform error does not automatically prove that an agent is correct.
+## Seal, commit and prepare the email
 
-Use tools/seal_run.py to create an immutable copy of the selected trace/export/result and a hash manifest. These utilities verify local evidence, not hidden-customer success. The original raw captures remain ignored until inspected for API keys. The official instructions permit removal of API keys before commit; any necessary redaction must be explicit, must preserve the private original and must be recorded. Never silently claim a changed trace is the byte-identical raw capture.
+1. Check the selected export, complete trace, result and supporting evidence for configured secrets without printing their values. Preserve private originals if explicit known-secret redaction is necessary.
+2. Use `tools/seal_run.py seal` with the capture manifest, platform export, raw console trace and build result. The seal copies exact artifact bytes plus deployment/readiness evidence into a new folder under `submission/sealed`. Run `seal_run.py verify` on that folder.
+3. Stage only the reviewed builder source, original case, necessary mock source/evidence, selected seal and relevant documentation. Preserve unrelated work and private diagnostic captures. Commit, then verify every selected artifact and captured runtime source against raw Git blobs. Push the referenced commit and verify the remote commit.
+4. Fill the eight official fields in `submission/submission.json`: `team`, `members`, `repo`, `commit`, `run_command`, `workflow`, `trace`, `mock_url`. The workflow and trace paths point to the sealed artifacts. The commit contains those exact artifacts and source. Create this JSON after the artifact commit to avoid a circular self-reference.
+5. The user completes the member contact address before sending. Do not invent one or reuse an account address. Run `tools/prepare_submission.py validate` with the configuration and selected `seal.json`; its strict validator must pass after the contact field is completed.
+6. The released BRIEF.md confirms **yavuz@freyavoice.ai**. The user attaches **submission.json, the exported workflow and the matching builder trace**. `EMAIL_DRAFT.md` contains the wording. Send before **23:00 Istanbul**; target 22:30 when possible.
 
-## Commit and email
-
-1. Inspect exports and traces for external API credentials without printing secret values. Preserve synthetic bank credentials only when the actual contract requires evaluator access.
-2. Stage the selected artifacts, their evidence, the actual builder source and necessary mock source only. Protect submitted raw bytes from Git newline conversion and filters using the sealed folder attributes.
-3. Commit the complete code and selected artifacts. Verify workflow and trace bytes against the Git blobs at that commit. The submitted commit must contain the source used for the selected run.
-4. Use tools/prepare_submission.py with the singular final template and sealed receipt. It refuses incomplete or inconsistent packets.
-5. Write submission.json only after those checks pass. It references the artifact commit; committing a JSON that contains its own resulting commit SHA would be circular.
-6. Push the referenced commit and verify the organisers can access the repository and paths. Keep secrets and unreviewed raw logs out of the remote.
-7. The user sends submission.json to the confirmed kit recipient before **23:00 Istanbul**, preferably by **22:30**. Record the sent-message ID/time or retain the actual sent email. The email draft is wording only until the final packet exists.
-8. Keep the deployed bank Worker and persistent storage available until results are published. Do not reset, reseed, remove or replace it during evaluation without instructions from the organisers.
-
-## Files
-
-| Location | Purpose |
-|---|---|
-| final.template.json | New official single-case form with deliberately empty final values |
-| draft.json | Working single-case form; final values stay empty until evidence exists |
-| preparation-status.json | Dated actual readiness and blockers |
-| tools/download_release.py | Guarded final-kit download and extraction |
-| tools/capture_run.py | Complete builder console capture in separate runs |
-| tools/seal_run.py | Copies selected artifacts and verifies hashes |
-| tools/prepare_submission.py | Validates the single-case form and commit |
-| mock-bank | Cloudflare configuration and implementation checklist |
-| incoming | Immutable release downloads and extraction |
-| runs | Private raw builder captures |
-| sealed | Reviewed selected artifact copies and evidence |
-| history and old verification files | Historical two-brief preparation; superseded for this final |
-
-The release follow-up is **paused at the user's request**. Follow this runbook manually during the submission window. The user sends the email themselves.
-
-The live mock is https://freya-hackathon-bank-oguzhan.freya-submission-bank-preparation.workers.dev. A final phone-agent export, selected run seal and artifact commit remain in progress. Codex does not send the email.
+`preparation-status.json` records current completion and remaining blockers. `FINAL_AUDIT.md` and `submission/history` contain historical preparation evidence; they do not establish live success for the final case.

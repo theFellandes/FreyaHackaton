@@ -12,6 +12,7 @@ translated), English descriptions that carry the meaning (the compiler finds fie
 * every operation's FULL path occurs in the contract (case-insensitive, leading / trailing slash optional, ``{x}``
   matching the contract's own placeholder spelling ``{id}`` / ``:id`` / ``<id>``), alone or right after the server's
   path prefix - a reordered, recombined or shortened path is caught here; the path does not repeat that prefix;
+* every explicitly declared HTTP method/path and labelled service-table entry is represented in the derived API;
 * the operation's METHOD is the one the contract gives next to that path (same line or table row, else the nearest
   lines around it; when the contract names one method only, that one); a path without any stated method is accepted
   with a note;
@@ -99,6 +100,10 @@ _METHOD_LINES = 3
 _SERVICE_COLUMN_RE = re.compile(
     r"^(?:service|servis|endpoint|operation)(?:\s+(?:name|id|adi|ad\u0131))?$", re.IGNORECASE,
 )
+_PATH_TOKEN_RE = re.compile(r"/(?:[^\s|\"'`()\[\]*,;!?]+)")
+_METHOD_GROUP = r"(?:GET|POST|PUT|PATCH|DELETE)(?:[\s/|,`*]+(?:GET|POST|PUT|PATCH|DELETE))*"
+_BEFORE_METHODS_RE = re.compile(rf"(?<![A-Za-z])({_METHOD_GROUP})[\s|`*:'\"(]*$")
+_AFTER_METHODS_RE = re.compile(rf"^[\s|`*:'\"(]*({_METHOD_GROUP})(?![A-Za-z])")
 
 
 @dataclass(frozen=True)
@@ -198,6 +203,92 @@ class _Lines:
         if start == own:
             return False
         return _PATH_START.match(line, start) is not None or line.startswith(("http://", "https://"), start)
+
+
+def _inventory_problems(api: ToolApi, text: str) -> list[str]:
+    """Require coverage of explicit source endpoints, without inferring paths from prose.
+
+    A declaration is a literal method/path pair (including a method on a nearby
+    labelled line), or a complete cell under a labelled service/endpoint column.
+    Base URLs and ordinary service mentions are not endpoint declarations.
+    """
+    text = text.translate(_HYPHENS)
+    lines = _Lines(text)
+    declarations: list[tuple[str, set[str]]] = []
+    stated_bases: list[str] = []
+    method_only = {method for line in lines.lines if not _PATH_START.search(line)
+                   and not _URL_RE.search(line) for method in _METHOD_RE.findall(line)}
+    for line, offset in zip(lines.lines, lines.starts, strict=True):
+        urls = list(_URL_RE.finditer(line))
+        tokens = [(match, True) for match in urls]
+        tokens.extend((match, False) for match in _PATH_TOKEN_RE.finditer(line)
+                      if _PATH_START.match(line, match.start()) is not None
+                      and not any(url.start() <= match.start() < url.end() for url in urls))
+        for match, absolute in tokens:
+            token = match.group().rstrip(".,;:!?*_")
+            if absolute and not urlsplit(token).path.strip("/"):
+                continue
+            before = _BEFORE_METHODS_RE.search(line[:match.start()])
+            after = _AFTER_METHODS_RE.search(line[match.end():])
+            direct = set(_METHOD_RE.findall(before.group(1) if before else ""))
+            direct.update(_METHOD_RE.findall(after.group(1) if after else ""))
+            # A server URL near a general method declaration is a base, not an
+            # endpoint. Absolute endpoint URLs require their own adjacent method.
+            if absolute and not direct:
+                stated_bases.append(token)
+            methods = direct if absolute else direct or lines.methods_near(offset + match.start(),
+                                                                           offset + match.end())
+            if methods:
+                declarations.append((token, methods))
+    column: int | None = None
+    for line in lines.lines:
+        if "|" not in line:
+            column = None
+            continue
+        cells = list(re.finditer(r"[^|]+", line))
+        header = next((index for index, cell in enumerate(cells)
+                       if _SERVICE_COLUMN_RE.fullmatch(cell.group().strip(" `*\t"))), None)
+        if header is not None:
+            column = header
+            continue
+        if column is None or column >= len(cells):
+            continue
+        cell = cells[column]
+        service = cell.group().strip(" `*\t")
+        if re.fullmatch(r":?-{2,}:?", service) \
+                or not re.fullmatch(r"/?[\w.{}:%<>-]+(?:/[\w.{}:%<>-]+)*/?", service):
+            continue
+        methods = set(_METHOD_RE.findall(line))
+        if not methods and len(method_only) == 1:
+            methods = set(method_only)
+        declarations.append((service, methods))
+    operations: list[tuple[str, list[re.Pattern[str]], str]] = []
+    for contract in api.tools.values():
+        base = contract.url[:-len(contract.path)] if contract.path and contract.url.endswith(contract.path) \
+            else api.base_url
+        prefix = urlsplit(base).path.rstrip("/")
+        pattern = _path_pattern(contract.path, prefix)
+        patterns = [pattern] if pattern is not None else []
+        actual = urlsplit(contract.url)
+        for stated in stated_bases:
+            source_base = urlsplit(stated)
+            source_prefix = source_base.path.rstrip("/")
+            if actual.netloc.casefold() != source_base.netloc.casefold() or not source_prefix \
+                    or not actual.path.casefold().startswith(source_prefix.casefold() + "/"):
+                continue
+            relative = _path_pattern(actual.path[len(source_prefix):], "")
+            if relative is not None:
+                patterns.append(relative)
+        operations.append((contract.method, patterns, contract.path.strip("/")))
+    problems: list[str] = []
+    for token, methods in declarations:
+        covered = {method for method, patterns, name in operations
+                   if any(pattern.fullmatch(token) for pattern in patterns) or name.casefold() == token.casefold()}
+        missing = methods - covered if methods else ({"an operation"} if not covered else set())
+        for method in sorted(missing):
+            problems.append(f"source-declared endpoint {method} {token} is missing from the derived API: "
+                            "include every declared operation as a top-level paths entry with its original method")
+    return list(dict.fromkeys(problems))
 
 
 def _review_paths(paths: Mapping[str, Any], base_url: str, text: str) -> tuple[list[str], list[str]]:
@@ -347,6 +438,7 @@ def review_derived_document(
         api = parse_tool_api(document, every_operation=True)
     except InputError as exc:
         return DocumentReview([*problems, f"it is not a valid OpenAPI document: {exc}"])
+    problems.extend(_inventory_problems(api, text))
     notes: list[str] = []
     # Validate each operation against its resolved server: OpenAPI lets an operation or path item override the
     # document server, so a shared base cannot be used to ground all endpoints.

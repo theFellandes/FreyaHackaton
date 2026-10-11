@@ -86,6 +86,14 @@ binding for it. A field's own unresolved {{field}} placeholder is model-selected
 not a fixed value: it still needs actionable instructions when policy restricts
 its choice among several enum values. Do not mistake compiler transport/context
 mechanisms for undocumented background integration capabilities.
+The review also includes ACTUAL COMPILED TERMINAL TOPOLOGY. Judge its real nodes
+and transition targets: the reserved end_call exit is compiled automatically to
+a silent end_call terminal with endedReason=end_call. It must not be declared
+as an additional outcomes entry. Source-grounded additional outcomes become
+their own terminal nodes and endedReason values. Do not report a missing terminal
+solely because end_call is absent from the plan's outcomes list; verify the
+compiled topology. Still check that its incoming exits and required prior spoken
+utterances implement the authoritative source conditions.
 
 For EVERY issue give a precise candidate location, the concrete defect, and an
 actionable correction grounded in the actual sources/API. Include ONE short,

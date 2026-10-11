@@ -117,12 +117,19 @@ async def _body(state: BuilderState, ctx: BuilderContext) -> dict[str, Any]:
                    for tool in node.get("tools", [])}
             for name, node in candidate["workflow"]["nodes"].items() if node.get("tools")
         }
+        topology = {
+            name: {"node_type": node["node_type"], "terminal": node.get("terminal"),
+                   "transitions": node.get("transitions", [])}
+            for name, node in candidate["workflow"]["nodes"].items()
+        }
         review = await call_structured(
             ctx.llm,
             purpose="review_service_policy",
             schema=ServicePolicyReview,
             system=SERVICE_POLICY_REVIEW_SYSTEM,
             user=(source_context + "\n\nCANDIDATE SERVICE PLAN:\n" + plan.model_dump_json()
+                  + "\n\nACTUAL COMPILED TERMINAL TOPOLOGY (including implicit reserved end_call):\n"
+                  + json.dumps(topology, ensure_ascii=False)
                   + "\n\nACTUAL COMPILED TRANSPORT INPUTS (defaults supplied by compiler):\n"
                   + json.dumps(transport, ensure_ascii=False)),
             max_tokens=8192,
