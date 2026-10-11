@@ -1,0 +1,23 @@
+{
+  "command": [
+    "C:\\Users\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\.venv-playground\\Scripts\\python.exe",
+    "-B",
+    "-m",
+    "pytest",
+    "tests",
+    "-m",
+    "not live",
+    "-p",
+    "no:cacheprovider",
+    "--basetemp",
+    "results/test-runs/final-full-20261011T1902",
+    "--tb=short",
+    "--maxfail=3"
+  ],
+  "started_at_utc": "2026-10-11T19:02:09.971097+00:00",
+  "finished_at_utc": "2026-10-11T19:05:22.891653+00:00",
+  "exit_code": 1,
+  "log": "submission/evidence/final-offline-suite-20261011T1902.log",
+  "log_sha256": "78204807f002a4a2f339a6eb76a29631b06c45ad265bed633cbe6133d9e0365d",
+  "source_commit": "d5a23198418c43b568fd5e150bea04dbcbed980e"
+}

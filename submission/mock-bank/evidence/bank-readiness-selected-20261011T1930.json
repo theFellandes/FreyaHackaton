@@ -1,0 +1,15 @@
+{
+  "report_schema_version": 1,
+  "bank_ready": true,
+  "deployment_id": "e03f0ee1-0e8c-4d39-83a2-042219481a67",
+  "cloudflare_version_id": "af006baa-a9c0-4dab-bb5a-3b7a0ead0d14",
+  "base_url": "https://freya-hackathon-bank-oguzhan.freya-submission-bank-preparation.workers.dev",
+  "health_url": "https://freya-hackathon-bank-oguzhan.freya-submission-bank-preparation.workers.dev/__submission_health",
+  "bundle_sha256": "3891df0c3f2b38d7da21faf96fb07ae5cc765cd2a4e0603aaad167311489c440",
+  "contract_sha256": "692414a06036911509072d602b6c85bf38cbf2c791d26488d53d28be1cf35470",
+  "customer_fixture_sha256": "009d3609d33a3b001ce04861822cd2592cb5482a7a5b0a5cb69442592889aa65",
+  "verified_at_utc": "2026-10-11T19:29:16.697Z",
+  "duration_ms": 240,
+  "receipt_path": "submission/mock-bank/deployment-receipt.json",
+  "receipt_bytes_sha256": "ead9c09cf5c416ef4e0748840b1a1215096608d8189064c69a6cb2f5cf71801d"
+}

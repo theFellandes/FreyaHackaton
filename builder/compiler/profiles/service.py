@@ -100,6 +100,9 @@ production authentication occurred. Requirements not waived still apply exactly.
 An explicitly unavailable or unresolved eligibility signal cannot become an
 invented predicate, caller attestation or extra integration. Implement the
 documented feasible flow and truthful limitation instead of suppressing the flow.
+Do not ask a caller to certify an unavailable bank eligibility signal or treat
+a statement about prior use as verified eligibility. Apply caller attestation
+only when the authoritative source expressly authorizes that mechanism.
 
 Extract EVERY operative rule: opening, verification, allowed/forbidden disclosures,
 product selection, information requests, values to read aloud, payment options,
@@ -163,6 +166,10 @@ record's figures/dates does not fulfill a requirement to read both records.
 Preserve the original record's identifiers, values and write prerequisites before
 fetching a related record; distinguish the latest response from earlier retained
 records. Use the documented relationship key and each record's own returned fields.
+When each related record's fields are required, fetch each record separately with
+its documented identifier and retain the responses. Do not assume that related
+records share dates, amounts or settings just because one relationship is shared.
+Speak each record's own required identifier, name and fields before the next step.
 Counted repeat requests need a reachable repeat path and the source-defined stop
 condition. An unconditional success-to-terminal exit cannot also allow another
 request in the same call. Preserve any explicit-consent requirement on each write.
@@ -191,6 +198,15 @@ state the documented fixed value, supplied-variable binding, returned source fie
 or permitted caller choice. Include source-fixed constants even when the compiler
 also bakes them from the contract. bindings maps only supplied call variables;
 literal constants and model-selected fields belong in the tool instructions.
+For each use, write an explicit argument map in when_to_call: exact dotted request
+field -> documented constant, supplied call variable, exact returned field path,
+or source-permitted caller selection. Specify the actual scalar type and enum
+choice where relevant. Retain the selected record identifier across stages and
+reuse it exactly; a caller's digits/name select a returned record, never construct
+its API identifier. Map every source-constrained argument even when optional in
+the API schema. Response-derived values and caller choices are tool arguments,
+not invented platform call variables or unsupported bindings. No request field
+may be described merely as 'the selected value' without saying how it is obtained.
 
 Build a small sequence of conversation stages, each with a single purpose, needed
 bank tools, and explicit exits. Tool names MUST be exact keys from ToolApi. Tools
@@ -226,6 +242,11 @@ Apply every source-wide counter or limit in every applicable stage, with an
 explicit exit for its terminal result. Include the source's exact counter scope,
 threshold and prerequisite, such as unusable answers, silence or calming attempts;
 do not merely describe the rule globally while omitting its usable stage exit.
+Audit every stage's exits separately, including selection and final consent:
+counter exhaustion must appear as an explicit alternative on its actual target
+exit, with the exact source-required sentence. A success/refusal exit to that
+same target does not implicitly cover exhausted attempts. Keep silent/non-answer,
+unusable-answer, repeat-request and complaint counters distinct as the source does.
 
 The shared system prompt and stage task messages must together implement every
 source rule. Describe how to select the right returned product, obtain write

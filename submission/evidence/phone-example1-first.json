@@ -1,0 +1,902 @@
+{
+  "started_at_utc": "2026-10-11T18:25:32.827826+00:00",
+  "workflow_id": "fd2bd1fc-afa1-407f-a8b8-59d7eb9ba2f1",
+  "customer_variables": {
+    "customerNumber": "95004361",
+    "now": "2026-10-12T10:30:00+03:00"
+  },
+  "initial_call_id": null,
+  "turns": [
+    {
+      "caller": "Kredi kartımın ekstre borcunu öğrenmek istiyorum.",
+      "response": "Bilgilerinizi kontrol ediyorum. Yıldız Premium kartınız için borç bilgilerinizi getiriyorum.",
+      "call_id": "fdb640dc-875a-47ed-b3f1-f5fd0c6139b5",
+      "raw": {
+        "response": "Bilgilerinizi kontrol ediyorum. Yıldız Premium kartınız için borç bilgilerinizi getiriyorum.",
+        "callId": "fdb640dc-875a-47ed-b3f1-f5fd0c6139b5",
+        "messageId": "msg_4_1791743137970"
+      }
+    }
+  ],
+  "platform_call": {
+    "id": "fdb640dc-875a-47ed-b3f1-f5fd0c6139b5",
+    "externalCallId": null,
+    "sipCallId": null,
+    "workspaceId": "01e07b69-486a-4070-a7fd-3a2fc3120bf2",
+    "isArchived": false,
+    "isImported": false,
+    "phoneNumberId": null,
+    "phoneNumber": null,
+    "assistantId": "80ed174e-a9b3-420f-8e69-3cd1cea4da00",
+    "assistantName": "final-statement 1011-212504",
+    "assistantEntityType": "workflow",
+    "assistantWorkflowId": "fd2bd1fc-afa1-407f-a8b8-59d7eb9ba2f1",
+    "entityVersionId": "1d4e76c1-ba6d-419c-8c69-ca8dbbb58753",
+    "originCallId": null,
+    "entityVersionNumber": 1,
+    "customerNumber": "",
+    "customerLabel": null,
+    "startedAt": "2026-10-11T18:25:32.918Z",
+    "endedAt": null,
+    "duration": null,
+    "status": "180",
+    "type": "webCall",
+    "modality": "text",
+    "channel": null,
+    "endedReason": null,
+    "transcript": null,
+    "messages": [
+      {
+        "role": "user",
+        "message": "Kredi kartımın ekstre borcunu öğrenmek istiyorum.",
+        "messageId": "msg_1_1791743133131",
+        "secondsFromStart": 0.00660395622253418,
+        "nodeId": "load_cards",
+        "workflowSnapshot": {
+          "currentNode": "load_cards",
+          "previousNode": null,
+          "nodeTurnCount": 0,
+          "totalTurnCount": 0,
+          "nodeTotalTurnCounts": {},
+          "transitionHistory": [],
+          "enteredNodes": [],
+          "variableTable": {
+            "week_get.current_turns": {
+              "value": 0,
+              "confidence": 1,
+              "source": "system",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.111840+00:00"
+            },
+            "week_get.total_turns": {
+              "value": 0,
+              "confidence": 1,
+              "source": "system",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.111880+00:00"
+            },
+            "ivr_login.current_turns": {
+              "value": 0,
+              "confidence": 1,
+              "source": "system",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.111843+00:00"
+            },
+            "ivr_login.total_turns": {
+              "value": 0,
+              "confidence": 1,
+              "source": "system",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.111882+00:00"
+            },
+            "main_menu.current_turns": {
+              "value": 0,
+              "confidence": 1,
+              "source": "system",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.111846+00:00"
+            },
+            "main_menu.total_turns": {
+              "value": 0,
+              "confidence": 1,
+              "source": "system",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.111883+00:00"
+            },
+            "read_debt.current_turns": {
+              "value": 0,
+              "confidence": 1,
+              "source": "system",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.111848+00:00"
+            },
+            "read_debt.total_turns": {
+              "value": 0,
+              "confidence": 1,
+              "source": "system",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.111884+00:00"
+            },
+            "load_cards.current_turns": {
+              "value": 0,
+              "confidence": 1,
+              "source": "system",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.111878+00:00"
+            },
+            "load_cards.total_turns": {
+              "value": 0,
+              "confidence": 1,
+              "source": "system",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.111885+00:00"
+            },
+            "load_email.current_turns": {
+              "value": 0,
+              "confidence": 1,
+              "source": "system",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.111855+00:00"
+            },
+            "load_email.total_turns": {
+              "value": 0,
+              "confidence": 1,
+              "source": "system",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.111886+00:00"
+            },
+            "human_agent.current_turns": {
+              "value": 0,
+              "confidence": 1,
+              "source": "system",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.111860+00:00"
+            },
+            "human_agent.total_turns": {
+              "value": 0,
+              "confidence": 1,
+              "source": "system",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.111887+00:00"
+            },
+            "select_card.current_turns": {
+              "value": 0,
+              "confidence": 1,
+              "source": "system",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.111864+00:00"
+            },
+            "select_card.total_turns": {
+              "value": 0,
+              "confidence": 1,
+              "source": "system",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.111889+00:00"
+            },
+            "week_change.current_turns": {
+              "value": 0,
+              "confidence": 1,
+              "source": "system",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.111867+00:00"
+            },
+            "week_change.total_turns": {
+              "value": 0,
+              "confidence": 1,
+              "source": "system",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.111890+00:00"
+            },
+            "week_preview.current_turns": {
+              "value": 0,
+              "confidence": 1,
+              "source": "system",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.111870+00:00"
+            },
+            "week_preview.total_turns": {
+              "value": 0,
+              "confidence": 1,
+              "source": "system",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.111891+00:00"
+            },
+            "email_consent.current_turns": {
+              "value": 0,
+              "confidence": 1,
+              "source": "system",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.111873+00:00"
+            },
+            "email_consent.total_turns": {
+              "value": 0,
+              "confidence": 1,
+              "source": "system",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.111892+00:00"
+            },
+            "silence_close.current_turns": {
+              "value": 0,
+              "confidence": 1,
+              "source": "system",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.111875+00:00"
+            },
+            "silence_close.total_turns": {
+              "value": 0,
+              "confidence": 1,
+              "source": "system",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.111893+00:00"
+            },
+            "customerNumber": {
+              "value": "95004361",
+              "confidence": 1,
+              "source": "customer",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.111895+00:00"
+            },
+            "now": {
+              "value": "2026-10-12T10:30:00+03:00",
+              "confidence": 1,
+              "source": "customer",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.111896+00:00"
+            },
+            "call.customer_phone_number": {
+              "value": "",
+              "confidence": 1,
+              "source": "customer",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.111898+00:00"
+            },
+            "call.phone_number": {
+              "value": "",
+              "confidence": 1,
+              "source": "customer",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.111899+00:00"
+            },
+            "call.call_id": {
+              "value": "fdb640dc-875a-47ed-b3f1-f5fd0c6139b5",
+              "confidence": 1,
+              "source": "customer",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.111900+00:00"
+            },
+            "call.direction": {
+              "value": "web",
+              "confidence": 1,
+              "source": "customer",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.111901+00:00"
+            },
+            "system.iso_utc_now": {
+              "value": "2026-10-11T18:25:32.890698Z",
+              "confidence": 1,
+              "source": "customer",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.111902+00:00"
+            },
+            "system.todays_date_en_cst": {
+              "value": "11 October 2026 Sunday 12:25",
+              "confidence": 1,
+              "source": "customer",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.111904+00:00"
+            },
+            "system.todays_date_en_est": {
+              "value": "11 October 2026 Sunday 13:25",
+              "confidence": 1,
+              "source": "customer",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.111905+00:00"
+            },
+            "system.todays_date_tr": {
+              "value": "11 Ekim 2026 Pazar 21:25",
+              "confidence": 1,
+              "source": "customer",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.111906+00:00"
+            },
+            "system.todays_date_tr.iso_8601": {
+              "value": "2026-10-11",
+              "confidence": 1,
+              "source": "customer",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.111907+00:00"
+            },
+            "system.uuid4()": {
+              "value": "747dfd07cd8e436a90fcabd772bc7fbd",
+              "confidence": 1,
+              "source": "customer",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.111908+00:00"
+            }
+          },
+          "identity": {
+            "agentId": "80ed174e-a9b3-420f-8e69-3cd1cea4da00",
+            "entityVersionId": "1d4e76c1-ba6d-419c-8c69-ca8dbbb58753"
+          },
+          "controlFlags": {
+            "terminalActionFired": false
+          }
+        },
+        "duration": 0,
+        "timestamp": "2026-10-11T18:25:33.158Z"
+      },
+      {
+        "role": "system",
+        "message": "{\"event\":\"function_call_start\",\"function\":\"cards_list\",\"args\":{\"url\":\"https://freya-hackathon-bank-oguzhan.freya-submission-bank-preparation.workers.dev/voice/v1/cards.list\",\"method\":\"POST\",\"headers\":{\"Accept\":\"application/json\",\"Content-Type\":\"application/json\"},\"body\":{\"data\":{\"customerNo\":\"95004361\",\"aiFlow\":\"CardOps\"},\"call\":{\"ani\":\"05300000000\",\"lang\":\"tr\"}}}}",
+        "messageId": "msg_2_1791743134018",
+        "secondsFromStart": 0.8635125160217285,
+        "nodeId": "load_cards",
+        "duration": 0,
+        "timestamp": "2026-10-11T18:25:34.045Z"
+      },
+      {
+        "role": "system",
+        "message": "{\"event\":\"function_call_complete\",\"function\":\"cards_list\",\"result\":{\"status\":\"success\",\"data\":{\"data\":{\"cards\":[{\"cardNumber\":\"540000******2000\",\"cardNumberLast4\":\"2000\",\"productName\":\"Yıldız Premium\",\"status\":\"A\",\"isMainCard\":true}],\"validCardsCount\":1,\"exitState\":\"1_CARD\"},\"result\":{\"guid\":\"f0e1d2c3b4a5968778695a4b3c2d0088\",\"returnCode\":\"1\",\"messageText\":\"Success\",\"code\":\"1\",\"message\":\"Success\",\"type\":null,\"details\":{\"guid\":\"f0e1d2c3b4a5968778695a4b3c2d0088\",\"rootCause\":null,\"errorOrigin\":null}}},\"message\":\"Successfully executed POST request\",\"status_code\":200,\"header\":{\"Date\":\"Sun, 11 Oct 2026 18:25:34 GMT\",\"Content-Type\":\"application/json\",\"Transfer-Encoding\":\"chunked\",\"Connection\":\"keep-alive\",\"Access-Control-Allow-Origin\":\"*\",\"Cache-Control\":\"no-store\",\"Access-Control-Allow-Headers\":\"*\",\"Access-Control-Allow-Methods\":\"GET, POST, OPTIONS\",\"Report-To\":\"{\\\"group\\\":\\\"cf-nel\\\",\\\"max_age\\\":604800,\\\"endpoints\\\":[{\\\"url\\\":\\\"https://a.nel.cloudflare.com/report/v4?s=YwQBOMjcPNJ0iP5u0NJ8RTaWHKyUHchpBvZo5qCtie4WWrWVFZPdV%2FEZybH1GjbvCZ07unttX%2Ft86b3U5yqBWa62NG5xemPYfmJkYmI2CFfydfbnVQfwxWSlQ6UtfZzXkYkwTdVHoNlcXrPhMKtn2Sw0TkHqrpsfXcxeRscLLCQesao3PhMnmzwPbjjLhDli7nKRzUHa7xP95AjaHQ%3D%3D\\\"}]}\",\"Nel\":\"{\\\"report_to\\\":\\\"cf-nel\\\",\\\"success_fraction\\\":0.0,\\\"max_age\\\":604800}\",\"Content-Encoding\":\"gzip\",\"Server\":\"cloudflare\",\"CF-RAY\":\"a48fe87bbfebe98c-FRA\",\"alt-svc\":\"h3=\\\":443\\\"; ma=86400\"}}}",
+        "messageId": "msg_3_1791743134475",
+        "secondsFromStart": 1.3198468685150146,
+        "nodeId": "load_cards",
+        "duration": 0,
+        "timestamp": "2026-10-11T18:25:34.481Z"
+      },
+      {
+        "role": "assistant",
+        "message": "Bilgilerinizi kontrol ediyorum. Yıldız Premium kartınız için borç bilgilerinizi getiriyorum.",
+        "messageId": "msg_4_1791743137970",
+        "secondsFromStart": 1.337662935256958,
+        "nodeId": "load_cards",
+        "workflowSnapshot": {
+          "currentNode": "load_cards",
+          "previousNode": null,
+          "nodeTurnCount": 1,
+          "totalTurnCount": 1,
+          "nodeTotalTurnCounts": {
+            "load_cards": 1
+          },
+          "transitionHistory": [],
+          "enteredNodes": [],
+          "variableTable": {
+            "week_get.current_turns": {
+              "value": 0,
+              "confidence": 1,
+              "source": "system",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.111840+00:00"
+            },
+            "week_get.total_turns": {
+              "value": 0,
+              "confidence": 1,
+              "source": "system",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.111880+00:00"
+            },
+            "ivr_login.current_turns": {
+              "value": 0,
+              "confidence": 1,
+              "source": "system",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.111843+00:00"
+            },
+            "ivr_login.total_turns": {
+              "value": 0,
+              "confidence": 1,
+              "source": "system",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.111882+00:00"
+            },
+            "main_menu.current_turns": {
+              "value": 0,
+              "confidence": 1,
+              "source": "system",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.111846+00:00"
+            },
+            "main_menu.total_turns": {
+              "value": 0,
+              "confidence": 1,
+              "source": "system",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.111883+00:00"
+            },
+            "read_debt.current_turns": {
+              "value": 0,
+              "confidence": 1,
+              "source": "system",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.111848+00:00"
+            },
+            "read_debt.total_turns": {
+              "value": 0,
+              "confidence": 1,
+              "source": "system",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.111884+00:00"
+            },
+            "load_cards.current_turns": {
+              "value": 1,
+              "confidence": 1,
+              "source": "system",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.141396+00:00"
+            },
+            "load_cards.total_turns": {
+              "value": 1,
+              "confidence": 1,
+              "source": "system",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.141399+00:00"
+            },
+            "load_email.current_turns": {
+              "value": 0,
+              "confidence": 1,
+              "source": "system",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.111855+00:00"
+            },
+            "load_email.total_turns": {
+              "value": 0,
+              "confidence": 1,
+              "source": "system",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.111886+00:00"
+            },
+            "human_agent.current_turns": {
+              "value": 0,
+              "confidence": 1,
+              "source": "system",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.111860+00:00"
+            },
+            "human_agent.total_turns": {
+              "value": 0,
+              "confidence": 1,
+              "source": "system",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.111887+00:00"
+            },
+            "select_card.current_turns": {
+              "value": 0,
+              "confidence": 1,
+              "source": "system",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.111864+00:00"
+            },
+            "select_card.total_turns": {
+              "value": 0,
+              "confidence": 1,
+              "source": "system",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.111889+00:00"
+            },
+            "week_change.current_turns": {
+              "value": 0,
+              "confidence": 1,
+              "source": "system",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.111867+00:00"
+            },
+            "week_change.total_turns": {
+              "value": 0,
+              "confidence": 1,
+              "source": "system",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.111890+00:00"
+            },
+            "week_preview.current_turns": {
+              "value": 0,
+              "confidence": 1,
+              "source": "system",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.111870+00:00"
+            },
+            "week_preview.total_turns": {
+              "value": 0,
+              "confidence": 1,
+              "source": "system",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.111891+00:00"
+            },
+            "email_consent.current_turns": {
+              "value": 0,
+              "confidence": 1,
+              "source": "system",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.111873+00:00"
+            },
+            "email_consent.total_turns": {
+              "value": 0,
+              "confidence": 1,
+              "source": "system",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.111892+00:00"
+            },
+            "silence_close.current_turns": {
+              "value": 0,
+              "confidence": 1,
+              "source": "system",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.111875+00:00"
+            },
+            "silence_close.total_turns": {
+              "value": 0,
+              "confidence": 1,
+              "source": "system",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.111893+00:00"
+            },
+            "customerNumber": {
+              "value": "95004361",
+              "confidence": 1,
+              "source": "customer",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.111895+00:00"
+            },
+            "now": {
+              "value": "2026-10-12T10:30:00+03:00",
+              "confidence": 1,
+              "source": "customer",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.111896+00:00"
+            },
+            "call.customer_phone_number": {
+              "value": "",
+              "confidence": 1,
+              "source": "customer",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.111898+00:00"
+            },
+            "call.phone_number": {
+              "value": "",
+              "confidence": 1,
+              "source": "customer",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.111899+00:00"
+            },
+            "call.call_id": {
+              "value": "fdb640dc-875a-47ed-b3f1-f5fd0c6139b5",
+              "confidence": 1,
+              "source": "customer",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.111900+00:00"
+            },
+            "call.direction": {
+              "value": "web",
+              "confidence": 1,
+              "source": "customer",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.111901+00:00"
+            },
+            "system.iso_utc_now": {
+              "value": "2026-10-11T18:25:32.890698Z",
+              "confidence": 1,
+              "source": "customer",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.111902+00:00"
+            },
+            "system.todays_date_en_cst": {
+              "value": "11 October 2026 Sunday 12:25",
+              "confidence": 1,
+              "source": "customer",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.111904+00:00"
+            },
+            "system.todays_date_en_est": {
+              "value": "11 October 2026 Sunday 13:25",
+              "confidence": 1,
+              "source": "customer",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.111905+00:00"
+            },
+            "system.todays_date_tr": {
+              "value": "11 Ekim 2026 Pazar 21:25",
+              "confidence": 1,
+              "source": "customer",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.111906+00:00"
+            },
+            "system.todays_date_tr.iso_8601": {
+              "value": "2026-10-11",
+              "confidence": 1,
+              "source": "customer",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.111907+00:00"
+            },
+            "system.uuid4()": {
+              "value": "747dfd07cd8e436a90fcabd772bc7fbd",
+              "confidence": 1,
+              "source": "customer",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:33.111908+00:00"
+            },
+            "cards_list_args.call__ani": {
+              "value": "05300000000",
+              "confidence": 1,
+              "source": "tool_result",
+              "source_node": "load_cards",
+              "extracted_at": "2026-10-11T18:25:34.478677+00:00"
+            },
+            "cards_list_response.status": {
+              "value": "success",
+              "confidence": 1,
+              "source": "tool_result",
+              "source_node": "load_cards",
+              "extracted_at": "2026-10-11T18:25:34.478719+00:00"
+            },
+            "cards_list_response.data.data.cards.0.cardNumber": {
+              "value": "540000******2000",
+              "confidence": 1,
+              "source": "tool_result",
+              "source_node": "load_cards",
+              "extracted_at": "2026-10-11T18:25:34.478721+00:00"
+            },
+            "cards_list_response.data.data.cards.0.cardNumberLast4": {
+              "value": "2000",
+              "confidence": 1,
+              "source": "tool_result",
+              "source_node": "load_cards",
+              "extracted_at": "2026-10-11T18:25:34.478722+00:00"
+            },
+            "cards_list_response.data.data.cards.0.productName": {
+              "value": "Yıldız Premium",
+              "confidence": 1,
+              "source": "tool_result",
+              "source_node": "load_cards",
+              "extracted_at": "2026-10-11T18:25:34.478724+00:00"
+            },
+            "cards_list_response.data.data.cards.0.status": {
+              "value": "A",
+              "confidence": 1,
+              "source": "tool_result",
+              "source_node": "load_cards",
+              "extracted_at": "2026-10-11T18:25:34.478725+00:00"
+            },
+            "cards_list_response.data.data.cards.0.isMainCard": {
+              "value": "true",
+              "confidence": 1,
+              "source": "tool_result",
+              "source_node": "load_cards",
+              "extracted_at": "2026-10-11T18:25:34.478727+00:00"
+            },
+            "cards_list_response.data.data.validCardsCount": {
+              "value": 1,
+              "confidence": 1,
+              "source": "tool_result",
+              "source_node": "load_cards",
+              "extracted_at": "2026-10-11T18:25:34.478729+00:00"
+            },
+            "cards_list_response.data.data.exitState": {
+              "value": "1_CARD",
+              "confidence": 1,
+              "source": "tool_result",
+              "source_node": "load_cards",
+              "extracted_at": "2026-10-11T18:25:34.478730+00:00"
+            },
+            "cards_list_response.data.result.guid": {
+              "value": "f0e1d2c3b4a5968778695a4b3c2d0088",
+              "confidence": 1,
+              "source": "tool_result",
+              "source_node": "load_cards",
+              "extracted_at": "2026-10-11T18:25:34.478731+00:00"
+            },
+            "cards_list_response.data.result.returnCode": {
+              "value": "1",
+              "confidence": 1,
+              "source": "tool_result",
+              "source_node": "load_cards",
+              "extracted_at": "2026-10-11T18:25:34.478732+00:00"
+            },
+            "cards_list_response.data.result.messageText": {
+              "value": "Success",
+              "confidence": 1,
+              "source": "tool_result",
+              "source_node": "load_cards",
+              "extracted_at": "2026-10-11T18:25:34.478733+00:00"
+            },
+            "cards_list_response.data.result.code": {
+              "value": "1",
+              "confidence": 1,
+              "source": "tool_result",
+              "source_node": "load_cards",
+              "extracted_at": "2026-10-11T18:25:34.478735+00:00"
+            },
+            "cards_list_response.data.result.message": {
+              "value": "Success",
+              "confidence": 1,
+              "source": "tool_result",
+              "source_node": "load_cards",
+              "extracted_at": "2026-10-11T18:25:34.478738+00:00"
+            },
+            "cards_list_response.data.result.type": {
+              "value": "null",
+              "confidence": 1,
+              "source": "tool_result",
+              "source_node": "load_cards",
+              "extracted_at": "2026-10-11T18:25:34.478739+00:00"
+            },
+            "cards_list_response.data.result.details.guid": {
+              "value": "f0e1d2c3b4a5968778695a4b3c2d0088",
+              "confidence": 1,
+              "source": "tool_result",
+              "source_node": "load_cards",
+              "extracted_at": "2026-10-11T18:25:34.478740+00:00"
+            },
+            "cards_list_response.data.result.details.rootCause": {
+              "value": "null",
+              "confidence": 1,
+              "source": "tool_result",
+              "source_node": "load_cards",
+              "extracted_at": "2026-10-11T18:25:34.478741+00:00"
+            },
+            "cards_list_response.data.result.details.errorOrigin": {
+              "value": "null",
+              "confidence": 1,
+              "source": "tool_result",
+              "source_node": "load_cards",
+              "extracted_at": "2026-10-11T18:25:34.478742+00:00"
+            },
+            "cards_list_response.message": {
+              "value": "Successfully executed POST request",
+              "confidence": 1,
+              "source": "tool_result",
+              "source_node": "load_cards",
+              "extracted_at": "2026-10-11T18:25:34.478743+00:00"
+            },
+            "cards_list_response.status_code": {
+              "value": 200,
+              "confidence": 1,
+              "source": "tool_result",
+              "source_node": "load_cards",
+              "extracted_at": "2026-10-11T18:25:34.478744+00:00"
+            },
+            "cards_list_response.header.Date": {
+              "value": "Sun, 11 Oct 2026 18:25:34 GMT",
+              "confidence": 1,
+              "source": "tool_result",
+              "source_node": "load_cards",
+              "extracted_at": "2026-10-11T18:25:34.478745+00:00"
+            },
+            "cards_list_response.header.Content-Type": {
+              "value": "application/json",
+              "confidence": 1,
+              "source": "tool_result",
+              "source_node": "load_cards",
+              "extracted_at": "2026-10-11T18:25:34.478746+00:00"
+            },
+            "cards_list_response.header.Transfer-Encoding": {
+              "value": "chunked",
+              "confidence": 1,
+              "source": "tool_result",
+              "source_node": "load_cards",
+              "extracted_at": "2026-10-11T18:25:34.478747+00:00"
+            },
+            "cards_list_response.header.Connection": {
+              "value": "keep-alive",
+              "confidence": 1,
+              "source": "tool_result",
+              "source_node": "load_cards",
+              "extracted_at": "2026-10-11T18:25:34.478748+00:00"
+            },
+            "cards_list_response.header.Access-Control-Allow-Origin": {
+              "value": "*",
+              "confidence": 1,
+              "source": "tool_result",
+              "source_node": "load_cards",
+              "extracted_at": "2026-10-11T18:25:34.478749+00:00"
+            },
+            "cards_list_response.header.Cache-Control": {
+              "value": "no-store",
+              "confidence": 1,
+              "source": "tool_result",
+              "source_node": "load_cards",
+              "extracted_at": "2026-10-11T18:25:34.478751+00:00"
+            },
+            "cards_list_response.header.Access-Control-Allow-Headers": {
+              "value": "*",
+              "confidence": 1,
+              "source": "tool_result",
+              "source_node": "load_cards",
+              "extracted_at": "2026-10-11T18:25:34.478752+00:00"
+            },
+            "cards_list_response.header.Access-Control-Allow-Methods": {
+              "value": "GET, POST, OPTIONS",
+              "confidence": 1,
+              "source": "tool_result",
+              "source_node": "load_cards",
+              "extracted_at": "2026-10-11T18:25:34.478753+00:00"
+            },
+            "cards_list_response.header.Report-To": {
+              "value": "{\"group\":\"cf-nel\",\"max_age\":604800,\"endpoints\":[{\"url\":\"https://a.nel.cloudflare.com/report/v4?s=YwQBOMjcPNJ0iP5u0NJ8RTaWHKyUHchpBvZo5qCtie4WWrWVFZPdV%2FEZybH1GjbvCZ07unttX%2Ft86b3U5yqBWa62NG5xemPYfmJkYmI2CFfydfbnVQfwxWSlQ6UtfZzXkYkwTdVHoNlcXrPhMKtn2Sw0TkHqrpsfXcxeRscLLCQesao3PhMnmzwPbjjLhDli7nKRzUHa7xP95AjaHQ%3D%3D\"}]}",
+              "confidence": 1,
+              "source": "tool_result",
+              "source_node": "load_cards",
+              "extracted_at": "2026-10-11T18:25:34.478754+00:00"
+            },
+            "cards_list_response.header.Nel": {
+              "value": "{\"report_to\":\"cf-nel\",\"success_fraction\":0.0,\"max_age\":604800}",
+              "confidence": 1,
+              "source": "tool_result",
+              "source_node": "load_cards",
+              "extracted_at": "2026-10-11T18:25:34.478755+00:00"
+            },
+            "cards_list_response.header.Content-Encoding": {
+              "value": "gzip",
+              "confidence": 1,
+              "source": "tool_result",
+              "source_node": "load_cards",
+              "extracted_at": "2026-10-11T18:25:34.478756+00:00"
+            },
+            "cards_list_response.header.Server": {
+              "value": "cloudflare",
+              "confidence": 1,
+              "source": "tool_result",
+              "source_node": "load_cards",
+              "extracted_at": "2026-10-11T18:25:34.478757+00:00"
+            },
+            "cards_list_response.header.CF-RAY": {
+              "value": "a48fe87bbfebe98c-FRA",
+              "confidence": 1,
+              "source": "tool_result",
+              "source_node": "load_cards",
+              "extracted_at": "2026-10-11T18:25:34.478758+00:00"
+            },
+            "cards_list_response.header.alt-svc": {
+              "value": "h3=\":443\"; ma=86400",
+              "confidence": 1,
+              "source": "tool_result",
+              "source_node": "load_cards",
+              "extracted_at": "2026-10-11T18:25:34.478759+00:00"
+            },
+            "cards_list_status_code": {
+              "value": 200,
+              "confidence": 1,
+              "source": "tool_result",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:34.478761+00:00"
+            },
+            "cards_list_success_count": {
+              "value": 1,
+              "confidence": 1,
+              "source": "tool_result",
+              "source_node": null,
+              "extracted_at": "2026-10-11T18:25:34.478765+00:00"
+            }
+          },
+          "identity": {
+            "agentId": "80ed174e-a9b3-420f-8e69-3cd1cea4da00",
+            "entityVersionId": "1d4e76c1-ba6d-419c-8c69-ca8dbbb58753"
+          },
+          "controlFlags": {
+            "terminalActionFired": false
+          }
+        },
+        "duration": 0,
+        "timestamp": "2026-10-11T18:25:37.986Z"
+      },
+      {
+        "role": "system",
+        "message": "{\"event\":\"turn_completed\",\"turnIndex\":1,\"userMessageId\":\"msg_1_1791743133131\",\"finalAssistantMessageId\":\"msg_4_1791743137970\",\"responseText\":\"Bilgilerinizi kontrol ediyorum. Yıldız Premium kartınız için borç bilgilerinizi getiriyorum.\"}",
+        "messageId": "msg_5_1791743137979",
+        "secondsFromStart": 4.823899507522583,
+        "nodeId": "load_cards",
+        "duration": 0,
+        "timestamp": "2026-10-11T18:25:38.203Z"
+      }
+    ],
+    "summary": null,
+    "cost": 0.004835,
+    "recordingUrl": "https://staging-app.freyavoice.ai/api/v2/call/fdb640dc-875a-47ed-b3f1-f5fd0c6139b5/recording",
+    "analysis": {},
+    "tags": [],
+    "createdAt": "2026-10-11T18:25:32.918Z",
+    "updatedAt": "2026-10-11T18:25:38.765Z",
+    "campaign": null,
+    "problems": [],
+    "piiRedactions": []
+  },
+  "completed": true,
+  "finished_at_utc": "2026-10-11T18:25:39.333433+00:00"
+}

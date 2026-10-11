@@ -26,6 +26,7 @@ from builder.graph.nodes._common import (
     write_json,
 )
 from builder.graph.nodes.service_evidence import repair_service_evidence
+from builder.graph.nodes.service_field_coverage import service_policy_field_context
 from builder.graph.nodes.service_review import (
     SERVICE_POLICY_REVIEW_SYSTEM,
     ServicePolicyRepairError,
@@ -119,6 +120,8 @@ async def _body(state: BuilderState, ctx: BuilderContext) -> dict[str, Any]:
         }
         topology = {
             name: {"node_type": node["node_type"], "terminal": node.get("terminal"),
+                   "ended_reason": ((node.get("terminal") or {}).get("function") or {}).get("name")
+                   if node["node_type"] == "end_call" else None,
                    "transitions": node.get("transitions", [])}
             for name, node in candidate["workflow"]["nodes"].items()
         }
@@ -128,6 +131,8 @@ async def _body(state: BuilderState, ctx: BuilderContext) -> dict[str, Any]:
             schema=ServicePolicyReview,
             system=SERVICE_POLICY_REVIEW_SYSTEM,
             user=(source_context + "\n\nCANDIDATE SERVICE PLAN:\n" + plan.model_dump_json()
+                  + "\n\nPOTENTIAL SOURCE RESPONSE-FIELD COVERAGE:\n"
+                  + json.dumps(service_policy_field_context(candidate, api, bundle), ensure_ascii=False)
                   + "\n\nACTUAL COMPILED TERMINAL TOPOLOGY (including implicit reserved end_call):\n"
                   + json.dumps(topology, ensure_ascii=False)
                   + "\n\nACTUAL COMPILED TRANSPORT INPUTS (defaults supplied by compiler):\n"

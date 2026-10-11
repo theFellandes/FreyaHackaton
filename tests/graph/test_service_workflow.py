@@ -472,6 +472,11 @@ async def test_policy_reviewer_sees_implicit_and_source_grounded_terminal_topolo
         assert topology["end_call"]["node_type"] == "end_call"
         assert topology["end_call"]["terminal"]["function"]["name"] == "end_call"
         assert topology["request_complete"]["terminal"]["function"]["name"] == "request_complete"
+        assert topology["end_call"]["ended_reason"] == "end_call"
+        assert topology["request_complete"]["ended_reason"] == "request_complete"
+        assert topology["lookup"]["ended_reason"] is None
+        assert topology["request_complete"]["terminal"]["function"]["parameters"][
+            "properties"]["message_mode"]["default"] == "none"
         assert topology["lookup"]["transitions"][1]["target_node"] == "end_call"
         assert topology["activate"]["transitions"][1]["target_node"] == "request_complete"
         assert "must not be declared" in call.system
@@ -483,6 +488,37 @@ async def test_policy_reviewer_sees_implicit_and_source_grounded_terminal_topolo
     update = await service_workflow._body(state, make_ctx(llm=gateway))
     assert not update.get("failed"), update.get("errors")
     assert set(update["compiled"]["workflow"]["nodes"]) == {"lookup", "activate", "end_call", "request_complete"}
+
+
+async def test_policy_reviewer_focuses_on_unimplemented_original_response_fields(
+    service_source: Any, make_ctx: Any, make_gateway: Any,
+) -> None:
+    _, api, brief, _ = service_source
+    source_rule = "When conversionDelta is positive, announce that the amount was converted."
+    brief.write_text(BRIEF + "\n" + source_rule, encoding="utf-8")
+    bundle = load_briefs([brief])
+    api.tools["plans"].response_fields.append(FieldSpec(name="conversionDelta", type="number"))
+    data = plan_data()
+    data["rules"].append({"id": "S2", "instruction": "Use the returned values.",
+                          "evidence": {"document": "BRIEF.md", "quote": source_rule}})
+
+    def review(call: Any) -> dict[str, Any]:
+        raw = call.user.split("POTENTIAL SOURCE RESPONSE-FIELD COVERAGE:\n", 1)[1]
+        focus = json.loads(raw.split("\n\nACTUAL COMPILED TERMINAL TOPOLOGY", 1)[0])
+        assert "conversionDelta" in focus["absent_response_field_names"]
+        gap = next(item for item in focus["potential_uncovered_response_fields"] if item["field"] == "conversionDelta")
+        assert gap["sources"][0]["text"] == source_rule
+        assert "potential coverage gaps" in focus["instruction"]
+        return {"issues": [{"location": "lookup.task_message", "problem": "The conversion notice is absent.",
+                            "correction": "Implement the positive-value conversion notice.",
+                            "evidence": {"document": "BRIEF.md", "quote": source_rule}}]}
+
+    gateway = make_gateway(responders={"ServicePlan": lambda call: data, "ServicePolicyReview": review})
+    update = await service_workflow._body({"slot": "elm", "bundle": bundle.model_dump(mode="json"),
+                                         "tool_api": api.model_dump(mode="json"), "service_mode": True},
+                                        make_ctx(llm=gateway))
+    assert update["failed"] == "service_workflow" and update["service_policy_repair_pending"] is True
+    assert update["compiled"] == {} and "conversion notice is absent" in update["compile_feedback"]
 
 
 async def test_planner_reads_original_contract_and_reference_without_duplicates(

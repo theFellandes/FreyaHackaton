@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "run_id": "2026-10-11T17-53-11-632Z-7f920f26",
+  "base_url": "http://127.0.0.1:8787",
+  "customer_fixture_sha256": "009d3609d33a3b001ce04861822cd2592cb5482a7a5b0a5cb69442592889aa65",
+  "session_id": "workerd-2026-10-11T17-53-11-632Z-7f920f26",
+  "other_session_id": "workerd-other-2026-10-11T17-53-11-632Z-7f920f26",
+  "slow_session_id": "workerd-slow-2026-10-11T17-53-11-632Z-7f920f26",
+  "before_report": "evidence/workerd-2026-10-11T17-53-11-632Z-7f920f26.before.json",
+  "after_report": "evidence/workerd-2026-10-11T17-53-11-632Z-7f920f26.after.json"
+}

@@ -26,5 +26,11 @@
   "version": 5,
   "workspace_id": "01e07b69-486a-4070-a7fd-3a2fc3120bf2",
   "inputs_sha": "219ca7c6da82068925046080828f2b5581cf65e2c018b6cc4f1247e12ee96771"
+ },
+ "final-statement": {
+  "workflow_id": "fd2bd1fc-afa1-407f-a8b8-59d7eb9ba2f1",
+  "agent_id": "80ed174e-a9b3-420f-8e69-3cd1cea4da00",
+  "workspace_id": "01e07b69-486a-4070-a7fd-3a2fc3120bf2",
+  "inputs_sha": "0bc316bb887936d864980dc287609a352d81d57763b0d922b87b7266e649ae08"
  }
 }

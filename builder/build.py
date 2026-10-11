@@ -167,6 +167,10 @@ def build_parser() -> argparse.ArgumentParser:
         help="maximum policy repair attempts (non-negative integer; default: configured settings)",
     )
     parser.add_argument(
+        "--openai-strong-model", metavar="MODEL",
+        help="OpenAI model for strong model calls (default: configured settings)",
+    )
+    parser.add_argument(
         "--fake-llm", dest="fake_llm", metavar="DIR", help="answer model calls from fixture files in DIR"
     )
     return parser
@@ -192,6 +196,11 @@ def settings_from_args(args: argparse.Namespace, base: Settings | None = None) -
         if args.max_policy_repairs < 0:
             raise InputError("--max-policy-repairs must be a non-negative integer")
         updates["max_policy_repairs"] = args.max_policy_repairs
+    if args.openai_strong_model is not None:
+        model = args.openai_strong_model.strip()
+        if not model:
+            raise InputError("--openai-strong-model must be a nonblank model name")
+        updates["openai_strong_model"] = model
     if args.fake_llm:
         updates["builder_track"] = "compiled"  # a fixture run must never start a real agentic session
     return settings.model_copy(update=updates) if updates else settings

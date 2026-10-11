@@ -1,0 +1,19 @@
+[
+  {
+    "id": "e03f0ee1-0e8c-4d39-83a2-042219481a67",
+    "source": "wrangler",
+    "strategy": "percentage",
+    "author_email": "oguzhangungor449@gmail.com",
+    "annotations": {
+      "workers/message": "Released statement service mock: fixture and pe...",
+      "workers/triggered_by": "upload"
+    },
+    "versions": [
+      {
+        "version_id": "af006baa-a9c0-4dab-bb5a-3b7a0ead0d14",
+        "percentage": 100
+      }
+    ],
+    "created_on": "2026-10-11T17:55:41.869847Z"
+  }
+]

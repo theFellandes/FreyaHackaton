@@ -1,6 +1,6 @@
 {
-  "checked_at_utc": "2026-10-11T18:21:03.660946Z",
-  "status": "preparation_incomplete",
+  "checked_at_utc": "2026-10-11T19:26:29.676144+00:00",
+  "status": "stopped_at_user_request",
   "ready_to_submit": false,
   "official_source": "https://www.freyavoice.ai/hackathon#submit",
   "release_utc": "2026-10-11T17:00:00Z",
@@ -19,12 +19,12 @@
   "email_sent": false,
   "blockers": [
     {
-      "id": "builder_live_verification",
-      "detail": "Generic request/source fixes pass; v4 compiles. Fix generic response dependencies and trusted variable interpolation, then capture real deployment and inspect actual Freya conversations."
+      "id": "accepted_final_agent",
+      "detail": "Current captured candidate was interrupted after policy review reported six issues. No accepted replacement export or live phone verification exists. Existing exported workflow is the earlier failed-live candidate."
     },
     {
-      "id": "selected_final_run",
-      "detail": "Select verified platform export and matching complete builder trace, seal, commit and push the packet."
+      "id": "final_packet",
+      "detail": "Successful live-verified run, exact sealed workflow/trace, artifact commit approved by user and final submission JSON remain unfinished."
     }
   ],
   "historical_files": "The former two-brief draft/readiness and docs are preserved under submission/history; draft.json now uses the eight-field one-case form.",
@@ -73,7 +73,7 @@
     "submission_tool_tests_passed": 31,
     "mock_guard_tests_passed": 9,
     "adapter_tests_passed": 213,
-    "adapter_source_moving": true,
+    "adapter_source_moving": false,
     "known_secret_values_printed": false,
     "report": "submission/FINAL_AUDIT.md",
     "contract_tests_recheck_passed": 24,
@@ -82,24 +82,47 @@
     "mock_contract_tests_passed": 31,
     "fixture_http_comparisons": 1234,
     "offline_suite": {
-      "passed": 3605,
-      "failed": 5,
+      "source_commit": "dd666c1ad321b8eca72e5eb16f98db94ded08d0f",
+      "passed": 3683,
+      "failed": 0,
       "skipped": 3,
       "xfailed": 4,
-      "duration_s": 296.26,
-      "failure_scope": "Visualization metadata and stale builder diagrams; all45 visualization tests passed after generic fix."
+      "duration_s": 221.77,
+      "report": "submission/evidence/final-offline-suite-20261011T1914.json",
+      "log": "submission/evidence/final-offline-suite-20261011T1914.log"
     },
     "dry_run_v4": {
       "status": "dry_run",
       "attempts": 2,
       "static_checks_passed": true,
       "semantic_review": "Found missing response-fetch branch, timestamp interpolation, and incomplete policy branches; generic fixes in progress."
+    },
+    "service_context_tests_passed": 32,
+    "captured_v2": {
+      "run_id": "e75402da8928",
+      "status": "failed_before_deploy",
+      "policy_review_blocking_issues": 8,
+      "source_commit": "299cf33",
+      "capture": "submission/runs/20261011T183544442048Z-b6e7f49cf18046c0b0ca6e09317a47e9/run.json"
+    },
+    "live_phone_v1": {
+      "accepted": false,
+      "reason": "Flat tool response leaves did not preserve a complete result for the next conversation stage; generic response-context hook added and awaiting live verification."
+    },
+    "current_capture": {
+      "run_id": "5fee72c60c8c",
+      "capture": "submission/runs/20261011T192226100577Z-e1099c7678b5405b8216ff9463f6b3a3/run.json",
+      "status": "interrupted_at_user_request_before_deployment",
+      "source_commit": "56a261c1895c89904a67248e111b584ec4f88785",
+      "policy_review_reported_issues": 6,
+      "eligible_for_submission": false
     }
   },
   "source_checkpoint": {
     "commit": "3cec449a841eba5a40205c77f2d69f512174d145",
-    "kind": "Preserved pre-release checkpoint; later user checkpoint2189cfe also retained. Reviewed final source checkpoint pending.",
-    "audit_snapshot": "submission/evidence/pre-release-audit-source.json"
+    "kind": "Reviewed generic final builder source frozen; pre-release checkpoints preserved.",
+    "audit_snapshot": "submission/evidence/pre-release-audit-source.json",
+    "latest_reviewed_final_source": "56a261c1895c89904a67248e111b584ec4f88785"
   },
   "cost_constraint": "Use Cloudflare Free services; no paid upgrade authorized or performed.",
   "case_folder": "submission/case",
@@ -115,5 +138,10 @@
     "customer_isolation_verified": true,
     "storage": "SQLite Durable Objects",
     "paid_upgrade_performed": false
+  },
+  "user_authorization": {
+    "commits_pushes_require_explicit_user_approval": true,
+    "stopped_at": "2026-10-11T19:26:29.676144+00:00",
+    "no_further_commits_or_pushes_made_after_instruction": true
   }
 }

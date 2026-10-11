@@ -1,0 +1,1 @@
+This folder contains the built output assets for the worker "freya-hackathon-bank-oguzhan" generated at 2026-10-11T17:53:22.111Z.

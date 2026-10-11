@@ -65,6 +65,27 @@ def test_defaults_come_from_the_settings(settings: Any) -> None:
     assert args.max_policy_repairs is None
 
 
+def test_strong_model_flag_overrides_only_its_setting(settings: Any, monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("OPENAI_STRONG_MODEL", "environment-model")
+    base = settings.model_copy(update={"openai_strong_model": "configured-model"})
+    args = build_parser().parse_args(["b.md", "api.json", "--openai-strong-model", " gpt-6.1-sol "])
+    effective = settings_from_args(args, base)
+    assert effective.openai_strong_model == "gpt-6.1-sol"
+    assert base.openai_strong_model == "configured-model"
+    assert effective.model_dump(exclude={"openai_strong_model"}) == base.model_dump(exclude={"openai_strong_model"})
+    assert settings_from_args(build_parser().parse_args(["b.md", "api.json"]), base) is base
+    import os
+
+    assert os.environ["OPENAI_STRONG_MODEL"] == "environment-model"
+
+
+@pytest.mark.parametrize("value", ["", " \t "])
+def test_strong_model_flag_rejects_blank_values(settings: Any, value: str) -> None:
+    args = build_parser().parse_args(["b.md", "api.json", "--openai-strong-model", value])
+    with pytest.raises(InputError, match="nonblank model name"):
+        settings_from_args(args, settings)
+
+
 @pytest.mark.parametrize("limit", [0, 4])
 def test_policy_repair_flag_overrides_only_its_existing_setting(settings: Any, limit: int) -> None:
     base = settings.model_copy(update={"max_policy_repairs": 7})

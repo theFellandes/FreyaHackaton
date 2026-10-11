@@ -102,8 +102,17 @@ and source-bound call variables automatically, even if plan prose omits them.
 A literal compiled body default is already supplied; do not demand another plan
 binding for it. A field's own unresolved {{field}} placeholder is model-selected,
 not a fixed value: it still needs actionable instructions when policy restricts
-its choice among several enum values. Do not mistake compiler transport/context
-mechanisms for undocumented background integration capabilities.
+its choice among several enum values. Model-selected arguments are an intentional
+runtime mechanism: the model supplies them from the available conversation/tool
+data according to the standalone stage and when_to_call instructions. An explicit
+mapping to the exact returned source field, selected item, permitted enum value
+or confirmed customer choice is actionable even without a compiler binding.
+Do not report a missing input solely because its body contains its own placeholder
+or because it lacks a deterministic compiler binding. Check the actual parameter
+schema, runtime mapping, source availability on that path and policy constraints;
+flag absent, ambiguous, contradictory or unavailable mappings. Do not demand a
+compiler binding facility that the provided schema does not expose. Do not mistake
+compiler transport/context mechanisms for undocumented background integrations.
 The review also includes ACTUAL COMPILED TERMINAL TOPOLOGY. Judge its real nodes
 and transition targets: the reserved end_call exit is compiled automatically to
 a silent end_call terminal with endedReason=end_call. It must not be declared
@@ -112,6 +121,15 @@ their own terminal nodes and endedReason values. Do not report a missing termina
 solely because end_call is absent from the plan's outcomes list; verify the
 compiled topology. Still check that its incoming exits and required prior spoken
 utterances implement the authoritative source conditions.
+Inspect the exported function metadata as well as the node's handler. Distinct
+source-grounded destinations can use the same end_call function with different
+endedReason values; that is a distinct platform outcome, not proof they all
+disconnect with the same reason. Where the original contract leaves physical
+queueing or IVR routing outside the assistant's integration, require the truthful
+destination metadata and prescribed prior speech, not an invented bank transfer
+API or hidden routing capability. Do not claim external physical transfer was
+verified merely because the platform outcome metadata exists. If actual metadata
+is absent, indistinguishable or conflicts with the required destination, flag it.
 
 For EVERY issue give a precise candidate location, the concrete defect, and an
 actionable correction grounded in the actual sources/API. Include ONE short,
