@@ -1,0 +1,43 @@
+{
+  "ready": false,
+  "issues": [
+    {
+      "field": "commit",
+      "message": "A nonempty form field is required."
+    },
+    {
+      "field": "workflows.hidden-1",
+      "message": "A repository-relative file path is required."
+    },
+    {
+      "field": "traces.hidden-1",
+      "message": "A repository-relative file path is required."
+    },
+    {
+      "field": "build_results.hidden-1",
+      "message": "A repository-relative file path is required."
+    },
+    {
+      "field": "workflows.hidden-2",
+      "message": "A repository-relative file path is required."
+    },
+    {
+      "field": "traces.hidden-2",
+      "message": "A repository-relative file path is required."
+    },
+    {
+      "field": "build_results.hidden-2",
+      "message": "A repository-relative file path is required."
+    },
+    {
+      "field": "commit",
+      "message": "Pending commit: supply a local commit SHA after reviewing and committing the packet."
+    }
+  ],
+  "warnings": [
+    "Local evidence cannot establish use of the actual hidden briefs, hidden-customer scores, current remote publication, or complete secret redaction.",
+    "Exports without an embedded version rely on the corresponding build and trace; no remote read-back is performed."
+  ],
+  "checked_files": [],
+  "commit_checked": false
+}

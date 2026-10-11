@@ -1,43 +1,36 @@
 {
+  "checked_at_utc": "2026-10-11T16:29:40.526058Z",
+  "schema": "one-case-final",
   "ready": false,
   "issues": [
     {
-      "field": "commit",
-      "message": "A nonempty form field is required."
-    },
-    {
-      "field": "workflows.hidden-1",
-      "message": "A repository-relative file path is required."
-    },
-    {
-      "field": "traces.hidden-1",
-      "message": "A repository-relative file path is required."
-    },
-    {
-      "field": "build_results.hidden-1",
-      "message": "A repository-relative file path is required."
-    },
-    {
-      "field": "workflows.hidden-2",
-      "message": "A repository-relative file path is required."
-    },
-    {
-      "field": "traces.hidden-2",
-      "message": "A repository-relative file path is required."
-    },
-    {
-      "field": "build_results.hidden-2",
-      "message": "A repository-relative file path is required."
+      "field": "members.0.email",
+      "message": "supply the real member email"
     },
     {
       "field": "commit",
-      "message": "Pending commit: supply a local commit SHA after reviewing and committing the packet."
+      "message": "supply the full 40- or 64-character local commit SHA after committing the selected packet"
+    },
+    {
+      "field": "workflow",
+      "message": "supply the selected sealed artifact's repository-relative path"
+    },
+    {
+      "field": "trace",
+      "message": "supply the selected sealed artifact's repository-relative path"
+    },
+    {
+      "field": "mock_url",
+      "message": "supply the deployed public HTTPS Worker origin without credentials, query or fragment"
+    },
+    {
+      "field": "selection",
+      "message": "A sealed successful final run is still required."
     }
   ],
-  "warnings": [
-    "Local evidence cannot establish use of the actual hidden briefs, hidden-customer scores, current remote publication, or complete secret redaction.",
-    "Exports without an embedded version rely on the corresponding build and trace; no remote read-back is performed."
-  ],
   "checked_files": [],
-  "commit_checked": false
+  "commit_checked": false,
+  "warnings": [
+    "Preparation audit only; no selected final run, artifact commit or final submission exists."
+  ]
 }

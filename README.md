@@ -10,17 +10,23 @@ code, not model judgement. See [How it works](docs/HOW_IT_WORKS.md).
 brief(s) + tool API -> rule ledger -> policy IR -> compiled workflow -> checks + guards -> Freya (save, export) -> self-test -> trace
 ```
 
-## Hidden-brief day: start here
+## Final case: start here
 
-**[docs/FINAL_RUNBOOK.md](docs/FINAL_RUNBOOK.md)** is the complete procedure for Sunday 11 October 2026: preflight,
-where to save the emailed files, the build commands, how to read the result, packaging, commit and the email. Hidden
-briefs arrive at 17:00 UTC (20:00 Istanbul); submission closes at 20:00 UTC (23:00 Istanbul).
+**[submission/FINAL_RUNBOOK.md](submission/FINAL_RUNBOOK.md)** is the current procedure for the one-case Turkish final
+on Sunday 11 October 2026. The final ZIP opens at 17:00 UTC (20:00 Istanbul); submission closes at 20:00 UTC
+(23:00 Istanbul). Read BRIEF.md, then README.md, implement and verify the bank mock on Cloudflare Workers, then run
+the builder. Submit one exported workflow and that run's complete trace using the eight-field final form.
 
-The build command, in Git Bash from the repository root:
+The final builder interface, from the repository root after the mock is deployed:
 
 ```sh
-python3 builder/build.py briefs/hidden-1.md briefs/hidden-1.openapi.json 2>&1 | tee traces/hidden-1.log
+python3 builder/build.py {case_folder} {mock_url}
 ```
+
+On this Windows machine, use `submission/runtime/Scripts/python.exe` explicitly. Capture the selected run with
+`submission/tools/capture_run.py`; the exact PowerShell procedure is in
+[submission/tools/README.md](submission/tools/README.md). The old two-brief form and `builder.submission` helper
+are historical. The release follow-up is paused at the user's request; follow the runbook manually.
 
 ## Status (11 October 2026)
 
@@ -41,9 +47,8 @@ Known limits: [Quality review](results/QUALITY_REVIEW.md), [Critical gaps](docs/
 
 ## Hackathon contract
 
-- The organisers run `python3 builder/build.py {brief_path} {tool_api_path}`. Several brief files may be given (Brief B
-  builds on Brief A); a directory is expanded. One run may take 30 minutes including self-tests; the builder stops
-  itself at 28.
+- The final interface is `python3 builder/build.py {case_folder} {mock_url}`. The earlier brief/OpenAPI interface
+  remains available for practice. One run may take 30 minutes including self-tests; the builder stops itself at 28.
 - Progress goes to stderr. The **last line of stdout** is one JSON line with `slot`, `workflow_id`, `agent_id`,
   `version`, `exported`, `export_ok`, `trace`, `status`, `tests`, `errors` and `policy_issues`. Exit code 0 means
   deployed with a verified export (or a requested dry run); 2 means anything else.
@@ -55,14 +60,15 @@ Known limits: [Quality review](results/QUALITY_REVIEW.md), [Critical gaps](docs/
 
 ## Quick start
 
-**This machine.** The repository `.venv` (Python 3.13) has everything. `python3` here is 3.14, which the builder does
-not support; it hands the run over to the `.venv` by itself and says so on stderr. Use Git Bash.
+**This machine.** `submission/runtime/Scripts/python.exe` is the supported Python 3.12 runtime with builder
+dependencies. The root `.venv` currently cannot start; use the explicit runtime for the final. The following commands
+are practice examples, using that runtime in PowerShell:
 
 ```sh
-python3 builder/build.py briefs/brief-a.md tools/openapi.json --dry-run --fake-llm tests/fixtures/policy   # offline, seconds
-python3 builder/build.py briefs/brief-a.md tools/openapi.json --dry-run       # real model calls, no Freya call
-python3 builder/build.py briefs/brief-a.md tools/openapi.json                 # build, deploy, export, self-test
-.venv/Scripts/python.exe builder/build.py briefs/brief-a.md briefs/brief-b.md tools/openapi.json   # explicit interpreter
+submission/runtime/Scripts/python.exe builder/build.py briefs/brief-a.md tools/openapi.json --dry-run --fake-llm tests/fixtures/policy   # offline, seconds
+submission/runtime/Scripts/python.exe builder/build.py briefs/brief-a.md tools/openapi.json --dry-run       # real model calls, no Freya call
+submission/runtime/Scripts/python.exe builder/build.py briefs/brief-a.md tools/openapi.json                 # build, deploy, export, self-test
+submission/runtime/Scripts/python.exe builder/build.py briefs/brief-a.md briefs/brief-b.md tools/openapi.json
 ```
 
 **A clean machine.** Python 3.11 to 3.13 and [uv](https://docs.astral.sh/uv/):

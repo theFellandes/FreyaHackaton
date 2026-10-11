@@ -7,15 +7,15 @@ Preparation is incomplete. The final kit opens at **17:00 UTC / 20:00 Istanbul**
 ## Before release
 
 - [ ] Provide the member email for the official members field.
-- [ ] Configure Cloudflare access locally or sign in through its dashboard. Keep API tokens out of chat, traces and Git.
+- [x] Wrangler and Codex's Cloudflare MCP are authenticated. See [CLOUDFLARE_SETUP.md](CLOUDFLARE_SETUP.md) for future login checks. Keep API tokens out of chat, traces and Git.
 - [x] Create an isolated supported builder runtime. submission/runtime/Scripts/python.exe uses Python 3.12.14 with the existing requirements installed; pip check and builder --help passed. The original .venv remains preserved with its missing base interpreter.
-- [ ] Resolve the generic builder interface for a case folder and mock URL. Current builder/build.py expects an OpenAPI file, not a URL. It also requires exactly one OpenAPI in a folder and treats all other files as policy material.
-- [ ] Check generic ingestion of Markdown, Word, PDF and Excel. README inventory, service contract, customer fixtures and example conversations have different roles.
-- [ ] Ensure tools use the supplied mock origin and the actual contract authentication. Current tool compilation uses OpenAPI server URLs and does not automatically send a team-key header.
+- [x] The current builder accepts a case folder and mock URL, classifies document roles and can derive OpenAPI from a prose service contract. The adaptation is still being checked by Claude; review [FINAL_AUDIT.md](FINAL_AUDIT.md) before treating it as verified.
+- [ ] Confirm Markdown, Word, PDF and Excel extraction on the released inventory. Compare every derived HTTP method/path and request/response field with the original service contract before accepting the run.
+- [ ] Ensure tools use the supplied mock origin and the actual contract authentication. Fixed contract header values are compiled; unspecified credentials and security schemes are not automatically filled from FREYA_BANK_TEAM_KEY. Verify the final contract's intended binding.
 - [ ] Record the builder source snapshot before 17:00. Preserve existing work; never mass-stage unrelated changes.
 - [ ] Confirm the recipient before sending. yavuz@freyavoice.ai is the entrant's candidate; the supplied emails do not explicitly designate the submission address. The user will send the prepared email themselves.
 
-These are concrete readiness blockers. The existing two-brief builder.submission checker must not be used to create the new final form.
+Unchecked items are readiness blockers. The existing two-brief builder.submission checker must not be used to create the new final form. Use Cloudflare Free services for the mock; this audit has not enabled a paid plan.
 
 ## At 20:00 Istanbul
 
@@ -28,11 +28,13 @@ These are concrete readiness blockers. The existing two-brief builder.submission
 
 ## Builder runs and selection
 
-Run one command with the released case folder and deployed mock URL after generic interface support is ready. The official example is:
+Run one command with the released case folder and deployed mock URL after the adaptation checks pass. The official example is:
 
     python3 builder/build.py {case_folder} {mock_url}
 
 Use tools/capture_run.py to keep everything printed to stdout and stderr in a unique raw trace and record the exact command, UTC times and exit status. Its --help describes the actual arguments. The wrapper is only capture infrastructure; it is not a builder.
+
+Use `submission/runtime/Scripts/python.exe` explicitly on this Windows machine. The exact capture, readiness and sealing commands are in [tools/README.md](tools/README.md). Preserve the downloaded originals under incoming, and run from a reviewed case folder whose exact input files can be committed; packet validation requires the case files and deployment evidence in the submitted commit.
 
 Preserve every run. Select one successful run whose workflow export, builder result, platform IDs and trace agree. The builder already calls freya.export_workflow through its Freya client. If export did not succeed, retry through the builder and capture a new run. Do not edit the phone agent, export, policy, tool binding or prompt after the selected run.
 
@@ -56,6 +58,7 @@ Use tools/seal_run.py to create an immutable copy of the selected trace/export/r
 | Location | Purpose |
 |---|---|
 | final.template.json | New official single-case form with deliberately empty final values |
+| draft.json | Working single-case form; final values stay empty until evidence exists |
 | preparation-status.json | Dated actual readiness and blockers |
 | tools/download_release.py | Guarded final-kit download and extraction |
 | tools/capture_run.py | Complete builder console capture in separate runs |
@@ -65,8 +68,8 @@ Use tools/seal_run.py to create an immutable copy of the selected trace/export/r
 | incoming | Immutable release downloads and extraction |
 | runs | Private raw builder captures |
 | sealed | Reviewed selected artifact copies and evidence |
-| draft.json and old readiness files | Historical two-brief preparation; superseded for this final |
+| history and old verification files | Historical two-brief preparation; superseded for this final |
 
-The release follow-up is scheduled for 20:00 Istanbul. Keep this computer on and Codex running for local scheduled work. It will prepare the packet and email template; the user will send the email themselves.
+The release follow-up is **paused at the user's request**. Follow this runbook manually at 20:00 Istanbul. The user sends the email themselves.
 
 No final workflow, final trace, deployed mock, artifact commit or sent email exists yet.

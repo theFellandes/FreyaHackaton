@@ -1,5 +1,5 @@
 {
-  "checked_at_utc": "2026-10-11T14:58:18.3812468Z",
+  "checked_at_utc": "2026-10-11T16:29:40.526058Z",
   "status": "preparation_incomplete",
   "ready_to_submit": false,
   "official_source": "https://www.freyavoice.ai/hackathon#submit",
@@ -17,35 +17,38 @@
   "email_sent": false,
   "blockers": [
     {
-      "id": "cloudflare_access",
-      "detail": "No configured Cloudflare token/account ID or usual Wrangler authentication found; browser access unverified."
-    },
-    {
       "id": "member_email",
-      "detail": "Official members field needs entrant email."
+      "detail": "The working final form still needs the entrant email; user will send the email."
     },
     {
-      "id": "builder_interface",
-      "detail": "Existing CLI accepts brief paths/OpenAPI, not final folder plus mock URL."
+      "id": "adaptation_final_check",
+      "detail": "Claude is still editing generic adapter/tests. 213 focused offline tests passed on the loaded snapshot; exact method/path grounding and final lint need rechecking after changes settle."
     },
     {
       "id": "tool_endpoint_auth",
-      "detail": "Current compiler uses OpenAPI server origin; team key is not automatically injected into agent tools."
+      "detail": "Compiled tools include fixed contract headers. Dynamic credentials/security schemes are not automatically populated; validate against the final contract."
     },
     {
       "id": "released_contract",
-      "detail": "Final service contract, fixtures and mixed-format documents available only after release."
+      "detail": "Final service contract, fixtures and mixed-format documents become available at 17:00 UTC."
+    },
+    {
+      "id": "final_deployment_and_run",
+      "detail": "Implement and verify the actual mock, capture a successful final run, seal export/trace and commit the evidence."
     }
   ],
-  "historical_files": "Old draft/readiness are for two briefs and cannot represent this final.",
+  "historical_files": "The former two-brief draft/readiness and docs are preserved under submission/history; draft.json now uses the eight-field one-case form.",
   "notes": [
-    "No bank contract invented; no final builder run, workflow edit, deployment, commit or email claimed."
+    "No final case obtained before release; no final bank contract, workflow, trace or sent email invented.",
+    "Cloudflare skills installed globally and MCP registered/authenticated; Wrangler authenticated separately.",
+    "The user sends the email. Member email and recipient confirmation remain unresolved."
   ],
   "release_followup": {
     "intended_time": "2026-10-11T17:00:00Z",
     "id": "prepare-freya-final-at-20-00-istanbul",
-    "status": "ACTIVE",
-    "one_run": true
+    "status": "PAUSED",
+    "one_run": true,
+    "reason": "Explicit user request in this chat: Keep it paused."
   },
   "runtime": {
     "path": "submission/runtime/Scripts/python.exe",
@@ -60,5 +63,29 @@
     "candidate_recipient": "yavuz@freyavoice.ai",
     "mode": "user_sends",
     "template": "submission/EMAIL_DRAFT.md"
-  }
+  },
+  "cloudflare_access": {
+    "wrangler_authenticated": true,
+    "auth_type": "OAuth Token",
+    "account_count": 1,
+    "codex_mcp_registered": true,
+    "codex_mcp_authenticated": true,
+    "paid_plan_enabled_by_this_audit": false,
+    "note": "Credentials were not printed or committed; no bank deployment was performed."
+  },
+  "verification": {
+    "submission_tool_tests_passed": 31,
+    "mock_guard_tests_passed": 9,
+    "adapter_tests_passed": 213,
+    "adapter_source_moving": true,
+    "known_secret_values_printed": false,
+    "report": "submission/FINAL_AUDIT.md",
+    "contract_tests_recheck_passed": 24
+  },
+  "source_checkpoint": {
+    "commit": "3cec449a841eba5a40205c77f2d69f512174d145",
+    "kind": "Existing pre-release checkpoint; current Claude changes remain uncommitted.",
+    "audit_snapshot": "submission/evidence/pre-release-audit-source.json"
+  },
+  "cost_constraint": "Use Cloudflare Free services; no paid upgrade authorized or performed."
 }

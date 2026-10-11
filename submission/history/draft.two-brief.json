@@ -1,0 +1,18 @@
+{
+  "team": "Oğuzhan Güngör",
+  "repo": "https://github.com/theFellandes/FreyaHackaton",
+  "commit": "",
+  "run_command": "python3 builder/build.py {brief_path} {tool_api_path}",
+  "workflows": {
+    "hidden-1": "",
+    "hidden-2": ""
+  },
+  "traces": {
+    "hidden-1": "",
+    "hidden-2": ""
+  },
+  "build_results": {
+    "hidden-1": "",
+    "hidden-2": ""
+  }
+}
