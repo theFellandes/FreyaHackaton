@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import json
+from pathlib import Path
 from typing import Any
 
 import pytest
@@ -79,8 +81,29 @@ def test_post_hook_messages_with_braces_stay_brace_free() -> None:
         ("money", 99.999, 100.0),
         ("date_iso", "2026-10-16T00:00:00", "2026-10-16"),
         ("digits", "4-4 7 1", "4471"),
-        ("time_hhmm", "9.5", "09:5"),
+        ("time_hhmm", "9.5", "9.5"),  # AUD-29: one minute digit cannot be read for certain - never sent as 09:5
         ("time_hhmm", "11:00:00", "11:00"),
+        # AUD-29: am/pm, bare hours, h / . separators and HHMM are read; anything uncertain is left for the guard
+        ("time_hhmm", "3:30 PM", "15:30"),
+        ("time_hhmm", "3.30pm", "15:30"),
+        ("time_hhmm", "12:15 am", "00:15"),
+        ("time_hhmm", "12 pm", "12:00"),
+        ("time_hhmm", "11", "11:00"),
+        ("time_hhmm", "11am", "11:00"),
+        ("time_hhmm", "7 p.m.", "19:00"),
+        ("time_hhmm", "15h30", "15:30"),
+        ("time_hhmm", "1530", "15:30"),
+        ("time_hhmm", "9.30", "09:30"),
+        ("time_hhmm", "eleven", "eleven"),
+        ("time_hhmm", "25:00", "25:00"),
+        ("time_hhmm", "13pm", "13pm"),
+        # AUD-50: an unpadded or slash date is rebuilt (day first by default); words are never cut to 10 characters
+        ("date_iso", "2026-11-2", "2026-11-02"),
+        ("date_iso", "2026/11/02", "2026-11-02"),
+        ("date_iso", "02/11/2026", "2026-11-02"),
+        ("date_iso", "2026-11-02T00:00", "2026-11-02"),
+        ("date_iso", "2 November 2026", "2 November 2026"),
+        ("date_iso", "02/11/26", "02/11/26"),
         ("token", " Refused ", "refused"),
         ("text", "  hi ", "hi"),
     ],
@@ -105,11 +128,16 @@ def test_pre_hook_product_id_completes_a_bare_number() -> None:
         assert run_hook(code, vars=state, config={"body": {"product_id": raw}})["config"]["body"]["product_id"] == expected
 
 
-def test_notes_log_hook_appends_one_entry_per_call() -> None:
+def test_notes_log_hook_appends_only_after_each_acknowledgment() -> None:
     code = hooks.pre_hook_notes_log()
     first = run_hook(code, vars={"product_ids": "p1,p2"}, config={"body": {"product_id": "1", "reason": "Refused"}})
+    assert "notes_log" not in first["vars"]
+    first = run_hook(hooks.post_hook_notes_log(hooks.flag_true("ok")), vars=first["vars"],
+                     result={"status": "success", "data": {"ok": True}})
     assert first["vars"]["notes_log"] == "p1:refused;"
     second = run_hook(code, vars=first["vars"], config={"body": {"product_id": "p2", "reason": "paid"}})
+    second = run_hook(hooks.post_hook_notes_log(hooks.flag_true("ok")), vars=second["vars"],
+                      result={"status": "success", "data": {"ok": True}})
     assert second["vars"]["notes_log"] == "p1:refused;p2:paid;"
     unchanged = run_hook(code, vars={"notes_log": "x:y;"}, config={"body": {"product_id": "p1"}})
     assert unchanged["vars"]["notes_log"] == "x:y;"
@@ -124,7 +152,7 @@ def test_notes_log_hook_appends_one_entry_per_call() -> None:
         ("DMY", "dob", "14 March 1988", "14 March 1988"),
         ("MDY", "dob", "03/14/1988", "1988-03-14"),
         ("DMY", "pin", "4-4 7 1", "4471"),
-        ("DMY", "year", "nineteen 88", "88"),
+        ("DMY", "year", "nineteen 88", "nineteen 88"),  # AUD-15: never cut to "88", which cannot be right
         ("DMY", "other", "keep this", "keep this"),
     ],
 )
@@ -140,7 +168,8 @@ def test_join_hooks_skips_empty_and_stays_valid() -> None:
     assert joined.count("try:") >= 2 and "{{" not in joined
     assert hooks.join_hooks("", "  ") == ""
     out = run_hook(joined, vars={}, config={"body": {"a": " x ", "product_id": "p1", "reason": "paid"}})
-    assert out["config"]["body"]["a"] == "x" and out["vars"]["notes_log"] == "p1:paid;"
+    assert out["config"]["body"]["a"] == "x" and out["vars"]["note_pending"] == "p1:paid"  # staged, not yet logged
+    assert "notes_log" not in out["vars"]
 
 
 def test_promise_guard_without_date_checks_blocks_amounts_only() -> None:
@@ -155,7 +184,8 @@ def test_promise_guard_without_date_checks_blocks_amounts_only() -> None:
     low = run_hook(code, vars=dict(facts), config={"url": "u", "body": {"product_id": "p1", "amount": 5, "date": "2026-10-14"}})
     assert low["config"]["url"] == ""
     assert low["vars"]["promise_guard_say"] == (
-        "I am sorry, for your card I can record an amount from 10.00 to 50.00 dollars. Which amount can you pay?")
+        "I am sorry, I cannot record 5.00 dollars for your card. The lowest amount I can record is 10.00 dollars. "
+        "Could you pay 10.00 dollars?")
 
 
 def test_the_guard_default_sentence_is_exported() -> None:
@@ -209,6 +239,8 @@ def test_product_ids_are_matched_ignoring_case_spaces_and_dashes() -> None:
 def test_the_notes_log_uses_the_canonical_spellings() -> None:
     code = hooks.pre_hook_notes_log("product_id", "reason", reasons=["Refused", "Paid"])
     out = run_hook(code, vars={"product_ids": "CC-4821"}, config={"body": {"product_id": "cc-4821", "reason": "paid"}})
+    out = run_hook(hooks.post_hook_notes_log(hooks.flag_true("ok")), vars=out["vars"],
+                   result={"status": "success", "data": {"ok": True}})
     assert out["vars"]["notes_log"] == "CC-4821:Paid;"
 
 
@@ -253,3 +285,97 @@ def test_the_guard_finds_the_product_whatever_its_case() -> None:
     out = run_hook(code, vars=facts, config={"url": "u", "body": {"product_id": "cc-4821", "amount": 20,
                                                                  "date": "2026-10-15"}})
     assert out["config"]["url"] == "u" and out["vars"]["promise_guard"] == "ok"
+
+
+# ---- audit F17 / C-17: one immutable acknowledged promise per product -------------------------------------------------------------
+
+
+def test_the_guard_blocks_an_acknowledged_product_and_stages_a_new_one() -> None:
+    code = hooks.pre_hook_promise_guard("product_id", "amount", "date", recorded_say="Use the app to change it.")
+    facts = {**GUARD_FACTS, "product_ids": "p1,p2", "allowed_p2": "2026-10-14", "p2_floor": "10.00",
+             "p2_past_due": "50.00", "promised_products": "p1", "promise_pending_product": "stale"}
+    body = {"product_id": "p1", "amount": 20, "date": "2026-10-14"}
+    blocked = run_hook(code, vars=dict(facts), config={"url": "u", "body": dict(body)})
+    assert blocked["config"]["url"] == "" and blocked["vars"]["promise_pending_product"] == ""
+    assert blocked["vars"]["promise_guard"] == "blocked: a promise for p1 is already recorded and cannot be changed or recorded again"
+    assert blocked["vars"]["promise_guard_say"] == (
+        "I am sorry, the payment promise for your card is already recorded and cannot be changed or recorded again in "
+        "this call. Use the app to change it.")
+    other = run_hook(code, vars=dict(facts), config={"url": "u", "body": {**body, "product_id": "p2"}})
+    assert other["config"]["url"] == "u" and other["vars"]["promise_pending_product"] == "p2"
+
+
+def test_the_guard_can_allow_a_second_promise() -> None:
+    code = hooks.pre_hook_promise_guard("product_id", "amount", "date", once_per_product=False)
+    out = run_hook(code, vars={**GUARD_FACTS, "promised_products": "p1"}, config={"url": "u", "body": {
+        "product_id": "p1", "amount": 20, "date": "2026-10-14"}})
+    assert out["config"]["url"] == "u" and out["vars"]["promise_guard"] == "ok"
+
+
+def test_the_promise_log_commits_only_an_acknowledged_staged_product() -> None:
+    code = hooks.post_hook_promise_log(hooks.flag_true("ok"))
+    staged = {"promise_pending_product": "p1", "promised_products": "p2"}
+    for result in ({"status": "success", "data": {"ok": False}}, {"status": "error", "data": {"ok": True}},
+                   {"status": "error"}, {"status": "success", "data": {}}, {}):
+        out = run_hook(code, vars=dict(staged), result=dict(result))
+        assert out["vars"]["promised_products"] == "p2", result
+        # a refused request can never be acknowledged later by a stray success result of the same batch (AUD-06)
+        stray = run_hook(code, vars=out["vars"], result={"status": "success", "data": {"ok": True}})
+        assert stray["vars"]["promised_products"] == "p2", result
+    done = run_hook(code, vars=dict(staged), result={"status": "success", "data": {"ok": True}})
+    assert done["vars"]["promised_products"] == "p2,p1" and done["vars"]["promise_pending_product"] == ""
+    again = run_hook(code, vars=done["vars"], result={"status": "success", "data": {"ok": True}})
+    assert again["vars"]["promised_products"] == "p2,p1"
+
+
+# ---- AUD-15: identity answers are never joined across a correction or stripped of their letters ----------------------
+
+
+@pytest.mark.parametrize(
+    ("field", "raw", "expected"),
+    [
+        ("pin", "4401, sorry, 4410", "4410"),
+        ("pin", "4-4 7 1", "4471"),
+        ("pin", "0358", "0358"),
+        ("pin", "it is 4471", "4471"),
+        ("cn", "SC123456", "SC123456"),
+        ("cn", "sc123456", "SC123456"),
+        ("cn", "1234 5678", "12345678"),
+        ("year", "2004, no wait, 2005", "2005"),
+        ("year", "1990 or 1991", "1991"),
+        ("year", "19 88", "1988"),
+        ("year", "1,990", "1990"),
+        ("pc", "sw1a  1aa", "SW1A 1AA"),
+        ("pc", "SW1A1AA", "SW1A1AA"),
+        ("dob", "14/03/1988, no wait, 15/03/1988", "1988-03-15"),
+        ("free", "4401, sorry, 4410", "4401, sorry, 4410"),  # no expected length: a correction is never guessed
+        ("free", "12 34", "1234"),
+    ],
+)
+def test_identity_answers_use_the_expected_length(field: str, raw: str, expected: str) -> None:
+    code = hooks.pre_hook_identity_answers(
+        "field", "answer", {"pin": "digits", "cn": "digits", "year": "year", "pc": "postcode", "dob": "date_iso",
+                            "free": "digits"}, "DMY", {"pin": 4, "cn": 8})
+    assert run_hook(code, config={"body": {"field": field, "answer": raw}})["config"]["body"]["answer"] == expected
+
+
+def test_the_public_identity_values_survive_every_spoken_rendering() -> None:
+    code = hooks.pre_hook_identity_answers("field", "answer", {"phone_last4": "digits", "date_of_birth": "date_iso"},
+                                           "DMY", {"phone_last4": 4})
+    cases = json.loads((Path(__file__).resolve().parents[2] / "public-test-set.json").read_text(encoding="utf-8"))
+    seen = 0
+    for case in cases if isinstance(cases, list) else cases.get("cases", []):
+        identity = case.get("identity") or {}
+        for field, value in identity.items():
+            if field == "phone_last4":
+                renders = [value, " ".join(value), value[:2] + "-" + value[2:], f"it is {value}"]
+            elif field == "date_of_birth":
+                y, m, d = value.split("-")
+                renders = [value, f"{d}/{m}/{y}", f"{int(d)} {int(m)} {y}", f"{d}.{m}.{y}"]
+            else:
+                continue
+            for raw in renders:
+                body = run_hook(code, config={"body": {"field": field, "answer": raw}})["config"]["body"]
+                assert body["answer"] == value, (field, raw)
+                seen += 1
+    assert seen > 0

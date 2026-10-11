@@ -370,3 +370,16 @@ async def test_smoke_summary_admits_an_empty_policy(null_trace: NullTrace) -> No
     )
     assert result["passed"] and "opening elements checked: 0" in result["summary"]
     assert "forbidden words checked: 0" in result["summary"]
+
+
+def test_the_auditor_reads_the_policy_data_and_the_hooks(kit_tool_api: Any) -> None:
+    """A9 / F09: changing an enforced policy value (a band deadline) changes the walkthrough's input."""
+    from builder.compiler.compile import compile_workflow
+
+    ir, ledger = load_ir("brief_a"), load_ledger("brief_a")
+    text = workflow_text(compile_workflow(ir, kit_tool_api, ledger).workflow)
+    assert "policy data:" in text and "pre-hook of create_promise writes:" in text
+    changed = ir.model_copy(deep=True)
+    changed.bands[0].deadline.n = (changed.bands[0].deadline.n or 0) + 3
+    other = workflow_text(compile_workflow(changed, kit_tool_api, ledger).workflow)
+    assert other != text and f'"n":{changed.bands[0].deadline.n}' in other

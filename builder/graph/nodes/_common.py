@@ -61,6 +61,9 @@ PROGRESS_KEYS: tuple[str, ...] = (
     "coverage",
     "remote_validation",
     "untested_redeploy",
+    "tested_version",
+    "redeploy_skipped",
+    "policy_unresolved",
 )
 
 #: State keys the graph accumulates (``Annotated[list, add]``): a node returns only its new items, so the progress

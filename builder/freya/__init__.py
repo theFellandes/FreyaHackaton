@@ -2,7 +2,9 @@
 
 * :mod:`builder.freya.kit` loads the organisers' reference client ``freya.py`` with the builder's settings.
 * :mod:`builder.freya.client` wraps it in :class:`FreyaClient`: dry-run validation, create-or-update-and-publish
-  by slot (:class:`DeployInfo`), reading a workflow back, export, chat turns (:class:`ChatTurn`) and calls.
+  by slot (:class:`DeployInfo`; every create and update also sends the editor layout ``nodePositions``, transient errors
+  are retried idempotently within the deadline), reading a workflow back, export, chat turns (:class:`ChatTurn`) and calls.
+* :mod:`builder.freya.transport` installs a deadline-bounded ``api`` (``timeout = min(120, time left)``) in the loaded kit.
 * :mod:`builder.freya.diff` finds fields the platform silently stripped from a stored workflow.
 * :mod:`builder.freya.practice` runs the kit's practice harness ``tools/run_cases.py`` for kit briefs.
 * :mod:`builder.freya.background` runs blocking platform calls in abandonable daemon threads with a cancel token, so the

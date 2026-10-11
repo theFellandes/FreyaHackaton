@@ -137,6 +137,12 @@ def test_structure_matches_the_validated_reference(brief: str, name: str, api: T
     reference = _reference(multi=brief == "B")
     assert _skeleton(reference) <= _skeleton(mine)
     assert _skeleton(mine) <= _skeleton(reference)
+    # the skeleton collapses roles and sets: also compare node by node that no two transitions share a target (the
+    # engine merges them into one), which the role-level comparison above cannot see
+    for workflow in (mine, reference):
+        for name, node in workflow["nodes"].items():
+            targets = [t["target_node"] for t in node.get("transitions", [])]
+            assert len(targets) == len(set(targets)), (name, targets)
     types = Counter(node["node_type"] for node in mine["nodes"].values())
     expected = Counter(node["node_type"] for node in reference["nodes"].values())
     for node_type in ("conversation", "api_request", "end_call"):
@@ -196,10 +202,12 @@ def test_third_party_books_callbacks_with_a_deterministic_farewell(compiled_a: C
     assert _tool_names(third) == ["schedule_callback"]
     tool = third["tools"][0]
     assert "what_to_do_next" in tool["post_process_code"] and tool["pre_process_code"]
-    first = third["transitions"][0]
+    guard, first = third["transitions"][:2]  # AUD-29: a blocked slot is corrected before anything else
+    assert guard["target_node"] == "callback_fix_third_party"
+    assert guard["condition"]["conditions"] == [{"variable": "callback_guard", "operator": "contains", "operand": "blocked"}]
     assert first["target_node"] == "callback_done"
-    assert first["condition"]["conditions"] == [
-        {"variable": "schedule_callback_success_count", "operator": "greater_than", "operand": 0}]
+    # AUD-07: only a booking the bank acknowledged routes to the confirmation (an HTTP 200 with ok false does not)
+    assert first["condition"]["conditions"] == [{"variable": "callback_acked", "operator": "equals", "operand": "yes"}]
     assert any(t["condition"].get("operator") == "matches_intent" and not t.get("is_tool_call")
                for t in third["transitions"])
     assert "{{callback_facts}}" in third["task_message"]
@@ -271,7 +279,11 @@ def test_negotiate_node(compiled_a: CompiledWorkflow, compiled_ab: CompiledWorkf
     assert first["target_node"] == "promise_done"
     assert first["condition"]["conditions"][0]["logic"] == "and"
     assert {"variable": "product_count", "operator": "equals", "operand": "1"} in first["condition"]["conditions"][0]["conditions"]
-    second = node["transitions"][2]
+    rescue = node["transitions"][2]  # a dropped finishing move is recovered before the goodbye-loop breaker (AUD-28)
+    assert rescue["target_node"] == "rescue_negotiate"
+    assert {"variable": "transition_to_end_promise_recorded_response", "operator": "contains",
+            "operand": "Transitioning"} in rescue["condition"]["conditions"]
+    second = node["transitions"][3]
     assert second["target_node"] == "end_auto" and second["condition"]["operator"] == "matches_intent"
     assert node["max_turn_transition"] == "end_auto"
     schema = node["extraction_schema"][0]
@@ -280,7 +292,9 @@ def test_negotiate_node(compiled_a: CompiledWorkflow, compiled_ab: CompiledWorkf
     assert set(schema["enum_values"][1:]) == {"hardship", "already_paid", "dispute", "refuse_to_talk", "flat_refusal"}
     assert _tool_names(compiled_ab.workflow["nodes"]["negotiate"]) == ["create_promise", "add_note"]
     note = compiled_ab.workflow["nodes"]["negotiate"]["tools"][1]
-    assert "notes_log" in note["pre_process_code"]
+    assert "vars['note_pending']" in note["pre_process_code"]  # staged for the acknowledgement (AUD-06)
+    assert "vars['notes_log']" not in note["pre_process_code"]
+    assert "vars['notes_log']" in note["post_process_code"]
     assert note["function"]["parameters"]["properties"]["body"]["properties"]["reason"]["enum"] == [
         "refused", "hardship", "dispute", "paid", "service_error"]
     assert "add_note" not in json.dumps(compiled_a.workflow)
@@ -406,21 +420,28 @@ def _run(workflow: dict[str, Any], node: str, state: dict[str, Any]) -> dict[str
     return run_snippet(extract_code_snippets(workflow)[node], state)
 
 
+def _acked(tool: str, n: int) -> dict[str, Any]:
+    """What the acknowledgement post-hook writes after ``n`` results the bank acknowledged (AUD-07)."""
+    return {f"{tool}_acks": str(n), f"{tool}_acked": "yes"}
+
+
 # (end node to run, extra variables) per case - what the engine would have recorded on the way
 FLOWS: dict[str, tuple[str | None, dict[str, Any]]] = {
-    "PUB-01": ("end_promise_recorded", {"create_promise_success_count": 1}),
-    "PUB-02": ("end_callback_booked", {"schedule_callback_success_count": 1}),
+    "PUB-01": ("end_promise_recorded", {"create_promise_success_count": 1, **_acked("promise", 1)}),
+    "PUB-02": ("end_callback_booked", {"schedule_callback_success_count": 1, **_acked("callback", 1)}),
     "PUB-03": ("end_identity_failed", {"verify_identity_success_count": 3}),
-    "PUB-04": ("end_promise_recorded", {"create_promise_success_count": 1}),
+    "PUB-04": ("end_promise_recorded", {"create_promise_success_count": 1, **_acked("promise", 1)}),
     "PUB-05": ("end_hardship", {}),
-    "PUB-06": ("end_promise_recorded", {"create_promise_success_count": 1}),
-    "PUB-07": ("end_promise_recorded", {"create_promise_success_count": 1}),
+    "PUB-06": ("end_promise_recorded", {"create_promise_success_count": 1, **_acked("promise", 1)}),
+    "PUB-07": ("end_promise_recorded", {"create_promise_success_count": 1, **_acked("promise", 1)}),
     "PUB-08": ("end_already_paid", {}),
     "PUB-09": (None, {"handoff_restructuring_success_count": 1}),
-    "PUB-10": ("end_promise_recorded", {"create_promise_success_count": 1, "create_promise_failure_count": 1}),
-    "PUB-11": ("end_promise_recorded", {"create_promise_success_count": 3}),
-    "PUB-12": ("end_promise_recorded", {"create_promise_success_count": 1, "notes_log": "p2:refused;p3:refused;"}),
-    "PUB-13": ("end_promise_recorded", {"create_promise_success_count": 2}),
+    "PUB-10": ("end_promise_recorded", {"create_promise_success_count": 1, **_acked("promise", 1),
+                                        "create_promise_failure_count": 1}),
+    "PUB-11": ("end_promise_recorded", {"create_promise_success_count": 3, **_acked("promise", 3)}),
+    "PUB-12": ("end_promise_recorded", {"create_promise_success_count": 1, **_acked("promise", 1),
+                                        "notes_log": "p2:refused;p3:refused;"}),
+    "PUB-13": ("end_promise_recorded", {"create_promise_success_count": 2, **_acked("promise", 2)}),
 }
 UNVERIFIED = {"PUB-02", "PUB-03"}
 
@@ -519,7 +540,10 @@ def test_code_nodes_write_what_the_reference_code_nodes_write(case_id: str, api:
                        "Allowed promise dates:", "EXACTLY"):
             assert (marker in mine_block) == (marker in theirs_block), (case_id, marker)
         assert re.findall(r"EXACTLY \d", mine_block) == re.findall(r"EXACTLY \d", theirs_block)
-        assert mine_block.split("Allowed promise dates:")[1] == theirs_block.split("Allowed promise dates:")[1]
+        mine_dates = mine_block.split("Allowed promise dates:")[1].split("\n")
+        assert mine_dates[0] == theirs_block.split("Allowed promise dates:")[1]
+        # F21: the compiler adds one line - the non-business days up to the deadline with the day to offer instead
+        assert len(mine_dates) <= 2 and all(x.startswith("   Not business days up to the deadline") for x in mine_dates[1:])
 
 
 def test_multi_product_deadlines_differ_per_product(api: ToolApi) -> None:

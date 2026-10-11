@@ -28,10 +28,11 @@ import hashlib
 import json
 import logging
 import re
+import unicodedata
 from collections.abc import Iterable, Mapping
 from pathlib import Path
 from typing import Any, Literal
-from urllib.parse import unquote
+from urllib.parse import unquote, urlsplit
 
 import yaml
 from pydantic import BaseModel, Field
@@ -75,6 +76,8 @@ class FieldSpec(BaseModel):
         required: Whether the parent schema lists the field as required.
         format: The schema ``format`` (e.g. ``date``), or ``None``.
         items: Sub-fields: the properties of an object, or of the objects in an array; ``None`` for scalars.
+        fixed: The value the contract fixes for a scalar field, as text: its ``const``, its only ``enum`` value or
+            its ``default`` (``None`` = the contract leaves the value open).
     """
 
     name: str
@@ -84,6 +87,7 @@ class FieldSpec(BaseModel):
     required: bool = False
     format: str | None = None
     items: list[FieldSpec] | None = None
+    fixed: str | None = None
 
     def child(self, name: str) -> FieldSpec | None:
         """The sub-field called ``name`` (see ``items``), or ``None``."""
@@ -103,6 +107,9 @@ class ToolContract(BaseModel):
         response_fields: Fields of the success response body.
         response_description: Description of the success response (e.g. how ``ok`` is to be read).
         errors: Status code -> description of every other documented response.
+        headers: Header parameters whose value the contract fixes (``const``, an enum of one, a ``default``), sent on
+            every call.
+        notes: What the contract asks for that the agent cannot send (a credential header, a security scheme).
     """
 
     name: str
@@ -115,6 +122,8 @@ class ToolContract(BaseModel):
     response_fields: list[FieldSpec] = Field(default_factory=list)
     response_description: str = ""
     errors: dict[str, str] = Field(default_factory=dict)
+    headers: dict[str, str] = Field(default_factory=dict)
+    notes: list[str] = Field(default_factory=list)
 
     @property
     def required_fields(self) -> list[str]:
@@ -294,6 +303,20 @@ def load_tool_api(path: Path | str) -> ToolApi:
     return api
 
 
+def read_tool_api_document(path: Path | str) -> dict[str, Any]:
+    """The raw parsed OpenAPI/Swagger document of ``path`` (for extensions such as ``x-freya-role``).
+
+    Raises:
+        ToolApiError: As :func:`load_tool_api`.
+    """
+    path = Path(path)
+    try:
+        raw = path.read_bytes()
+    except OSError as exc:
+        raise ToolApiError(f"Cannot read the tool API file {path}: {exc.strerror or exc}") from exc
+    return _parse_document(raw, path)
+
+
 def _parse_document(raw: bytes, path: Path) -> dict[str, Any]:
     try:
         text = raw.decode("utf-8-sig")
@@ -317,8 +340,18 @@ def _parse_document(raw: bytes, path: Path) -> dict[str, Any]:
     return document
 
 
-def parse_tool_api(document: Mapping[str, Any], sha256: str = "") -> ToolApi:
-    """Build a :class:`ToolApi` from an already parsed OpenAPI/Swagger document (see :func:`load_tool_api`)."""
+def parse_tool_api(document: Mapping[str, Any], sha256: str = "", *, every_operation: bool = False) -> ToolApi:
+    """Build a :class:`ToolApi` from an already parsed OpenAPI/Swagger document (see :func:`load_tool_api`).
+
+    Args:
+        document: The parsed document.
+        sha256: Hash recorded on the result.
+        every_operation: Make every operation a tool (several methods on one path included), named by its
+            ``operationId`` (else the last path segment, else method and path) reduced to a safe ASCII identifier and
+            made unique. Used for contracts whose operations are mapped to the canonical tool roles afterwards
+            (:mod:`builder.understand.tool_roles`); the default keeps the practice behaviour: one tool per path, named
+            by its last segment.
+    """
     paths = document.get("paths")
     if not isinstance(paths, Mapping) or not paths:
         raise ToolApiError("The tool API defines no paths, so it has no tools.")
@@ -327,6 +360,16 @@ def parse_tool_api(document: Mapping[str, Any], sha256: str = "") -> ToolApi:
     base_url = _base_url(document)
     tools: dict[str, ToolContract] = {}
     for raw_path, path_item in paths.items():
+        if every_operation:
+            item, _ = resolver.resolve(path_item)
+            for method in _METHOD_PREFERENCE:
+                if not isinstance(item.get(method), Mapping):
+                    continue
+                contract = _contract_for(str(raw_path), path_item, base_url, resolver, method=method)
+                if contract is not None:
+                    name = _unique(safe_tool_name(_operation_name(str(raw_path), method, item[method])), tools)
+                    tools[name] = contract.model_copy(update={"name": name})
+            continue
         contract = _contract_for(str(raw_path), path_item, base_url, resolver)
         if contract is None:
             continue
@@ -344,6 +387,51 @@ def parse_tool_api(document: Mapping[str, Any], sha256: str = "") -> ToolApi:
         tools=tools,
         sha256=sha256,
     )
+
+
+def _operation_name(path: str, method: str, operation: Mapping[str, Any]) -> str:
+    """The raw name of one operation: its ``operationId``, else the last static path segment, else method + path."""
+    operation_id = operation.get("operationId")
+    if isinstance(operation_id, str) and operation_id.strip():
+        return operation_id.strip()
+    return _tool_name(path, {}) or f"{method}_{path}"
+
+
+def safe_tool_name(raw: str) -> str:
+    """``raw`` as an ASCII identifier (accents folded, other characters ``_``; never empty, never a leading digit)."""
+    text = unicodedata.normalize("NFKD", raw.replace("\u0131", "i").replace("\u0130", "I"))
+    text = "".join(char for char in text if not unicodedata.combining(char))
+    name = re.sub(r"_{2,}", "_", re.sub(r"[^A-Za-z0-9_]+", "_", text)).strip("_")
+    if not name:
+        return "operation"
+    return f"op_{name}" if name[0].isdigit() else name
+
+
+def _unique(name: str, taken: Mapping[str, Any]) -> str:
+    candidate, number = name, 2
+    while candidate in taken:
+        candidate, number = f"{name}_{number}", number + 1
+    return candidate
+
+
+def with_base_url(api: ToolApi, base_url: str) -> ToolApi:
+    """A copy of ``api`` whose every tool URL lies on ``base_url`` (the mock the agent may call); paths and methods stay.
+
+    A base URL with a path (``https://mock.dev/api``) replaces the contract's server URL: tool URL = base URL + operation
+    path. A bare origin (``https://mock.dev``) replaces only the origin, so a path prefix of the contract's server
+    (``/v1``) is kept: tool URL = origin + server path + operation path.
+    """
+    base = base_url.strip().rstrip("/")
+    if urlsplit(base).path.strip("/"):
+        server = base
+    else:
+        server = base + urlsplit(api.base_url).path.rstrip("/") if "://" in api.base_url else base
+    tools = {}
+    for name, contract in api.tools.items():
+        path = contract.path or urlsplit(contract.url).path
+        url = f"{server}{path}" if path.startswith("/") else f"{server}/{path}"
+        tools[name] = contract.model_copy(update={"url": url})
+    return api.model_copy(update={"base_url": server, "tools": tools})
 
 
 def _base_url(document: Mapping[str, Any]) -> str:
@@ -375,15 +463,18 @@ def _tool_name(path: str, operation: Mapping[str, Any]) -> str | None:
     return str(operation_id) if operation_id else None
 
 
-def _contract_for(path: str, path_item: Any, base_url: str, resolver: _Resolver) -> ToolContract | None:
+def _contract_for(
+    path: str, path_item: Any, base_url: str, resolver: _Resolver, *, method: str | None = None
+) -> ToolContract | None:
     item, _ = resolver.resolve(path_item)
     methods = [method for method in _METHOD_PREFERENCE if isinstance(item.get(method), Mapping)]
     if not methods:
         logger.warning("path %s has no operation; skipped", path)
         return None
-    if len(methods) > 1:
-        logger.warning("path %s has several operations (%s); using %s", path, ", ".join(methods), methods[0])
-    method = methods[0]
+    if method is None:
+        if len(methods) > 1:
+            logger.warning("path %s has several operations (%s); using %s", path, ", ".join(methods), methods[0])
+        method = methods[0]
     operation: Mapping[str, Any] = item[method]
     name = _tool_name(path, operation)
     if name is None:
@@ -391,6 +482,11 @@ def _contract_for(path: str, path_item: Any, base_url: str, resolver: _Resolver)
         return None
     parameters = [*(item.get("parameters") or []), *(operation.get("parameters") or [])]
     request_fields = _request_fields(operation, parameters, resolver)
+    headers, notes = _header_parameters(name, parameters, resolver)
+    security = operation.get("security", resolver.security)
+    if isinstance(security, list) and any(isinstance(req, Mapping) and req for req in security):
+        schemes = sorted({str(key) for req in security if isinstance(req, Mapping) for key in req})
+        notes.append(f"{name} declares the security scheme(s) {', '.join(schemes)}; the agent sends no credentials")
     success_code, response_fields, response_description, errors = _responses(operation, resolver)
     logger.debug("tool %s: %s %s (success response %s)", name, method.upper(), path, success_code)
     return ToolContract(
@@ -404,7 +500,27 @@ def _contract_for(path: str, path_item: Any, base_url: str, resolver: _Resolver)
         response_fields=response_fields,
         response_description=response_description,
         errors=errors,
+        headers=headers,
+        notes=notes,
     )
+
+
+def _header_parameters(tool: str, parameters: list[Any], resolver: _Resolver) -> tuple[dict[str, str], list[str]]:
+    """``in: header`` parameters: the fixed values to send, and a note for each required one without a value."""
+    headers: dict[str, str] = {}
+    notes: list[str] = []
+    for raw_parameter in parameters:
+        parameter, refs = resolver.resolve(raw_parameter)
+        name = str(parameter.get("name") or "")
+        if parameter.get("in") != "header" or not name or name.lower() == "content-type":
+            continue
+        schema = parameter.get("schema") if isinstance(parameter.get("schema"), Mapping) else parameter
+        spec = _field(name, schema, resolver, refs, depth=0)
+        if spec.fixed is not None:
+            headers[name] = spec.fixed
+        elif parameter.get("required"):
+            notes.append(f"{tool} requires the header {name} and the contract fixes no value for it; it is not sent")
+    return headers, notes
 
 
 def _json_schema_of(content: Any, resolver: _Resolver) -> Any:
@@ -482,6 +598,7 @@ class _Resolver:
 
     def __init__(self, document: Mapping[str, Any]) -> None:
         self._document = document
+        self.security: Any = document.get("security")  # the document-wide security requirement, if any
 
     def resolve(self, node: Any, seen: frozenset[str] = frozenset()) -> tuple[dict[str, Any], frozenset[str]]:
         """Return ``node`` with ``$ref``/``allOf``/unions resolved at the top level, and the refs followed so far.
@@ -630,6 +747,16 @@ def _field(name: str, raw_schema: Any, resolver: _Resolver, seen: frozenset[str]
                 enum = enum or [_enum_text(v) for v in item_schema.get("enum") or [] if v is not None] or None
                 fmt = fmt or item_schema.get("format")
                 description = description or str(item_schema.get("description") or "")
+    fixed: str | None = None
+    if kind not in ("object", "array"):
+        const, default = schema.get("const"), schema.get("default")
+        if const is not None and not isinstance(const, (Mapping, list)):
+            fixed = _enum_text(const)
+            enum = enum or [fixed]
+        elif enum and len(enum) == 1:
+            fixed = enum[0]
+        elif default is not None and not isinstance(default, (Mapping, list)) and str(default).strip():
+            fixed = _enum_text(default)
     return FieldSpec(
         name=name,
         type=kind if kind in _JSON_TYPES else "string",
@@ -637,6 +764,7 @@ def _field(name: str, raw_schema: Any, resolver: _Resolver, seen: frozenset[str]
         description=description,
         format=str(fmt) if fmt else None,
         items=items,
+        fixed=fixed,
     )
 
 
@@ -674,4 +802,7 @@ __all__ = [
     "ToolContract",
     "load_tool_api",
     "parse_tool_api",
+    "read_tool_api_document",
+    "safe_tool_name",
+    "with_base_url",
 ]

@@ -120,6 +120,7 @@ async def _body(state: BuilderState, ctx: BuilderContext) -> dict[str, Any]:
         "compile_repair_log": [],
         "remote_validation": {},
         "lint": {},
+        "redeploy_skipped": False,
         "blocked": False,
         "notes": [f"decide: {verdict}; repairing the policy (round {round_no + 1})"],
     }

@@ -223,8 +223,12 @@ try:
             continue
         late_for = [k for k in ids if k in deadlines and d0 > deadlines[k]]
         if late_for and len(late_for) == len(ids):
-            line = line + ' | AFTER THE DEADLINE - not allowed: offer the deadline instead'
+            # AUD-17: a day after every deadline keeps no 'offer ... instead' clause (it named a day the guard blocks)
+            line = line.split(' -> ', 1)[0] + ' | AFTER THE DEADLINE - not allowed: offer the deadline instead'
         elif late_for:
+            if ' -> ' in line:
+                head, tail = line.split(' -> ', 1)
+                line = head + ' -> for ' + ', '.join([k for k in ids if k not in late_for]) + ': ' + tail
             line = line + ' | after the deadline of ' + ', '.join(late_for) + ' - not allowed for ' + ', '.join(late_for)
         marked.append(line)
     vars['date_table'] = '\n'.join(marked)
@@ -334,6 +338,7 @@ except Exception:
 
 PROMISE_PRE = r'''
 try:
+    vars['promise_pending_product'] = ''
     b = config.get('body')
     if isinstance(b, dict):
         a = b.get('amount')
@@ -354,6 +359,9 @@ try:
         known = [x for x in str(vars.get('product_ids') or '').split(',') if x]
         if known and pid not in known:
             reason = 'unknown product_id ' + pid + '; use one of ' + ','.join(known)
+        # One promise per product (F17): only the bank's acknowledgment (PROMISE_POST) adds a product to promised_products.
+        if not reason and pid in [x for x in str(vars.get('promised_products') or '').split(',') if x]:
+            reason = 'a promise for ' + pid + ' is already recorded and cannot be changed or recorded again'
         allowed = [x for x in str(vars.get('allowed_' + pid) or '').split(',') if x]
         if not reason and allowed and dt not in allowed:
             reason = 'the date ' + dt + ' is not an allowed promise date for ' + pid + ' (latest allowed: ' + allowed[-1] + ')'
@@ -369,7 +377,9 @@ try:
             vars['promise_guard'] = 'blocked: ' + reason
             vars['promise_guard_blocks'] = str(int(float(vars.get('promise_guard_blocks') or 0)) + 1)
             pname = str(vars.get(pid + '_name') or 'this product')
-            if allowed and dt not in allowed and dt > allowed[-1]:
+            if 'already recorded' in reason:
+                say = 'I am sorry, the payment promise for your ' + pname + ' is already recorded and cannot be changed or recorded again in this call. You can change it in the mobile app.'
+            elif allowed and dt not in allowed and dt > allowed[-1]:
                 say = 'I am sorry, the latest date I can record for your ' + pname + ' is ' + str(vars.get(pid + '_deadline_spoken') or allowed[-1]) + '. Could you pay ' + ('%.2f' % float(b.get('amount') or 0)) + ' dollars on that day?'
             elif allowed and dt not in allowed:
                 nxt = [x for x in allowed if x > dt]
@@ -382,6 +392,7 @@ try:
             config['url'] = ''
         else:
             vars['promise_guard'] = 'ok'
+            vars['promise_pending_product'] = pid
 except Exception:
     pass
 '''
@@ -391,6 +402,14 @@ try:
     if isinstance(result, dict):
         result.pop('header', None)
         d = result.get('data')
+        # Acknowledged = the transport succeeded AND the bank's own flag is true (F17); anything else adds nothing.
+        pending = str(vars.get('promise_pending_product') or '').strip()
+        if pending and str(result.get('status') or '').lower() == 'success' and isinstance(d, dict) and str(d.get('ok')).lower() == 'true':
+            done = [x for x in str(vars.get('promised_products') or '').split(',') if x]
+            if pending not in done:
+                done.append(pending)
+            vars['promised_products'] = ','.join(done)
+        vars['promise_pending_product'] = ''
         if isinstance(d, dict):
             if str(d.get('ok')).lower() == 'true':
                 d['what_to_do_next'] = 'The promise IS recorded. If this was the only product, say nothing: the system confirms it. Otherwise tell the customer it is recorded, say exactly: You will receive a text message confirming this promise. Then continue with the next product.'
@@ -406,14 +425,18 @@ except Exception:
 
 NOTE_PRE = r'''
 try:
+    vars['note_pending_product'] = ''
+    vars['note_pending_reason'] = ''
     b = config.get('body')
     if isinstance(b, dict):
         pid = str(b.get('product_id') or '').strip().lower()
         rsn = str(b.get('reason') or '').strip().lower()
         b['product_id'] = pid
         b['reason'] = rsn
-        log = str(vars.get('notes_log') or '')
-        vars['notes_log'] = log + pid + ':' + rsn + ';'
+        # A note is only a pending request here: notes_log is written by NOTE_POST after the bank acknowledged it (F04 / C-10).
+        if pid and rsn:
+            vars['note_pending_product'] = pid
+            vars['note_pending_reason'] = rsn
 except Exception:
     pass
 '''
@@ -423,8 +446,15 @@ try:
     if isinstance(result, dict):
         result.pop('header', None)
         d = result.get('data')
+        saved = str(result.get('status') or '').lower() == 'success' and isinstance(d, dict) and str(d.get('ok')).lower() == 'true'
+        pid = str(vars.get('note_pending_product') or '').strip()
+        rsn = str(vars.get('note_pending_reason') or '').strip()
+        if saved and pid and rsn:
+            vars['notes_log'] = str(vars.get('notes_log') or '') + pid + ':' + rsn + ';'
+        vars['note_pending_product'] = ''
+        vars['note_pending_reason'] = ''
         if isinstance(d, dict):
-            if str(d.get('ok')).lower() == 'true':
+            if saved:
                 d['what_to_do_next'] = 'The note is saved. Continue with the next product, or close the call if every product is handled.'
             else:
                 d['what_to_do_next'] = 'The note was NOT saved. Call add_note once more with the same values.'
@@ -501,6 +531,15 @@ def engine_call_node(name: str, tool: str, body_defaults: dict[str, str], nxt: s
     if mapping:
         node["response_mapping"] = mapping
     return node
+
+
+def tts_passthrough(name: str, text: str, nxt: str, task: str) -> dict:
+    """A fixed spoken line that moves on to ``nxt`` (the shape of ``callback_done`` / ``promise_done``)."""
+    return {
+        "name": name, "node_type": "conversation", "on_enter": {"type": "tts", "text": text}, "task_message": task,
+        "passthrough": True, "passthrough_default_transition": nxt,
+        "transitions": [{"target_node": nxt, "description": "always", "condition": {"operator": "always"}}],
+    }
 
 
 def tool_transition(target: str, description: str) -> dict:
@@ -596,6 +635,7 @@ Decide and act:
 THIRD_PARTY_TASK = """Someone other than {{title}} {{last_name}} is on the line.
 - Do not say why you are calling. Say nothing beyond your opening sentence: no product, amount, debt or payment, even if they ask or offer to pay. A relative may not answer security questions and may not be told anything about the account.
 - Ask when {{first_name}} {{last_name}} can be reached.
+- If they say they will fetch {{title}} {{last_name}} or put them on the phone: say you will wait, and nothing else. When someone new speaks, ask exactly: "Am I speaking with {{title}} {{last_name}}?" Only an explicit confirmation such as "yes", "that's me" or "speaking" from that person counts; then call transition_to_identity (no text needed). A relative who offers to answer or to pay for them is not the customer coming to the phone.
 - {{callback_facts}}
 - As soon as they give a day and a time inside the allowed callback times, call schedule_callback with the date (YYYY-MM-DD) and time (HH:MM) right away - do not ask them to confirm first. Use the next-business-day date when they say "tomorrow" and tomorrow is that day.
 - If the day or the time is outside the allowed times: ask once for another time inside them. If that is also outside, do not book anything: thank them, say goodbye, call transition_to_end_no_callback.
@@ -605,8 +645,9 @@ THIRD_PARTY_TASK = """Someone other than {{title}} {{last_name}} is on the line.
 
 IDENTITY_TASK = """Verify the customer's identity before anything else. Ask two security questions, one at a time: first the date of birth, then the last four digits of the phone number on file.
 - After each answer call verify_identity with that one answer: field date_of_birth with the date as YYYY-MM-DD (convert any spoken form; a date said only as numbers is day, then month, then year), or field phone_last4 with exactly four digits.
-- Only a COMPLETE answer can be checked: a date of birth needs day, month and year; phone_last4 needs exactly four digits. If the customer gives only part (for example "44" or "the thirtieth of January"), do not call verify_identity: ask only for the missing part (for example "And the remaining two digits?" or "And the year?") and combine both parts.
-- Whenever the customer's message contains a complete answer (even mixed with a question, a complaint or other words), call verify_identity FIRST, before you say anything. Then do exactly what the what_to_do_next line in the result says.
+- A COMPLETE answer is checked at once: a date of birth needs day, month and year; phone_last4 needs exactly four digits. A date or a year said in words is complete when every part is there: a year said in words, such as "nineteen eighty", is a whole year, not part of one. As soon as the customer's message holds a complete answer, call verify_identity with it: never hold it back and never ask the customer to repeat or confirm a part they already said.
+- If the customer gives only part (for example "44" or "the thirtieth of January"), do not call verify_identity yet: ask only for the missing part (for example "And the remaining two digits?" or "And the year?") and combine both parts, then check the whole answer.
+- A complete answer that comes with a complaint, a question or other words is checked FIRST: call verify_identity before you say anything, then do exactly what the what_to_do_next line in the result says, and only then answer the complaint or the question.
 - Do not say anything about the account or why you are calling during this step.
 - If the customer does not want to answer, or asks what the call is about instead of answering: explain once that the questions protect their account and ask again. A second refusal or a second such question: thank them, say goodbye, call transition_to_end_declined.
 - If the customer asks for a human: ask once whether you can help first; if they insist, say you will transfer them, say goodbye, call transition_to_handoff_human.
@@ -632,7 +673,7 @@ GETTING THE PROMISE
    - A date after the deadline: say the latest date you can record is the deadline (say the date) and offer it for the SAME amount (the full past-due amount unless a lower amount was already agreed). Moving the date is not a persuasion attempt and must not lower the amount. If they refuse the deadline, that is a flat refusal (rule 5).
 4. Amounts. If they say the full amount is too much: offer the floor once, using the product's floor-offer sentence word for word (it says that the rest stays overdue). If they refuse the floor: flat refusal (rule 5). An amount they propose from the floor up to the full amount (both included) is accepted. Below the floor: say it cannot be recorded and offer the floor once; if they do not accept it: flat refusal.
 5. A flat refusal or a non-answer uses one persuasion attempt ("no" to paying today with no date and no amount is a flat refusal). Make the product's attempts exactly as scripted in LATE PRODUCTS, in order, one per refusal - never more attempts than the product allows, never fewer. When the attempts are used up, stop: do not repeat an offer they refused. Thank them, say goodbye, call transition_to_end_refused.
-6. Illness, a death in the family or job loss: say one short sentence of sympathy and make NO persuasion attempt. Offer ONCE to connect them with the customer support team; never repeat that offer and make no other offer of any kind (no transfer to another team, no plan, no discount) unless the customer explicitly asks for a new payment plan or lower instalments. If they accept: say you will transfer them, say goodbye, call transition_to_handoff_support. If they decline (or answer anything other than yes): thank them, say goodbye, call transition_to_end_hardship - do not ask again. (If they still name a date or an amount themselves, record the promise normally.) Once hardship was mentioned, this rule comes before rules 5 and 14: never transfer to restructuring and never persuade in this call. A request for a discount or a waiver is never a request for a new payment plan: just say you cannot offer a discount.
+6. Illness, a death in the family or job loss: say one short sentence of sympathy and make NO persuasion attempt. Offer ONCE to connect them with the customer support team; never repeat that offer and make no other offer of any kind (no transfer to another team, no plan, no discount) unless the customer explicitly asks for a new payment plan or lower instalments. If they accept (yes, or any clear agreement): say you will transfer them, say goodbye, call transition_to_handoff_support. If they clearly decline (for example "no" or "not interested"): thank them, say goodbye, call transition_to_end_hardship - do not ask again. If they ask a question about the offer (for example what it would help with), ask for time, make small talk or say something cut off, it is neither a yes nor a no: answer briefly from the facts you have (if you do not know, say so; if they ask for time, say they may take it), keep the offer open and wait; do not ask it again: this is not a refusal and not a second offer, so do not transfer or end the call because of it. If the next reply is still neither a clear yes nor a clear no, take it as a decline. (If they still name a date or an amount themselves, record the promise normally.) Once hardship was mentioned, this rule comes before rules 5 and 14: never transfer to restructuring and never persuade in this call. A request for a discount or a waiver is never a request for a new payment plan: just say you cannot offer a discount.
 7. Never offer a discount, a waiver, an instalment plan or any term not listed here.
 
 CONFIRMING AND RECORDING
@@ -711,6 +752,10 @@ def build(multi: bool = False) -> dict:
         "task_message": THIRD_PARTY_TASK, "tools": [CALLBACK_TOOL],
         "max_node_turns": 30, "max_turn_transition": "end_no_callback",
         "transitions": [
+            # audit AUD-29 (mirrors the compiler; not yet measured live): a slot outside the allowed times is corrected
+            {"target_node": "callback_fix_third_party", "description": "The callback guard blocked a schedule_callback call",
+             "condition": {"logic": "or", "conditions": [
+                 {"variable": "callback_guard", "operator": "contains", "operand": "blocked"}]}},
             {"target_node": "callback_done", "description": "The callback was booked",
              "condition": {"logic": "or", "conditions": [
                  {"variable": "schedule_callback_success_count", "operator": "greater_than", "operand": 0}]}},
@@ -720,6 +765,9 @@ def build(multi: bool = False) -> dict:
             tool_transition("end_no_callback", "No callback inside the allowed times; you said goodbye."),
             tool_transition("end_wrong_number", "The number does not belong to the customer; you said goodbye."),
             tool_transition("end_deceased", "The customer has died; you said you are sorry for their loss and goodbye."),
+            # audit AUD-45 (added after the 9/10 runs, not yet measured live): the relative fetched the customer
+            tool_transition("identity", "The customer themself came to the phone and explicitly confirmed it is them "
+                                        "(not a relative speaking for them)."),
         ],
     }
     nodes["identity"] = {
@@ -740,6 +788,23 @@ def build(multi: bool = False) -> dict:
             tool_transition("end_wrong_number", "The person says this number does not belong to the customer; you said goodbye."),
         ],
     }
+    nodes["callback_fix_third_party"] = code_node(
+        "callback_fix_third_party", "vars['callback_guard'] = 'handled'\nvars['callback_fix_text'] = str(vars.get("
+        "'callback_guard_say') or 'I am sorry, I cannot book a callback at that time. Which other time would suit?')\n"
+        # the reference counts the corrections itself: the brief asks once more, then books nothing
+        "vars['callback_fixes'] = str(int(float(vars.get('callback_fixes') or 0)) + 1)\n"
+        "vars['callback_guard_stop'] = 'yes' if int(vars['callback_fixes']) > 1 else 'no'\n",
+        "callback_fix_say_third_party")
+    nodes["callback_fix_third_party"]["transitions"].insert(0, {
+        "target_node": "callback_stop_third_party", "description": "No allowed time was given after the extra ask",
+        "condition": {"logic": "or", "conditions": [
+            {"variable": "callback_guard_stop", "operator": "equals", "operand": "yes"}]}})
+    nodes["callback_fix_say_third_party"] = tts_passthrough(
+        "callback_fix_say_third_party", "{{callback_fix_text}}", "third_party",
+        "Say nothing more now. No tool call is allowed in this turn.")
+    nodes["callback_stop_third_party"] = tts_passthrough(
+        "callback_stop_third_party", "I am sorry, I cannot book a callback at that time. Thank you for your time. Goodbye.",
+        "end_no_callback", "No callback was booked. Say nothing more. No tool call is allowed in this turn.")
     nodes["callback_done"] = {
         "name": "callback_done", "node_type": "conversation",
         "on_enter": {"type": "tts", "text": "Thank you, the callback is booked. Goodbye."},
@@ -773,6 +838,16 @@ def build(multi: bool = False) -> dict:
                                              "account_facts", retries=2,
                                              mapping=[{"path": "data.products", "variable": "products"}])
     nodes["account_facts"] = code_node("account_facts", ACCOUNT_FACTS_CODE, "negotiate")
+    # audit AUD-24 (mirrors the compiler; not yet measured live): an account that could not be loaded is said and closed
+    nodes["account_facts"]["transitions"].insert(0, {
+        "target_node": "account_unavailable", "description": "The account could not be loaded",
+        "condition": {"logic": "or", "conditions": [
+            {"variable": "account_state", "operator": "equals", "operand": "empty"},
+            {"variable": "account_state", "operator": "contains", "operand": "error"}]}})
+    nodes["account_unavailable"] = tts_passthrough(
+        "account_unavailable", "I am sorry, I cannot open your account details right now, so I cannot go through the "
+        "payment in this call. Thank you for your time. Goodbye.", "end_service_error",
+        "The account could not be loaded. Say nothing more. No tool call is allowed in this turn.")
     nodes["negotiate"] = {
         "name": "negotiate", "node_type": "conversation",
         "on_enter": {"type": "tts", "text": "{{debt_statement}}"},
@@ -844,7 +919,59 @@ def build(multi: bool = False) -> dict:
                                                      "parameters": {"type": "object", "properties": {
                                                          "message_mode": {"type": "string", "default": "none"}}}}},
     }
+    add_rescue_routes(nodes)
     return {"initial_node": "setup", "system_prompt": SYSTEM_PROMPT, "nodes": nodes, "global_nodes": {}}
+
+
+def add_rescue_routes(nodes: dict) -> None:
+    """Audit AUD-28 (added after the 9/10 runs, not yet measured live): recover a transition the platform dropped.
+
+    A transition tool sent in the same message as a bank tool is not routed; the platform only writes "Transitioning to
+    <node>" into ``transition_to_<node>_response``. Each node with bank tools gets a variable route on those responses
+    (after its deterministic routes, before the goodbye-loop breaker) to ``rescue_<stage>``, which marks them handled
+    and routes to the dropped target; a target that ends the call goes through a fixed goodbye first.
+    """
+    for stage in ("identity", "third_party", "negotiate"):
+        node = nodes[stage]
+        targets = list(dict.fromkeys(t["target_node"] for t in node["transitions"] if t.get("is_tool_call")))
+        ending = [t for t in targets if t.startswith(("end_", "handoff_"))]
+        name, bye, go = f"rescue_{stage}", f"rescue_{stage}_bye", f"rescue_{stage}_go"
+        code = "try:\n    picked = ''\n"
+        for t in targets:
+            key = f"transition_to_{t}_response"
+            code += (f"    if 'Transitioning' in str(vars.get('{key}') or ''):\n"
+                     f"        picked = picked or '{t}'\n        vars['{key}'] = 'handled'\n")
+        code += (f"    vars['rescue_target'] = picked\n    vars['rescue_ending'] = 'yes' if picked in {ending!r} else 'no'\n"
+                 "except Exception as e:\n    vars['rescue_target'] = ''\n    vars['rescue_ending'] = 'no'\n")
+
+        def route(target: str) -> dict:
+            return {"target_node": target, "description": f"Recover the dropped move to {target}",
+                    "condition": {"logic": "or", "conditions": [
+                        {"variable": "rescue_target", "operator": "equals", "operand": target}]}}
+
+        rescue = code_node(name, code, stage)
+        rescue["transitions"][:0] = [route(t) for t in targets if t not in ending] + [
+            {"target_node": bye, "description": "The dropped move ends the call",
+             "condition": {"logic": "or", "conditions": [
+                 {"variable": "rescue_ending", "operator": "equals", "operand": "yes"}]}}]
+        nodes[name] = rescue
+        nodes[bye] = {
+            "name": bye, "node_type": "conversation", "on_enter": {"type": "tts", "text": "Thank you for your time. Goodbye."},
+            "task_message": "You said goodbye. Say nothing more. No tool call is allowed in this turn.",
+            "passthrough": True, "passthrough_default_transition": go,
+            "transitions": [{"target_node": go, "description": "always", "condition": {"operator": "always"}}],
+        }
+        nodes[go] = code_node(go, "vars['rescue_state'] = 'ending'\n", stage)
+        nodes[go]["transitions"][:0] = [route(t) for t in ending]
+        at = 0
+        while at < len(node["transitions"]) and not node["transitions"][at].get("is_tool_call") and (
+                node["transitions"][at]["condition"].get("operator") != "matches_intent"):
+            at += 1
+        node["transitions"].insert(at, {
+            "target_node": name, "description": "A move was sent together with other tool calls and did not happen",
+            "condition": {"logic": "or", "conditions": [
+                {"variable": f"transition_to_{t}_response", "operator": "contains", "operand": "Transitioning"}
+                for t in targets]}})
 
 
 def main() -> None:

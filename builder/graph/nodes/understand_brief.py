@@ -21,13 +21,21 @@ from builder.understand import build_rule_ledger
 from builder.understand._common import UnderstandError
 
 NAME = "understand_brief"
+#: Stages that must still fit after an optional ledger call ends (audit AUD-53).
+OPTIONAL_CALLS_LEAVE_TIME_FOR: tuple[str, ...] = ("extract", "compile", "remote_validate", "deploy")
 
 
 async def _body(state: BuilderState, ctx: BuilderContext) -> dict[str, Any]:
     bundle = get_bundle(state)
     try:
         ledger = await build_rule_ledger(
-            ctx.llm, bundle, get_tool_api(state), ctx.trace, deadline=ctx.budget.deadline()
+            ctx.llm,
+            bundle,
+            get_tool_api(state),
+            ctx.trace,
+            deadline=ctx.budget.deadline(),  # the rule passages: no ledger, no agent
+            # the optional calls (re-quote, completeness, amendment links) must leave extraction and deploy their time
+            optional_deadline=ctx.budget.deadline_before(*OPTIONAL_CALLS_LEAVE_TIME_FOR),
         )
     except (AllProvidersFailed, UnderstandError) as exc:
         ctx.trace.error("could not build the rule ledger", error=short(exc))

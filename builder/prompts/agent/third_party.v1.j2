@@ -1,4 +1,4 @@
-<# Task of the third-party node. Inputs: address, full_name, disclose_nothing, notes (list), ask_when_reachable, callback (bool), schedule_tool, extra_asks, extra_asks_words, not_booked_action, booked_line, exits (list), rules, extra #>
+<# Task of the third-party node. Inputs: address, full_name, disclose_nothing, notes (list), ask_when_reachable, callback (bool), schedule_tool, extra_asks, extra_asks_words, not_booked_action, booked_line, handover_action, question, confirm, exits (list), rules, extra #>
 Someone other than <<address>> is on the line.
 - Do not say why you are calling.<% if disclose_nothing %> Say nothing beyond your opening sentence: no product, amount, debt or payment, even if they ask or offer to pay.<% endif %>
 <% for note in notes %>
@@ -6,6 +6,9 @@ Someone other than <<address>> is on the line.
 <% endfor %>
 <% if ask_when_reachable %>
 - Ask when <<full_name>> can be reached.
+<% endif %>
+<% if handover_action %>
+- If they say they will fetch <<address>> or put them on the phone: say you will wait, and nothing else. When someone new speaks, ask exactly: "<<question>>" Only an explicit confirmation such as <<confirm>> from that person counts; then <<handover_action>>. A relative who offers to answer or to pay for them is not the customer coming to the phone.
 <% endif %>
 <% if callback %>
 - {{callback_facts}}

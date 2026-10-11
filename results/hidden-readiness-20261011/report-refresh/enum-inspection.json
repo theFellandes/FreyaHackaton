@@ -1,0 +1,37 @@
+{
+  "captured_utc": "2026-10-11T10:29:07.474957+00:00",
+  "kind": "Read-only source inspection of required enum guessing; no model or platform requests",
+  "finding": {
+    "id": "unbound-required-engine-enum",
+    "status": "present_in_current_source",
+    "example": {
+      "required_field": "priority",
+      "enum": [
+        "normal",
+        "urgent"
+      ],
+      "binding": null,
+      "observed_policy": "selects first enum value normal and emits compiler note"
+    },
+    "source_lines": {
+      "builder/compiler/tools.py": [
+        76,
+        90
+      ],
+      "builder/compiler/toolset.py": [
+        463,
+        475
+      ],
+      "tests/unit/test_hidden_tool_contracts.py": [
+        357,
+        374
+      ]
+    },
+    "missing": "brief-derived binding or explicit rejection/degraded status for unresolved engine-call meaning"
+  },
+  "source_sha256": {
+    "builder/compiler/tools.py": "57a5b31a45120f88fb2c8561ff726467c4d03b9149bcd2113ade3bb770858d14",
+    "builder/compiler/toolset.py": "a2acbbf8efbe4b0532ab4808b179676fc072bf301b0f4846ff7bcf922e6e56a8",
+    "tests/unit/test_hidden_tool_contracts.py": "640cf1b01d9c0c6cf931b6dad1cc0f8ad42937ee2e46d67ddde2258f4504904c"
+  }
+}

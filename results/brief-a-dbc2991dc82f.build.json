@@ -1,0 +1,21 @@
+{
+  "slot": "brief-a",
+  "track": "compiled",
+  "workflow_id": null,
+  "agent_id": null,
+  "version": null,
+  "exported": null,
+  "export_ok": null,
+  "trace": "C:\\Users\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\traces\\brief-a-20261011T081526Z.log",
+  "status": "failed",
+  "workflow_file": null,
+  "tests": {
+    "passed": 0,
+    "total": 0
+  },
+  "errors": [
+    "understand_brief: All LLM providers failed for 'rule ledger: brief-a.md passage 1/3' | attempts: claude_code/claude_code#0(login): auth | skipped: anthropic: no keys configured; openai: no keys configured; claude_code: no usable key left"
+  ],
+  "notes": [],
+  "tests_detail": []
+}

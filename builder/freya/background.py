@@ -41,11 +41,13 @@ logger = logging.getLogger(__name__)
 __all__ = [
     "CancelToken",
     "PlatformCancelled",
+    "bound_deadline",
     "bound_token",
     "check_cancelled",
     "current_token",
     "inflight_count",
     "run_blocking",
+    "time_left",
     "wait_inflight",
 ]
 
@@ -93,6 +95,14 @@ class CancelToken:
         if self.expired:
             raise PlatformCancelled("platform call not started: the build deadline has passed")
 
+    def remaining(self) -> float | None:
+        """Seconds left before the deadline (``0.0`` once cancelled or past it); ``None`` without a deadline."""
+        if self._event.is_set():
+            return 0.0
+        if self.deadline is None:
+            return None
+        return max(0.0, self.deadline - self._clock())
+
 
 _CURRENT: contextvars.ContextVar[CancelToken | None] = contextvars.ContextVar(
     "freya_cancel_token", default=None
@@ -109,6 +119,48 @@ def check_cancelled() -> None:
     token = _CURRENT.get()
     if token is not None:
         token.check()
+
+
+#: An absolute deadline (and the clock it is measured on) bound by :func:`bound_deadline`, next to the token's own.
+_DEADLINE: contextvars.ContextVar[tuple[tuple[float, Callable[[], float]], ...]] = contextvars.ContextVar(
+    "freya_deadline", default=()
+)
+
+
+def time_left() -> float | None:
+    """Seconds before the nearest bound deadline (the token's, or one set by :func:`bound_deadline`).
+
+    ``0.0`` when the token is cancelled or a deadline has passed; ``None`` when nothing limits the running thread. The
+    Freya transport caps every request's timeout with this (``min(120, time_left())``), and the client stops retrying
+    when too little is left, so no request or back-off outlives the build's deadline.
+    """
+    candidates: list[float] = []
+    token = _CURRENT.get()
+    if token is not None:
+        left = token.remaining()
+        if left is not None:
+            candidates.append(left)
+    for deadline, clock in _DEADLINE.get():
+        candidates.append(max(0.0, deadline - clock()))
+    return min(candidates) if candidates else None
+
+
+@contextmanager
+def bound_deadline(
+    deadline: float | None, clock: Callable[[], float] = time.monotonic
+) -> Iterator[None]:
+    """Limit the current context by an absolute ``deadline`` (a ``clock`` reading); ``None`` changes nothing.
+
+    Nested deadlines add up: the nearest one counts, an inner block can never extend an outer one.
+    """
+    if deadline is None:
+        yield
+        return
+    marker = _DEADLINE.set((*_DEADLINE.get(), (deadline, clock)))
+    try:
+        yield
+    finally:
+        _DEADLINE.reset(marker)
 
 
 @contextmanager

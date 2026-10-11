@@ -1,0 +1,31 @@
+{
+  "checked_at_utc": "2026-10-11T15:01:05.8088078Z",
+  "source": "https://www.freyavoice.ai/hackathon#submit",
+  "case_count": 1,
+  "language": "Turkish",
+  "input": "ZIP folder containing Markdown, Word, PDF and Excel bank documents",
+  "required_reading_order": [
+    "BRIEF.md",
+    "README.md"
+  ],
+  "mock_provider": "Cloudflare Workers",
+  "mock_deploy_order": "Deploy and verify before builder run",
+  "mock_lifetime": "Keep online until results",
+  "official_fields": [
+    "team",
+    "members",
+    "repo",
+    "commit",
+    "run_command",
+    "workflow",
+    "trace",
+    "mock_url"
+  ],
+  "example_run_command": "python3 builder/build.py {case_folder} {mock_url}",
+  "examples_are_not_mandatory_paths": true,
+  "release_utc": "2026-10-11T17:00:00Z",
+  "deadline_utc": "2026-10-11T20:00:00Z",
+  "manual_email_by_user": true,
+  "recipient_candidate": "yavuz@freyavoice.ai",
+  "recipient_explicitly_confirmed_in_supplied_email": false
+}

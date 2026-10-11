@@ -1,5 +1,7 @@
 # 07 — Gap 3: call-variable injection (names, channel) and whether `{{now}}` exists
 
+> Status: pre-kit research note (10 October 2026), kept for background. Where it disagrees with the kit ([research/11](11_hackathon_rules_and_kit.md), `docs/api.md`, `docs/workflow-format.md`) or with the code, those win.
+
 Status: **partly resolved.** The system-variable names are now settled, and they correct an earlier assumption. Whether `{{now}}` is substituted, and which channel and keys the graders use, cannot be settled with GET-only access. Section 8 gives a minimal write experiment that needs approval, and section 9 has a paste-ready question for the organisers.
 
 Tags: **[SPEC]** = openapi_staging.json; **[UI]** = web-app i18n dictionary (`research/tools/i18n.json`) or web-app JS; **[LIVE]** = GET results; **[DOCS]** = llms-full.txt; **[INFERRED]** = not stated anywhere.

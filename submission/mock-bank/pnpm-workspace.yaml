@@ -1,0 +1,6 @@
+packages:
+  - "."
+storeDir: .pnpm-store
+allowBuilds:
+  esbuild@0.28.2: true
+  workerd@1.20261006.1: true

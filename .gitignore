@@ -197,3 +197,6 @@ traces/*.llm.jsonl
 traces/*.agentic.jsonl
 data/key_health.json
 env.sh
+
+# pytest temp copies inside an archived test run (AUD-59); the run report next to them stays tracked
+results/test-runs/*/tmp/

@@ -63,8 +63,8 @@ def test_every_template_exists_and_compiles() -> None:
 
 
 def test_freya_variables_pass_through_and_jinja_uses_angle_delimiters() -> None:
-    text = render("system_prompt", bank_name="Acme", language="English", forbidden="", robot_answer="", scam_answer="",
-                  unknown_answer="", currency="", global_rules=[], extra="Hi {{title}}")
+    text = render("system_prompt", bank_name="Acme", persona="digital assistant", language="English", forbidden="",
+                  robot_answer="", scam_answer="", unknown_answer="", currency="", global_rules=[], extra="Hi {{title}}")
     assert "Acme's digital assistant" in text and text.endswith("Hi {{title}}")
     assert "<<" not in text and "<%" not in text
 
@@ -242,7 +242,8 @@ def test_the_generic_example_policy_compiles(kit_tool_api: ToolApi) -> None:
     assert "handoff_people" in compiled.workflow["nodes"]
     report = lint_workflow(compiled.workflow, kit_tool_api, set(ir.call_variable_names()))
     assert [f.rule for f in report.errors] == ["L012"]  # exactly the queue that is not in the contract
-    assert "Example Lender's digital assistant" in compiled.workflow["system_prompt"]
+    # the persona noun is the one of the policy's own opening sentence ("... the automated assistant of Example Lender")
+    assert "Example Lender's automated assistant" in compiled.workflow["system_prompt"]
 
 
 def test_a_policy_without_a_callback_rule(kit_tool_api: ToolApi) -> None:

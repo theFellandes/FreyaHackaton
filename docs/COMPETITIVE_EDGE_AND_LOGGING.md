@@ -1,6 +1,6 @@
 # Competitive edge and internal logging
 
-Reviewed on 10 October 2026. This document distinguishes inspected functionality from proposed work. Source files are changing during the review; a local test pass is not evidence of a completed live customer evaluation or a running logging backend.
+Reviewed on 10 October 2026. **Status, 11 October:** the two probe findings below (calendar validity beyond the enumerated dates, F02, and the decoy success boolean, F01/AUD-04) and the credential in build-result payloads (F11) are fixed; current status is in [FIXING_ISSUES.md](FIXING_ISSUES.md). This document distinguishes inspected functionality from proposed work. Source files are changing during the review; a local test pass is not evidence of a completed live customer evaluation or a running logging backend.
 
 ## What would give this entry an edge
 
@@ -25,7 +25,7 @@ These are proposed acceptance scenarios, not claims that the current builder pas
 
 An edge-case list is only useful when each case has an independently specified expected bank state and conversation assertions. Do not construct the expected result by calling the same helper being tested. Do not impose a universal rule such as “clarification never consumes an attempt”: the organizer briefs contain specific counting rules.
 
-Two additional offline probes found gaps beyond those passing tests. The mandatory [promise pre-hook](../builder/compiler/hooks.py) admits dates later than its enumerated list when they are lexically within `until_<product>`; that branch checks ISO shape but not actual calendar validity or business days. With a long deadline, probes left both a Sunday (`2027-10-17`) and a nonexistent day (`2028-02-30`) enabled. An optional generated date helper is not a substitute for enforcing the check at the write boundary. Separately, [success-field selection](../builder/compiler/roles.py) chooses the first backticked boolean in response prose: naming `audit_logged` before `ok` can cause it to treat the audit flag as the action's acknowledgment. These are isolated source/probe findings, not demonstrated live bank writes. Reproduce and fix them, then retain long-window and decoy-field regression cases.
+Two additional offline probes found gaps beyond those passing tests. The mandatory [promise pre-hook](../builder/compiler/hooks.py) admits dates later than its enumerated list when they are lexically within `until_<product>`; that branch checks ISO shape but not actual calendar validity or business days. With a long deadline, probes left both a Sunday (`2027-10-17`) and a nonexistent day (`2028-02-30`) enabled. An optional generated date helper is not a substitute for enforcing the check at the write boundary. Separately, [success-field selection](../builder/compiler/roles.py) chooses the first backticked boolean in response prose: naming `audit_logged` before `ok` can cause it to treat the audit flag as the action's acknowledgment. These were isolated source/probe findings, not demonstrated live bank writes. Both are fixed, with long-window and decoy-field regressions (`tests/unit/test_codegen_promise_dates.py`, `tests/unit/test_hidden_tool_contracts.py`).
 
 ## Logging we have today
 
@@ -52,7 +52,7 @@ Build-side collection must stay outside the phone agent's extra tools. The [rule
 
 ## Limits to address before trusting the logs
 
-`OBSERVABILITY_LOG_PROMPTS=false` affects Langfuse only. Local model logs still retain prompt and reply text. Credential redaction does not automatically remove arbitrary personal or confidential data. Ordinary exception logs, final result errors and conversation downloads also need consistent redaction review; some paths currently bypass the trace redactor. [OWASP's logging guidance](https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html) recommends excluding or protecting secrets and sensitive data and restricting log access.
+`OBSERVABILITY_LOG_PROMPTS=false` affects Langfuse only. Set `LLM_LOG_CONTENT=metadata` separately to omit prompt and reply text from the local model log; the default `full` retains them. Metadata mode still includes error strings and is not general customer-data scrubbing. Credential redaction does not automatically remove arbitrary personal or confidential data. Fresh synthetic checking on 10 October also found a credential retained in a build-result payload despite trace/CLI masking; the result file is now masked too (F11). Ordinary exception logs and conversation downloads need consistent redaction review. [OWASP's logging guidance](https://cheatsheetseries.owasp.org/cheatsheets/Logging_Cheat_Sheet.html) recommends excluding or protecting secrets and sensitive data and restricting log access. See [Observability](OBSERVABILITY.md) for the independent switches.
 
 Trace/observer exceptions are deliberately nonfatal. Therefore a successful build must still undergo a submission check for complete required traces. Flush/close improves persistence but does not guarantee recovery of an unfinished event or survival of every storage failure. A self-hosted server also needs separate delivery, access and retention verification.
 

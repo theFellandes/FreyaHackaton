@@ -1,0 +1,64 @@
+{
+  "slot": "brief-a",
+  "track": "compiled",
+  "workflow_id": "58bd49f0-7417-413e-9f8b-19de1836e563",
+  "agent_id": "826cdf9b-cbb4-46ec-99a7-c53613ff4438",
+  "version": 4,
+  "exported": "C:\\Users\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\out\\brief-a.exported.json",
+  "export_ok": true,
+  "trace": "C:\\Users\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\traces\\brief-a-20261011T133821Z.log",
+  "status": "deployed",
+  "workflow_file": "C:\\Users\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\out\\brief-a.workflow.json",
+  "tests": {
+    "passed": 3,
+    "total": 3
+  },
+  "errors": [],
+  "policy_issues": [],
+  "notes": [
+    "decide: all self-tests passed"
+  ],
+  "tests_detail": [
+    {
+      "name": "smoke",
+      "passed": true,
+      "summary": "2 turn(s) answered; replies non-empty; forbidden words checked: 4; opening elements checked: 2",
+      "details": {
+        "call_id": "98346f58-6654-4128-b917-102cc7c8c548",
+        "turns": [
+          {
+            "user": "Hello?",
+            "agent": "I am a digital assistant calling from Freya Bank, and we record this call. Am I speaking with Mr Morgan?"
+          },
+          {
+            "user": "Sorry, who is this and what is this about?",
+            "agent": "I am Freya Bank's digital assistant. Am I speaking with Mr Morgan?"
+          }
+        ],
+        "problems": [],
+        "checks": [
+          "replies non-empty",
+          "forbidden words checked: 4",
+          "opening elements checked: 2"
+        ],
+        "variables": [
+          "customer_id",
+          "first_name",
+          "last_name",
+          "now",
+          "title"
+        ],
+        "attempts": [
+          {
+            "attempt": 1,
+            "call_id": "98346f58-6654-4128-b917-102cc7c8c548",
+            "error": null,
+            "transient": false
+          }
+        ],
+        "platform_error": false
+      },
+      "round": 0
+    }
+  ]
+}

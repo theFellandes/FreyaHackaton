@@ -1,0 +1,26 @@
+usage: build.py [-h] [--slot SLOT] [--dry-run]
+                [--track {auto,compiled,agentic}] [--profile {staged,lean}]
+                [--self-test {auto,none,smoke,walkthrough,practice}]
+                [--budget-s BUDGET_S] [--fake-llm DIR]
+                inputs [inputs ...]
+
+Build a Freya phone agent from bank brief(s) and the tool API file.
+
+positional arguments:
+  inputs                brief file(s) or directories, and the tool API
+                        (OpenAPI/Swagger) file
+
+options:
+  -h, --help            show this help message and exit
+  --slot SLOT           workflow label (default: derived from the brief file
+                        names)
+  --dry-run             compile and check locally; make no Freya call
+  --track {auto,compiled,agentic}
+                        compiled (deterministic), agentic (Claude session) or
+                        auto
+  --profile {staged,lean}
+                        workflow shape produced by the compiler
+  --self-test {auto,none,smoke,walkthrough,practice}
+                        which self-test runs after deploy
+  --budget-s BUDGET_S   wall-clock budget in seconds (default 1680)
+  --fake-llm DIR        answer model calls from fixture files in DIR

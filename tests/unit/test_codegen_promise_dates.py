@@ -106,12 +106,12 @@ def test_an_empty_list_of_allowed_dates_blocks_the_promise(api: ToolApi) -> None
     assert agent.blocked("2026-10-30") and agent.blocked("2026-10-31")
 
 
-def test_without_the_allowed_date_facts_the_guard_still_does_not_block_on_dates(api: ToolApi) -> None:
+def test_without_the_date_listing_the_guard_still_enforces_the_deadline(api: ToolApi) -> None:
     agent = Agent(_with(), api, "2026-10-14T11:00")
     facts = {k: v for k, v in agent.state.items() if not k.startswith(("allowed_", "until_"))}
     out = run_hook(agent.pre_hook, vars=facts, config={"url": "u", "body": {
         "product_id": "p1", "amount": 100, "date": "2030-01-01"}})
-    assert out["config"]["url"] == "u" and out["vars"]["promise_guard"] == "ok"
+    assert out["config"]["url"] == "" and out["vars"]["promise_guard"].startswith("blocked:")
 
 
 # ---- C-07: the lists are not capped ----------------------------------------------------------------------------------------
@@ -137,7 +137,7 @@ def test_a_policy_without_a_deadline_accepts_every_business_day_not_just_the_nex
     assert not agent.blocked("2026-12-30") and not agent.blocked("2027-06-02")
     assert agent.blocked("2026-12-26")  # a Saturday inside the listed range
     assert agent.state["until_p1"] == "open"
-    assert not agent.blocked("2029-03-14")  # far beyond the listed horizon: any ISO date is accepted
+    assert not agent.blocked("2029-03-14")  # a real business day beyond the presentation horizon
     assert "every business day from 2026-10-14 (Wednesday)" in agent.state["account_facts"]
 
 
@@ -146,6 +146,85 @@ def test_the_listing_stays_verbatim_for_a_short_range(api: ToolApi) -> None:
     line = next(line for line in agent.state["account_facts"].splitlines() if "Allowed promise dates" in line)
     assert line.startswith("   Allowed promise dates: 2026-10-14 Wednesday, 2026-10-15 Thursday, 2026-10-16 Friday")
     assert line.endswith("2026-11-02 Monday.")
+
+
+@pytest.mark.parametrize("bounded", [False, True], ids=["open", "long-deadline"])
+def test_dates_beyond_the_listing_use_the_full_calendar(api: ToolApi, bounded: bool) -> None:
+    ir = _with(DeadlineRule(kind="nth_calendar_day_after_today", n=1000), not_after_deadline=bounded)
+    ir.calendar.holidays.append(dt.date(2028, 3, 3))
+    agent = Agent(ir, api, "2026-10-14T11:00")
+    assert agent.allowed[-1] < "2028-03-02"
+    assert not agent.blocked("2028-03-02")  # Thursday
+    assert agent.blocked("2028-03-03")  # the brief's holiday, beyond the display horizon
+    weekend = agent.guard("2028-03-04")  # Saturday
+    assert weekend["config"]["url"] == ""
+    assert "2028-03-06" in weekend["vars"]["promise_guard_say"]
+    assert agent.blocked("2028-02-30")  # ISO-shaped text, not a real date
+    assert agent.blocked("2027-02-29")
+    assert not agent.blocked("2028-02-29")  # the actual leap day
+
+
+def test_a_sunday_or_an_impossible_date_far_beyond_the_enumeration_is_blocked(api: ToolApi) -> None:
+    """The guard parses and judges the date itself (business day, deadline); the enumerated list is only a presentation."""
+    agent = Agent(_with(not_after_deadline=False), api, "2026-10-14T11:00")
+    assert agent.state["until_p1"] == "open" and agent.allowed[-1] < "2028-03-02"
+    for sunday in ("2028-03-05", "2031-06-01", "2040-01-01"):
+        assert dt.date.fromisoformat(sunday).weekday() == 6
+        assert agent.blocked(sunday), sunday
+    for impossible in ("2028-02-30", "2029-02-29", "2030-13-01", "2030-00-10", "2030-04-31", "2030-1-5", "next Friday"):
+        assert agent.blocked(impossible), impossible
+    assert not agent.blocked("2028-03-06")  # the Monday after is a business day
+    bounded = Agent(_with(DeadlineRule(kind="nth_calendar_day_after_today", n=1000)), api, "2026-10-14T11:00")
+    assert bounded.state["p1_deadline"] == "2029-07-10"  # a Tuesday, far beyond the listed year
+    assert bounded.blocked("2029-07-07")  # a Saturday inside the deadline
+    assert bounded.blocked("2029-07-08")  # a Sunday inside the deadline
+    assert bounded.blocked("2029-07-11")  # a business day after the deadline
+    assert not bounded.blocked("2029-07-06")  # the Friday before the weekend
+
+
+def test_calendar_rules_allow_nonstandard_business_weekdays(api: ToolApi) -> None:
+    ir = _with(not_after_deadline=False)
+    ir.calendar.business_weekdays = [5, 6]
+    ir.calendar.holidays = [dt.date(2029, 3, 10)]
+    agent = Agent(ir, api, "2026-10-14T11:00")
+    assert agent.blocked("2029-03-10")  # holiday on an otherwise allowed Saturday
+    assert not agent.blocked("2029-03-11")  # Sunday is a business day under this brief
+    assert agent.blocked("2029-03-12")  # Monday is not
+
+
+def test_explicit_calendar_day_policy_and_today_rule_are_preserved(api: ToolApi) -> None:
+    agent = Agent(_with(not_after_deadline=False, business_days_only=False, allow_today=False),
+                  api, "2026-10-14T11:00")
+    assert agent.blocked("2026-10-14")
+    assert not agent.blocked("2029-03-10")  # weekends are permitted by this policy
+    assert agent.blocked("2029-02-30")  # impossible dates are never permitted
+
+
+@pytest.mark.parametrize(("shift", "suggestion"), [
+    ("next_business_day", "2028-03-06"),
+    ("previous_business_day", "2028-03-02"),
+    ("reject", None),
+])
+def test_non_business_corrections_beyond_the_horizon_follow_the_brief(
+    api: ToolApi, shift: str, suggestion: str | None,
+) -> None:
+    ir = _with(not_after_deadline=False, non_business_day_shift=shift)
+    ir.calendar.holidays.append(dt.date(2028, 3, 3))
+    blocked = Agent(ir, api, "2026-10-14T11:00").guard("2028-03-04")
+    assert blocked["config"]["url"] == ""
+    correction = blocked["vars"]["promise_guard_say"]
+    assert suggestion in correction if suggestion else "Could you tell me another day?" in correction
+
+
+def test_an_empty_presentation_horizon_does_not_forbid_later_business_days(api: ToolApi) -> None:
+    ir = _with(not_after_deadline=False)
+    today = dt.date(2026, 10, 14)
+    ir.calendar.holidays = [today + dt.timedelta(days=n) for n in range(codegen.ALLOWED_HORIZON_DAYS + 1)]
+    agent = Agent(ir, api, "2026-10-14T11:00")
+    assert agent.allowed == [] and agent.state["until_p1"] == "open"
+    assert "Record NO promise" not in agent.state["account_facts"]
+    assert not agent.blocked("2027-10-18")  # Monday after the finite list of holidays
+    assert agent.blocked("2027-10-16")  # Saturday after the display horizon
 
 
 # ---- the differential test against the reference engine --------------------------------------------------------------------

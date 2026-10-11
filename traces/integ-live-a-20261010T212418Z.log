@@ -1,0 +1,102 @@
+2026-10-10T21:24:18.845Z | START  | run d2fc10082691 started | slot=integ-live-a | builder 0.1.0, python 3.13.16
+2026-10-10T21:24:18.845Z | CONFIG | effective configuration | freya_api_url=https://staging-app.freyavoice.ai freya_api_key=set freya_bank_team_key=set freya_workspace_id=auto llm_providers=[anthropic, openai, claude_code] builder_track=compiled agent_profile=staged self_test=none build_time_budget_s=1680 build_slot=auto dry_run=True langfuse=disabled
+2026-10-10T21:24:18.846Z | OBS    | langfuse disabled (no keys)
+2026-10-10T21:24:18.848Z | CONFIG | LLM key changer | order=[anthropic, openai, claude_code] key_health_file=C:\Users\Felladien\Documents\Projects\Python\FreyaHackaton\data\key_health.json
+2026-10-10T21:24:18.858Z | STAGE  | load_inputs | start | budget_left_s=1680
+2026-10-10T21:24:18.859Z | DECIDE | track compiled (requested compiled; agentic fallback off) | profile=staged dry_run=True
+2026-10-10T21:24:18.859Z | INPUT  | 1 brief file(s), tool API with 7 tool(s) | briefs=[brief-a.md] chars=10174 brief_sha=97a030a681d1 tools=[add_note, close_call, create_promise, get_account, schedule_callback, transfer_to_agent, verify_identity]
+2026-10-10T21:24:18.859Z | STAGE  | load_inputs | end 0.0s | budget_left_s=1680
+2026-10-10T21:24:18.860Z | STAGE  | guard_inputs | start | budget_left_s=1680
+2026-10-10T21:24:18.866Z | GUARD  | inputs | ok | 0 violations | blocked=False violations=[]
+2026-10-10T21:24:18.866Z | STAGE  | guard_inputs | end 0.0s | budget_left_s=1680
+2026-10-10T21:24:18.867Z | STAGE  | understand_brief | start | budget_left_s=1680
+2026-10-10T21:24:18.868Z | LEDGER | reading 1 file(s) in 3 passage(s) | files=[brief-a.md] passages=3
+2026-10-10T21:24:36.366Z | MODEL  | openai/gpt-5.6-terra | key=openai#1(…yRAA) | ok 17.5s in=6400 out=3072 attempt=1 | rule ledger: brief-a.md passage 1/3
+2026-10-10T21:24:36.375Z | LEDGER | passage 1/3 (brief-a.md): 52 rules, 0 ambiguities
+2026-10-10T21:24:36.375Z | RATE   | waited 16.8 s for openai#1(…yRAA) | purpose=rule ledger: brief-a.md passage 3/3 provider=openai waited_s=16.78
+2026-10-10T21:24:41.471Z | MODEL  | openai/gpt-5.6-terra | key=openai#1(…yRAA) | ok 21.9s in=6399 out=3838 attempt=1 | rule ledger: brief-a.md passage 2/3
+2026-10-10T21:24:41.479Z | LEDGER | passage 2/3 (brief-a.md): 58 rules, 0 ambiguities
+2026-10-10T21:24:56.527Z | MODEL  | openai/gpt-5.6-terra | key=openai#1(…yRAA) | ok 20.2s in=5939 out=2785 attempt=1 | rule ledger: brief-a.md passage 3/3
+2026-10-10T21:24:56.533Z | LEDGER | passage 3/3 (brief-a.md): 32 rules, 0 ambiguities
+2026-10-10T21:24:59.780Z | MODEL  | openai/gpt-5.6-terra | key=openai#1(…yRAA) | ok 3.2s in=1576 out=289 attempt=1 | rule ledger: completeness check 1/1
+2026-10-10T21:24:59.799Z | LEDGER | completeness check added 1 rule(s) | rule_ids=[A-M1]
+2026-10-10T21:24:59.801Z | LEDGER | ledger ready: 143 rules (143 active), 0 ambiguities, 0 superseded | rules=143 active=143 ambiguities=0
+2026-10-10T21:24:59.830Z | GUARD  | ledger | ok | 0 violations | blocked=False violations=[]
+2026-10-10T21:24:59.831Z | DECIDE | rule ledger: 143 rules (143 active), 0 ambiguities, 0 supersessions
+2026-10-10T21:24:59.831Z | STAGE  | understand_brief | end 41.0s | budget_left_s=1639
+2026-10-10T21:24:59.833Z | STAGE  | extract_policy | start | budget_left_s=1639
+2026-10-10T21:25:29.998Z | MODEL  | openai/gpt-5.6-terra | key=openai#1(…yRAA) | ok 30.1s in=25927 out=5670 attempt=1 | extract policy IR from the rule ledger
+2026-10-10T21:25:30.126Z | GROUNDING | warning: phrases.goodbye_sentence: sentence not found in the briefs: 'Thank you and goodbye.'
+2026-10-10T21:25:30.126Z | GROUNDING | warning: phrases.extra.below_floor: sentence not found in the briefs: 'That amount cannot be recorded. The {floor_label} is {floor_amount}.'
+2026-10-10T21:25:30.126Z | GROUNDING | warning: phrases.extra.hardship_sympathy: sentence not found in the briefs: 'I am sorry to hear that.'
+2026-10-10T21:25:30.127Z | GROUNDING | warning: phrases.extra.hardship_offer: sentence not found in the briefs: 'Would you like me to connect you with the customer support team?'
+2026-10-10T21:25:30.127Z | GROUNDING | warning: identity.questions[0].ask: sentence not found in the briefs: 'What is your date of birth?'
+2026-10-10T21:25:30.128Z | EXTRACT | policy IR extracted: 2 band(s), 16 intent(s), 18 outcome row(s), 7 residual rule(s) | cited_rules=143
+2026-10-10T21:25:30.128Z | STAGE  | extract_policy | end 30.3s | budget_left_s=1608.7
+2026-10-10T21:25:30.130Z | STAGE  | validate_policy | start | budget_left_s=1608.7
+2026-10-10T21:25:30.136Z | VALIDATE | policy IR: 0 error(s), 0 warning(s) | codes=[]
+2026-10-10T21:25:30.226Z | VALIDATE | 5 fixed sentence(s) not found in the briefs | sentences=[phrases.goodbye_sentence: sentence not found in the briefs: 'Thank you and goodbye.', phrases.extra.below_floor: sen...
+2026-10-10T21:25:30.242Z | VALIDATE | offline invariants: 15 passed, 0 failed, 2 unchecked | failing=[]
+2026-10-10T21:25:30.243Z | STAGE  | validate_policy | end 0.1s | budget_left_s=1608.6
+2026-10-10T21:25:30.244Z | STAGE  | guard_policy | start | budget_left_s=1608.6
+2026-10-10T21:25:30.262Z | GUARD  | policy | ok | 0 violations | blocked=False violations=[]
+2026-10-10T21:25:30.262Z | STAGE  | guard_policy | end 0.0s | budget_left_s=1608.6
+2026-10-10T21:25:30.264Z | STAGE  | draft_prose | start | budget_left_s=1608.6
+2026-10-10T21:25:53.217Z | MODEL  | openai/gpt-5.6-luna | key=openai#1(…yRAA) | ok 22.9s in=8267 out=2976 attempt=1 | draft node prose (staged profile)
+2026-10-10T21:25:53.227Z | PROSE  | node negotiate: text cut from 3889 to 2849 characters
+2026-10-10T21:25:53.228Z | PROSE  | drafted prose for 4 node(s) | nodes={"opening": 916, "third_party": 1202, "identity": 1330, "negotiate": 2849}
+2026-10-10T21:25:53.246Z | GUARD  | prose | ok | 0 violations | blocked=False violations=[]
+2026-10-10T21:25:53.246Z | STAGE  | draft_prose | end 23.0s | budget_left_s=1585.6
+2026-10-10T21:25:53.247Z | STAGE  | compile_workflow | start | budget_left_s=1585.6
+2026-10-10T21:25:53.314Z | DECIDE | compiled staged workflow: 35 nodes; rule coverage: 143 of 143 active rules enforced (100%); 0 superseded; uncovered: none | notes=[]
+2026-10-10T21:25:53.315Z | STAGE  | compile_workflow | end 0.1s | budget_left_s=1585.5
+2026-10-10T21:25:53.316Z | STAGE  | static_checks | start | budget_left_s=1585.5
+2026-10-10T21:25:53.330Z | LINT   | static checks: 0 errors, 1 warnings (ok) | errors=[] warnings=[L018 warning nodes.negotiate.task_message: 7484 characters (> 6000); long prompts dilute the rules]
+2026-10-10T21:25:53.330Z | TEST   | PASS static_checks | 0 errors, 1 warnings
+2026-10-10T21:25:53.331Z | STAGE  | static_checks | end 0.0s | budget_left_s=1585.5
+2026-10-10T21:25:53.332Z | STAGE  | guard_workflow | start | budget_left_s=1585.5
+2026-10-10T21:25:53.362Z | GUARD  | workflow | ok | 0 violations | blocked=False violations=[]
+2026-10-10T21:25:53.362Z | STAGE  | guard_workflow | end 0.0s | budget_left_s=1585.5
+2026-10-10T21:25:53.364Z | STAGE  | finalize | start | budget_left_s=1585.5
+2026-10-10T21:25:53.378Z | FINAL  | run d2fc10082691 finished
+====================================================================================================
+BUILD SUMMARY
+run id       : d2fc10082691
+slot         : integ-live-a
+track        : compiled
+status       : dry_run
+started      : 2026-10-10T21:24:18.752Z
+ended        : 2026-10-10T21:25:53.378Z
+duration     : 94.6 s (1 min 35 s)
+model calls  : 6 (6 ok, 0 failed)
+  - openai/gpt-5.6-luna: calls=1 (1 ok, 0 failed), tokens in=8267 out=2976
+  - openai/gpt-5.6-terra: calls=5 (5 ok, 0 failed), tokens in=46241 out=15654
+Freya        :
+  - slot: integ-live-a
+  - exported: C:\Users\Felladien\Documents\Projects\Python\FreyaHackaton\out\integ-live-a.workflow.json
+tests        : 1 (1 passed, 0 failed)
+  - PASS static_checks: 0 errors, 1 warnings
+stages       :
+  - load_inputs: end 0.0s
+  - guard_inputs: end 0.0s
+  - understand_brief: end 41.0s
+  - extract_policy: end 30.3s
+  - validate_policy: end 0.1s
+  - guard_policy: end 0.0s
+  - draft_prose: end 23.0s
+  - compile_workflow: end 0.1s
+  - static_checks: end 0.0s
+  - guard_workflow: end 0.0s
+errors       : 0
+workflow_id  : null
+agent_id     : null
+version      : null
+node_count   : null
+tool_count   : null
+profile      : staged
+coverage     : 143 of 143 active rules enforced (100%); 0 superseded; uncovered: none
+notes        : []
+errors_list  : []
+====================================================================================================
+2026-10-10T21:25:53.382Z | STAGE  | finalize | end 0.0s | budget_left_s=1585.5
+2026-10-10T21:25:53.383Z | END    | run d2fc10082691 closed after 94.6 s | duration_s=94.632

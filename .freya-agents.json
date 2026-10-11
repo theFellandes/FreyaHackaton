@@ -12,5 +12,19 @@
   "workflow_id": "db3cfeda-692b-49f2-aa2a-b9d669d7eb00",
   "agent_id": "4b0c9003-d157-4cc0-828f-1f9512a92e46",
   "version": 8
+ },
+ "brief-a": {
+  "workflow_id": "58bd49f0-7417-413e-9f8b-19de1836e563",
+  "agent_id": "826cdf9b-cbb4-46ec-99a7-c53613ff4438",
+  "version": 7,
+  "workspace_id": "01e07b69-486a-4070-a7fd-3a2fc3120bf2",
+  "inputs_sha": "0789a9c3cce7ca6e8b254a7f6d0c1fcf934884de9d4565b7b5be0006bdbd8475"
+ },
+ "brief-a-brief-b": {
+  "workflow_id": "b5638c83-1842-4615-ab28-23834f631e2f",
+  "agent_id": "4ae00ca3-a702-465e-ae60-4b8d1c54726f",
+  "version": 5,
+  "workspace_id": "01e07b69-486a-4070-a7fd-3a2fc3120bf2",
+  "inputs_sha": "219ca7c6da82068925046080828f2b5581cf65e2c018b6cc4f1247e12ee96771"
  }
 }

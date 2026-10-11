@@ -110,3 +110,17 @@ def test_default_clock_is_monotonic_and_real() -> None:
     budget = Budget(60)
     assert 0 <= budget.elapsed() < 5
     assert budget.remaining() <= 60
+
+
+def test_deadline_before_leaves_room_for_the_stages_that_follow(fake_clock: FakeClock) -> None:
+    """Optional work (the prose draft) must stop in time for compile, validation and deploy (audit P-04)."""
+    budget = Budget(1680, clock=fake_clock)
+    fake_clock.advance(100)
+    end = budget.deadline()
+    assert budget.deadline_before() == end - 30  # just the margin
+    assert budget.deadline_before("compile", "remote_validate", "deploy") == end - (20 + 30 + 90) - 30
+    assert budget.deadline_before("deploy", margin_s=0) == end - 90
+    with pytest.raises(KeyError):
+        budget.deadline_before("no such stage")
+    with pytest.raises(ValueError):
+        budget.deadline_before(margin_s=-1)

@@ -1,5 +1,7 @@
 # 04 - Freya guides digest (for a high-scoring debt-collection voice agent)
 
+> Status: pre-kit research note (10 October 2026), kept for background. Where it disagrees with the kit ([research/11](11_hackathon_rules_and_kit.md), `docs/api.md`, `docs/workflow-format.md`) or with the code, those win.
+
 Sources read in full: every non-API-reference section of `docs/llms-full.txt` (Getting Started x9, Learning Freyavoice AI x4,
 Fundamentals x5, Features x3, Telephony x5, Embed SDK x2, Model API intro/STT/TTS). The docs sitemap
 (`https://docs.freyavoice.ai/sitemap.xml`) lists exactly these guide pages, so nothing is missing from llms-full. Pages that the

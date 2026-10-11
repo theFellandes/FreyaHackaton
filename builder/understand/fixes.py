@@ -15,7 +15,10 @@ repairs exactly those, without changing the meaning of any value:
 * ``disclosure.amount_field`` / ``days_field`` are written down when the tool API shows that the state fields alone
   would make the compiler pick the wrong product field (a band is decided by them);
 * an intent that records a per-product note in every scope is split into a before-verification part (the outcome) and an
-  after-verification part (the note), because the opening and identity nodes have no note tool.
+  after-verification part (the note), because the opening and identity nodes have no note tool;
+* a persuasion step whose date kind contradicts the date rule its own text states unambiguously ("the next business day
+  after today" written as a week kind) gets the kind the text states (:mod:`builder.understand.date_cues`: a value
+  contradicted by its own text, never a guess).
 
 Anything else (a value that is *wrong*, not merely spelled differently) is left to the validator and the LLM repair.
 """
@@ -30,6 +33,7 @@ from builder.ingest.tool_api import ToolApi
 from builder.policy.intents import canonical_intent_key
 from builder.policy.ir import Disclosure, PolicyIR, RuleLedger, looks_like_sentence
 from builder.policy.outcomes import TRANSFER_PREFIX
+from builder.understand.date_cues import corrected_proposal_date
 from builder.understand.validate import ToolVocabulary, resolve_product_fields, tool_vocabulary
 
 __all__ = ["apply_safe_fixes"]
@@ -54,6 +58,7 @@ def apply_safe_fixes(
         _match_vocabulary(data, tool_vocabulary(tool_api), log)
     _disclosure_wording(data, log)
     _split_noted_intents(data, log)
+    _persuasion_date_kinds(data, log)
     result = PolicyIR.model_validate(data)
     if tool_api is not None:
         result = _product_fields(result, tool_api, log)
@@ -128,6 +133,22 @@ def _match(value: Any, allowed: list[str] | None) -> str | None:
     return hits[0] if len(hits) == 1 else None
 
 
+def _rekey_transfer_queue(params: dict[str, Any], vocab: ToolVocabulary, changes: list[str]) -> None:
+    """Move a transfer param the API does not have (``queue``, or the only unknown one) to the API's queue field.
+
+    Only a key that is not a request field of the transfer tool is moved, so a valid param is never rewritten.
+    """
+    fields = vocab.request_fields.get("transfer_to_agent")
+    target = vocab.queue_field
+    if not fields or target not in fields or target in params:
+        return
+    unknown = [key for key in params if key not in fields]
+    source = "queue" if "queue" in unknown else (unknown[0] if len(unknown) == 1 else None)
+    if source is not None:
+        params[target] = params.pop(source)
+        changes.append(f"transfer_to_agent param {source!r} -> {target!r} (the tool API's queue field)")
+
+
 def _match_vocabulary(data: dict[str, Any], vocab: ToolVocabulary, log: list[str]) -> None:
     changes: list[str] = []
 
@@ -152,7 +173,10 @@ def _match_vocabulary(data: dict[str, Any], vocab: ToolVocabulary, log: list[str
         fix(intent, "note_reason", vocab.note_reasons, "note reason")
         for action in intent.get("actions", []):
             params = action.get("params") or {}
-            if action.get("tool") == "transfer_to_agent" or "queue" in params:
+            if action.get("tool") == "transfer_to_agent":
+                _rekey_transfer_queue(params, vocab, changes)
+                fix(params, vocab.queue_field, vocab.queues, "queue")
+            elif "queue" in params:
                 fix(params, "queue", vocab.queues, "queue")
 
     def fix_situation(key: str) -> str:
@@ -189,7 +213,7 @@ def _disclosure_wording(data: dict[str, Any], log: list[str]) -> None:
     team = str(disclosure.get("team_phrase") or "").strip()
     if _intro_present(extra):
         return
-    if team and looks_like_sentence(team):
+    if team and looks_like_sentence(team, opener_only=True):
         sentence = team if team[-1] in ".!?" else team + "."
         extra["disclosure_intro"] = sentence
         disclosure["team_phrase"] = ""
@@ -261,6 +285,23 @@ def _split_noted_intents(data: dict[str, Any], log: list[str]) -> None:
         log.append("intents split into before/after verification (the note exists only after it): " + ", ".join(split))
     if dropped:
         log.append("note_reason dropped from before-verification intents (no note tool exists yet): " + ", ".join(dropped))
+
+
+def _persuasion_date_kinds(data: dict[str, Any], log: list[str]) -> None:
+    """AUD-18: give a persuasion step the date kind its own text states, when the text states exactly one."""
+    changes: list[str] = []
+    for step in (data.get("persuasion") or {}).get("steps") or []:
+        if not isinstance(step, dict):
+            continue
+        better = corrected_proposal_date(str(step.get("date", "")), step.get("n"), str(step.get("text") or ""))
+        if better is None:
+            continue
+        old = f"{step.get('date')}" + (f" n={step.get('n')}" if step.get("n") is not None else "")
+        step["date"], step["n"] = better
+        new = better[0] + (f" n={better[1]}" if better[1] is not None else "")
+        changes.append(f"attempt {step.get('attempt')}: {old} -> {new}")
+    if changes:
+        log.append("persuasion date kinds set to the rule their own text states: " + "; ".join(changes))
 
 
 def _residual_for_uncovered(data: dict[str, Any], ledger: RuleLedger, log: list[str]) -> None:

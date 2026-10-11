@@ -162,3 +162,23 @@ def test_fake_freya_chat_script() -> None:
     assert freya.end_chat(a.call_id) == {"ended": True} and freya.workspace_id() == "ws_fake"
     with freya.simulation_slot():
         pass
+
+
+def test_fake_freya_records_the_editor_layout_and_publishes_on_create_and_update() -> None:
+    """Like the real client: every save sends ``nodePositions`` for all nodes and global nodes, then publishes."""
+    freya = FakeFreya()
+    first_workflow = {
+        "initial_node": "a",
+        "nodes": {"a": {"transitions": [{"target_node": "b"}]}, "b": {}},
+        "global_nodes": {"g": {}},
+    }
+    first = freya.save("slot", first_workflow)
+    assert first.created and first.published is True
+    assert set(freya.node_positions["slot"]) == {"a", "b", "g"}
+    assert freya.published_versions["slot"] == first.version == 1
+
+    second_workflow = {**first_workflow, "nodes": {**first_workflow["nodes"], "c": {}}}
+    second = freya.save("slot", second_workflow)
+    assert not second.created and second.published is True
+    assert set(freya.node_positions["slot"]) == {"a", "b", "c", "g"}  # the update re-sends the layout
+    assert freya.published_versions["slot"] == second.version == 2

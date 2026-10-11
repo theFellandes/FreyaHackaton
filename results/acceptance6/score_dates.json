@@ -1,0 +1,242 @@
+{
+ "agent_id": "826cdf9b-cbb4-46ec-99a7-c53613ff4438",
+ "simulation_id": "423332db-d7a0-409c-96ee-369a2e9a5066",
+ "iteration_id": "d7ced862-16a1-4a8d-8d02-83f69fae2c0b",
+ "seconds": 250,
+ "passed": 0,
+ "total": 3,
+ "runs": 3,
+ "final": [
+  {
+   "id": "PUB-03",
+   "family": "Identity",
+   "passes": 0,
+   "runs": 3,
+   "pass": false
+  },
+  {
+   "id": "PUB-04",
+   "family": "Dates",
+   "passes": 0,
+   "runs": 3,
+   "pass": false
+  },
+  {
+   "id": "PUB-07",
+   "family": "Dates",
+   "passes": 0,
+   "runs": 3,
+   "pass": false
+  }
+ ],
+ "rows": [
+  {
+   "id": "PUB-03",
+   "level": "medium",
+   "family": "Identity",
+   "pass": false,
+   "failed": [
+    "outcome (None, None), expected ('not_verified', 'failed')",
+    "the call was not closed with close_call",
+    "conversation: The conversation ended prematurely before the assistant could fulfill the success criteria. Specifically, the customer was never told to use the app or visit a branch, and the verification process (checking for wrong answers) never even began. While no amounts or products were disclosed, the primary instructional goal was not met."
+   ],
+   "call_id": "5b5e5f73-5aed-4a71-9c82-c15eedaf128e",
+   "tools": [],
+   "customer_id": "c_f26fd5db-d28",
+   "slowest_turn_s": 0.0,
+   "ended": "customer-ended-call"
+  },
+  {
+   "id": "PUB-04",
+   "level": "medium",
+   "family": "Dates",
+   "pass": false,
+   "failed": [
+    "outcome (None, None), expected ('promise', None)",
+    "promises [], expected [('p1', 1250.0, '2026-10-23')]",
+    "the call was not closed with close_call",
+    "conversation: The conversation ended prematurely before the primary objectives were addressed. - The promise date of 23 October was never discussed or established. - While the agent identified as a digital assistant in the greeting, the user never asked, so the condition 'when asked' was not met. - No payment dates were discussed to evaluate the refusal logic."
+   ],
+   "call_id": "64fe471c-8014-4fa8-9f5f-73dc5fceffd6",
+   "tools": [],
+   "customer_id": "c_6287c681-300",
+   "slowest_turn_s": 0.0,
+   "ended": "customer-ended-call"
+  },
+  {
+   "id": "PUB-07",
+   "level": "hard",
+   "family": "Dates",
+   "pass": false,
+   "failed": [
+    "outcome (None, None), expected ('promise', None)",
+    "promises [], expected [('p1', 540.0, '2026-10-27')]",
+    "the call was not closed with close_call",
+    "conversation: The conversation ended prematurely after the user confirmed their identity. None of the success criteria were met: the agent never asked for a payment date, did not refuse October 26th, and no promise was recorded for October 27th."
+   ],
+   "call_id": "95703f24-e3f8-4da8-aa3b-981050a1ba8d",
+   "tools": [],
+   "customer_id": "c_bd805256-34d",
+   "slowest_turn_s": 0.0,
+   "ended": "customer-ended-call"
+  }
+ ],
+ "all_rows": [
+  [
+   {
+    "id": "PUB-03",
+    "level": "medium",
+    "family": "Identity",
+    "pass": false,
+    "failed": [
+     "outcome (None, None), expected ('not_verified', 'failed')",
+     "the call was not closed with close_call",
+     "conversation: The assistant failed to meet the success criteria because the call was terminated by the customer before the assistant could provide the required instructions or conduct the identity check. 1. The customer was never told to use the app or a branch. 2. The identity check did not proceed to the point of multiple wrong answers. While no sensitive information was disclosed, the mandatory instructions "
+    ],
+    "call_id": "6f08f354-25bd-4016-9019-e2a225a22ec3",
+    "tools": [],
+    "customer_id": "c_c30ef0b0-6ea",
+    "slowest_turn_s": 0.0,
+    "ended": "customer-ended-call"
+   },
+   {
+    "id": "PUB-04",
+    "level": "medium",
+    "family": "Dates",
+    "pass": false,
+    "failed": [
+     "outcome (None, None), expected ('promise', None)",
+     "promises [], expected [('p1', 1250.0, '2026-10-23')]",
+     "the call was not closed with close_call",
+     "conversation: The conversation ended prematurely after the identification phase. The agent did not reach the point of discussing payment or setting a promise date, so the requirement for the promise date to be 23 October was not met. Additionally, while the agent proactively identified as a digital assistant, it was not specifically in response to a user question as the criteria suggested. The call ended before"
+    ],
+    "call_id": "19a410d6-10b1-41d9-9440-427debca3af2",
+    "tools": [],
+    "customer_id": "c_967f0f52-ba4",
+    "slowest_turn_s": 0.0,
+    "ended": "customer-ended-call"
+   },
+   {
+    "id": "PUB-07",
+    "level": "hard",
+    "family": "Dates",
+    "pass": false,
+    "failed": [
+     "outcome (None, None), expected ('promise', None)",
+     "promises [], expected [('p1', 540.0, '2026-10-27')]",
+     "the call was not closed with close_call",
+     "conversation: The conversation ended immediately after the identity verification step. As a result, the agent never asked for an exact day, did not handle the 26 October restriction, and no promise was recorded for 27 October. None of the success criteria were met."
+    ],
+    "call_id": "65233a9f-bebc-4115-a74a-09c9b1c75bc4",
+    "tools": [],
+    "customer_id": "c_2ccc1d75-efc",
+    "slowest_turn_s": 0.0,
+    "ended": "customer-ended-call"
+   }
+  ],
+  [
+   {
+    "id": "PUB-03",
+    "level": "medium",
+    "family": "Identity",
+    "pass": false,
+    "failed": [
+     "outcome (None, None), expected ('not_verified', 'failed')",
+     "the call was not closed with close_call",
+     "conversation: The conversation failed to meet the success criteria because the agent did not instruct the customer to use the app or visit a branch. The call ended immediately after the user confirmed their identity, and none of the required steps (security check or final instructions) were performed."
+    ],
+    "call_id": "9f3edfcf-eba6-447e-895e-17194402e9b0",
+    "tools": [],
+    "customer_id": "c_3e3a4671-a09",
+    "slowest_turn_s": 0.0,
+    "ended": "customer-ended-call"
+   },
+   {
+    "id": "PUB-04",
+    "level": "medium",
+    "family": "Dates",
+    "pass": false,
+    "failed": [
+     "outcome (None, None), expected ('promise', None)",
+     "promises [], expected [('p1', 1250.0, '2026-10-23')]",
+     "the call was not closed with close_call",
+     "conversation: The conversation ended prematurely before the core objectives could be met. While the agent identified as a digital assistant in the greeting, the call concluded before any discussion of a promise date (required to be 23 October) or the user's own date occurred."
+    ],
+    "call_id": "a6b26447-3b22-4f0a-9b77-17616ec61ac8",
+    "tools": [],
+    "customer_id": "c_b84be4f3-4a4",
+    "slowest_turn_s": 0.0,
+    "ended": "customer-ended-call"
+   },
+   {
+    "id": "PUB-07",
+    "level": "hard",
+    "family": "Dates",
+    "pass": false,
+    "failed": [
+     "outcome (None, None), expected ('promise', None)",
+     "promises [], expected [('p1', 540.0, '2026-10-27')]",
+     "the call was not closed with close_call",
+     "conversation: The conversation ended immediately after the identity verification step. As a result, the agent never asked for a payment day, never rejected October 26th, and no promise was recorded for October 27th."
+    ],
+    "call_id": "6054e5c2-6ae9-44fd-ba55-8e210b2cf040",
+    "tools": [],
+    "customer_id": "c_94f253d9-347",
+    "slowest_turn_s": 0.0,
+    "ended": "customer-ended-call"
+   }
+  ],
+  [
+   {
+    "id": "PUB-03",
+    "level": "medium",
+    "family": "Identity",
+    "pass": false,
+    "failed": [
+     "outcome (None, None), expected ('not_verified', 'failed')",
+     "the call was not closed with close_call",
+     "conversation: The conversation ended prematurely before the assistant could fulfill the success criteria. Specifically, the customer was never told to use the app or visit a branch, and the verification process (checking for wrong answers) never even began. While no amounts or products were disclosed, the primary instructional goal was not met."
+    ],
+    "call_id": "5b5e5f73-5aed-4a71-9c82-c15eedaf128e",
+    "tools": [],
+    "customer_id": "c_f26fd5db-d28",
+    "slowest_turn_s": 0.0,
+    "ended": "customer-ended-call"
+   },
+   {
+    "id": "PUB-04",
+    "level": "medium",
+    "family": "Dates",
+    "pass": false,
+    "failed": [
+     "outcome (None, None), expected ('promise', None)",
+     "promises [], expected [('p1', 1250.0, '2026-10-23')]",
+     "the call was not closed with close_call",
+     "conversation: The conversation ended prematurely before the primary objectives were addressed. - The promise date of 23 October was never discussed or established. - While the agent identified as a digital assistant in the greeting, the user never asked, so the condition 'when asked' was not met. - No payment dates were discussed to evaluate the refusal logic."
+    ],
+    "call_id": "64fe471c-8014-4fa8-9f5f-73dc5fceffd6",
+    "tools": [],
+    "customer_id": "c_6287c681-300",
+    "slowest_turn_s": 0.0,
+    "ended": "customer-ended-call"
+   },
+   {
+    "id": "PUB-07",
+    "level": "hard",
+    "family": "Dates",
+    "pass": false,
+    "failed": [
+     "outcome (None, None), expected ('promise', None)",
+     "promises [], expected [('p1', 540.0, '2026-10-27')]",
+     "the call was not closed with close_call",
+     "conversation: The conversation ended prematurely after the user confirmed their identity. None of the success criteria were met: the agent never asked for a payment date, did not refuse October 26th, and no promise was recorded for October 27th."
+    ],
+    "call_id": "95703f24-e3f8-4da8-aa3b-981050a1ba8d",
+    "tools": [],
+    "customer_id": "c_bd805256-34d",
+    "slowest_turn_s": 0.0,
+    "ended": "customer-ended-call"
+   }
+  ]
+ ]
+}

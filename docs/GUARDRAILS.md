@@ -20,10 +20,17 @@ It returns a `GuardReport` (`stage`, `violations`); each `GuardViolation` has `g
 
 ## The flow
 
-`guard_inputs -> guard_policy -> guard_workflow` are graph nodes that run a guard, append the report to
+`guard_inputs`, `guard_policy` and `guard_workflow` are graph nodes that run a guard, append the report to
 `state["guard_reports"]` and write the trace line `GUARD | <stage> | ok|blocked | n violations`
-(`GuardReport.summary()`; `trace.event("guard", report.trace_message())` renders the same line). A blocked workflow is
-never deployed. (The functions exist and are tested; wiring them into `builder/graph/` is a separate step.)
+(`GuardReport.summary()`; `trace.event("guard", report.trace_message())` renders the same line). The ledger guard runs
+inside `understand_brief` and the prose guard inside `draft_prose` (a failing prose draft falls back to template-only text).
+A blocked workflow is never deployed.
+
+One exception keeps a false positive from costing a whole brief (AUD-14): when the policy repairs are used up and every
+blocking finding of `guard_policy` is a grounding heuristic (`ungrounded_date`, `ungrounded_amount`, `ungrounded_number`:
+a value the guard could not find in the briefs, for example a holiday written as a name), the findings are kept as
+warnings and the build goes on best effort. The trace, the notes and the final `policy_issues` list them. Secrets, foreign
+hosts, enum values outside the tool API and injection markers still end the build `blocked`.
 
 ```mermaid
 flowchart LR
@@ -34,7 +41,8 @@ flowchart LR
   gp -- ok --> comp[compile] --> sc[static_checks] --> gw[guard_workflow]
   gp -- blocked, budget left --> rp[repair_policy] --> vp
   gp -- blocked, no budget --> fin
-  gw -- ok --> rv[remote_validate] --> dep[deploy and practice]
+  gp -- only grounding findings, no repairs left --> comp
+  gw -- ok --> rv[remote_validate] --> dep[deploy and self-test]
   gw -- blocked, budget left --> rc[repair_compile] --> comp
   gw -- blocked, no budget --> fin
 ```

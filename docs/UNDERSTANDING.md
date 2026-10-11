@@ -41,8 +41,8 @@ flowchart TD
 
 The `llm` argument is the key-changer gateway (`builder.llm.gateway.LLMGateway`); only its `structured` coroutine is
 used. Every call passes a one-line `purpose` (it appears in the trace's MODEL lines), `max_tokens=16000` for the big
-answers, and an optional `deadline` (the budget's `deadline()`), and uses the configured tier of model (the cheaper
-defaults, see `docs/LLM_KEY_CHANGER.md`). `AllProvidersFailed` propagates to the graph node, which decides the fallback
+answers, and an optional `deadline` (the budget's `deadline()`), and uses the role given in the table: the strong or the fast
+model of the provider (`*_STRONG_MODEL`, `*_FAST_MODEL`, see `docs/LLM_KEY_CHANGER.md`). `AllProvidersFailed` propagates to the graph node, which decides the fallback
 (for prose: the compiler's template-only prose).
 
 ## The rule ledger
@@ -51,7 +51,7 @@ defaults, see `docs/LLM_KEY_CHANGER.md`). `AllProvidersFailed` propagates to the
 
 | Field | Meaning |
 | --- | --- |
-| `rules[]` | `RuleEntry`: `id`, `source` (file), `quote` (verbatim), `category`, `statement` (one imperative sentence), `scope` (agent stages), `supersedes[]`, `superseded_by` |
+| `rules[]` | `RuleEntry`: `id`, `source` (file), `quote` (verbatim), `category`, `statement` (one imperative sentence), `scope` (agent stages), `supersedes[]`, `superseded_by`, `narrowed_by[]` (later rules that replace it only for some cases; it stays active) |
 | `ambiguities[]` | `Ambiguity`: `id`, `rule_ids`, `question`, `options`, `chosen`, `rationale` |
 | `supersessions[]` | human-readable log, e.g. `B-0 replaces A-JOB-a: customers are late on one to three products` |
 | `source_files[]` | the input file names, in order |
@@ -77,7 +77,15 @@ A dense brief has 100+ rules with quotes, more than one 16 000-token answer. `pl
 paragraph boundaries (default 5 500 characters per passage; a heading starts a new passage once the current one is 70 %
 full; passages never cross files). Each passage is one call that receives the **full text of all files as read-only
 context** plus the target passage, so cross references and amendments stay visible while the output stays small. The
-calls run concurrently (default 3 at a time).
+calls run concurrently (up to 3 at a time; the gateway's `LLM_MAX_CONCURRENCY`, default 2, caps all model calls).
+
+**Malformed answers.** A model can lose the thread: a rule's `statement` runs on for thousands of characters into
+raw JSON, the rules after it vanish. `ledger.draft_problem` recognises that (a statement longer than 700 characters
+and four times its quote, a raw JSON key such as `"statement":` or full-width brackets inside a quote or statement - unless the
+documents contain the same text). The passage is asked for once more with a note saying what was wrong; whatever is still
+malformed is cleaned (a clean quote replaces the garbled statement; a rule whose quote is garbled is dropped) and traced as
+an `error` event. The documents reach every prompt as `<untrusted_document>` data (`input_guard.wrap_bundle`), and the
+target passage and the completeness excerpts are escaped the same way, so a forged closing tag cannot end the block.
 
 ### Grounding and coverage (`grounding.py`)
 
@@ -101,14 +109,16 @@ calls run concurrently (default 3 at a time).
 ### Raw bank material and amendments
 
 Input may be a brief, a specification, a memo, an e-mail (`.eml`: headers From/To/Date/Subject and text parts),
-a chat or call-note export, CSV or JSON. The prompts tell the model to ignore greetings, signatures, disclaimers and quoted
+a chat or call-note export, CSV, JSON, a Word file (tables stay rows: `cell | cell | cell`) or an Excel code list (`.xlsx`:
+every sheet, one line per row). A file the loader could not turn into text (an unread archive, NUL bytes, a flood of
+undecodable characters) is blocked by the input guard (`binary`) instead of being read as garbage. The prompts tell the model to ignore greetings, signatures, disclaimers and quoted
 reply history, to keep instructions, thresholds, dates, exceptions and sentences to be spoken, and that of two
 conflicting statements the more recent or explicitly overriding one wins.
 
 **Supersession.** A later memo or a second brief can replace rules ("unless a rule below replaces it", "from now on",
 "ignore the previous", a "what changes" list). The *reconcile* call
 (`understand/ledger_reconcile.v1.j2`) receives the full text and a compact list of all rules (`id | file | category |
-statement`) and returns links `{new_rule, replaces[], note}`. It runs when there is more than one file or amendment wording
+statement`) and returns links `{new_rule, replaces[], note, partial}`. It runs when there is more than one file or amendment wording
 (replace, supersede, override, no longer, amend, correction, disregard, from now on, ...) occurs in a single file. Results:
 
 * the replaced rule gets `superseded_by`, the amending rule `supersedes` (both directions are kept consistent; links to
@@ -116,6 +126,12 @@ statement`) and returns links `{new_rule, replaces[], note}`. It runs when there
 * the replaced rule **stays in the ledger** (audit trail) but is marked `[SUPERSEDED by X]` in every prompt and does not
   count for coverage; the IR must not cite it (`RULE_SUPERSEDED_USED` is an error);
 * a line in `supersessions` and a `decision` event in the trace.
+
+**Partial amendments.** A memo often changes a rule only for some cases ("when the customer has several products"), or
+changes one atom of a bundle and says the rest "remains unchanged". The reconcile prompt then writes the link with
+`partial: true`: the old rule is **not** superseded; it stays active, lists the amending rule in `narrowed_by`, is shown as
+`[NARROWED by X]` in the prompts, and the log says `B-4 narrows A-28: only when ...`. The extraction prompt applies the old
+rule to every case the amendment does not cover.
 
 File order is **not** precedence (directory expansion sorts by name). The texts decide: explicit replacement wording,
 dates, and which document declares itself an amendment. A conflict nothing resolves becomes an ambiguity.
@@ -140,7 +156,7 @@ implements), so coverage can be audited and the compiler can place a rule's verb
 | `phrases` | sentences the documents prescribe, with `{placeholder}` slots |
 | `right_party`, `third_party` | who is on the line; callback window rules; wrong-number / deceased outcomes |
 | `identity` | questions (`field` from the `verify_identity` enum), failure limit, hints, failure / decline handling |
-| `disclosure` | how the debt is stated; spoken product names |
+| `disclosure` | how the debt is stated: `team_phrase`, spoken product names, `state_fields`, and the product fields that hold the amount and the days late |
 | `calendar` | business weekdays, holidays, date input order |
 | `bands`, `promise_dates`, `amounts`, `persuasion` | deadline bands, promise-date rules, floors, the persuasion ladder |
 | `intents` | customer intents with response, actions, outcome, precedence |
@@ -158,6 +174,19 @@ content a rule only *describes*; avoid words that another rule restricts (a reco
 only vocabulary from the tool API; every active rule appears in some `rule_ids` or in `residual_rules`. The user message also
 carries `phrase_checklist` (`validate.phrase_checklist(ledger)`): the `phrases` fields the ledger certainly prescribes.
 
+### Free-text fields that the compiler splices into sentences
+
+A field that is only a *part* of a spoken sentence has a format contract, written into the field's schema description (the
+model sees it) and enforced by the IR models and the validator:
+
+| Field | Contract |
+| --- | --- |
+| `disclosure.team_phrase` | completes "I am calling from ___" (`the collections team`); a leading "I am calling from" and the final stop are removed by the model itself (`normalise_team_phrase`); a whole sentence belongs in `phrases.extra["disclosure_intro"]` |
+| `disclosure.product_naming[type]` | a bare noun phrase (`loan ending {account_suffix}`): no verb, no punctuation, no amount or days field - the statement adds those |
+| `disclosure.amount_field`, `days_field` | the `get_account` product fields that hold the past-due amount and the days late; they decide every band and deadline; empty = read from `state_fields` (`Disclosure.amount_and_days_fields()`) |
+| `persuasion.steps[].date`, `n`, `text` | the day a step proposes: `today`, `last_business_day_this_week`, `last_business_day_next_week_if_today_is_last`, `next_business_day_after_today`, `nth_business_day_after_today` / `nth_calendar_day_after_today` (with `n`), `deadline`, `customer` (the customer picks; `text` gives the limits) or `custom` (`text` holds the rule). `calendar.resolve_proposal_date` is the reference |
+| `phrases.extra` | keys the compiler reads: `disclosure_intro`, `today_question_all` (several products; `today_question` is the single-product wording), `floor_offer`, `below_floor`, `unknown_answer`, `decline_explanation` (`PHRASE_EXTRA_KEYS`). A sentence under any other key is not lost: the compiler places it word for word in the step its rule is scoped to (AUD-09) |
+
 ### Safe fixes (`fixes.apply_safe_fixes`)
 
 Run after extraction and after every repair; no model call, no change of meaning:
@@ -166,8 +195,22 @@ Run after extraction and after every repair; no model call, no change of meaning
 * intent keys take the catalog spelling (`canonical_intent_key`); references follow;
 * tool vocabulary is matched case/separator-insensitively (`Date_Of_Birth` -> `date_of_birth`, `Transfer:General` ->
   `transfer:general`);
-* every active ledger rule that no section cites becomes a `ResidualRule` (statement + scope) - so nothing in the documents is
-  silently dropped.
+* every active ledger rule that no section cites becomes a `ResidualRule` (statement + scope), so no rule is left uncited.
+  Citing is not the same as expressing: a cited rule whose condition, exception or definition the section's fields cannot
+  hold reaches the agent only when the extractor also lists it in `residual_rules` (the extraction prompt asks for that;
+  audit AUD-10), so a rule can still be cited and lost;
+* a `team_phrase` that opens like a sentence ("This is ...") moves to `phrases.extra["disclosure_intro"]`; an empty one becomes
+  `bank_name`;
+* `disclosure.amount_field` / `days_field` are written down (from the tool API, `validate.resolve_product_fields`) when reading
+  `state_fields` alone would pick the wrong field;
+* an `any`-scope intent that records a note is split into a before-verification half (the outcome) and an after-verification
+  half (the note), and a note on a before-verification intent is dropped when it has an outcome: the opening and identity
+  nodes have no note tool;
+* a persuasion step whose date kind contradicts the one date rule its own text states (`date_cues.corrected_proposal_date`:
+  "the next business day after today" written as a week kind, a week kind that drops "if today is that day ...", an `nth`
+  kind with another `n`) gets the kind the text states. It abstains on texts with several rules or extra conditions,
+  never overrides `custom`, never downgrades the conditional week kind and replaces `customer` only when the text plainly
+  proposes a date (audit AUD-18).
 
 ### Validation (`validate.validate_policy`)
 
@@ -175,22 +218,31 @@ Returns `PolicyIssue(code, message, rule_ids, severity, path)`; `error` triggers
 
 | Code | Severity | Check |
 | --- | --- | --- |
-| `IDENTITY_FIELD`, `IDENTITY_NO_QUESTIONS`, `IDENTITY_LIMIT` | error | identity fields in the `verify_identity.field` enum; questions and a failure limit exist |
+| `IDENTITY_FIELD`, `IDENTITY_NO_QUESTIONS`, `IDENTITY_LIMIT` | error | identity fields in the `verify_identity` selector enum; questions and a failure limit exist. Every vocabulary is read from the field that holds its role (`compiler.roles`), so a renamed `outcome` / `field` / `queue` / product `type` field stays checked (audit AUD-20) |
 | `OUTCOME_UNKNOWN`, `REASON_UNKNOWN`, `REASON_MISSING` | error | outcomes in `close_call.outcome`; reasons in its enum when listed; a reason where the API says one is required (parsed from "required for every outcome except ...") |
 | `NOTE_REASON`, `QUEUE_UNKNOWN`, `TOOL_UNKNOWN`, `ACTION_PARAM` | error | `add_note` reasons, `transfer_to_agent` queues (also in `transfer:<queue>` situations), tool names and parameters of intent actions |
 | `PRODUCT_TYPE`, `PRODUCT_FIELD` | error | product types and fields in `disclosure` / `amounts` exist in the `get_account` response |
-| `BANDS_EMPTY`, `BANDS_OVERLAP`, `BAND_NAME_DUPLICATE`, `BAND_NAME_UNKNOWN` | error | bands exist, do not overlap, have unique names, persuasion steps name real bands |
+| `BANDS_EMPTY`, `BANDS_OVERLAP`, `BAND_NAME_DUPLICATE`, `BAND_NAME_UNKNOWN` | error | bands exist, do not overlap (within the untyped rows, and within the rows of each `product_types` value; a typed row wins over an untyped one, audit AUD-39), have unique names, persuasion steps name real bands |
+| `FLOOR_RULE_INVALID`, `FLOOR_RULE_UNEXPRESSED` | error | a `floor_rule_by_type` entry without a computable value; a cited amounts rule states a percentage minimum ("at least 25% of ...") that no floor rule carries (audit AUD-10) |
+| `PERSUASION_STEPS_SHORT` | error | a band allows more attempts than steps apply to it: the repair adds the steps the documents state or lowers `persuasion_attempts` (was a warning; audit AUD-30) |
 | `HOLIDAY_RANGE`, `CLOSING_EMPTY`, `LEDGER_EMPTY` | error | plausible holiday years; an outcome table; a ledger |
 | `RULE_SUPERSEDED_USED` | error | the IR cites a superseded rule (the message names the replacing rule) |
+| `PERSUASION_DATE_KIND`, `PERSUASION_DATE_TEXT` | error | a step whose date kind contradicts the date rule its text states (any kind but `custom`, see the safe fixes; audit AUD-18), or a `customer` date whose text states a date rule; a `custom` date without text |
+| `TEAM_PHRASE_MISSING`, `TEAM_PHRASE_SENTENCE`, `PRODUCT_NAMING_STATEMENT` | error | the wording contracts above (an abbreviation with a full stop inside `team_phrase` is only a warning) |
+| `AMOUNT_FIELD_MISSING`, `DAYS_FIELD_MISSING`, `AMOUNT_FIELD_UNKNOWN`, `DAYS_FIELD_UNKNOWN` | error | the product fields that decide the band cannot be read from `state_fields`, or the explicit field is not a `get_account` field |
+| `TODAY_QUESTION_ALL` | error | several products are allowed but the only first ask is about "all of them" (single-product customers would hear it) |
+| `INTENT_NOTE_BEFORE_VERIFICATION` | error | a before-verification (or `any`) intent that only records a note and has no outcome |
 | `PHRASE_MISSING` | error | an active ledger rule prescribes a sentence (quoted or only described: opening, who is on the line, robot / scam answer, identity failure, deceased, already paid, goodbye) but the matching `phrases` field is empty; the repair prompt asks the model to quote or compose it |
-| `BANDS_GAP`, `PERSUASION_STEPS_SHORT`, `DEADLINE_CUSTOM` | warning | days late in no band; fewer ladder steps than attempts; a deadline the compiler cannot compute |
+| `BANDS_GAP`, `DEADLINE_CUSTOM`, `ROW_SHADOWED` | warning | days late in no band (per product type when rows are typed); a deadline the compiler cannot compute; an outcome row an earlier row for the same situation and verification state always beats (audit AUD-46) |
 | `REASON_UNEXPECTED`, `OUTCOME_NOT_IN_TABLE`, `PRECEDENCE_UNKNOWN`, `PLACEHOLDER_UNKNOWN`, `PRODUCT_TYPE_UNCOVERED`, `INTENT_DUPLICATE`, `MULTI_PRODUCT_NOTES`, `HOLIDAY_WEEKEND`, `HOLIDAY_SPREAD`, `IDENTITY_FORMAT`, `IDENTITY_FIELD_DUPLICATE` | warning | consistency notes |
 | `RULE_UNCOVERED`, `RULE_ID_UNKNOWN`, `SUPERSESSION_DANGLING`, `LEDGER_DUPLICATE_ID` | warning | coverage and ledger hygiene (the first is auto-fixed by `apply_safe_fixes`) |
 
 ### Repair (`repair.repair_policy`)
 
-1. `apply_safe_fixes`; 2. re-validate; if no error remains, done **without a model call**; 3. otherwise one call with the
-remaining issues (errors first), the current IR, the documents, the ledger and the allowed values
+1. `apply_safe_fixes`; 2. re-validate; if no error remains, done **without a model call** - unless an issue came from another
+stage (`GUARD_*` from the policy guard, `WALKTHROUGH_*` / `PRACTICE_*` from the self-tests: `validate.is_external_issue`), which
+the validator cannot re-check, so those always go to the model; 3. otherwise one call with the
+remaining issues (errors first, outside findings included), the current IR, the documents, the ledger and the allowed values
 (`repair/policy_repair.v1.j2`) returning the complete corrected IR; 4. safe fixes again. The graph repeats validate/repair at
 most `max_policy_repairs` times and then continues or falls back to the agentic track.
 
@@ -204,6 +256,22 @@ to add no number, sentence or policy that they lack. `sanitize_prose` then remov
 caps lengths and traces numbers found in neither the rules nor the IR. The result type is the compiler's
 `builder.compiler.prose.NodeProse(system_prompt_extra, per_node)`.
 
+### What the IR cannot express
+
+The IR is a fixed schema. These shapes have no structured field yet, so a rule of this kind reaches the agent only as
+verbatim text (a residual rule in the prompt of its step), not as code:
+
+* a days-late range the documents put outside negotiation with its own action ("over 60 days: transfer"): the agent uses
+  the nearest band (a gap in a band table is a `BANDS_GAP` warning);
+* bands that depend on the amount (bands per product type are supported, AUD-39);
+* deadline rules other than the supported kinds (`DEADLINE_CUSTOM` warning: the deadline is not computed);
+* outcome rows that depend on the promise terms (full or partial, today or later), and split payments (AUD-46);
+* conditional exceptions and definitions inside a cited rule ("who counts as the right party"), unless the extractor also
+  lists the rule in `residual_rules` (AUD-10).
+
+Floors stated as a computation (a percentage of the past-due amount, a fixed sum, the larger or smaller of several) are
+supported through `amounts.floor_rule_by_type` (AUD-10).
+
 ## Prompts
 
 `builder/prompts/__init__.py`: `render_prompt_parts(name, **ctx)` -> `PromptParts(system, user)` (templates define
@@ -212,7 +280,7 @@ strict (a missing variable raises). Filters `json_compact`, `json_pretty`.
 
 | Template | Used by | Context variables |
 | --- | --- | --- |
-| `understand/rule_ledger.v1.j2` | `build_rule_ledger` | files, tool_api_text, prefix, source, part_index, part_total, full_text, target_text, target_is_all, categories, scopes |
+| `understand/rule_ledger.v1.j2` | `build_rule_ledger` | files, tool_api_text, prefix, source, part_index, part_total, full_text, target_text, target_is_all, categories, scopes, retry_note |
 | `understand/ledger_reconcile.v1.j2` | reconcile step | files, full_text, rule_lines, existing_ambiguities |
 | `understand/ledger_complete.v1.j2` | completeness step | files, prefix_hint, passages, categories, scopes, known_ids |
 | `understand/ledger_requote.v1.j2` | re-quote step | files, full_text, items |

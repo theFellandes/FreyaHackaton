@@ -52,10 +52,10 @@ def test_defaults_match_the_contract(settings: Settings) -> None:
     assert settings.llm_max_cooldown_wait_s == 45.0
     assert settings.llm_key_health_file == DATA_DIR / "key_health.json"
     assert settings.llm_dead_key_ttl_s == 21600
-    assert settings.builder_track == "auto"
+    assert settings.builder_track == "compiled"  # AUD-01: the bare command is the configuration measured live
     assert settings.agent_profile == "staged"
     assert settings.build_time_budget_s == 1680
-    assert settings.self_test == "auto"
+    assert settings.self_test == "smoke"
     assert settings.build_slot is None
     assert settings.dry_run is False
     assert (settings.max_policy_repairs, settings.max_compile_repairs, settings.max_selftest_repairs) == (
@@ -113,6 +113,41 @@ def test_blank_values_fall_back_to_defaults(
     assert s.freya_workspace_id is None
 
 
+def test_the_local_llm_log_keeps_full_content_by_default_and_is_independent_of_langfuse(
+    monkeypatch: pytest.MonkeyPatch, make_settings: MakeSettings
+) -> None:
+    """Logging privacy: ``LLM_LOG_CONTENT`` governs the local ``.llm.jsonl``; ``OBSERVABILITY_LOG_PROMPTS`` Langfuse."""
+    default = make_settings()
+    assert default.llm_log_content == "full"  # the owner reads the replies locally
+    assert default.observability_log_prompts is True
+
+    monkeypatch.setenv("LLM_LOG_CONTENT", " Metadata ")
+    local_only = make_settings()
+    assert local_only.llm_log_content == "metadata"
+    assert local_only.observability_log_prompts is True  # the Langfuse switch is untouched
+
+    monkeypatch.delenv("LLM_LOG_CONTENT")
+    monkeypatch.setenv("OBSERVABILITY_LOG_PROMPTS", "false")
+    langfuse_only = make_settings()
+    assert langfuse_only.observability_log_prompts is False
+    assert langfuse_only.llm_log_content == "full"  # and this one does not hide the local texts
+
+
+def test_a_blank_llm_log_content_falls_back_to_full(
+    monkeypatch: pytest.MonkeyPatch, make_settings: MakeSettings
+) -> None:
+    monkeypatch.setenv("LLM_LOG_CONTENT", "")
+    assert make_settings().llm_log_content == "full"
+
+
+def test_an_unknown_llm_log_content_is_rejected_not_silently_treated_as_full(
+    monkeypatch: pytest.MonkeyPatch, make_settings: MakeSettings
+) -> None:
+    monkeypatch.setenv("LLM_LOG_CONTENT", "redacted")
+    with pytest.raises(ValidationError):
+        make_settings()
+
+
 def test_blank_secrets_and_strings_given_directly_are_unset(make_settings: MakeSettings) -> None:
     s = make_settings(freya_api_key="   ", freya_bank_team_key="", build_slot="  ", freya_workspace_id="")
     assert s.freya_api_key is None
@@ -134,6 +169,18 @@ def test_dotenv_file_is_read_and_environment_wins(tmp_path: Path, monkeypatch: p
     assert s.freya_api_key.get_secret_value() == "fak_from_dotenv_file"  # type: ignore[union-attr]
     assert s.build_slot == "dotenv-slot"
     assert s.self_test == "none"  # process environment overrides .env
+
+
+def test_the_hermetic_fixture_makes_any_read_of_the_real_dotenv_fail_loudly() -> None:
+    """REPO-16: key discovery, ``effective_env`` and a stray ``dotenv_values`` must never reach the developer's keys."""
+    import dotenv
+
+    from builder.llm.keys import default_env
+
+    with pytest.raises(AssertionError, match=r"real \.env"):
+        dotenv.dotenv_values(REPO_ROOT / ".env")  # whether or not the file exists on this machine
+    default_env()  # the redirected defaults of key discovery and effective_env never touch it
+    effective_env()
 
 
 def test_hermetic_fixture_hides_the_repository_dotenv(monkeypatch: pytest.MonkeyPatch) -> None:

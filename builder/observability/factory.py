@@ -48,7 +48,8 @@ def build_observer(
 
     Args:
         settings: ``builder.settings.Settings`` (uses ``langfuse_public_key``, ``langfuse_secret_key``,
-            ``langfuse_host`` and ``observability_log_prompts``; missing attributes mean "off" / defaults).
+            ``langfuse_host`` and ``observability_log_prompts`` for Langfuse, and ``llm_log_content`` for the local
+            log; missing attributes mean "off" / defaults, i.e. the local log keeps the full texts).
         trace: The run's ``TraceWriter``: its ``redact`` masks secrets and its ``log_path`` decides where the LLM
             log goes (``<slot>-<ts>.llm.jsonl``). A trace without files (``NullTrace``) gets an in-memory log, so
             tests never write into ``traces/``.
@@ -58,7 +59,13 @@ def build_observer(
         A :class:`CompositeObserver` (JSONL always; Langfuse added when both keys are set and the SDK is importable).
     """
     redact = getattr(trace, "redact", None)
-    observers: list[LLMObserver] = [JsonlObserver(llm_log_path_for(trace), redact=redact)]
+    content = str(getattr(settings, "llm_log_content", None) or "full").strip().lower()
+    if content not in ("full", "metadata"):  # Settings rejects it; an ad-hoc object must fail privately
+        _note(trace, f"llm_log_content {content!r} is not full|metadata; the local log keeps metadata only")
+        content = "metadata"
+    observers: list[LLMObserver] = [
+        JsonlObserver(llm_log_path_for(trace), redact=redact, content=content)  # type: ignore[arg-type]
+    ]
 
     public_key = _secret(getattr(settings, "langfuse_public_key", None))
     secret_key = _secret(getattr(settings, "langfuse_secret_key", None))

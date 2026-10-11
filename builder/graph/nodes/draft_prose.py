@@ -4,7 +4,9 @@
 passes the prose guard (:func:`builder.guardrails.check_prose`: no invented amounts or dates, no unknown tools); on a
 block, a model failure, or when the budget no longer allows the stage, the template-only fallback is used
 (:func:`builder.compiler.prose.default_prose`) - the compiler's templates already carry every IR rule, so the prose
-only polishes. This node does not fail because of the model.
+only polishes. This node does not fail because of the model. The draft is optional work, so its model call gets a deadline
+that leaves room for compile, validation and deploy (:meth:`builder.budget.Budget.deadline_before`): a slow model costs the
+polish, never the deployment.
 """
 
 from __future__ import annotations
@@ -42,7 +44,9 @@ async def _body(state: BuilderState, ctx: BuilderContext) -> dict[str, Any]:
         return {"prose": fallback, "notes": [f"{NAME}: skipped (budget)"]}
     profile = state.get("profile", ctx.settings.agent_profile)
     try:
-        prose = await draft_prose(ctx.llm, ir, ledger, profile, ctx.trace, deadline=ctx.budget.deadline())
+        # optional work: it ends in time for compile, validation and deploy, or the template-only prose is used
+        deadline = ctx.budget.deadline_before("compile", "remote_validate", "deploy")
+        prose = await draft_prose(ctx.llm, ir, ledger, profile, ctx.trace, deadline=deadline)
     except AllProvidersFailed as exc:
         ctx.trace.error("prose draft failed; using the template-only prompts", error=short(exc))
         return {"prose": fallback, "notes": [f"{NAME}: model failed, template-only prompts used"]}

@@ -1,0 +1,15 @@
+{
+  "team": "Oğuzhan Güngör",
+  "members": [
+    {
+      "name": "Oğuzhan Güngör",
+      "email": ""
+    }
+  ],
+  "repo": "https://github.com/theFellandes/FreyaHackaton",
+  "commit": "",
+  "run_command": "python3 builder/build.py {case_folder} {mock_url}",
+  "workflow": "",
+  "trace": "",
+  "mock_url": ""
+}

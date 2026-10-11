@@ -20,11 +20,11 @@ how data flows through it, how to extend it, and the rules that keep it legal fo
 * **Models understand, code decides.** An LLM turns text into a *quoted rule ledger* and then a typed `PolicyIR`. From there on
   everything is deterministic: validation, the compiler, the checks. The LLM never writes the workflow on the compiled track.
 * **Every rule has an owner.** Each ledger rule must map to a node, a code snippet or a hook (`rule_map`). The coverage report
-  says which rule is not enforced anywhere.
+  says which rule is not mapped anywhere. A mapped rule is placed, not proven: behaviour needs a test or a live run.
 * **Never crash, always trace.** Every graph node catches its own errors. The trace is closed and one JSON line is printed whatever
   happens. Failures go to repair loops or to a fallback; only a guard can stop a build for good.
-* **Cheap by default.** The default models are the cheap tiers and the fast role does the small jobs. Nothing calls an LLM
-  that a function can answer.
+* **Few model calls.** The strong role reads the brief (ledger, extraction, repair); the fast role does the small jobs (prose,
+  re-quotes, the optional walkthrough). Nothing calls an LLM that a function can answer.
 * **Offline first.** The whole pipeline runs without keys against fixtures (`--fake-llm`), and the tests never touch the network.
 
 ## 2. Module map
@@ -32,6 +32,9 @@ how data flows through it, how to extend it, and the rules that keep it legal fo
 ```
 builder/
   build.py              CLI: arguments, trace, wall-clock guard, graph run, the final JSON line
+  _startup.py           stdlib-only start checks: supported interpreter (3.11-3.13), complete checkout, dependencies
+  submission.py         prepares and checks the local submission draft (no git, no network)
+  viz.py                Mermaid diagrams of the builder graph and of a compiled workflow (python -m builder.viz)
   inputs.py             classify arguments into briefs and the tool API file; choose the slot
   settings.py           Settings (pydantic-settings): .env + environment, every knob with a default and a description
   paths.py, budget.py   repository paths; the wall-clock Budget (deadline(), remaining(), allows_stage()) and STAGE_ESTIMATES_S
@@ -55,14 +58,16 @@ builder/
   compiler/             compile.py (compile_workflow), profiles/staged.py and lean.py, codegen.py (Python snippets for code
                         nodes), hooks.py (tool pre/post hooks), toolset.py + tools.py (tool definitions), nodes.py (node and
                         transition constructors), naming.py + context.py (situations, prompt contexts), prose.py (NodeProse),
-                        pycode.py (brace-free embedding), workflow_model.py (typed Freya workflow), prompts.py, errors.py
+                        pycode.py (brace-free embedding), workflow_model.py (typed Freya workflow), layout.py (editor
+                        nodePositions), roles.py (field roles from the tool contracts), phrasing.py, prompts.py, errors.py
   prompts/              versioned Jinja templates: understand/, extract/, repair/, compile/, audit/, agent/
-  checks/               lint.py (rules L001-L027), code_sandbox.py (runs generated code), coverage.py (rule coverage)
+  checks/               lint.py (rules L001-L029), code_sandbox.py (runs generated code), coverage.py (rule coverage)
 
   graph/                state.py, context.py, routing.py (pure), build_graph.py, nodes/ (one module per node)
   selftest/             smoke.py (chat), walkthrough.py (model audit), practice.py (the kit harness)
   agentic/runner.py     the Claude Agent SDK fallback track
-  freya/                client.py (FreyaClient around the kit's freya.py), practice.py, diff.py, kit.py, ratelimit.py
+  freya/                client.py (FreyaClient around the kit's freya.py), transport.py (deadline-bounded HTTP), background.py
+                        (abandonable platform calls), practice.py, diff.py, kit.py, ratelimit.py
 
   testing.py            FixtureGateway (answers model calls from fixture files) and FakeFreya (in-memory platform)
   playground.py, playground_views.py, monitor_views.py   the Streamlit pages (streamlit_app.py at the repository root)
@@ -70,7 +75,10 @@ builder/
 tests/
   unit/                 one file per module family; no network
   graph/                topology, routing, node and whole-graph runs with fakes
-  fixtures/policy/      brief_a / brief_ab ledger and IR JSON (the only place brief values live besides evals/)
+  variants/             structural variants of a hidden brief, compiled and run by an offline engine (engine.py)
+  fixtures/policy/      brief_a / brief_ab ledger and IR JSON, hand-written (brief values live only in tests/ and evals/)
+  fixtures/real_ir/     the accepted live builds' model-made IRs and ledgers (Brief A, A+B)
+  fixtures/variants/    the model-made IR and ledger of the synthetic pack evals/synthetic_briefs/v01_clean
   conftest.py           autouse safety nets: disabled .env, cleared key variables, sockets to non-loopback hosts blocked
 evals/                  reference/brief_a_ref.py (hand-authored 9/10 agent), triage.py (failure timelines)
 tools/, freya.py, docs/workflow-format.md, docs/tools-and-code.md, docs/api.md, briefs/, examples/   organiser kit: never edit
@@ -97,11 +105,11 @@ flowchart TD
     GW -->|dry run| FIN[finalize]
     GW --> RV[remote_validate]
     RV --> DEP["deploy<br/>save in place, export"]
-    DEP --> ST["self_test<br/>smoke, walkthrough, practice"]
+    DEP --> ST["self_test<br/>smoke by default"]
     ST --> DEC[decide]
-    DEC -->|failing audit| RP
+    DEC -->|"failing walkthrough or practice (opt-in modes)"| RP
     DEC --> FIN
-    UB -.->|failure| AG["agentic_build<br/>Claude Agent SDK session"]
+    UB -.->|"failure, --track auto only"| AG["agentic_build<br/>Claude Agent SDK session"]
     SC -.->|repairs used up| AG
     AG --> SC
     FIN --> OUT["out/, traces/, results/, JSON line"]
@@ -119,8 +127,8 @@ flowchart TD
 In words: **understand** (`understand/`) turns text into a `RuleLedger` and a `PolicyIR`; **validate** (`understand/validate.py`,
 `guardrails/`) checks them against the tool API and the source text; the **compiler** (`compiler/`) turns the IR into a Freya workflow
 dict with prompts, code nodes and hooks; **checks** (`checks/`) lint it, run its code in a sandbox and measure rule coverage; the
-**Freya client** (`freya/`) validates, saves and exports it; **self-tests** (`selftest/`) probe it and may send findings back to the
-policy repair. The graph (`graph/`) owns control flow only; it contains no policy logic. Details per stage: `docs/GRAPH.md`,
+**Freya client** (`freya/`) validates, saves and exports it; **self-tests** (`selftest/`) probe it; in the opt-in modes their findings
+can go back to the policy repair. The graph (`graph/`) owns control flow only; it contains no policy logic. Details per stage: `docs/GRAPH.md`,
 `docs/UNDERSTANDING.md`, `docs/COMPILER.md`, `docs/GUARDRAILS.md`.
 
 ## 4. The main data types
@@ -135,14 +143,14 @@ policy repair. The graph (`graph/`) owns control flow only; it contains no polic
 | `PolicyIssue` | `understand/validate.py` | one validation finding with a stable `code`, severity and the rule ids it concerns |
 | `NodeProse` | `compiler/prose.py` | optional model-written wording for four nodes (opening, third_party, identity, negotiate) |
 | `CompiledWorkflow` | `compiler/compile.py` | `workflow` (dict in the kit format), `rule_map` (rule id to locations), `profile`, `notes` |
-| `LintReport`, `CoverageReport` | `checks/` | findings by rule id (errors block); rules enforced, missing, superseded |
+| `LintReport`, `CoverageReport` | `checks/` | findings by rule id (errors block); rules mapped (`covered`), `uncovered`, `superseded`, `dangling` |
 | `GuardReport` | `guardrails/models.py` | violations of one guard stage |
 | `BuilderState` | `graph/state.py` | what flows between graph nodes (JSON values only) |
 | `LLMGateway`, `LLMCallResult` | `llm/gateway.py` | `await gw.structured(purpose=..., schema=Model, system=..., user=..., role=LLMRole.STRONG)` |
 
 ## 5. How to extend
 
-Run `uv run pytest tests -q` and `uv run ruff check builder tests` after every step below. Each recipe lists what must change so
+Run the tests and `ruff check builder tests evals` (commands in section 6) after every step below. Each recipe lists what must change so
 nothing is left half done.
 
 ### 5.1 Add an LLM provider
@@ -179,7 +187,9 @@ test sets it with `monkeypatch.setenv` and builds `Settings()`.
    always safe, to `understand/fixes.py`.
 4. Teach the compiler to use it: read it in the context builders of `compiler/profiles/staged.py` (and `lean.py`), render it in the
    template under `builder/prompts/agent/`, and record the rule ids with `self.rm(...)` so the coverage stays complete.
-5. Update `tests/fixtures/policy/*.json` (the fixtures are real model-shaped IRs) and add a failing and a passing case to
+5. Update `tests/fixtures/policy/*.json` (hand-written IRs in the model's format; the IRs the model really produced for the
+   accepted builds are in `tests/fixtures/real_ir/`, checked by `tests/unit/test_real_ir_compile.py`, and the synthetic
+   structural variants are in `tests/fixtures/variants/` + `tests/variants/`) and add a failing and a passing case to
    `tests/unit/test_validate_policy.py` and `tests/unit/test_policy_ir.py`.
 
 A new *intent* is cheaper: add it to `builder/policy/intents.py` (key, neutral description). The catalog only names what to detect;
@@ -240,11 +250,14 @@ and coverage tests must pass for it unchanged.
 ## 6. Testing
 
 ```sh
-uv run pytest -m "not live"            # everything (about 1,900 tests, under a minute)
-uv run pytest tests/unit/test_codegen.py -q
-uv run pytest tests/graph -q
-uv run ruff check builder tests
+.venv/Scripts/python.exe -m pytest tests -p no:cacheprovider   # everything offline (3,380 passed and 4 xfail on 11 October)
+.venv/Scripts/python.exe -m pytest tests/unit/test_codegen.py
+.venv/Scripts/python.exe -m pytest tests/graph
+.venv/Scripts/python.exe -m ruff check builder tests evals
 ```
+
+`pyproject.toml` already sets `-q` in `addopts`; a second `-q` hides the summary line. On Linux or macOS use `.venv/bin/python`,
+or `uv run` in front of `pytest` / `ruff`.
 
 * **No network, no keys.** `tests/conftest.py` disables `.env`, clears every setting and key variable, and fails any test that opens a
   socket to a non-loopback host. Only `@pytest.mark.live` tests may talk to Freya or an LLM, and none exist for the automated
@@ -300,10 +313,9 @@ These come from the hackathon and are enforced by tests where possible.
   after `claude login`.
 * **Formatting.** The graph part was formatted with `ruff format`; the rest of the repository is not. Do not reformat unrelated files in
   a feature change.
-* **Open items** worth knowing before a change: the live paths (real LLM calls, Freya, the practice harness) have not been exercised
-  by the automated work; the promise-guard trick of the compiler (`config['url'] = ''`, experiment E-9) and several platform behaviours
-  are listed as *unverified* in `docs/COMPILER.md` section 10; `policy/outcomes.py` and `policy/money.py` still hold the older partial-paid
-  rule, while the generated `decide` code is the stricter, validated one (the tests only compare note sets where both agree).
+* **Open items** worth knowing before a change are in [FIXING_ISSUES.md](FIXING_ISSUES.md). The platform behaviours the compiler
+  relies on, verified and not, are listed in `docs/COMPILER.md` section 10. The automated suite never calls Freya or a model;
+  live evidence is in `results/BASELINE.md`.
 
 ## 9. Other documents
 
@@ -318,4 +330,7 @@ These come from the hackathon and are enforced by tests where possible.
 | Traces, LLM log, Langfuse, rate limits | `docs/OBSERVABILITY.md` |
 | Platform reference (organisers) | `docs/workflow-format.md`, `docs/tools-and-code.md`, `docs/api.md`, `KIT_README.md` |
 | Hackathon rules and research notes | `docs/research/11_hackathon_rules_and_kit.md`, `docs/research/12_tau_tau_bench_lessons.md`, `docs/research/13_brief_rule_mechanism_map.md` |
-| Early planning (superseded where they disagree) | `docs/ARCHITECTURE.md`, `docs/IMPLEMENTATION_PLAN.md`, `docs/TASKS.md`, `docs/FOLDER_STRUCTURE.md` |
+| How the pieces fit together | `docs/HOW_IT_WORKS.md` |
+| Known defects and their status | `docs/FIXING_ISSUES.md` |
+| Submission procedure | `docs/SUBMISSION.md` |
+| Early planning (historical; superseded where they disagree) | `docs/ARCHITECTURE.md`, `docs/IMPLEMENTATION_PLAN.md`, `docs/TASKS.md`, `docs/FOLDER_STRUCTURE.md` |

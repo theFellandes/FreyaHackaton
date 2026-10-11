@@ -23,13 +23,16 @@ only ``json`` / ``re`` / ``datetime`` and contains no ``{{`` or ``}}``. IR data 
 
 from __future__ import annotations
 
+import re
 import textwrap
 from collections.abc import Mapping, Sequence
 from typing import Any
 
 from builder.compiler import naming
 from builder.compiler.context import extra_phrase, today_question
+from builder.compiler.errors import CompileError
 from builder.compiler.hooks import PROMISE_FIX_DEFAULT
+from builder.compiler.phrasing import speakable
 from builder.compiler.pycode import MONEY_FUNCS, assert_safe_code, json_literal, py_literal, strip_code
 from builder.compiler.roles import AccountRoles
 from builder.policy.ir import DeadlineRule, PolicyIR
@@ -41,11 +44,14 @@ __all__ = [
     "DATE_TABLE_MIN_DAYS",
     "VARS_WRITTEN",
     "account_facts_snippet",
+    "callback_fix_snippet",
     "check_callback_snippet",
     "check_promise_snippet",
+    "clock_variable",
     "decide_config",
     "decide_outcome_snippet",
     "guard_snippet",
+    "persuasion_ladder_gaps",
     "promise_fix_snippet",
     "set_choice_snippet",
     "setup_snippet",
@@ -56,21 +62,26 @@ VARS_WRITTEN: dict[str, tuple[str, ...]] = {
     "setup": (
         "setup_state", "today_iso", "today_spoken", "weekday_name", "now_time", "today_is_business_day",
         "next_business_day_iso", "next_business_day_spoken", "date_table", "attempt1_date", "attempt1_spoken",
-        "callback_facts",
+        "callback_facts", "callback_slots", "promise_acks", "callback_acks", "promise_acked",
+        "callback_acked",
     ),
     "account_facts": (
         "account_state", "account_facts", "debt_statement", "product_ids", "product_count", "identity_verified",
     ),
     "decide": ("final_outcome", "final_reason", "decide_state", "decide_situation"),
     "promise_fix": ("promise_guard", "promise_fix_text"),
+    "callback_fix": ("callback_guard", "callback_fix_text"),
 }
+
+#: How many groups of non-business days (with the day to offer instead) ``account_facts`` lists per product (F21).
+SKIP_GROUPS_LIMIT = 6
 
 #: The date table lists at least this many days, and as many as a deadline needs but never more than the maximum (a long
 #: deadline must not turn the negotiation prompt into a calendar; the allowed dates are summarised in ``account_facts``).
 DATE_TABLE_MIN_DAYS = 50
 DATE_TABLE_MAX_DAYS = 70
-#: How far ahead the promise guard knows every allowed date. A deadline beyond it (or no deadline) leaves the list open:
-#: the guard then accepts later ISO dates (up to the deadline, when there is one).
+#: How far ahead allowed dates are enumerated for presentation. The promise guard checks the full calendar and
+#: deadline independently, including dates beyond this horizon.
 ALLOWED_HORIZON_DAYS = 366
 #: Up to this many allowed dates are listed one by one in the prompt; longer lists are summarised as a range.
 ALLOWED_LIST_LIMIT = 30
@@ -159,6 +170,46 @@ except Exception:
 today = now.date()
 """
 
+_ISO_DATETIME = re.compile(r"^\d{4}-\d{2}-\d{2}([T ]\d{2}:\d{2}.*)?$")
+_CLOCK_WORDS = ("now", "current", "today", "clock", "time", "date")
+
+
+def clock_variable(ir: PolicyIR) -> str:
+    """The call variable that carries the call's current date and time (AUD-13); ``now`` unless the brief names another.
+
+    ``now`` when it is declared (every public case) or when nothing else fits. Otherwise the one declared variable whose
+    example is an ISO date-time, else the one date-like variable whose name or meaning says it is the current time (never
+    a birth date). The date code then reads that variable first and ``now`` second, so a renamed clock never falls back
+    to the server's real clock while the build reports nothing.
+    """
+    variables = list(ir.call_variables)
+    if not variables or any(v.name == "now" for v in variables):
+        return "now"
+    stamped = [v for v in variables if _ISO_DATETIME.match(v.example.strip() or "-") and ":" in v.example]
+    if len(stamped) == 1:
+        return stamped[0].name
+    dated = [v for v in variables if _ISO_DATETIME.match(v.example.strip() or "-")] or variables
+
+    def clockish(variable: Any) -> bool:
+        text = f"{variable.name} {variable.meaning}".lower().replace("_", " ")
+        return "birth" not in text and any(re.search(rf"\b{word}\b", text) for word in _CLOCK_WORDS)
+
+    named = [v for v in dated if clockish(v)]
+    current = [v for v in named if re.search(r"\b(now|current|today)\b", f"{v.name} {v.meaning}".lower().replace("_", " "))]
+    pick = current if len(current) == 1 else named
+    return pick[0].name if len(pick) == 1 else "now"
+
+
+def _parse_now(clock: str = "now") -> str:
+    """The shared clock reader: ``vars[clock]`` (then ``now``), the real clock only as the last resort (``now_missing``).
+
+    A ``Z`` or an offset is dropped (the case's local time is what the rules use, as :func:`builder.policy.calendar.parse_now`
+    does). With ``clock`` = ``now`` the code reads exactly ``vars.get('now')``.
+    """
+    source = "vars.get('now')" if clock == "now" else f"(vars.get({clock!r}) or vars.get('now'))"
+    return _PARSE_NOW.strip("\n").replace("vars.get('now')", source).replace(
+        "today = now.date()", "now = now.replace(tzinfo=None)\ntoday = now.date()")
+
 
 def _indent(body: str, spaces: int = 4) -> str:
     return textwrap.indent(body.strip("\n"), " " * spaces)
@@ -196,6 +247,7 @@ def _band_cfg(ir: PolicyIR) -> list[dict[str, Any]]:
             "max": band.days_late_max,
             "attempts": band.persuasion_attempts,
             "deadline": _rule_cfg(band.deadline),
+            **({"types": list(band.product_types)} if band.product_types else {}),  # AUD-39: rows per product type
         }
         for band in ir.bands
     ]
@@ -247,6 +299,24 @@ vars['promise_fix_text'] = vars.get('promise_fix_text') or __SAY__
 """
 
 
+_CALLBACK_FIX_BODY = """
+vars['callback_guard'] = 'handled'
+vars['callback_fix_text'] = str(vars.get('callback_guard_say') or __SAY__)
+"""
+
+
+def callback_fix_snippet() -> str:
+    """The body of a ``callback_fix_<stage>`` code node (AUD-29), the twin of :func:`promise_fix_snippet`.
+
+    The ``schedule_callback`` pre-hook writes ``callback_guard`` (``blocked: ...``) and ``callback_guard_say`` when it
+    blocks a slot outside the allowed times; the node marks the block ``handled`` and copies the correction to
+    ``callback_fix_text``, which the next node speaks.
+    """
+    say = py_literal("I am sorry, I cannot book a callback at that time. Which other time would suit?")
+    body = _CALLBACK_FIX_BODY.replace("__SAY__", say)
+    return _wrap([], body, body)
+
+
 def promise_fix_snippet() -> str:
     """The body of the ``promise_fix`` code node (guard recovery).
 
@@ -283,6 +353,8 @@ for i in range((last_needed - today).days + 1):
     week = 'this week' if wk == 0 else ('next week' if wk == 1 else 'in ' + str(wk) + ' weeks')
     if isbd(d):
         kind = 'business day'
+    elif not CFG.get('business_only', True):
+        kind = ('BANK HOLIDAY' if d.isoformat() in hol else 'weekend') + ' - promise dates are not limited to business days'
     else:
         kind = 'BANK HOLIDAY, not a business day' if d.isoformat() in hol else 'weekend, not a business day'
         alt = None
@@ -313,6 +385,14 @@ kind1 = CFG.get('attempt1_kind')
 a1 = None
 if kind1 == 'today':
     a1 = today if isbd(today) else nb
+elif kind1 == 'next_business_day_after_today':
+    a1 = nb
+elif kind1 == 'nth_business_day_after_today':
+    a1 = nth_bd_after(today, CFG.get('attempt1_n') or 0)
+elif kind1 == 'nth_calendar_day_after_today':
+    a1 = today + datetime.timedelta(days=int(CFG.get('attempt1_n') or 0))
+    if not isbd(a1):
+        a1 = next_bd(a1)
 elif kind1 in ('last_business_day_this_week', 'last_business_day_next_week_if_today_is_last'):
     strictly = kind1 == 'last_business_day_next_week_if_today_is_last'
     usable = this_week is not None and (this_week > today if strictly else this_week >= today)
@@ -320,8 +400,13 @@ elif kind1 in ('last_business_day_this_week', 'last_business_day_next_week_if_to
 if a1 is not None:
     vars['attempt1_date'] = a1.isoformat()
     vars['attempt1_spoken'] = spoken(a1)
+vars['promise_acks'] = '0'
+vars['callback_acks'] = '0'
+vars['promise_acked'] = 'no'
+vars['callback_acked'] = 'no'
 cb = CFG.get('callback')
 facts = 'Now is ' + spoken(today) + ', ' + hhmm + '.'
+slots = []
 if cb is not None:
     mode = cb['allowed_days']
     lo = cb['start']
@@ -348,20 +433,28 @@ if cb is not None:
                     continue
                 later = ', but only a time later than ' + hhmm if cb['after_now'] else ''
                 parts.append('today ' + spoken(today) + ' (' + today.isoformat() + ') ' + span + later)
+                strict = cb['after_now'] and hhmm >= lo
+                slots.append(d.isoformat() + '|' + (hhmm if strict else lo) + '|' + ('1' if strict else '0') + '|' + hi + '|' + ('1' if cb['inclusive'] else '0') + '|today ' + short(d))
             else:
                 label = 'the next business day ' if d == nb else ''
                 parts.append(label + spoken(d) + ' (' + d.isoformat() + ') ' + span)
+                slots.append(d.isoformat() + '|' + lo + '|0|' + hi + '|' + ('1' if cb['inclusive'] else '0') + '|' + short(d))
         facts = facts + ' A callback can be booked only for: ' + '; or '.join(parts) + '. Nothing else is allowed.'
         if not parts:
             facts = 'Now is ' + spoken(today) + ', ' + hhmm + '. No callback time is available today; the person may name another allowed day.'
     vars['callback_facts'] = facts
 else:
     vars['callback_facts'] = facts
+vars['callback_slots'] = ';'.join(slots)
 vars['setup_state'] = state
 """
 
 _SETUP_FALLBACK = """
 vars['setup_state'] = 'error: ' + str(e)[:200]
+vars['promise_acks'] = vars.get('promise_acks') or '0'
+vars['callback_acks'] = vars.get('callback_acks') or '0'
+vars['promise_acked'] = vars.get('promise_acked') or 'no'
+vars['callback_acked'] = vars.get('callback_acked') or 'no'
 vars['date_table'] = vars.get('date_table') or ''
 vars['callback_facts'] = vars.get('callback_facts') or ''
 vars['today_spoken'] = vars.get('today_spoken') or ''
@@ -379,7 +472,8 @@ def setup_snippet(ir: PolicyIR) -> str:
     callback = ir.third_party.callback
     first_step = min(ir.persuasion.steps, key=lambda s: s.attempt) if ir.persuasion.steps else None
     attempt1_kind = first_step.date if first_step and first_step.date in (
-        "today", "last_business_day_this_week", "last_business_day_next_week_if_today_is_last"
+        "today", "last_business_day_this_week", "last_business_day_next_week_if_today_is_last",
+        "next_business_day_after_today", "nth_business_day_after_today", "nth_calendar_day_after_today",
     ) else None
     cfg: dict[str, Any] = {
         **_calendar_cfg(ir),
@@ -388,6 +482,8 @@ def setup_snippet(ir: PolicyIR) -> str:
         "table_max_days": DATE_TABLE_MAX_DAYS,
         "shift": ir.promise_dates.non_business_day_shift,
         "attempt1_kind": attempt1_kind,
+        "attempt1_n": first_step.n if first_step else None,
+        **({} if ir.promise_dates.business_days_only else {"business_only": False}),  # AUD-17: weekends are allowed
         "callback": None
         if callback is None
         else {
@@ -401,7 +497,7 @@ def setup_snippet(ir: PolicyIR) -> str:
     }
     body = (
         _SETUP_BODY.replace("__CFG__", json_literal(cfg))
-        .replace("__PARSE_NOW__", _PARSE_NOW.strip("\n"))
+        .replace("__PARSE_NOW__", _parse_now(clock_variable(ir)))
         .replace("__CALENDAR__", _CALENDAR_FUNCS.strip("\n"))
     )
     return _wrap(["datetime", "json"], body, _SETUP_FALLBACK)
@@ -421,8 +517,34 @@ def amt(c):
 def fill(tpl, p):
     out = tpl
     for k in list(p.keys()):
-        if p.get(k) is not None:
+        if p.get(k) is not None and str(p.get(k)).strip() != '':
             out = out.replace('{' + str(k) + '}', str(p.get(k)))
+    return out
+def say(t):
+    out = str(t or '')
+    for k in CFG['call_vars']:
+        v = vars.get(k)
+        if v is not None and str(v).strip() != '':
+            out = out.replace('{' + k + '}', str(v).strip())
+    return out
+def strip_tokens(t):
+    t = str(t or '')
+    out = ''
+    i = 0
+    while i < len(t):
+        if t[i] == '{' and t[i - 1:i] != '{' and t[i + 1:i + 2] != '{':
+            j = t.find('}', i)
+            head = t[i + 1:j] if j > i else ''
+            if head and not head[0].isdigit() and head.replace('_', 'a').isalnum() and t[j + 1:j + 2] != '}':
+                i = j + 1
+                continue
+        out = out + t[i]
+        i = i + 1
+    return out
+def unbrace(t):
+    out = ' '.join(strip_tokens(t).split())
+    for mark in ('.', ',', '?', '!', ';', ':'):
+        out = out.replace(' ' + mark, mark)
     return out
 def load_products():
     p = vars.get('products')
@@ -443,25 +565,37 @@ def load_products():
             if len(parts) == 2 and parts[0].isdigit():
                 found.setdefault(int(parts[0]), dict())[parts[1]] = vars.get(k)
     return [found[i] for i in sorted(found)]
-def band_of(late):
+def band_of(late, ptype=''):
+    own = [b for b in CFG['bands'] if b.get('types') and ptype in b['types']]
+    rest = [b for b in CFG['bands'] if not b.get('types')]
+    for pool in (own, rest):
+        for b in pool:
+            if b['min'] <= late <= b['max']:
+                return b
     best = None
     gap = None
-    for b in CFG['bands']:
-        if b['min'] <= late <= b['max']:
-            return b
+    for b in (own + rest) or CFG['bands']:
         g = b['min'] - late if late < b['min'] else late - b['max']
         if gap is None or g < gap:
             best = b
             gap = g
     return best
 this_week = last_bd_of_week(today, 0)
-def proposal(kind, latest):
-    if kind == 'customer':
+def proposal(kind, latest, n=None):
+    if kind in ('customer', 'custom'):
         return None
     if kind == 'deadline':
         return latest
     if kind == 'today':
         r = today if isbd(today) else next_bd(today)
+    elif kind == 'next_business_day_after_today':
+        r = next_bd(today)
+    elif kind == 'nth_business_day_after_today':
+        r = nth_bd_after(today, n or 0)
+    elif kind == 'nth_calendar_day_after_today':
+        r = today + datetime.timedelta(days=int(n or 0))
+        if not isbd(r):
+            r = next_bd(r)
     else:
         strictly = kind == 'last_business_day_next_week_if_today_is_last'
         usable = this_week is not None and (this_week > today if strictly else this_week >= today)
@@ -482,16 +616,20 @@ for i, p in enumerate(products):
         raise ValueError('a product has no ' + CFG['id_key'] + ': its id cannot be invented')
     ids.append(pid)
     ptype = str(p.get(CFG['type_key']) or '') if CFG['type_key'] else ''
-    name = fill(CFG['naming'].get(ptype) or ptype.replace('_', ' '), p) or ('product ' + pid)
+    name = say(fill(CFG['naming'].get(ptype) or ptype.replace('_', ' '), p))
+    if strip_tokens(name) != name or not name.strip():
+        name = ptype.replace('_', ' ').strip() or ('product ' + pid)
     ffield = CFG['floors'].get(ptype)
     floor = to_cents(p.get(ffield)) if ffield else None
     flabel = ffield.replace('_', ' ') if ffield else 'floor'
-    due = to_cents(p.get(CFG['amount_field']))
+    due = to_cents(p.get(CFG['amount_field']))__FLOOR_RULE__
+    if floor is not None and due is not None and floor > due:
+        floor = due
     try:
         late = int(float(p.get(CFG['days_field']) or 0))
     except Exception:
         late = 0
-    band = band_of(late)
+    band = band_of(late, ptype)
     bname = band['name'] if band else ''
     attempts = band['attempts'] if band else 1
     dl = dl_of(band['deadline']) if band else None
@@ -512,35 +650,42 @@ for i, p in enumerate(products):
     offer = ''
     if floor is not None:
         offer = fill(CFG['floor_offer'].replace('{floor_label}', flabel).replace('{floor_amount}', amt(floor)), p)
-        offer = offer.replace('{name}', name)
-        if CFG['floor_note'] and CFG['floor_note'] not in offer:
-            offer = offer + ' ' + CFG['floor_note']
+        offer = say(offer.replace('{name}', name))
         s.append('   Floor offer - when the customer says the full amount is too much, say exactly: "' + offer + '"')
     steps = [x for x in CFG['steps'] if (not x['bands']) or bname in x['bands']]
     steps = steps[:attempts]
-    while steps and len(steps) < attempts:
-        steps.append(steps[-1])
-    s.append('   Persuasion attempts for ' + pid + ': EXACTLY ' + str(attempts) + ' (' + bname + ' band). Make them one at a time, only after a refusal or a non-answer:')
+    attempts = len(steps)
+    if attempts:
+        s.append('   Persuasion attempts for ' + pid + ': EXACTLY ' + str(attempts) + ' (' + bname + ' band). Make them one at a time, only after a refusal or a non-answer:')
+    else:
+        s.append('   Persuasion attempts for ' + pid + ': NONE (' + bname + ' band): the policy prescribes no persuasion offer for this product.')
     for n, st in enumerate(steps):
-        d = proposal(st['date'], latest)
+        d = proposal(st['date'], latest, st.get('n'))
         if st['date'] == 'deadline' and latest is not None:
             when = ' by ' + short(latest)
         elif d is not None:
             when = ' on ' + short(d)
+        elif st['date'] == 'custom':
+            when = ''
         else:
             when = ' on the day the customer names'
+        rule_text = str(st.get('text') or '').strip().rstrip('.') if st['date'] in ('customer', 'custom') else ''
+        note = ' Date rule for this attempt: ' + rule_text + '.' if rule_text else ''
         if st['amount'] == 'floor' and floor is not None:
             q = 'Could you pay at least the ' + flabel + ' of ' + amt(floor) + when + '?'
             if CFG['floor_note']:
                 q = q + ' ' + CFG['floor_note']
-            s.append('     Attempt ' + str(n + 1) + ' - ask: "' + q + '"')
+            s.append('     Attempt ' + str(n + 1) + ' - ask: "' + q + '"' + note)
         else:
             q = 'Could you pay the ' + amt(due) + ' for your ' + name + when + '?'
             tail = ''
             if st['amount'] == 'current' and floor is not None:
                 tail = ' (if they already said the full amount is too much, ask for the ' + flabel + ' ' + amt(floor) + ' instead)'
-            s.append('     Attempt ' + str(n + 1) + ' - ask: "' + q + '"' + tail + '.')
-    s.append('     After attempt ' + str(attempts) + ' is refused: make NO further offer for ' + pid + '.')
+            s.append('     Attempt ' + str(n + 1) + ' - ask: "' + q + '"' + tail + '.' + note)
+    if attempts:
+        s.append('     After attempt ' + str(attempts) + ' is refused: make NO further offer for ' + pid + '.')
+    else:
+        s.append('   After a refusal or a non-answer make NO offer for ' + pid + '.')
     allowed = []
     allowed_iso = []
     allowed_say = []
@@ -563,7 +708,14 @@ for i, p in enumerate(products):
             allowed_iso.append(d.isoformat())
             allowed_say.append(short(d))
         d = d + ONE
-    if not allowed_iso:
+    if not allowed_iso and until:
+        first = today if CFG['allow_today'] else today + ONE
+        text = 'every ' + ('business day' if CFG['business_only'] else 'day') + ' from ' + first.isoformat()
+        text = text + (' to ' + latest.isoformat() if capped else ' on')
+        if CFG['business_only']:
+            text = text + '; only the configured business weekdays are allowed, excluding bank holidays'
+        s.append('   Allowed promise dates: ' + text + '. No eligible day falls inside the displayed date table.')
+    elif not allowed_iso:
         s.append('   Allowed promise dates: none - no day is left up to the deadline. Record NO promise for ' + pid + ': say that you cannot record a payment date for it.')
     elif len(allowed) <= CFG['list_limit']:
         s.append('   Allowed promise dates: ' + ', '.join(allowed) + '.')
@@ -578,6 +730,25 @@ for i, p in enumerate(products):
             if inside:
                 text = text + ' (bank holidays in this range: ' + ', '.join(inside) + ')'
         s.append('   Allowed promise dates: ' + text + '.')
+    if allowed_iso and capped and CFG['business_only'] and CFG['shift'] in ('next_business_day', 'previous_business_day'):
+        groups = []
+        x = today if CFG['allow_today'] else today + ONE
+        while x <= latest and len(groups) <= CFG['skip_groups']:
+            if not isbd(x):
+                alt = next_bd(x)
+                if CFG['shift'] == 'previous_business_day' and prev_bd(x) >= today:
+                    alt = prev_bd(x)
+                if alt <= latest:
+                    said_x = short(x) + (' (bank holiday)' if x.isoformat() in hol else '')
+                    if groups and groups[-1][1] == alt:
+                        groups[-1][0].append(said_x)
+                    else:
+                        groups.append([[said_x], alt])
+            x = x + ONE
+        if groups:
+            more = '; and so on' if len(groups) > CFG['skip_groups'] else ''
+            said = '; '.join([' and '.join(g[0]) + ' -> offer ' + short(g[1]) + ' (' + g[1].isoformat() + ')' for g in groups[:CFG['skip_groups']]])
+            s.append('   Not business days up to the deadline - if the customer names one, offer the day after the arrow instead: ' + said + more + '.')
     out.append('\\n'.join(s))
     parts = []
     for f in CFG['state_fields']:
@@ -610,13 +781,16 @@ for line in str(vars.get('date_table') or '').split('\\n'):
         continue
     late_for = [k for k in ids if k in deadlines and d0 > deadlines[k]]
     if late_for and len(late_for) == len(ids):
-        line = line + ' | AFTER THE DEADLINE - not allowed' + (': offer the deadline instead' if CFG['offer_deadline'] else '')
+        line = line.split(' -> ', 1)[0] + ' | AFTER THE DEADLINE - not allowed' + (': offer the deadline instead' if CFG['offer_deadline'] else '')
     elif late_for:
+        if ' -> ' in line:
+            head, tail = line.split(' -> ', 1)
+            line = head + ' -> for ' + ', '.join([k for k in ids if k not in late_for]) + ': ' + tail
         line = line + ' | after the deadline of ' + ', '.join(late_for) + ' - not allowed for ' + ', '.join(late_for)
     marked.append(line)
 vars['date_table'] = '\\n'.join(marked)
 question =CFG['today_question_all'] if len(stmts) > 1 and CFG['today_question_all'] else CFG['today_question']
-vars['debt_statement'] = ('Thank you. ' + CFG['intro'] + ' ' + ' '.join(stmts) + ' ' + question).strip()
+vars['debt_statement'] = unbrace(say('Thank you. ' + CFG['intro'] + ' ' + ' '.join(stmts) + ' ' + question))
 vars['product_ids'] = ','.join(ids)
 vars['product_count'] = str(len(ids))
 vars['account_facts'] = 'LATE PRODUCTS (discuss them in this order):\\n' + '\\n'.join(out)
@@ -639,19 +813,175 @@ def _statement_intro(ir: PolicyIR) -> str:
     return intro or f"I am calling from {ir.disclosure.team_phrase}."
 
 
+# A floor stated as a computation (AUD-10): the larger (or smaller) of the floor field, a percentage of the past-due
+# amount and a fixed amount. Integer cent arithmetic only; the percentage is scaled by 1000 so 12.5 % stays exact.
+_FLOOR_RULE_CODE = """
+    frule = CFG['floor_rules'].get(ptype)
+    if frule and due is not None:
+        cands = [] if floor is None else [floor]
+        if frule.get('percent') not in (None, ''):
+            num = due * int(round(float(frule['percent']) * 1000))
+            den = 100 * 1000
+            if frule.get('rounding') == 'down':
+                cands.append(num // den)
+            elif frule.get('rounding') == 'up':
+                cands.append(-((-num) // den))
+            else:
+                cands.append((num + den // 2) // den)
+        if frule.get('fixed') not in (None, ''):
+            fx = to_cents(frule['fixed'])
+            if fx is not None:
+                cands.append(fx)
+        if cands:
+            floor = min(cands) if frule.get('combine') == 'min' else max(cands)
+            floor = min(floor, due)
+            flabel = frule.get('label') or (flabel if ffield else 'minimum amount')"""
+
+
+_CENTS_OF = """def cents_of(p, f):
+    v = p.get(f)
+    if f in CFG['minor_fields'] and v is not None and not isinstance(v, bool):
+        try:
+            return int(round(float(v)))
+        except Exception:
+            return None
+    return to_cents(v)
+"""
+# a minor-unit field in another stated scale (CFG['minor_scale']: minor units per major unit, e.g. 1000 for
+# thousandths) is read as cents, rounded half up; used only when some field has such a scale
+_CENTS_OF_SCALED = """def cents_of(p, f):
+    v = p.get(f)
+    if f in CFG['minor_fields'] and v is not None and not isinstance(v, bool):
+        try:
+            q = float(v) * 100 / CFG['minor_scale'].get(f, 100)
+            return int(q + 0.5) if q >= 0 else -int(-q + 0.5)
+        except Exception:
+            return None
+    return to_cents(v)
+"""
+_MINOR_READS = (
+    ("deadlines = dict()\nfor i, p in enumerate(products):", _CENTS_OF + "deadlines = dict()\nfor i, p in enumerate(products):"),
+    ("to_cents(p.get(ffield))", "cents_of(p, ffield)"),
+    ("to_cents(p.get(CFG['amount_field']))", "cents_of(p, CFG['amount_field'])"),
+    ("' ' + str(p.get(f)))", "' ' + (amt(cents_of(p, f)) if f in CFG['minor_fields'] else str(p.get(f))))"),
+)
+
+
+def _minor_amount_reads(body: str, scaled: bool = False) -> str:
+    """``account_facts`` code that reads the contract's minor-unit (cents) item amounts as cents (AUD-21); ``scaled``:
+    some field states another scale than cents (``CFG['minor_scale']``)."""
+    for old, new in _MINOR_READS:
+        if scaled:
+            new = new.replace(_CENTS_OF, _CENTS_OF_SCALED)
+        if body.count(old) != 1:
+            raise CompileError(f"account_facts: cannot adapt the amount reading to minor units ({old!r})")
+        body = body.replace(old, new)
+    return body
+
+
+_ASK_LINE = "' - ask: \"' + q"
+_FLOOR_OFFER_LINE = "say exactly: \"' + offer"
+
+
+def _say_meanings(body: str, language: str, *, own_floor_offer: bool) -> str:
+    """``account_facts`` code for a call in ``language``: the compiler's English sentences become meanings to convey.
+
+    The persuasion asks ("Could you pay ...") are English templates, so ``ask: "..."`` becomes ``ask in <language>, with
+    exactly this meaning: "..."``. The floor offer is the brief's own sentence (already in the call's language) unless
+    the brief has none (``own_floor_offer`` false); only then does its ``say exactly`` become a meaning too.
+    """
+    language = " ".join(re.sub(r"[^\w ]+", " ", language).split()) or "the language of the call"
+    meaning = f"in {language}, with exactly this meaning: "
+    replacements = [(_ASK_LINE, "' - ask " + meaning + "\"' + q", 2)]
+    if not own_floor_offer:
+        replacements.append((_FLOOR_OFFER_LINE, "say " + meaning + "\"' + offer", 1))
+    for old, new, count in replacements:
+        if body.count(old) != count:
+            raise CompileError(f"account_facts: cannot mark the spoken sentences for {language} ({old!r})")
+        body = body.replace(old, new)
+    return body
+
+
+def _floor_rule_code(ir: PolicyIR, cfg: dict[str, Any]) -> str:
+    """The floor-rule block of ``account_facts`` (``""`` when no product type has one, so the code stays unchanged)."""
+    rules = {
+        ptype: {"percent": rule.percent_of_amount, "fixed": rule.fixed, "combine": rule.combine,
+                "rounding": rule.rounding, "label": rule.label.strip()}
+        for ptype, rule in ir.amounts.floor_rule_by_type.items()
+        if not rule.problem()
+    }
+    if not rules:
+        return ""
+    cfg["floor_rules"] = rules  # read by the block above; added only when used
+    return _FLOOR_RULE_CODE
+
+
+_DETERMINERS = frozenset({"the", "your", "our", "a", "an", "this", "that", "my", "its", "their", "his", "her", "each",
+                          "any", "every", "one"})
+
+
+def _with_article(template: str) -> str:
+    """``{floor_label}`` right after a verb gets "the" ("offer {floor_label} of" -> "offer the {floor_label} of", AUD-49)."""
+
+    def article(match: re.Match[str]) -> str:
+        before = template[: match.start()].rstrip()
+        previous = re.search(r"([A-Za-z']+)$", before)
+        if previous and previous.group(1).lower() in _DETERMINERS:
+            return match.group(0)
+        return ("The " if not before or before[-1] in ".!?:\"'" else "the ") + match.group(0)
+
+    return re.sub(r"\{floor_label\}", article, template)
+
+
+def _words(text: str) -> str:
+    return " ".join(re.sub(r"[^\w]+", " ", text.lower()).split())
+
+
 def _floor_offer_template(ir: PolicyIR) -> str:
-    template = extra_phrase(ir.phrases.extra, "floor_offer")
-    return template or "I can offer you the {floor_label} of {floor_amount} instead."
+    """The floor-offer sentence: the brief's (with an article before the label), its floor note added once (AUD-49).
+
+    The extraction stage often copies the note into the sentence itself ("...; the rest stays overdue."), in other case
+    or punctuation; a word-level comparison keeps it from being said twice.
+    """
+    template = _with_article(extra_phrase(ir.phrases.extra, "floor_offer")) or (
+        "I can offer you the {floor_label} of {floor_amount} instead.")
+    note = ir.amounts.floor_note.strip()
+    if note and _words(note) not in _words(template):
+        template = f"{template} {note}"
+    return template
+
+
+def persuasion_ladder_gaps(ir: PolicyIR) -> list[str]:
+    """One finding per band whose allowed persuasion attempts exceed the steps the policy prescribes for it (audit F19).
+
+    The generated ``account_facts`` node compiles exactly the distinct prescribed steps of the product's band and states
+    ``min(allowed attempts, prescribed steps)`` as the attempt count; it never repeats the last step to fill the allowance
+    (the customer would hear the same offer twice). The policy itself is inconsistent here: the validator reports
+    ``PERSUASION_STEPS_SHORT`` as an error so a repair completes the ladder or lowers the allowance, and when the repairs
+    run out the compiler says so in its notes instead of inventing a step.
+    """
+    found: list[str] = []
+    for band in ir.bands:
+        available = len(ir.persuasion.steps_for(band.name))
+        if band.persuasion_attempts > available:
+            found.append(
+                f"persuasion: band {band.name!r} allows {band.persuasion_attempts} attempts but the policy prescribes "
+                f"{available} distinct step(s) for it; the agent makes {available} (a step is never repeated to fill "
+                "the allowance)")
+    return found
 
 
 def _amount_and_days_fields(ir: PolicyIR) -> tuple[str, str]:
-    fields = list(ir.disclosure.state_fields)
-    amount = next((f for f in fields if "late" not in f and "day" not in f), "past_due")
-    days = next((f for f in fields if "day" in f), "days_late")
-    return amount, days
+    """The product fields that hold the past-due amount and the days late: the IR's explicit fields, else its guess.
+
+    The validator reports a policy where neither can be told (``AMOUNT_FIELD_MISSING`` / ``DAYS_FIELD_MISSING``), so an
+    empty name only reaches here from a hand-built IR; the snippet then reads no value for it instead of a field name
+    taken from one particular bank's API.
+    """
+    return ir.disclosure.amount_and_days_fields()
 
 
-def account_facts_snippet(ir: PolicyIR, roles: AccountRoles | None = None) -> str:
+def account_facts_snippet(ir: PolicyIR, roles: AccountRoles | None = None, *, speak_in: str = "") -> str:
     """Code of the ``account_facts`` node: per-product facts, scripts and the debt statement from ``vars['products']``.
 
     Reads the products written by the ``load_account`` node's response mapping (a list, a JSON string or flattened
@@ -660,7 +990,9 @@ def account_facts_snippet(ir: PolicyIR, roles: AccountRoles | None = None) -> st
     ``product_id`` / ``type``). A product without an id makes the node fail with ``account_state = error: ...`` - an id is
     never invented. Writes ``account_facts``, ``debt_statement``,
     ``product_ids`` (csv), ``product_count`` and, per product id ``pN``: ``pN_deadline`` (latest valid promise date),
-    ``pN_deadline_spoken`` (the same day as weekday + day + month), ``pN_floor``, ``pN_past_due`` (two decimals),
+    ``pN_deadline_spoken`` (the same day as weekday + day + month), ``pN_floor`` (the effective floor: never above the
+    past-due amount, the same value the facts, the floor offer, the persuasion steps and the guards use), ``pN_past_due``
+    (two decimals),
     ``pN_band``, ``pN_name``, ``allowed_pN`` (ISO csv of EVERY allowed day up to the deadline - or up to a horizon of a
     year, see ``until_pN``), ``allowed_count_pN`` (how many; ``0`` = no day is left, the guard then blocks every date),
     ``until_pN`` (only for a list cut at the horizon: ``open`` = later days are allowed, or the ISO deadline up to which
@@ -671,6 +1003,10 @@ def account_facts_snippet(ir: PolicyIR, roles: AccountRoles | None = None) -> st
     ``| after the deadline of pN - not allowed for pN`` or, when the day is after every product's deadline,
     ``| AFTER THE DEADLINE - not allowed`` (plus ``: offer the deadline instead`` when the policy offers the deadline).
     Without that mark a model called a day after the deadline "a business day" and read it back.
+
+    ``speak_in`` (a language name such as ``Turkish``; empty for English): the persuasion asks and, when the brief has no
+    floor-offer sentence of its own, the floor offer are the compiler's English sentences; in another language they are
+    marked as meanings to say in that language instead of sentences to say exactly (:func:`_say_meanings`).
     """
     amount_field, days_field = _amount_and_days_fields(ir)
     roles = roles or AccountRoles()
@@ -695,23 +1031,36 @@ def account_facts_snippet(ir: PolicyIR, roles: AccountRoles | None = None) -> st
         "business_only": ir.promise_dates.business_days_only,
         "not_after_deadline": ir.promise_dates.not_after_deadline,
         "offer_deadline": ir.promise_dates.after_deadline == "offer_deadline",
+        "shift": ir.promise_dates.non_business_day_shift,
+        "skip_groups": SKIP_GROUPS_LIMIT,
         "steps": [
-            {"attempt": s.attempt, "bands": list(s.bands), "amount": s.amount, "date": s.date}
+            {"attempt": s.attempt, "bands": list(s.bands), "amount": s.amount, "date": s.date, "n": s.n, "text": s.text}
             for s in sorted(ir.persuasion.steps, key=lambda step: step.attempt)
         ],
         "intro": _statement_intro(ir),
         "today_question": today_question(ir),
         "today_question_all": extra_phrase(ir.phrases.extra, "today_question_all"),
+        "call_vars": list(ir.call_variable_names()),  # filled into the spoken sentences at run time (AUD-12)
     }
-    fallback_statement = py_literal(
-        " ".join(["Thank you.", _statement_intro(ir), cfg["today_question"]]).strip()
+    fallback_statement = py_literal(speakable(
+        " ".join(["Thank you.", _statement_intro(ir), cfg["today_question"]]).strip(), (), spoken=True)[0]
     )
+    if roles.minor_fields:  # item amounts the contract keeps in cents; only then is the reading code changed
+        cfg["minor_fields"] = list(roles.minor_fields)
+        if roles.minor_scales:  # thousandths, 3 decimals ...: the stated factor instead of 100
+            cfg["minor_scale"] = dict(roles.minor_scales)
+    floor_code = _floor_rule_code(ir, cfg)  # may add cfg["floor_rules"], so it runs before cfg is serialised
     body = (
         _ACCOUNT_BODY.replace("__CFG__", json_literal(cfg))
-        .replace("__PARSE_NOW__", _PARSE_NOW.strip("\n"))
+        .replace("__PARSE_NOW__", _parse_now(clock_variable(ir)))
         .replace("__CALENDAR__", _CALENDAR_FUNCS.strip("\n"))
         .replace("__MONEY__", MONEY_FUNCS.rstrip("\n"))
+        .replace("__FLOOR_RULE__", floor_code)
     )
+    if roles.minor_fields:
+        body = _minor_amount_reads(body, scaled=bool(roles.minor_scales))
+    if speak_in:
+        body = _say_meanings(body, speak_in, own_floor_offer=bool(extra_phrase(ir.phrases.extra, "floor_offer")))
     fallback = _ACCOUNT_FALLBACK.replace("__FALLBACK_STATEMENT__", fallback_statement)
     return _wrap(["datetime", "json"], body, fallback)
 
@@ -798,7 +1147,7 @@ def check_callback_snippet(ir: PolicyIR) -> str:
     }
     body = (
         _CHECK_CALLBACK_BODY.replace("__CFG__", json_literal(cfg))
-        .replace("__PARSE_NOW__", _PARSE_NOW.strip("\n"))
+        .replace("__PARSE_NOW__", _parse_now(clock_variable(ir)))
         .replace("__CALENDAR__", _CALENDAR_FUNCS.strip("\n"))
     )
     return _wrap(["datetime", "json"], body, _CHECK_CALLBACK_FALLBACK)
@@ -810,9 +1159,10 @@ __PARSE_NOW__
 __CALENDAR__
 __MONEY__
 pid = str(vars.get('chk_product_id') or '').strip()
-for k in [x for x in str(vars.get('product_ids') or '').split(',') if x]:
-    if k.lower() == pid.lower():
-        pid = k
+known = [x for x in str(vars.get('product_ids') or '').split(',') if x]
+same = [k for k in known if k.lower() == pid.lower()]
+if pid not in known and len(same) == 1:
+    pid = same[0]
 vars['promise_date_check'] = 'ok'
 vars['promise_amount_check'] = 'ok'
 vars['promise_check'] = 'ok'
@@ -904,7 +1254,7 @@ def check_promise_snippet(ir: PolicyIR) -> str:
     }
     body = (
         _CHECK_PROMISE_BODY.replace("__CFG__", json_literal(cfg))
-        .replace("__PARSE_NOW__", _PARSE_NOW.strip("\n"))
+        .replace("__PARSE_NOW__", _parse_now(clock_variable(ir)))
         .replace("__CALENDAR__", _CALENDAR_FUNCS.strip("\n"))
         .replace("__MONEY__", MONEY_FUNCS.rstrip("\n"))
     )
@@ -924,7 +1274,12 @@ def cnt(k):
         return 0
 chosen = str(vars.get('chosen_end') or '')
 verified = str(vars.get('identity_verified') or '') == 'yes'
-promised = cnt(CFG['promise_tool'] + '_success_count') > 0
+def acked(counter, tool):
+    if str(vars.get(counter) or '') != '':
+        return cnt(counter)
+    return cnt(tool + '_success_count')
+promised = acked('promise_acks', CFG['promise_tool']) > 0
+rejected = max(0, cnt(CFG['promise_tool'] + '_success_count') - acked('promise_acks', CFG['promise_tool']))
 if chosen == 'auto' and not verified:
     raw_left = vars.get(CFG['left_var']) if CFG.get('left_var') else None
     left = '' if raw_left is None else str(raw_left)
@@ -942,7 +1297,7 @@ elif chosen == 'auto':
 order_ids = [x for x in str(vars.get('product_ids') or '').split(',') if x]
 idmap = dict()
 for x in order_ids:
-    idmap[x.lower()] = x
+    idmap[x.lower()] = '' if x.lower() in idmap else x
 rmap = dict()
 for x in CFG['reasons']:
     rmap[x.lower()] = x
@@ -951,12 +1306,10 @@ for item in str(vars.get('notes_log') or '').split(';'):
     if ':' in item:
         k, v = item.split(':', 1)
         if k.strip() and v.strip():
-            latest_note[idmap.get(k.strip().lower(), k.strip())] = rmap.get(v.strip().lower(), v.strip())
-if not latest_note and CFG['note_tool'] and cnt(CFG['note_tool'] + '_success_count') > 0:
-    r = str(vars.get(CFG['note_tool'] + '_args.' + CFG['note_reason_field']) or '').strip()
-    if r:
-        k = str(vars.get(CFG['note_tool'] + '_args.' + CFG['note_product_field']) or '?').strip()
-        latest_note[idmap.get(k.lower(), k)] = rmap.get(r.lower(), r)
+            k = k.strip()
+            latest_note[k if k in order_ids else (idmap.get(k.lower()) or k)] = rmap.get(v.strip().lower(), v.strip())
+# Only the acknowledgment post-hook writes this log. The engine's latest args may belong to a failed request;
+# a historical success counter cannot prove that those latest args were saved.
 notes = list(latest_note.items())
 queue = ''
 for pair in CFG['transfers']:
@@ -968,7 +1321,7 @@ if promised:
 if notes and CFG['mp_enabled']:
     active.append('product_notes')
 service_failures = max(0, cnt(CFG['promise_tool'] + '_failure_count') - cnt('promise_guard_blocks'))
-service_error = chosen == 'recording_failed' or (chosen == 'promise_recorded' and service_failures > 0)
+service_error = chosen == 'recording_failed' or (chosen == 'promise_recorded' and service_failures + rejected > 0)
 if service_error and not promised:
     active.append('recording_failed')
 if chosen == 'identity_failed':
@@ -977,8 +1330,8 @@ if chosen == 'identity_declined':
     active.append('identity_declined')
 if chosen in ('wrong_number', 'deceased', 'unclear_party'):
     active.append(chosen)
-booked = cnt(CFG['callback_tool'] + '_success_count') > 0
-if booked or chosen in ('callback_booked', 'callback_not_booked'):
+booked = acked('callback_acks', CFG['callback_tool']) > 0
+__CALLBACK_INTENTS__if booked or chosen in ('callback_booked', 'callback_not_booked'):
     active.append('callback_booked' if booked else 'callback_not_booked')
 if queue:
     active.append('transfer:' + queue)
@@ -1070,6 +1423,16 @@ vars['decide_situation'] = decided
 vars['decide_state'] = 'ok'
 """
 
+# An intent that books a callback and closes on its own outcome row (AUD-08): a booking made there decides through that
+# row, not through the third-party callback row; with no booking the call is a callback that failed (unverified) or
+# falls to the persuasion stop outcome (verified). Inserted only when the policy has such an intent.
+_DECIDE_CALLBACK_INTENTS = """if chosen in CFG['cb_sits']:
+    if booked:
+        booked = False
+    else:
+        chosen = '' if verified else 'callback_not_booked'
+"""
+
 _DECIDE_FALLBACK = """
 vars['final_outcome'] = vars.get('final_outcome') or __DEFAULT_OUTCOME__
 __DEFAULT_REASON__
@@ -1087,6 +1450,7 @@ def decide_config(
     note_fields: tuple[str, str] = ("product_id", "reason"),
     wrong_variable: str = "",
     max_wrong: int = 0,
+    callback_situations: Sequence[str] = (),
 ) -> dict[str, Any]:
     """The data embedded in the ``decide`` snippet (exposed for tests and the docs).
 
@@ -1096,8 +1460,10 @@ def decide_config(
         auto_keys: Situations a ``call_situation`` extraction may name; default :func:`naming.negotiation_situations`.
         tool_names: Overrides for ``promise``, ``note``, ``callback``, ``verify`` tool names (defaults: the kit's names).
         left_variable: Response variable that counts the wrong answers still allowed (``0`` = the check failed).
-        note_fields: ``(product field, reason field)`` of the notes tool, for the fallback that reads its arguments.
+        note_fields: ``(product field, reason field)`` of the notes tool, retained in the configuration as API metadata.
         wrong_variable / max_wrong: A response counter that counts wrong answers UP; the check failed at ``max_wrong``.
+        callback_situations: Situations of intents that book a callback and close on their own outcome row (not the
+            third-party callback rows); only present in the configuration when there is one (AUD-08).
     """
     names = {"promise": "create_promise", "note": ir.multi_product.note_tool or "add_note",
              "callback": "schedule_callback", "verify": "verify_identity", **dict(tool_names or {})}
@@ -1111,6 +1477,8 @@ def decide_config(
     if stop not in order:
         order.append(stop)
     order.extend(key for key in STRUCTURAL_ORDER if key not in order)
+    # situations only the compiler adds (an intent's own outcome with no table row): last, so table rows win (AUD-08)
+    order.extend(dict.fromkeys(row.situation for row in rows if row.situation not in order))
     callback = ir.third_party.callback
     sections: dict[str, list[Any]] = {}
     for key, ref in (
@@ -1136,7 +1504,7 @@ def decide_config(
     reasons |= {ref.reason for ref in sections_refs(ir) if ref.reason}
     if mp.paid_note_reason:
         reasons.add(mp.paid_note_reason)
-    return {
+    cfg: dict[str, Any] = {
         "reasons": sorted(reasons),
         "note_product_field": note_fields[0],
         "note_reason_field": note_fields[1],
@@ -1165,6 +1533,9 @@ def decide_config(
         "fb_declined": [ir.identity.on_declined.outcome, ir.identity.on_declined.reason],
         "fb_unreached": [unreached.outcome, unreached.reason] if unreached is not None else None,
     }
+    if callback_situations:
+        cfg["cb_sits"] = [str(key) for key in callback_situations]
+    return cfg
 
 
 def sections_refs(ir: PolicyIR) -> list[Any]:
@@ -1186,6 +1557,7 @@ def decide_outcome_snippet(
     note_fields: tuple[str, str] = ("product_id", "reason"),
     wrong_variable: str = "",
     max_wrong: int = 0,
+    callback_situations: Sequence[str] = (),
 ) -> str:
     """Code of the ``decide`` node: a mirror of :func:`builder.policy.outcomes.compute_outcome` working on call variables.
 
@@ -1194,13 +1566,18 @@ def decide_outcome_snippet(
     ``product_ids`` and ``notes_log`` (``pid:reason;`` entries), and the engine's counters
     ``<tool>_success_count`` / ``<tool>_failure_count`` and ``<handoff node>_success_count``. Calls the promise guard
     blocked are counted by the engine as failures; ``promise_guard_blocks`` (written by the pre-hook) is subtracted, so
-    only real service failures can make the call a recording failure.
+    only real service failures can make the call a recording failure. A promise or callback counts as made only when the
+    bank acknowledged it (AUD-07): ``promise_acks`` / ``callback_acks`` (started at ``0`` by ``setup``, counted by the
+    post-hooks) win over the engine's success counters, which count any HTTP 2xx, an ``ok: false`` refusal included; a
+    2xx refusal of a promise counts as a service failure. Without the acknowledgement variables (no ``setup``, older
+    workflows) the success counters are read as before.
     Output: ``final_outcome``; ``final_reason`` only when the outcome has a reason (an unset variable is dropped
     from the ``close_call`` request - verified on the platform); ``decide_situation`` (the deciding key, for traces).
     """
     cfg = decide_config(
         ir, transfer_nodes=transfer_nodes, auto_keys=auto_keys, tool_names=tool_names, left_variable=left_variable,
         note_fields=note_fields, wrong_variable=wrong_variable, max_wrong=max_wrong,
+        callback_situations=callback_situations,
     )
     fallback_ref = ir.persuasion.stop_outcome
     reason_line = (
@@ -1211,5 +1588,7 @@ def decide_outcome_snippet(
     fallback = _DECIDE_FALLBACK.replace("__DEFAULT_OUTCOME__", py_literal(fallback_ref.outcome)).replace(
         "__DEFAULT_REASON__", reason_line
     )
-    return _wrap(["json"], _DECIDE_BODY.replace("__CFG__", json_literal(cfg)), fallback)
+    body = _DECIDE_BODY.replace("__CFG__", json_literal(cfg))
+    body = body.replace("__CALLBACK_INTENTS__", _DECIDE_CALLBACK_INTENTS if "cb_sits" in cfg else "")
+    return _wrap(["json"], body, fallback)
 

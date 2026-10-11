@@ -55,13 +55,31 @@ def test_flags_override_the_settings(settings: Any) -> None:
     effective = settings_from_args(args, settings)
     assert effective.dry_run and effective.builder_track == "agentic" and effective.agent_profile == "lean"
     assert effective.self_test == "smoke" and effective.build_time_budget_s == 900
-    assert settings.builder_track == "auto" and not settings.dry_run  # the original is untouched
+    assert settings.builder_track == "compiled" and not settings.dry_run  # the original is untouched
 
 
 def test_defaults_come_from_the_settings(settings: Any) -> None:
     args = build_parser().parse_args(["b.md", "api.json"])
     assert settings_from_args(args, settings) is settings
     assert args.slot is None and args.fake_llm is None and not args.dry_run
+
+
+def test_the_bare_command_reproduces_the_accepted_live_configuration(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """AUD-01: ``python3 builder/build.py {brief} {tool_api}`` runs compiled + smoke (the only configuration measured
+    live); auto, agentic, walkthrough and practice stay reachable as explicit opt-ins."""
+    from builder.settings import Settings
+
+    for name in ("BUILDER_TRACK", "SELF_TEST"):
+        monkeypatch.delenv(name, raising=False)
+    base = Settings(_env_file=None)
+    effective = settings_from_args(build_parser().parse_args(["b.md", "api.json"]), base)
+    assert (effective.builder_track, effective.self_test) == ("compiled", "smoke")
+    for track in ("auto", "agentic", "compiled"):
+        assert Settings(_env_file=None, builder_track=track).builder_track == track
+    for mode in ("auto", "walkthrough", "practice", "none", "smoke"):
+        assert Settings(_env_file=None, self_test=mode).self_test == mode
 
 
 def test_a_fixture_run_never_uses_the_agentic_track(settings: Any) -> None:
@@ -119,6 +137,132 @@ def test_a_bad_budget_flag_is_reported_not_raised(
 ) -> None:
     code = main([str(brief_a_path), str(kit_openapi_path), "--budget-s", "-1", "--dry-run"])
     assert code == 2 and last_json_line(capsys.readouterr().out)["status"] == "failed"
+
+
+def test_an_invalid_environment_value_is_reported_not_raised(
+    capsys: pytest.CaptureFixture[str],
+    tmp_dirs: SimpleNamespace,
+    monkeypatch: pytest.MonkeyPatch,
+    brief_a_path: Path,
+    kit_openapi_path: Path,
+) -> None:
+    """A bad value in the environment / .env used to end in a bare pydantic traceback with no summary line (REPO-12)."""
+    from builder.settings import get_settings
+
+    monkeypatch.setenv("BUILD_TIME_BUDGET_S", "not-a-number-1234567890")
+    get_settings.cache_clear()
+    code = main([str(brief_a_path), str(kit_openapi_path), "--dry-run"])
+    captured = capsys.readouterr()
+    summary = last_json_line(captured.out)
+    assert code == 2 and summary["status"] == "failed" and summary["workflow_id"] is None
+    assert "build_time_budget_s" in summary["errors"][0] and "invalid configuration" in summary["errors"][0]
+    assert "not-a-number-1234567890" not in captured.out + captured.err  # the value itself is never echoed
+    assert Path(summary["trace"]).parent == tmp_dirs.traces
+
+
+def test_an_unwritable_trace_directory_still_produces_a_summary(
+    capsys: pytest.CaptureFixture[str], tmp_dirs: SimpleNamespace, monkeypatch: pytest.MonkeyPatch, brief_a_path: Path
+) -> None:
+    def broken() -> None:
+        raise PermissionError("read-only file system")
+
+    monkeypatch.setattr(paths, "ensure_dirs", broken)
+    code = main([str(brief_a_path)])  # no tool API: the failure path writes a trace, which cannot be written here
+    summary = last_json_line(capsys.readouterr().out)
+    assert code == 2 and summary["status"] == "failed"
+    assert "no trace written" in summary["errors"][0]
+
+
+def test_the_summary_line_never_carries_a_secret(
+    capsys: pytest.CaptureFixture[str],
+    tmp_dirs: SimpleNamespace,
+    monkeypatch: pytest.MonkeyPatch,
+    brief_a_path: Path,
+    kit_openapi_path: Path,
+) -> None:
+    """Error texts can quote a request; the printed JSON line is redacted like the trace files (audit P-08)."""
+    from builder.settings import get_settings
+
+    key = "fak_" + "Zq7Lm2Xa9Rt4Vb6Nc8Hd3"
+    monkeypatch.setenv("FREYA_API_KEY", key)
+    get_settings.cache_clear()
+
+    async def leaky(*args: Any, **kwargs: Any) -> dict[str, Any]:
+        return {"slot": "s", "status": "failed", "errors": [f"deploy: 401 for Authorization: Bearer {key}"]}
+
+    monkeypatch.setattr("builder.build.run_build", leaky)
+    code = main([str(brief_a_path), str(kit_openapi_path), "--dry-run"])
+    out = capsys.readouterr().out
+    assert code == 2 and key not in out
+    assert "***" in last_json_line(out)["errors"][0]
+
+
+@pytest.mark.parametrize("error", [PermissionError("cannot read .env"), OSError("disk error"), RuntimeError("boom")])
+def test_any_error_while_reading_settings_or_inputs_still_ends_with_a_summary_line(
+    capsys: pytest.CaptureFixture[str],
+    tmp_dirs: SimpleNamespace,
+    monkeypatch: pytest.MonkeyPatch,
+    brief_a_path: Path,
+    kit_openapi_path: Path,
+    error: Exception,
+) -> None:
+    """Whatever goes wrong before the build starts - an unreadable ``.env``, an input that cannot be read, a bug - the
+    last line of stdout is the JSON summary and the exit code is 2; never a bare traceback (REPO-12, P-20)."""
+
+    def broken(*args: Any, **kwargs: Any) -> Any:
+        raise error
+
+    monkeypatch.setattr("builder.build.classify_inputs", broken)
+    code = main([str(brief_a_path), str(kit_openapi_path), "--dry-run"])
+    captured = capsys.readouterr()
+    summary = last_json_line(captured.out)
+    assert code == 2 and summary["status"] == "failed" and summary["workflow_id"] is None
+    assert str(error) in summary["errors"][0] or type(error).__name__ in summary["errors"][0]
+    assert "Traceback" not in captured.err
+
+
+def test_an_unreadable_settings_source_still_ends_with_a_summary_line(
+    capsys: pytest.CaptureFixture[str],
+    tmp_dirs: SimpleNamespace,
+    monkeypatch: pytest.MonkeyPatch,
+    brief_a_path: Path,
+    kit_openapi_path: Path,
+) -> None:
+    def broken(*args: Any, **kwargs: Any) -> Any:
+        raise PermissionError("[Errno 13] Permission denied: '.env'")
+
+    monkeypatch.setattr("builder.build.get_settings", broken)
+    code = main([str(brief_a_path), str(kit_openapi_path), "--dry-run"])
+    summary = last_json_line(capsys.readouterr().out)
+    assert code == 2 and summary["status"] == "failed" and "Permission denied" in summary["errors"][0]
+
+
+@pytest.mark.parametrize("broken_part", ["ensure_dirs", "trace_file"])
+def test_an_unwritable_trace_directory_with_valid_inputs_still_produces_a_summary(
+    capsys: pytest.CaptureFixture[str],
+    tmp_dirs: SimpleNamespace,
+    monkeypatch: pytest.MonkeyPatch,
+    brief_a_path: Path,
+    kit_openapi_path: Path,
+    broken_part: str,
+) -> None:
+    """The inputs are fine, the build starts, and the trace folder cannot be created or its file opened (P-20):
+    no traceback, the summary line, exit 2."""
+
+    def broken(*args: Any, **kwargs: Any) -> None:
+        raise PermissionError("read-only file system")
+
+    if broken_part == "ensure_dirs":
+        monkeypatch.setattr(paths, "ensure_dirs", broken)
+    else:
+        monkeypatch.setattr("builder.build.TraceWriter", broken)
+    fixtures = paths.REPO_ROOT / "tests" / "fixtures" / "policy"
+    code = main([str(brief_a_path), str(kit_openapi_path), "--dry-run", "--fake-llm", str(fixtures)])
+    captured = capsys.readouterr()
+    summary = last_json_line(captured.out)
+    assert code == 2 and summary["status"] == "failed" and summary["workflow_id"] is None
+    assert "could not start" in summary["errors"][0] and "PermissionError" in summary["errors"][0]
+    assert "Traceback" not in captured.err
 
 
 def test_a_missing_fixture_directory_still_produces_a_summary(
@@ -183,3 +327,104 @@ def test_the_script_keeps_the_builder_directory_off_the_import_path(tmp_path: Pa
 def test_the_console_script_points_at_main() -> None:
     text = (paths.REPO_ROOT / "pyproject.toml").read_text(encoding="utf-8")
     assert 'freya-builder = "builder.build:main"' in text
+
+
+# ------------------------------------------------------------------------------------------------ AUD-55
+
+
+def test_a_missing_freya_key_without_dry_run_exits_2_and_says_why(
+    capsys: pytest.CaptureFixture[str], tmp_dirs: SimpleNamespace, brief_a_path: Path, kit_openapi_path: Path
+) -> None:
+    """A real build that could not deploy (no key) is still built as a dry run, but it is not a success."""
+    fixtures = paths.REPO_ROOT / "tests" / "fixtures" / "policy"
+    code = main([str(brief_a_path), str(kit_openapi_path), "--fake-llm", str(fixtures), "--slot", "t-nokey"])
+    summary = last_json_line(capsys.readouterr().out)
+    assert code == 2
+    assert summary["status"] == "dry_run" and summary["slot"] == "t-nokey"
+    assert any("FREYA_API_KEY" in error for error in summary["errors"])
+    assert summary.get("dry_run_requested") is False
+
+
+def test_a_dry_run_asked_for_in_the_environment_still_exits_0(
+    capsys: pytest.CaptureFixture[str],
+    tmp_dirs: SimpleNamespace,
+    monkeypatch: pytest.MonkeyPatch,
+    brief_a_path: Path,
+    kit_openapi_path: Path,
+) -> None:
+    from builder.settings import get_settings
+
+    monkeypatch.setenv("DRY_RUN", "true")
+    get_settings.cache_clear()
+    fixtures = paths.REPO_ROOT / "tests" / "fixtures" / "policy"
+    code = main([str(brief_a_path), str(kit_openapi_path), "--fake-llm", str(fixtures)])
+    summary = last_json_line(capsys.readouterr().out)
+    assert code == 0 and summary["status"] == "dry_run"
+    assert not any("FREYA_API_KEY" in error for error in summary["errors"])
+    get_settings.cache_clear()
+
+
+def test_a_configuration_error_keeps_the_explicit_slot(
+    capsys: pytest.CaptureFixture[str],
+    tmp_dirs: SimpleNamespace,
+    monkeypatch: pytest.MonkeyPatch,
+    brief_a_path: Path,
+    kit_openapi_path: Path,
+) -> None:
+    from builder.settings import get_settings
+
+    monkeypatch.setenv("LLM_MAX_CONCURRENCY", "abc")
+    get_settings.cache_clear()
+    code = main([str(brief_a_path), str(kit_openapi_path), "--dry-run", "--slot", "t-cfg"])
+    summary = last_json_line(capsys.readouterr().out)
+    assert code == 2 and summary["status"] == "failed" and summary["slot"] == "t-cfg"
+    assert Path(summary["trace"]).name.startswith("t-cfg-")
+    get_settings.cache_clear()
+
+
+def test_an_unsafe_slot_on_a_configuration_error_falls_back_to_inputs(
+    capsys: pytest.CaptureFixture[str],
+    tmp_dirs: SimpleNamespace,
+    monkeypatch: pytest.MonkeyPatch,
+    brief_a_path: Path,
+    kit_openapi_path: Path,
+) -> None:
+    from builder.settings import get_settings
+
+    monkeypatch.setenv("LLM_MAX_CONCURRENCY", "abc")
+    get_settings.cache_clear()
+    code = main([str(brief_a_path), str(kit_openapi_path), "--dry-run", "--slot", "../evil"])
+    summary = last_json_line(capsys.readouterr().out)
+    assert code == 2 and summary["slot"] == "inputs"
+    assert Path(summary["trace"]).parent == tmp_dirs.traces
+    get_settings.cache_clear()
+
+
+# ------------------------------------------------------------------------------------------------ A11
+
+
+def test_log_output_of_the_cli_masks_secrets() -> None:
+    """Python's last-resort handler printed warnings unmasked; the CLI's own handler masks them (tracebacks too)."""
+    import io
+    import logging
+
+    from builder.build import install_log_redaction
+    from builder.trace import _Redactor
+
+    secret = "synthetic-secret-value-0123456789"
+    root = logging.Logger("isolated-root")
+    redactor = _Redactor()
+    handler = install_log_redaction(redactor, root)
+    assert handler is not None
+    stream = io.StringIO()
+    handler.setStream(stream)  # type: ignore[attr-defined]
+    redactor.add([secret])
+    root.warning("401 for key %s", secret)
+    try:
+        raise RuntimeError(f"request failed with {secret}")
+    except RuntimeError:
+        root.exception("crash")
+    root.info("not shown %s", secret)
+    text = stream.getvalue()
+    assert secret not in text and "***" in text and "Traceback" in text and "not shown" not in text
+    assert install_log_redaction(redactor, root) is None  # never stacks a second handler

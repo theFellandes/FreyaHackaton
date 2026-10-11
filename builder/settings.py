@@ -57,6 +57,7 @@ RESERVED_KIT_ENV_VARS = ("FREYA_AGENT_PROVIDER", "FREYA_AGENT_MODEL")
 TrackName = Literal["auto", "compiled", "agentic"]
 ProfileName = Literal["staged", "lean"]
 SelfTestMode = Literal["auto", "none", "smoke", "walkthrough", "practice"]
+LogContent = Literal["full", "metadata"]
 
 
 class Settings(BaseSettings):
@@ -162,13 +163,27 @@ class Settings(BaseSettings):
     )
     observability_log_prompts: bool = Field(
         default=True,
-        description="False sends only metadata (lengths, tokens, timings) to Langfuse, not prompt / reply texts.",
+        description=(
+            "False sends only metadata (lengths, tokens, timings) to Langfuse, not prompt / reply texts. "
+            "Affects Langfuse only; the local log is governed by llm_log_content."
+        ),
+    )
+    llm_log_content: LogContent = Field(
+        default="full",
+        description=(
+            "What the local traces/*.llm.jsonl keeps of every LLM attempt: 'full' = prompt and reply texts "
+            "(default, for reading what the model said), 'metadata' = only ids, tokens, timings and text lengths. "
+            "Independent of observability_log_prompts (Langfuse)."
+        ),
     )
 
     # --- build --------------------------------------------------------------------------------------------------------
     builder_track: TrackName = Field(
-        default="auto",
-        description="'compiled' (deterministic compiler), 'agentic' (Claude Agent SDK) or 'auto'.",
+        default="compiled",
+        description=(
+            "'compiled' (deterministic compiler; the default, and the configuration measured live), 'agentic' "
+            "(Claude Agent SDK) or 'auto' (compiled with an agentic fallback). 'agentic' and 'auto' are opt-ins."
+        ),
     )
     agent_profile: ProfileName = Field(
         default="staged", description="Workflow shape produced by the compiler."
@@ -178,12 +193,26 @@ class Settings(BaseSettings):
         gt=0,
         description="Wall-clock budget of one build, self-tests included (hackathon limit 30 min).",
     )
-    self_test: SelfTestMode = Field(default="auto", description="Which self-test runs after deployment.")
+    self_test: SelfTestMode = Field(
+        default="smoke",
+        description=(
+            "Which self-test runs after deployment. 'smoke' (default) never redeploys a tested version; 'auto', "
+            "'walkthrough' and 'practice' are opt-ins (their findings can start a policy repair round and a redeploy)."
+        ),
+    )
     build_slot: str | None = Field(
         default=None,
         description="Fixed slot name (workflow label); derived from the brief file names when unset.",
     )
     dry_run: bool = Field(default=False, description="Compile and check locally; make no Freya calls.")
+    tool_base_url: str | None = Field(
+        default=None,
+        description=(
+            "Base URL of the bank's services the agent calls (the team's mock, e.g. a Cloudflare Worker). Every tool "
+            "request goes there, keeping each operation's path and method; unset keeps the contract's own server. "
+            "A URL argument or --tool-base-url on the command line wins."
+        ),
+    )
     max_policy_repairs: int = Field(default=2, ge=0)
     max_compile_repairs: int = Field(default=2, ge=0)
     max_selftest_repairs: int = Field(default=1, ge=0)
@@ -202,6 +231,12 @@ class Settings(BaseSettings):
             return value or None
         return value
 
+    @field_validator("llm_log_content", mode="before")
+    @classmethod
+    def _normalise_log_content(cls, value: Any) -> Any:
+        """Accept ``Full`` / `` METADATA `` spellings; anything but the two modes is still rejected."""
+        return value.strip().lower() if isinstance(value, str) else value
+
     @field_validator("freya_workspace_id", "build_slot", mode="before")
     @classmethod
     def _blank_str_is_none(cls, value: Any) -> Any:
@@ -209,6 +244,19 @@ class Settings(BaseSettings):
         if isinstance(value, str):
             return value.strip() or None
         return value
+
+    @field_validator("tool_base_url", mode="before")
+    @classmethod
+    def _valid_tool_base_url(cls, value: Any) -> Any:
+        """Blank = unset; otherwise an http(s) URL with a host (trailing slashes dropped)."""
+        if value is None or (isinstance(value, str) and not value.strip()):
+            return None
+        from builder.inputs import InputError, normalise_base_url
+
+        try:
+            return normalise_base_url(str(value))
+        except InputError as exc:
+            raise ValueError(f"tool_base_url must be an http(s) URL with a host: {exc}") from None
 
     @field_validator("freya_api_url")
     @classmethod
@@ -275,7 +323,10 @@ class Settings(BaseSettings):
             "build_time_budget_s": self.build_time_budget_s,
             "build_slot": self.build_slot or "auto",
             "dry_run": self.dry_run,
+            "tool_base_url": self.tool_base_url or "contract server",
             "langfuse": "enabled" if self.langfuse_public_key and self.langfuse_secret_key else "disabled",
+            "llm_log_content": self.llm_log_content,
+            "langfuse_log_prompts": self.observability_log_prompts,
         }
 
 
@@ -428,6 +479,7 @@ __all__ = [
     "KIT_ENV_VARS",
     "MIN_SECRET_LENGTH",
     "RESERVED_KIT_ENV_VARS",
+    "LogContent",
     "ProfileName",
     "SelfTestMode",
     "Settings",

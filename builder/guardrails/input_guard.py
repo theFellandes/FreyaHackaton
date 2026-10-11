@@ -144,7 +144,7 @@ def _binary_reason(text: str) -> str:
     nul = text.count("\x00")
     if nul >= 3 and nul / size > 0.005:
         return f"it contains {nul} NUL characters (UTF-16 or binary content)"
-    replacement = text.count("�")
+    replacement = text.count("\ufffd")
     if replacement >= 10 and replacement / size > 0.02:
         return f"{replacement} of its {size:,} characters are undecodable bytes"
     control = len(_CONTROL.findall(text))

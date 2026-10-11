@@ -38,7 +38,10 @@ DEFAULT_MIN_INTERVAL_S = 0.25
 
 
 class PoliteLimiter:
-    """Keeps consecutive calls at least ``min_interval_s`` apart (thread-safe, FIFO).
+    """Keeps consecutive call admissions at least ``min_interval_s`` apart (thread-safe).
+
+    Only admission is serialized; the HTTP calls themselves can overlap. The next admission is based on the actual
+    wake time, so delayed sleepers cannot consume expired reservations and start a burst of calls together.
 
     Args:
         min_interval_s: Minimum seconds between the *starts* of two calls; ``0`` disables pacing.
@@ -61,17 +64,18 @@ class PoliteLimiter:
         self.total_wait_s = 0.0
 
     def wait(self) -> float:
-        """Block until a call may start; returns the seconds slept (``0.0`` when no wait was needed)."""
-        with self._lock:  # reserve a start time, then sleep outside the lock
+        """Block until a call may start; return elapsed wait, including time queued for the pacing lock."""
+        entered = self._clock()
+        with self._lock:
             now = self._clock()
-            start = max(now, self._next_start)
-            self._next_start = start + self.min_interval_s
-            delay = start - now
+            while now < self._next_start:
+                self._sleep(self._next_start - now)
+                now = self._clock()
+            self._next_start = now + self.min_interval_s
+            delay = max(now - entered, 0.0)
             self.calls += 1
             self.total_wait_s += delay
-        if delay > 0:
-            self._sleep(delay)
-        return max(delay, 0.0)
+        return delay
 
     def call(self, function: Callable[..., Any], /, *args: Any, **kwargs: Any) -> Any:
         """Wait for permission, then run ``function(*args, **kwargs)``."""

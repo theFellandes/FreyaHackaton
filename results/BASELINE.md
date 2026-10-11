@@ -69,3 +69,56 @@ Lessons are written into the implementation contract addenda (scratchpad) and mu
 Verified platform behaviours from these runs: tool-call transitions (tool_call_routing), passthrough code nodes, computed close with an
 unset reason dropped from the request, pre-hook vars persistence (E-8) and pre-hook URL blanking blocks a call without any request (E-9;
 the post-hook does not run on that path).
+
+## 4. AUTOMATIC BUILDER — first live acceptance (builder's own output, no hand edits)
+
+Run 2026-10-10 ~22:22 UTC on the code after the quality review (before fix round 2). Command:
+`python builder/build.py <briefs> tools/openapi.json --track compiled --self-test smoke`, then `tools/run_cases.py <agent> --brief X --reps 3`.
+
+| Build | Build time | Model calls | Published + exported | Strict score (all 3 reps) | Failing reps |
+|---|---|---|---|---|---|
+| Brief A (slot brief-a, workflow 58bd49f0…) | 96.2 s in builder trace | 6 | yes, export_ok | **8/10** | PUB-03 2/3 (evaluator reports birthday prompts after the wrong-answer allowance was exhausted); PUB-07 2/3 (2 Nov recorded instead of 27 Oct after a holiday proposal) |
+| Brief A+B (slot brief-a-brief-b, workflow b5638c83…) | 132.7 s in builder trace | 8 | yes, export_ok | **3/3 B amendment cases** | — |
+
+These scores combine two different automatically built agents: A was tested on PUB-01–10 and A+B on PUB-11–13. They do not establish an 11/13 score for the A+B agent; its inherited ten A cases remain untested. Both live runs predate the later compiler/runtime repairs. Manifests, exports and traces agree on agent/workflow identities, but the scorer reports do not bind an exact source snapshot or workflow version. See [submission verification](../submission/VALIDATION.md) for the current offline check and remaining acceptance work.
+
+### acceptance2 (final code, 11 Oct)
+
+Run 2026-10-11 10:15 to 10:23 UTC on the final code (commit `6d75847` plus the uncommitted fix rounds; the trace says
+`6d75847+dirty`), with the organisers' literal command `python3 builder/build.py <briefs> tools/openapi.json` and default
+options (compiled track, staged profile, smoke self-test). `python3` is 3.14 on this machine; the builder handed the run
+over to the repository `.venv` (Python 3.13.16), as its `note:` line on stderr shows. Files: `results/acceptance2/`.
+
+| Build | Wall clock (trace) | Model calls | Result | Self-test |
+|---|---|---|---|---|
+| Brief A (slot brief-a, run 72c4f402f7ec) | 257 s (254.9 s) | 6 | deployed, workflow `58bd49f0-7417-413e-9f8b-19de1836e563` version 3, 49 steps, 7 tools, `export_ok: true`, exit 0 | static_checks PASS, remote_validate PASS, smoke FAIL: Freya HTTP 504 on `POST /api/v2/chat/message` |
+| Briefs A+B (slot brief-a-brief-b, run 1135362f4cf4) | 209 s (207.4 s) | 8 | deployed, workflow `b5638c83-1842-4615-ab28-23834f631e2f` version 2, 46 steps, 8 tools, `export_ok: true`, exit 0 | static_checks PASS, remote_validate PASS, smoke FAIL: Freya HTTP 504 on `POST /api/v2/chat/message` |
+
+Both smoke failures are platform timeouts (the chat request waited 60 s and got 504), not agent findings. **Scoring is
+pending:** the first scoring attempts stopped when Freya staging returned 504 on the simulation endpoints
+(`GET /api/v2/simulations/<id>`), and the re-score was still running when this was written. No customer score of the
+final-code agents exists yet. **Update (13:02 UTC):** the Brief A re-score finished: **7/10** strict (runs 7/10, 9/10,
+9/10; PUB-03 0/3, PUB-09 2/3, PUB-10 2/3; `results/acceptance2/score_A.log`). The A+B re-score was still running.
+
+**Update (14:05 UTC), acceptance2 final:** the A+B agent scored 6/13 over all 13 cases (3 reps). This number is not a
+fair test of that agent: under Brief B rule 8 a single-product customer without a promise gets an `add_note`, so PUB-05
+(hardship) and PUB-08 (already paid) correctly carry a note that the Brief A expectations do not have. The real agent
+misses in that run were PUB-03 (a complete date inside a cut-off message, fixed below), PUB-07 (1 of 3: holiday treated
+as after the deadline), PUB-12 (platform errors made the agent re-ask) and hang-ups during 30-60 s platform delays.
+
+### acceptance3 to acceptance6 (final code, 11 Oct, after the transcript-driven fixes)
+
+Builds used the literal `python3 builder/build.py ...` command (handover to the `.venv`). Brief A cases were scored on
+the Brief A agent, Brief B cases on the A+B agent. Extra scenarios are the 13 customers in `evals/extra_cases/`
+(dispute, wrong number, declined identity, human, hardship with support, own amount, next Friday, rude, scam,
+deceased; B: dispute on one product, paid + restructuring, next Friday + refusal), 1 repetition.
+
+| Round (UTC) | Fixes in this build | Brief A, strict 3 reps | Brief B cases, strict 3 reps | Extras A / B | Notes |
+|---|---|---|---|---|---|
+| acceptance3 (13:38) | final fix round + cut-off rule order (PUB-03) | **10/10** | **3/3** | 9/10 / 3/3 | extras miss: "next Friday" asked as a vague period |
+| acceptance4 (14:25) | + weekday is an exact day | **10/10** | 2/3 | 9/10 / 2/3 | B miss: PUB-13 loan got an attempt-1 date instead of its deadline; extras: security explanation said twice; a sandbox error ("Failed to reach snekbox") caused a duplicate note |
+| acceptance5 (14:55) | + ask security questions plainly, B3 before B2 | 8/10 (runs 8, 10, 10) | runs 3/3, 0/3, 0/3 | **10/10** / 0/3 | B runs 2 and 3: every call cut short by the platform (customer hung up, no agent turn); extras B: the practice bank answered HTML error pages to create_promise and transfer_to_agent (the agent handled them honestly) |
+| acceptance6 (15:26) | + a day named after a vague answer is a named day | not run | not run | not run | deployed (v7), smoke failed twice on Freya 504; a 3-case check got no agent reply at all for 60 s in every call (platform outage), so the last change is verified offline only |
+
+Self-tests: static checks and remote validation passed in every build; smoke passed whenever Freya answered.
+Offline suite at hand-over: 3387 passed, 4 xfailed; ruff clean. Files: `results/acceptance3/` to `results/acceptance6/`.

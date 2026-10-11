@@ -24,7 +24,9 @@ from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
 
 from builder.compiler import naming
-from builder.policy.ir import IntentRule, OutcomeRef, PolicyIR, RuleLedger, template_fields
+from builder.compiler.phrasing import intent_fixed_sentence
+from builder.policy.intents import canonical_intent_key
+from builder.policy.ir import IntentRule, OutcomeRef, PolicyIR, RuleEntry, RuleLedger, template_fields
 
 __all__ = [
     "DEFAULT_CONFIRM_QUESTION",
@@ -34,6 +36,7 @@ __all__ = [
     "ExitStyle",
     "LeanExits",
     "StagedExits",
+    "concessions_forbidden",
     "confirm_question",
     "deferred_notes",
     "exit_bullet",
@@ -46,6 +49,7 @@ __all__ = [
     "outcome_text",
     "override_phrase",
     "person_refs",
+    "persona_noun",
     "quoted",
     "recording_failure_texts",
     "retry_leads",
@@ -88,7 +92,15 @@ def extra_phrase(extra: dict[str, str], *keys: str) -> str:
         for name, value in extra.items():
             if name.endswith("_" + key) and value.strip():
                 return value.strip()
+        # AUD-09: the extraction stage also writes "below_floor_sentence" / "floor_offer_text" for a key it was given
+        for name, value in extra.items():
+            base = _EXTRA_SUFFIX.sub("", name)
+            if base != name and (base == key or base.endswith("_" + key)) and value.strip():
+                return value.strip()
     return ""
+
+
+_EXTRA_SUFFIX = re.compile(r"_(sentence|phrase|text|line|wording)$")
 
 
 def today_question(ir: PolicyIR) -> str:
@@ -233,19 +245,74 @@ def soften_recording_notice(text: str) -> str:
     return _RECORDING_CALL.sub(replace, _RECORDED_CALL.sub(replace, text or ""))
 
 
+_POSSESSIVE = r"(?:[A-Z][\w&.-]*(?:\s+[A-Z][\w&.-]*)*['\u2019]s\s+)"
+_PERSONA = re.compile(
+    r"\b(?:i\s+am|i'm|this\s+is|you\s+are|you're)\s+"
+    rf"(?:(?:an?|the|your)\s+|{_POSSESSIVE})"
+    r"(?P<noun>[A-Za-z][A-Za-z-]*(?:\s+[A-Za-z][A-Za-z-]*){0,3}?)"
+    r"(?=\s+(?:calling|speaking|from|of|for|at|on|who|and|with)\b|\s*[.,;:!?]|\s*$)",
+    re.IGNORECASE,
+)
+_NOT_A_NOUN = frozenset({"calling", "speaking", "from", "on", "behalf", "here", "now", "just", "also"})
+#: "this is a recorded call / a courtesy reminder" describes the call, not the agent.
+_NOT_A_PERSONA_TAIL = frozenset({"call", "calls", "message", "recording", "reminder", "notice", "notification", "test"})
+
+
+def persona_noun(ir: PolicyIR) -> str:
+    """What the brief calls the agent (``virtual agent``, ``voice assistant`` ...), or ``""`` when it names nothing.
+
+    Read from the policy's own sentences, in order: the answer to "are you a robot?", the opening sentence, the response
+    of the robot-question intent. A statement "I am / this is / you are" followed by an article or a possessive
+    ("Acme's ...") and a short noun phrase counts; a bare name ("this is Ana from Acme") does not. Nothing is invented: the
+    compiled prompts fall back to wording without a noun.
+    """
+    robot = next((i.response for i in ir.intents if i.key == "robot_question"), "")
+    for text in (ir.phrases.robot_answer, ir.phrases.opening_sentence, robot):
+        for match in _PERSONA.finditer(text or ""):
+            noun = " ".join(match.group("noun").split())
+            words_ = noun.lower().split()
+            if words_ and not _NOT_A_NOUN & set(words_) and words_[-1] not in _NOT_A_PERSONA_TAIL:
+                return noun.lower() if noun.isupper() else noun
+    return ""
+
+
 def person_refs(ir: PolicyIR) -> tuple[str, str]:
     """``(how to address the customer, full name)`` as Freya references, from the right-party question and call variables.
 
     "{{title}} {{last_name}}" / "{{first_name}} {{last_name}}" when those variables exist; otherwise "the customer".
+    Only name-like placeholders of the question form the address (AUD-52): "{contact_name}, a director of
+    {company_name}?" addresses "{{contact_name}}", never the company or an account fragment. A question whose
+    placeholders are all clearly not a person (a company, an account number) gives the neutral "the customer".
     """
     names = set(ir.call_variable_names())
     fields = [name for name in template_fields(ir.phrases.right_party_question) if name in names]
+    person = [name for name in fields if _person_like(name)]
+    if person:
+        fields = person
+    elif any(_NOT_PERSON_VAR.search(name) for name in fields):
+        fields = []  # only an organisation or a number: never address that as the person
     if not fields and not ir.phrases.right_party_question.strip():  # no question to read the form of address from
         fields = next((list(pair) for pair in (("title", "last_name"), ("first_name", "last_name"))
                        if all(name in names for name in pair)), [])
+        if not fields:
+            fields = next(([name] for name in ir.call_variable_names()
+                           if _person_like(name) and name.lower().endswith("name")), [])
     address = " ".join("{{" + name + "}}" for name in fields) or "the customer"
     full = [name for name in ("first_name", "last_name") if name in names]
+    if len(full) < 2:
+        full = [name for name in fields if _person_like(name)] or full
     return address, (" ".join("{{" + name + "}}" for name in full) or address)
+
+
+_PERSON_VAR = re.compile(r"(^|_)(title|salutation|honorific|first_?name|given_?name|last_?name|surname|family_?name|"
+                         r"full_?name|name)($|_)", re.IGNORECASE)
+_NOT_PERSON_VAR = re.compile(r"company|organi[sz]ation|business|employer|firm|account|amount|balance|date|number|digits|"
+                             r"last4|_id$|^id$", re.IGNORECASE)
+
+
+def _person_like(name: str) -> bool:
+    """A call variable that names or addresses a person (``title``, ``last_name``, ``contact_name``)."""
+    return bool(_PERSON_VAR.search(name)) and not _NOT_PERSON_VAR.search(name)
 
 
 @dataclass(frozen=True)
@@ -278,22 +345,34 @@ class StagedExits(ExitStyle):
 
 @dataclass(frozen=True)
 class LeanExits(ExitStyle):
-    """Lean design: the model itself calls ``transfer_to_agent`` / ``close_call`` with the outcome from the table."""
+    """Lean design: the model itself calls ``transfer_to_agent`` / ``close_call`` with the outcome from the table.
+
+    The three field names are the ones of the tool contracts (``outcome`` / ``reason`` / ``queue`` unless the bank's tool
+    API calls them otherwise), so the words of the prompt are the names of the parameters the model fills.
+    """
+
+    outcome_field: str = "outcome"
+    reason_field: str = "reason"
+    queue_field: str = "queue"
+
+    def text(self, ref: OutcomeRef | None) -> str:
+        """``outcome "x" and reason "y"`` with this style's field names."""
+        return outcome_text(ref, self.outcome_field, self.reason_field)
 
     def end(self, situation: str, outcome: OutcomeRef | None) -> str:
-        return f"call close_call with {outcome_text(outcome)}" if outcome else "call close_call"
+        return f"call close_call with {self.text(outcome)}" if outcome else "call close_call"
 
     def handoff(self, queue: str, outcome: OutcomeRef | None) -> str:
-        close = f", then close_call with {outcome_text(outcome)}" if outcome else ""
-        return f'call transfer_to_agent with queue "{queue}"{close}'
+        close = f", then close_call with {self.text(outcome)}" if outcome else ""
+        return f'call transfer_to_agent with {self.queue_field} "{queue}"{close}'
 
 
-def outcome_text(ref: OutcomeRef | None) -> str:
-    """``outcome "x" and reason "y"`` (reason omitted when none)."""
+def outcome_text(ref: OutcomeRef | None, outcome_field: str = "outcome", reason_field: str = "reason") -> str:
+    """``outcome "x" and reason "y"`` (reason omitted when none); the field names are the contract's."""
     if ref is None:
-        return "the outcome from the table"
-    text = f'outcome "{ref.outcome}"'
-    return text + (f' and reason "{ref.reason}"' if ref.reason else "")
+        return f"the {outcome_field} from the table"
+    text = f'{outcome_field} "{ref.outcome}"'
+    return text + (f' and {reason_field} "{ref.reason}"' if ref.reason else "")
 
 
 def override_phrase(ir: PolicyIR, key: str) -> str:
@@ -322,6 +401,7 @@ def exit_bullet(
     *,
     note_tool: str = "add_note",
     redirect: Mapping[str, str] | None = None,
+    concessions_forbidden: bool | None = None,
 ) -> str | None:
     """One prompt bullet for an intent that leaves the conversation or records a note; ``None`` for guidance-only intents.
 
@@ -331,6 +411,9 @@ def exit_bullet(
     ``redirect`` maps an intent key to the node its exit goes through instead (a guard node, see
     :meth:`builder.compiler.profiles.staged._Staged.plan_latches`): the engine names the tool the model calls after the
     node a transition leads to, so the bullet must name that node's tool.
+
+    ``concessions_forbidden``: whether the brief forbids discounts and waivers (:func:`concessions_forbidden`; ``None`` =
+    read from the IR's residual rules only). It decides what the restructuring bullet says about such a request.
     """
     info = naming.intent_exit(ir, intent)
     if info.kind == "info":
@@ -341,8 +424,9 @@ def exit_bullet(
         parts.append(
             f"Act only when the person says this {times_text(intent.min_occurrences)}; before that follow the other rules."
         )
-    if intent.response:
-        parts.append(_sentence(intent.response))
+    response = intent_fixed_sentence(ir, canonical_intent_key(intent.key), intent.response)  # AUD-09
+    if response:
+        parts.append(_sentence(response))
     if info.kind == "note":
         if deferred_notes(ir):
             parts.append(f'Take no promise for this product; {note_tool} reason "{info.reason}" (do not call {note_tool} '
@@ -354,15 +438,23 @@ def exit_bullet(
         if redirect and intent.key in redirect:
             move = f"call {naming.transition_tool(redirect[intent.key])}"
         if intent.offer:
-            parts.append(_sentence(intent.offer))
-            if "once" not in intent.offer.lower():
+            if _sentence(intent.offer) not in parts:  # the offer is often the same sentence as the fixed response
+                parts.append(_sentence(intent.offer))
+            if "once" not in intent.offer.lower() and info.declined is not None:
                 parts.append("Make this offer only once.")
             if intent.overrides:
                 parts.append("Make no other offer of any kind (no other transfer, plan or discount) unless the customer "
                              "explicitly asks for it.")
-            parts.append(f"If they accept or insist: say you will transfer them, say goodbye and {move}.")
-            if info.declined is not None:
+            if info.declined is None:
+                # AUD-37: declining keeps the call going, and the offer may be "may I help first?", so accepting the
+                # OFFER is not a reason to transfer: the branches name the transfer itself.
+                parts.append(f"If they insist: say you will transfer them, say goodbye and {move}. If they let you "
+                             "help, go on; do not offer it again.")
+            else:
+                parts.append("If they accept or insist (yes, or any clear agreement): say you will transfer them, "
+                             f"say goodbye and {move}.")
                 parts.append(_declined_sentence(style, info.declined, note_tool, deferred_notes(ir)))
+                parts.append(_clarification_sentence())
         else:
             parts.append(f"Say you will transfer them, say goodbye and {move}.")
     else:  # end
@@ -371,27 +463,110 @@ def exit_bullet(
         move = style.end(info.situation, info.outcome)
         if redirect and intent.key in redirect:
             move = f"call {naming.transition_tool(redirect[intent.key])}"
-        parts.append(f"Thank them, say goodbye and {move}.")
+        if info.callback:
+            parts.append(_callback_sentence(ir, style, move))
+        elif info.reason and ir.multi_product.enabled:
+            parts.append(_close_all_sentence(info.reason, note_tool, move, deferred_notes(ir)))
+        else:
+            parts.append(f"Thank them, say goodbye and {move}.")
     if intent.overrides:
         keys = ", ".join(intent.overrides)
         never = " and never ".join(override_phrase(ir, key) for key in intent.overrides)
         parts.append(f"Once this applies, it comes before the rules for {keys}: never {never} in this call.")
-    if intent.key == "restructuring" and info.kind == "handoff":
-        parts.append("A request for a discount or a waiver is not a request for this: say you cannot offer one.")
+    if intent.key == "restructuring" and info.kind == "handoff" and not _mentions_concession(intent):
+        # AUD-47: "say you cannot offer one" only when the brief forbids concessions; when another intent handles a
+        # discount or a waiver, that intent's own bullet governs
+        forbidden = concessions_forbidden if concessions_forbidden is not None else _concessions_forbidden_in(
+            rule.text for rule in ir.residual_rules)
+        if forbidden:
+            parts.append("A request for a discount or a waiver is not a request for this: say you cannot offer one.")
+        elif not any(_mentions_concession(other) for other in ir.intents if other.key != intent.key):
+            parts.append("A request for a discount or a waiver is not by itself a request for this.")
     tag = ids_tag(intent.rule_ids)
     return f"{label}: " + " ".join(part for part in parts if part) + (f" {tag}" if tag else "")
 
 
+_CONCESSION = re.compile(r"\b(discount|waiv)", re.IGNORECASE)
+_NEGATION = re.compile(r"\b(never|not|no|cannot|can't|don't|do\s+not|must\s+not)\b", re.IGNORECASE)
+
+
+def _concessions_forbidden_in(texts: Iterable[str]) -> bool:
+    return any(_CONCESSION.search(text or "") and _NEGATION.search(text or "") for text in texts)
+
+
+def concessions_forbidden(ir: PolicyIR, ledger: RuleLedger | None = None) -> bool:
+    """True when a residual rule or an active ledger rule forbids a discount or a waiver (AUD-47)."""
+    texts = [rule.text for rule in ir.residual_rules]
+    if ledger is not None:
+        texts += [f"{rule.statement} {rule.quote}" for rule in ledger.active_rules()]
+    return _concessions_forbidden_in(texts)
+
+
+def _mentions_concession(intent: IntentRule) -> bool:
+    """The intent itself is about a discount or a waiver (its description, response, offer or examples say so)."""
+    return any(_CONCESSION.search(text or "") for text in (intent.description, intent.response, intent.offer,
+                                                            *intent.examples))
+
+
+def _callback_sentence(ir: PolicyIR, style: ExitStyle, move: str) -> str:
+    """An intent that books a callback (its ``schedule_callback`` action, AUD-08): book first, close on the result.
+
+    In the staged design a booked callback is confirmed and closed by the engine (a route on the tool's success counter);
+    ``move`` is the branch where no time could be agreed.
+    """
+    facts = " {{callback_facts}}" if ir.third_party.callback is not None else ""
+    booked = ("the system then confirms it and ends the call" if isinstance(style, StagedExits)
+              else f"when it is booked, thank them, say goodbye and {move}")
+    return (f"Ask for a day and a time for the callback.{facts} As soon as they give one, call schedule_callback with the "
+            f"date (YYYY-MM-DD) and the time (HH:MM); {booked}. Never say it is booked before the result says so. If no "
+            f"time can be agreed, thank them, say goodbye and {move}.")
+
+
+def _close_all_sentence(reason: str, note_tool: str, move: str, deferred: bool) -> str:
+    """A call-level intent in a several-product call: note every product still open, then end the call (AUD-11).
+
+    Unlike a per-product intent ("note this product and continue with the others") it closes the whole call. Products
+    already handled keep their promise or their remembered reason.
+    """
+    lead = "Take no promise for this product or for any product not handled yet (a refusal to pay is not this). "
+    if deferred:
+        return (lead + f"Call {note_tool} once for each product without a promise - with the reason already remembered "
+                f'for it, else reason "{reason}" - and wait for the results; then, in your next message, thank them, say '
+                f"goodbye and {move}.")
+    return (lead + f'Call {note_tool} with reason "{reason}" for each product that has no promise and no note yet and '
+            f"wait for the results; then, in your next message, thank them, say goodbye and {move}.")
+
+
 def _declined_sentence(style: ExitStyle, declined: naming.IntentExit, note_tool: str, deferred: bool = False) -> str:
+    """The decline branch of an offer: only a CLEAR refusal takes it (audit F18).
+
+    "Anything other than yes" is not a refusal: a question, a request for time, small talk or cut-off speech is a
+    clarification (:func:`_clarification_sentence`) that leaves the offer pending.
+    """
+    lead = "If they clearly decline: "
     if declined.kind == "note":
         if deferred:
-            return ('If they decline (or answer anything other than yes): do not ask again; '
+            return (lead + 'do not ask again; '
                     f'{note_tool} reason "{declined.reason}" for the product (do not call {note_tool} yet - write it only '
                     "at the very end) and continue.")
-        return (f'If they decline (or answer anything other than yes): do not ask again; call {note_tool} with the '
+        return (lead + f'do not ask again; call {note_tool} with the '
                 f'product_id and reason "{declined.reason}" and continue.')
-    return (f"If they decline (or answer anything other than yes): thank them, say goodbye and "
-            f"{style.end(declined.situation, declined.outcome)} - do not ask again.")
+    return lead + f"thank them, say goodbye and {style.end(declined.situation, declined.outcome)} - do not ask again."
+
+
+def _clarification_sentence() -> str:
+    """The branch for a reply that is neither a yes nor a no: the offer stays pending (audit F18).
+
+    A question about the offer, a request for time, small talk and cut-off speech are answered; they are not a refusal
+    (no refusal allowance is spent, no decline note, no farewell) and not a second offer. The offer is not asked again
+    (AUD-37: a judge counts a re-asked yes / no as a second offer); the agent waits for the answer, and a next reply that
+    is still neither is taken as a decline, so the call cannot loop on the offer.
+    """
+    return ("If they ask a question about the offer (for example what it would help with), ask for time, make small talk "
+            "or say something cut off, it is neither a yes nor a no: answer briefly from the facts you have (say so if "
+            "you do not know), keep the offer open and wait; do not ask it again. This is not a refusal and not "
+            "a second offer: do not transfer, add a note or end the call because of it. If the next reply is still "
+            "neither a clear yes nor a clear no, take it as a decline.")
 
 
 def uncovered_rules(
@@ -407,22 +582,37 @@ def uncovered_rules(
     out: list[tuple[str, str]] = []
     seen: set[str] = set()
 
+    by_id: dict[str, RuleEntry] = {}
+    for entry in ledger.rules:
+        by_id.setdefault(entry.id, entry)
+    superseded = ledger.superseded_ids()
+
     def clip(text: str) -> str:
         text = " ".join(text.split())
         return text if len(text) <= max_chars else text[:max_chars].rsplit(" ", 1)[0] + " ..."
+
+    def amended(rule_id: str, text: str) -> str:
+        """AUD-36: a rule a later rule narrows is printed with that amendment, never alone as if in full force."""
+        entry = by_id.get(rule_id)
+        newer = [by_id[x] for x in dict.fromkeys(entry.narrowed_by or []) if x in by_id and x not in superseded
+                 and x != rule_id] if entry is not None else []
+        if not newer:
+            return text
+        tail = " ".join(f"[{rule.id}] {clip(rule.quote)}" for rule in newer)
+        return f"{text} Amended by {tail} Where they differ, the amendment applies."
 
     for rule in ledger.active_rules():
         if rule.id in seen or not set(scopes) & set(rule.scope):
             continue
         if rule.id in residual:
-            out.append((rule.id, clip(residual[rule.id].text)))
+            out.append((rule.id, amended(rule.id, clip(residual[rule.id].text))))
             seen.add(rule.id)
         elif rule.id not in cited:
-            out.append((rule.id, clip(rule.quote)))
+            out.append((rule.id, amended(rule.id, clip(rule.quote))))
             seen.add(rule.id)
     for rule_id, rule in residual.items():
-        if rule_id not in seen and set(scopes) & set(rule.scope) and rule_id not in ledger.superseded_ids():
-            out.append((rule_id, clip(rule.text)))
+        if rule_id not in seen and set(scopes) & set(rule.scope) and rule_id not in superseded:
+            out.append((rule_id, amended(rule_id, clip(rule.text))))
             seen.add(rule_id)
     return out
 

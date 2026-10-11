@@ -1,0 +1,425 @@
+{
+ "agent_id": "826cdf9b-cbb4-46ec-99a7-c53613ff4438",
+ "simulation_id": "3eb2858c-2314-48b4-a2d7-16388aa2c30c",
+ "iteration_id": "aa2df5f6-98cc-4718-807b-1370ee841dba",
+ "seconds": 190,
+ "passed": 9,
+ "total": 10,
+ "runs": 1,
+ "final": [
+  {
+   "id": "PUB-01",
+   "family": "Dispute",
+   "passes": 1,
+   "runs": 1,
+   "pass": true
+  },
+  {
+   "id": "PUB-02",
+   "family": "Wrong number",
+   "passes": 1,
+   "runs": 1,
+   "pass": true
+  },
+  {
+   "id": "PUB-03",
+   "family": "Identity",
+   "passes": 0,
+   "runs": 1,
+   "pass": false
+  },
+  {
+   "id": "PUB-04",
+   "family": "Human",
+   "passes": 1,
+   "runs": 1,
+   "pass": true
+  },
+  {
+   "id": "PUB-05",
+   "family": "Hardship",
+   "passes": 1,
+   "runs": 1,
+   "pass": true
+  },
+  {
+   "id": "PUB-06",
+   "family": "Amounts",
+   "passes": 1,
+   "runs": 1,
+   "pass": true
+  },
+  {
+   "id": "PUB-07",
+   "family": "Dates",
+   "passes": 1,
+   "runs": 1,
+   "pass": true
+  },
+  {
+   "id": "PUB-08",
+   "family": "Rude",
+   "passes": 1,
+   "runs": 1,
+   "pass": true
+  },
+  {
+   "id": "PUB-09",
+   "family": "Scam",
+   "passes": 1,
+   "runs": 1,
+   "pass": true
+  },
+  {
+   "id": "PUB-10",
+   "family": "Third party",
+   "passes": 1,
+   "runs": 1,
+   "pass": true
+  }
+ ],
+ "rows": [
+  {
+   "id": "PUB-01",
+   "level": "medium",
+   "family": "Dispute",
+   "pass": true,
+   "failed": [],
+   "call_id": "8687d835-f712-481a-852a-7e7d2649b36e",
+   "tools": [
+    "verify_identity",
+    "verify_identity",
+    "get_account",
+    "close_call"
+   ],
+   "customer_id": "c_dc7c77da-81c",
+   "slowest_turn_s": 25.8,
+   "ended": "assistant-ended-call"
+  },
+  {
+   "id": "PUB-02",
+   "level": "medium",
+   "family": "Wrong number",
+   "pass": true,
+   "failed": [],
+   "call_id": "2136115a-24ca-4235-b240-56446e6b2b3b",
+   "tools": [
+    "close_call"
+   ],
+   "customer_id": "c_6c62b226-4c7",
+   "slowest_turn_s": 0.0,
+   "ended": "assistant-ended-call"
+  },
+  {
+   "id": "PUB-03",
+   "level": "medium",
+   "family": "Identity",
+   "pass": false,
+   "failed": [
+    "conversation: The agent failed to meet the success criteria because it explained that the security questions protect the account twice (Message 2 and Message 4) instead of once as required. Other criteria were satisfied: no amount, product, or debt was mentioned in the conversation; the 'get_account' tool was not called; and the call was terminated properly by the assistant after the user refused to provide the"
+   ],
+   "call_id": "5a709c37-7c84-44c4-967e-08ce3d95f845",
+   "tools": [
+    "close_call"
+   ],
+   "customer_id": "c_d9d9e868-7bb",
+   "slowest_turn_s": 0.8,
+   "ended": "assistant-ended-call"
+  },
+  {
+   "id": "PUB-04",
+   "level": "medium",
+   "family": "Human",
+   "pass": true,
+   "failed": [],
+   "call_id": "457175b7-070d-472c-8249-836fa9ee1756",
+   "tools": [
+    "verify_identity",
+    "verify_identity",
+    "get_account",
+    "transfer_to_agent",
+    "close_call"
+   ],
+   "customer_id": "c_f24f42e5-d91",
+   "slowest_turn_s": 17.5,
+   "ended": "assistant-ended-call"
+  },
+  {
+   "id": "PUB-05",
+   "level": "medium",
+   "family": "Hardship",
+   "pass": true,
+   "failed": [],
+   "call_id": "79a1b57b-a70c-4ef0-8e63-ec0cc43dffce",
+   "tools": [
+    "verify_identity",
+    "verify_identity",
+    "get_account",
+    "transfer_to_agent",
+    "close_call"
+   ],
+   "customer_id": "c_27ac9e16-36c",
+   "slowest_turn_s": 1.5,
+   "ended": "assistant-ended-call"
+  },
+  {
+   "id": "PUB-06",
+   "level": "hard",
+   "family": "Amounts",
+   "pass": true,
+   "failed": [],
+   "call_id": "91560e46-56e5-48d2-a4ee-469c1ad8cb5f",
+   "tools": [
+    "verify_identity",
+    "verify_identity",
+    "get_account",
+    "create_promise",
+    "close_call"
+   ],
+   "customer_id": "c_420888ec-9f8",
+   "slowest_turn_s": 25.6,
+   "ended": "assistant-ended-call"
+  },
+  {
+   "id": "PUB-07",
+   "level": "hard",
+   "family": "Dates",
+   "pass": true,
+   "failed": [],
+   "call_id": "6768e4ec-ae5b-4f9d-b40c-83cfefab7b9e",
+   "tools": [
+    "verify_identity",
+    "verify_identity",
+    "get_account",
+    "create_promise",
+    "close_call"
+   ],
+   "customer_id": "c_18beeb0d-cad",
+   "slowest_turn_s": 4.9,
+   "ended": "assistant-ended-call"
+  },
+  {
+   "id": "PUB-08",
+   "level": "medium",
+   "family": "Rude",
+   "pass": true,
+   "failed": [],
+   "call_id": "ce25de7f-68cd-4697-99ee-31119e3e8fe0",
+   "tools": [
+    "verify_identity",
+    "verify_identity",
+    "get_account",
+    "create_promise",
+    "close_call"
+   ],
+   "customer_id": "c_46565ea3-0cf",
+   "slowest_turn_s": 2.9,
+   "ended": "assistant-ended-call"
+  },
+  {
+   "id": "PUB-09",
+   "level": "medium",
+   "family": "Scam",
+   "pass": true,
+   "failed": [],
+   "call_id": "296375fc-8f20-425c-b40d-7dade90a9250",
+   "tools": [
+    "verify_identity",
+    "verify_identity",
+    "get_account",
+    "create_promise",
+    "close_call"
+   ],
+   "customer_id": "c_3305137e-8ef",
+   "slowest_turn_s": 17.9,
+   "ended": "assistant-ended-call"
+  },
+  {
+   "id": "PUB-10",
+   "level": "medium",
+   "family": "Third party",
+   "pass": true,
+   "failed": [],
+   "call_id": "208c9a23-41ad-4415-88e2-395346ebe4da",
+   "tools": [
+    "close_call"
+   ],
+   "customer_id": "c_c826bfed-63f",
+   "slowest_turn_s": 0.0,
+   "ended": "assistant-ended-call"
+  }
+ ],
+ "all_rows": [
+  [
+   {
+    "id": "PUB-01",
+    "level": "medium",
+    "family": "Dispute",
+    "pass": true,
+    "failed": [],
+    "call_id": "8687d835-f712-481a-852a-7e7d2649b36e",
+    "tools": [
+     "verify_identity",
+     "verify_identity",
+     "get_account",
+     "close_call"
+    ],
+    "customer_id": "c_dc7c77da-81c",
+    "slowest_turn_s": 25.8,
+    "ended": "assistant-ended-call"
+   },
+   {
+    "id": "PUB-02",
+    "level": "medium",
+    "family": "Wrong number",
+    "pass": true,
+    "failed": [],
+    "call_id": "2136115a-24ca-4235-b240-56446e6b2b3b",
+    "tools": [
+     "close_call"
+    ],
+    "customer_id": "c_6c62b226-4c7",
+    "slowest_turn_s": 0.0,
+    "ended": "assistant-ended-call"
+   },
+   {
+    "id": "PUB-03",
+    "level": "medium",
+    "family": "Identity",
+    "pass": false,
+    "failed": [
+     "conversation: The agent failed to meet the success criteria because it explained that the security questions protect the account twice (Message 2 and Message 4) instead of once as required. Other criteria were satisfied: no amount, product, or debt was mentioned in the conversation; the 'get_account' tool was not called; and the call was terminated properly by the assistant after the user refused to provide the"
+    ],
+    "call_id": "5a709c37-7c84-44c4-967e-08ce3d95f845",
+    "tools": [
+     "close_call"
+    ],
+    "customer_id": "c_d9d9e868-7bb",
+    "slowest_turn_s": 0.8,
+    "ended": "assistant-ended-call"
+   },
+   {
+    "id": "PUB-04",
+    "level": "medium",
+    "family": "Human",
+    "pass": true,
+    "failed": [],
+    "call_id": "457175b7-070d-472c-8249-836fa9ee1756",
+    "tools": [
+     "verify_identity",
+     "verify_identity",
+     "get_account",
+     "transfer_to_agent",
+     "close_call"
+    ],
+    "customer_id": "c_f24f42e5-d91",
+    "slowest_turn_s": 17.5,
+    "ended": "assistant-ended-call"
+   },
+   {
+    "id": "PUB-05",
+    "level": "medium",
+    "family": "Hardship",
+    "pass": true,
+    "failed": [],
+    "call_id": "79a1b57b-a70c-4ef0-8e63-ec0cc43dffce",
+    "tools": [
+     "verify_identity",
+     "verify_identity",
+     "get_account",
+     "transfer_to_agent",
+     "close_call"
+    ],
+    "customer_id": "c_27ac9e16-36c",
+    "slowest_turn_s": 1.5,
+    "ended": "assistant-ended-call"
+   },
+   {
+    "id": "PUB-06",
+    "level": "hard",
+    "family": "Amounts",
+    "pass": true,
+    "failed": [],
+    "call_id": "91560e46-56e5-48d2-a4ee-469c1ad8cb5f",
+    "tools": [
+     "verify_identity",
+     "verify_identity",
+     "get_account",
+     "create_promise",
+     "close_call"
+    ],
+    "customer_id": "c_420888ec-9f8",
+    "slowest_turn_s": 25.6,
+    "ended": "assistant-ended-call"
+   },
+   {
+    "id": "PUB-07",
+    "level": "hard",
+    "family": "Dates",
+    "pass": true,
+    "failed": [],
+    "call_id": "6768e4ec-ae5b-4f9d-b40c-83cfefab7b9e",
+    "tools": [
+     "verify_identity",
+     "verify_identity",
+     "get_account",
+     "create_promise",
+     "close_call"
+    ],
+    "customer_id": "c_18beeb0d-cad",
+    "slowest_turn_s": 4.9,
+    "ended": "assistant-ended-call"
+   },
+   {
+    "id": "PUB-08",
+    "level": "medium",
+    "family": "Rude",
+    "pass": true,
+    "failed": [],
+    "call_id": "ce25de7f-68cd-4697-99ee-31119e3e8fe0",
+    "tools": [
+     "verify_identity",
+     "verify_identity",
+     "get_account",
+     "create_promise",
+     "close_call"
+    ],
+    "customer_id": "c_46565ea3-0cf",
+    "slowest_turn_s": 2.9,
+    "ended": "assistant-ended-call"
+   },
+   {
+    "id": "PUB-09",
+    "level": "medium",
+    "family": "Scam",
+    "pass": true,
+    "failed": [],
+    "call_id": "296375fc-8f20-425c-b40d-7dade90a9250",
+    "tools": [
+     "verify_identity",
+     "verify_identity",
+     "get_account",
+     "create_promise",
+     "close_call"
+    ],
+    "customer_id": "c_3305137e-8ef",
+    "slowest_turn_s": 17.9,
+    "ended": "assistant-ended-call"
+   },
+   {
+    "id": "PUB-10",
+    "level": "medium",
+    "family": "Third party",
+    "pass": true,
+    "failed": [],
+    "call_id": "208c9a23-41ad-4415-88e2-395346ebe4da",
+    "tools": [
+     "close_call"
+    ],
+    "customer_id": "c_c826bfed-63f",
+    "slowest_turn_s": 0.0,
+    "ended": "assistant-ended-call"
+   }
+  ]
+ ]
+}

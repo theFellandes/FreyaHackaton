@@ -8,13 +8,17 @@ Safety nets (autouse, skipped for tests marked ``@pytest.mark.live``):
   so are LLM credentials (``ANTHROPIC_API_KEY*``, ``OPENAI_API_KEY*``, ``CLAUDE_CODE_OAUTH_TOKEN``). The settings
   cache is cleared before and after each test. A test that needs a value sets it with ``monkeypatch.setenv`` or
   builds settings with the ``make_settings`` fixture. Key discovery (``builder.llm.keys.default_env``) reads the
-  same ``builder.paths.ENV_FILE``, so it cannot see the developer's ``.env`` either.
+  same ``builder.paths.ENV_FILE``, so it cannot see the developer's ``.env`` either, and ``dotenv.dotenv_values``
+  raises if anything still names the real file (REPO-16).
 * **Optional packages** - ``claude_agent_sdk`` (``agentic``), ``pypdf`` (``ingest``), ``streamlit`` (``ui``) and
   ``langfuse`` (``obs``) are extras. Tests that need one skip themselves or stub its availability (the
   ``claude_sdk_installed`` / ``claude_sdk_missing`` fixtures); ``tests/unit/test_optional_extras.py`` proves it by
   running the affected modules with the package hidden (``tests/hide_optional_packages.py``).
 * **No network** - connecting a socket to anything but a loopback address fails the test (best effort: it covers
   ``socket``-based clients such as ``urllib``, ``http.client`` and sync ``httpx``).
+* **No writes into the repository's output folders** - ``builder.paths`` ``OUT_DIR``, ``TRACES_DIR``, ``RESULTS_DIR`` and
+  ``DATA_DIR`` point at a fresh temporary folder for every test (AUD-59: a test once left a fake "deployed" build
+  summary in ``results/``). A test that wants to look at the files uses ``tmp_dirs``, which redirects them again.
 
 Fixtures for everyone:
 
@@ -85,8 +89,31 @@ def _hermetic_settings(request: pytest.FixtureRequest, monkeypatch: pytest.Monke
         for name in list(os.environ):
             if name.upper() in doomed or _LLM_CREDENTIAL_RE.match(name):
                 monkeypatch.delenv(name, raising=False)
+        _forbid_the_real_dotenv(monkeypatch)
     yield
     get_settings.cache_clear()
+
+
+def _forbid_the_real_dotenv(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Make a read of the repository's real ``.env`` through ``dotenv.dotenv_values`` fail the test loudly.
+
+    Redirecting ``paths.ENV_FILE`` keeps the usual readers away from the developer's keys; this is the net under it.
+    Key discovery (``keys._read_dotenv``) and ``effective_env`` import ``dotenv_values`` when they run, so they hit
+    this guard if anything ever names the real file (a captured ``ENV_FILE``, an explicit path in a new test).
+    """
+    import dotenv
+
+    real = (paths.REPO_ROOT / ".env").resolve()
+    original = dotenv.dotenv_values
+
+    def guarded(dotenv_path: Any = None, *args: Any, **kwargs: Any) -> Any:
+        if dotenv_path is not None and Path(dotenv_path).resolve() == real:
+            raise AssertionError(
+                "a unit test tried to read the developer's real .env (use tmp_path, or mark the test @pytest.mark.live)"
+            )
+        return original(dotenv_path, *args, **kwargs)
+
+    monkeypatch.setattr(dotenv, "dotenv_values", guarded)
 
 
 def _is_loopback(address: Any) -> bool:
@@ -96,6 +123,21 @@ def _is_loopback(address: Any) -> bool:
     return (
         host in {"localhost", "::1", "0.0.0.0", ""} or host.startswith("127.") or host.endswith(".localhost")
     )
+
+
+@pytest.fixture(autouse=True)
+def _isolated_output_dirs(
+    request: pytest.FixtureRequest, tmp_path_factory: pytest.TempPathFactory, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Point the builder's output folders at a temporary folder for every non-live test (see the module docstring)."""
+    if _is_live(request):
+        return
+    root = tmp_path_factory.mktemp("repo-dirs")
+    for attribute, name in (("OUT_DIR", "out"), ("TRACES_DIR", "traces"), ("RESULTS_DIR", "results"),
+                            ("DATA_DIR", "data")):
+        directory = root / name
+        directory.mkdir()
+        monkeypatch.setattr(paths, attribute, directory)
 
 
 @pytest.fixture(autouse=True)

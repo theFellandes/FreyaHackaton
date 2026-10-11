@@ -1,5 +1,7 @@
 # 07 / gap 4: the chat API as eval harness (version targeting, real tools, observability, cost)
 
+> Status: pre-kit research note (10 October 2026), kept for background. Where it disagrees with the kit ([research/11](11_hackathon_rules_and_kit.md), `docs/api.md`, `docs/workflow-format.md`) or with the code, those win.
+
 Sources: `docs/openapi_staging.json` (same 96 paths as prod) **[SPEC]**; the dashboard i18n table `research/tools/i18n.json` **[UI]**; the dashboard route map in `webapp/js/38t45boimpwp0.js` **[FE]**; GET-only probes run this session against staging **[LIVE]**, with raw outputs in `research/live07_gap4/*.txt`. Anything not stated by a source is marked **INFERRED**.
 
 No POST/PUT/PATCH/DELETE was sent to Freya, and nothing was sent to the mock bank.

@@ -1,0 +1,9 @@
+14:25:37 build A (python3) exit=0 111s :: deployed v 5 wf 58bd49f0-7417-413e-9f8b-19de1836e563 export_ok True tests {'passed': 3, 'total': 3} errors []
+14:28:31 build A+B (python3) exit=0 174s :: deployed v 4 wf b5638c83-1842-4615-ab28-23834f631e2f export_ok True tests {'passed': 3, 'total': 3} errors []
+14:28:31 stage build done
+14:31:50 extra_A: 9 / 10 passed (bank records and conversation checks). Last simulation 3eb2858c-2314-48b4-a2d7-16388aa2c30c, status completed, 190 s. (198s) fails: FAIL PUB-03 medium Identity       | close_call 
+14:34:40 extra_B: 2 / 3 passed (bank records and conversation checks). Last simulation e8e384f0-99f4-41d0-8211-084580e78b2c, status completed, 164 s. (170s) fails: FAIL PUB-13 hard   Multi-product  | verify > verify > get_account > promise > add_note > add_note > close_call 
+14:34:40 stage extra done
+14:41:28 score_A: 10 / 10 passed (bank records and conversation checks), a customer counts with 3 of 3 runs. Last simulation 313a0800-b817-4948-b9ee-b8cb5e898f8d, status completed, 381 s. (408s) fails: 
+14:48:40 score_AB_B: 2 / 3 passed (bank records and conversation checks), a customer counts with 3 of 3 runs. Last simulation 79bde7db-9aab-4d80-ac9e-f015239461e8, status completed, 415 s. (432s) fails: FAIL PUB-13 hard   Multi-product  | verify > verify > get_account > promise > promise > close_call FAIL PUB-13 2/3 
+14:48:40 stage core done

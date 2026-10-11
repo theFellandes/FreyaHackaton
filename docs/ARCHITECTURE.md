@@ -1,5 +1,14 @@
 # Architecture: Freya "Build the Builder" collections builder
 
+> **Status: historical planning document (Oct 10); the as-built system is described in [HOW_IT_WORKS.md](HOW_IT_WORKS.md).**
+> Open defects are in [FIXING_ISSUES.md](FIXING_ISSUES.md), measured results in
+> [results/BASELINE.md](../results/BASELINE.md), the submission procedure in [SUBMISSION.md](SUBMISSION.md). Where this
+> document and the code disagree, the code wins. Differences that matter most: the defaults are `BUILDER_TRACK=compiled`
+> and `SELF_TEST=smoke` (not `auto`); lint rules run L001 to L029; the platform export is written to
+> `out/<slot>.exported.json` (`out/<slot>.workflow.json` is the definition that was sent) and is copied to
+> `submission/hidden-N.workflow.json` for the form; the planned `tests/compliance/` folder does not exist (the check is
+> `tests/unit/test_compliance.py`).
+
 Version 2, 2026-10-10. Derived from the decisions brief v2, which is the single source of truth for requirement IDs
 (R1 to R9), decisions (ADR-01 to ADR-16), graph node names, repo layout, phases (P0 to P7), milestones (M1 to M4),
 experiments (E-1 to E-8), questions (Q-1 to Q-8) and risks (RK-1 to RK-12). Companion documents:
@@ -515,13 +524,13 @@ flowchart TB
 | `understand/` | `ledger.py` (RuleLedger, SupersessionLog, AmbiguityRegister models + LLM pass), `extract.py` (PolicyIR pass), `grounding.py`, `validate.py`, `repair.py`, `prose.py` (node prose), `fixes.py` | none | yes |
 | `policy/` | `ir.py` (PolicyIR), `intents.py` (intent catalog seed), `calendar.py` and `money.py` (reference implementations, ADR-08), `outcomes.py` (outcome table, precedence) | none | no |
 | `compiler/` | `workflow_model.py` (Pydantic mirror of the workflow JSON), `tools.py` (contracts → tool JSON), `hooks.py`, `codegen.py` (code-node snippets), `nodes.py`, `prompts.py` (Jinja rendering of task messages from IR lines), `compile.py`, `profiles/staged.py`, `profiles/lean.py` | none | no (optional prose pass injected by the graph node) |
-| `checks/` | `lint.py` (rules L001–L027, incl. reachability and variable rules), `code_sandbox.py`, `coverage.py` (rule coverage report) | none | no |
+| `checks/` | `lint.py` (rules L001–L029, incl. reachability and variable rules), `code_sandbox.py`, `coverage.py` (rule coverage report) | none | no |
 | `freya/` | `client.py` (wraps the root `freya.py`: validate, save, get, export, chat), `diff.py` (stripped-field check), `kit.py`, `practice.py` (kit harness), `ratelimit.py` | HTTP | no |
 | `selftest/` | `smoke.py` (chat turns), `walkthrough.py` (LLM audit of the compiled workflow), `practice.py` (kit harness) | HTTP | walkthrough only |
 | `agentic/` | `runner.py` (Claude Agent SDK fallback track; skills `build-phone-agent` and `collections-workflow-patterns`) | SDK | yes |
 | `llm/` | key changer: `gateway.py` (provider chain, key rotation, retries, deadline), `providers.py` (anthropic, openai, claude_code), `keys.py` (key discovery, pools, health file), `errors.py` (error classes → actions), `structured.py` (schema sanitising, JSON parsing), `ratelimit.py` | HTTP | yes |
 | `guardrails/` | `input_guard.py` (brief and tool API checks, injection heuristics), `prompt_guard.py` (guard preamble, untrusted-document wrapping), `output_guard.py` (ledger, IR, prose and workflow checks) | none | no |
-| `observability/` | `jsonl.py` (always on: full prompts and replies in `traces/*.llm.jsonl`), `langfuse_observer.py` (optional), `factory.py` | files, optional HTTP | no |
+| `observability/` | `jsonl.py` (local model records; prompts/replies by default, omitted with `LLM_LOG_CONTENT=metadata`), `langfuse_observer.py` (optional), `factory.py` | files, optional HTTP | no |
 | `playground.py`, `playground_views.py`, `monitor_views.py`, `robustness.py`, `diagnostics.py` | development views and offline checks for `streamlit_app.py` | files | no |
 | `prompts/` | Jinja templates `*.v1.j2` for understand, extract, repair, audit, agent | files | n/a |
 
@@ -1836,10 +1845,11 @@ platform variance (slow model, passes on re-run), and logged in `evals/reports/`
 | `LLM_TIMEOUT_S`, `LLM_MAX_TOKENS`, `LLM_RETRIES_PER_KEY` | `300`, `16000`, `2` | gateway | One model call; transient errors are retried on the same key before rotating |
 | `LLM_RATE_LIMIT_COOLDOWN_S`, `LLM_MAX_COOLDOWN_WAIT_S`, `LLM_DEAD_KEY_TTL_S`, `LLM_KEY_HEALTH_FILE` | `30`, `45`, `21600`, `data/key_health.json` | gateway | Cooling keys, the longest wait for a cooled key, and how long a dead key stays skipped |
 | `LLM_MAX_CONCURRENCY`, `LLM_RPM_PER_KEY`, `LLM_TPM_PER_KEY`, `LLM_MIN_INTERVAL_S`, `LLM_RATE_OVERRIDES` | `2`, `30`, `150000`, `0.5`, empty | `builder/llm/ratelimit.py` | Limits per (provider, key); overrides such as `openai=60:200000` |
-| `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`, `LANGFUSE_HOST`, `OBSERVABILITY_LOG_PROMPTS` | none, none, `https://cloud.langfuse.com`, `true` | `builder/observability/` | Langfuse is on only when both keys are set; the local `.llm.jsonl` is always written |
-| `BUILDER_TRACK` | `auto` | routing | `compiled` \| `agentic` \| `auto` |
+| `LANGFUSE_PUBLIC_KEY`, `LANGFUSE_SECRET_KEY`, `LANGFUSE_HOST`, `OBSERVABILITY_LOG_PROMPTS` | none, none, `https://cloud.langfuse.com`, `true` | `builder/observability/` | Langfuse is on only when both keys are set; `OBSERVABILITY_LOG_PROMPTS` controls Langfuse text retention |
+| `LLM_LOG_CONTENT` | `full` | `builder/observability/jsonl.py` | `metadata` omits local prompt/reply text; independent of Langfuse and not general error/PII scrubbing |
+| `BUILDER_TRACK` | `compiled` (as built; the plan said `auto`) | routing | `compiled` \| `agentic` \| `auto` |
 | `BUILD_TIME_BUDGET_S` | `1680` | `budget.py` | Must stay ≤ 1800 |
-| `SELF_TEST` | `auto` | `self_test` | `auto` \| `none` \| `smoke` \| `practice` |
+| `SELF_TEST` | `smoke` (as built; the plan said `auto`) | `self_test` | `auto` \| `none` \| `smoke` \| `walkthrough` \| `practice` |
 | `BUILD_SLOT` | derived | `inputs.py` | Default: brief file stems; several files with a shared prefix join their suffixes (`brief-a` + `brief-b` → `brief-ab`); hidden runs set `hidden-1`, `hidden-2` |
 | `DRY_RUN` | `false` | graph | Skips `remote_validate`, `deploy`, `self_test`; still writes the candidate and the trace |
 | `FREYA_AGENT_PROVIDER`, `FREYA_AGENT_MODEL` | unset | kit `freya.py` | Organizer-only overrides; we never set them |

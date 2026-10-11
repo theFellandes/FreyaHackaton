@@ -1,0 +1,263 @@
+{
+  "kind": "Revalidation of SYNTHETIC fixture-model dry-run artifacts",
+  "checked_utc": "2026-10-11T10:00:43.127183+00:00",
+  "llm_calls": 0,
+  "platform_calls": 0,
+  "limits": "These saved runs used --fake-llm. This rechecks final IR, not actual model interpretation, live deployment or hidden accuracy.",
+  "source_symbols": {
+    "validator": "builder.understand.validate.validate_policy",
+    "validator_node": "builder.graph.nodes.validate_policy._body (stores policy_issues, not errors)",
+    "route": "builder.graph.routing.after_validate_policy",
+    "repair_gate": "builder.graph.routing.can_repair_policy",
+    "fallback": "builder.graph.routing.fallback_target",
+    "summary": "builder.graph.nodes.finalize.finalize_run (errors from state.errors)"
+  },
+  "routing_explanation": "After the two default policy repairs are exhausted, errors still in policy_issues cause after_validate_policy to try fallback_target. With agentic fallback disabled that returns finalize, which this router deliberately converts to guard_policy. This is validator best-effort continuation, not the guard_policy grounding-only exception. The saved v01 guard report has zero violations, then compilation/static checks produce a dry-run workflow. Final errors[] does not include unresolved policy_issues.",
+  "builds": [
+    {
+      "slot": "v-integ-v01",
+      "variant": "v01_clean",
+      "source_sha256": {
+        "out/v-integ-v01.ir.json": "09690b8c83f0278b851b204be9a7f10d22433866cf37605ef9c73821dd00f7bc",
+        "out/v-integ-v01.ledger.json": "e31e800b8d33427a7e8134c240b944159d0f899d64896757ee5d8edd914bb2a5",
+        "evals/synthetic_briefs/v01_clean/openapi.json": "3e83d10d9c40a1018c77f9413372e1c7ee29230189438dc3a484dec32ef926ca",
+        "results/v-integ-v01-e639fd1ee443.build.json": "a75d4b1334046d2554e3f1094766b4abf98effb6472cb2ca8a02e593a4e76027",
+        "traces/v-integ-v01-20261011T094611Z.jsonl": "173863c4cf29c245f7ec30718eab61d07ae04d6cb30f096ed13cd2659287254c",
+        "builder/understand/validate.py": "ffe4effc3c46a95e22ec650a1236ad253fcd6d07feaa9fcd7e912a1cf3d5752f",
+        "builder/graph/routing.py": "80af7cda1369b3a34afa95e0b8e97767658003da2c9cb32d18f67238b3937dc9",
+        "builder/graph/nodes/validate_policy.py": "dc370f0f8cb6dd3f6dc3a304f1dc6ec98fe564b8238dcca862c45bdda6668a12",
+        "builder/graph/nodes/finalize.py": "2fde3bbcf81faf324c777a2a72aee642c980e6b7a1c94534d7e0c6a478dc5752"
+      },
+      "saved_status": "dry_run",
+      "saved_errors": [],
+      "saved_tests": {
+        "passed": 1,
+        "total": 1
+      },
+      "error_count": 4,
+      "warning_count": 2,
+      "declared_fixture_provenance": {
+        "trace_start_utc": "2026-10-11T09:46:11.563Z",
+        "trace_argv": [
+          "evals/synthetic_briefs/v01_clean/brief.md",
+          "evals/synthetic_briefs/v01_clean/openapi.json",
+          "--dry-run",
+          "--fake-llm",
+          "C:/Users/FELLAD~1/AppData/Local/Temp/claude/C--Users-Felladien-Documents-Projects-Python-FreyaHackaton/74a4f260-79f7-48fe-bbbc-fbee03e71cec/scratchpad/audit_opus/integrate/fx_v01-clean",
+          "--slot",
+          "v-integ-v01"
+        ],
+        "fake_llm_flag": true,
+        "dry_run_flag": true,
+        "fixture_directory_from_trace": "C:/Users/FELLAD~1/AppData/Local/Temp/claude/C--Users-Felladien-Documents-Projects-Python-FreyaHackaton/74a4f260-79f7-48fe-bbbc-fbee03e71cec/scratchpad/audit_opus/integrate/fx_v01-clean",
+        "fixture_directory_contents_independently_audited": false,
+        "trace_models": [
+          "fixture/fixture"
+        ]
+      },
+      "issues": [
+        {
+          "code": "INTENT_NOTE_BEFORE_VERIFICATION",
+          "message": "intent 'refuse_to_talk' (any) only records the note 'rejected', but before the identity is verified the agent has no note tool and must close the call. Give it the close outcome the documents prescribe for this situation before verification (outcome / reason from the outcome table), and keep the note for the after_verification entry.",
+          "rule_ids": [
+            "D1-45a",
+            "D1-45b"
+          ],
+          "severity": "error",
+          "path": "intents[3]"
+        },
+        {
+          "code": "PRODUCT_NAMING_STATEMENT",
+          "message": "product_naming['card'] uses {past_due}, {days_overdue}: the debt statement already says the amount and the days late, so the name must only identify the product (for example 'loan ending {account_suffix}'), with no amount, days or verb.",
+          "rule_ids": [
+            "D1-16",
+            "D1-17a",
+            "D1-17b",
+            "D1-17c",
+            "D1-48a",
+            "D1-48b",
+            "D1-49a"
+          ],
+          "severity": "error",
+          "path": "disclosure.product_naming.card"
+        },
+        {
+          "code": "PRODUCT_NAMING_STATEMENT",
+          "message": "product_naming['loan'] uses {past_due}, {days_overdue}: the debt statement already says the amount and the days late, so the name must only identify the product (for example 'loan ending {account_suffix}'), with no amount, days or verb.",
+          "rule_ids": [
+            "D1-16",
+            "D1-17a",
+            "D1-17b",
+            "D1-17c",
+            "D1-48a",
+            "D1-48b",
+            "D1-49a"
+          ],
+          "severity": "error",
+          "path": "disclosure.product_naming.loan"
+        },
+        {
+          "code": "PRODUCT_NAMING_STATEMENT",
+          "message": "product_naming['vehicle_finance'] uses {past_due}, {days_overdue}: the debt statement already says the amount and the days late, so the name must only identify the product (for example 'loan ending {account_suffix}'), with no amount, days or verb.",
+          "rule_ids": [
+            "D1-16",
+            "D1-17a",
+            "D1-17b",
+            "D1-17c",
+            "D1-48a",
+            "D1-48b",
+            "D1-49a"
+          ],
+          "severity": "error",
+          "path": "disclosure.product_naming.vehicle_finance"
+        },
+        {
+          "code": "ROW_SHADOWED",
+          "message": "closing.rows[19] ('product_notes' -> declined/rejected) never applies: an earlier row for the same situation and verification state always wins. The IR cannot pick between rows by anything else (for example the terms of a promise); keep one row per situation and verification state.",
+          "rule_ids": [
+            "D1-55b"
+          ],
+          "severity": "warning",
+          "path": "closing.rows[19]"
+        },
+        {
+          "code": "ROW_SHADOWED",
+          "message": "closing.rows[8] ('hardship' -> declined/vulnerable) never applies: an earlier row for the same situation and verification state always wins. The IR cannot pick between rows by anything else (for example the terms of a promise); keep one row per situation and verification state.",
+          "rule_ids": [
+            "D1-32d",
+            "D1-46g"
+          ],
+          "severity": "warning",
+          "path": "closing.rows[8]"
+        }
+      ],
+      "route_after_two_repairs_no_agentic": "guard_policy",
+      "product_naming": {
+        "card": "card ending {card_last4}, with an overdue amount of {past_due} and {days_overdue} days overdue",
+        "loan": "personal loan, with an overdue amount of {past_due} and {days_overdue} days overdue",
+        "vehicle_finance": "vehicle finance, with an overdue amount of {past_due} and {days_overdue} days overdue"
+      },
+      "refuse_to_talk_intents": [
+        {
+          "rule_ids": [
+            "D1-45a",
+            "D1-45b"
+          ],
+          "key": "refuse_to_talk",
+          "description": "Says they do not want to talk or wants the call to end.",
+          "examples": [],
+          "scope": "any",
+          "response": "",
+          "actions": [],
+          "outcome": null,
+          "note_reason": "rejected",
+          "precedence": 50,
+          "overrides": [],
+          "offer": "",
+          "declined_outcome": null,
+          "min_occurrences": 2
+        }
+      ]
+    },
+    {
+      "slot": "v-integ-v02",
+      "variant": "v02_raw",
+      "source_sha256": {
+        "out/v-integ-v02.ir.json": "756e6cf685da7df5c18a5f9987db3d255a6af7e68f5e24077439b205957bba55",
+        "out/v-integ-v02.ledger.json": "304343f2668f58b21662cc2e575e3d14a7aa0d4f7e243d5dc6942c1cd6daf88f",
+        "evals/synthetic_briefs/v02_raw/openapi.json": "3e83d10d9c40a1018c77f9413372e1c7ee29230189438dc3a484dec32ef926ca",
+        "results/v-integ-v02-1a498c53e17d.build.json": "73187694d69468ae340bf715e8ee5064246f3381e04b2200a0e3b2893240c643",
+        "traces/v-integ-v02-20261011T094614Z.jsonl": "36f232c7a0b79db86c88775ec8da24451b26ef7691bb348adc3f0459c206082a",
+        "builder/understand/validate.py": "ffe4effc3c46a95e22ec650a1236ad253fcd6d07feaa9fcd7e912a1cf3d5752f",
+        "builder/graph/routing.py": "80af7cda1369b3a34afa95e0b8e97767658003da2c9cb32d18f67238b3937dc9",
+        "builder/graph/nodes/validate_policy.py": "dc370f0f8cb6dd3f6dc3a304f1dc6ec98fe564b8238dcca862c45bdda6668a12",
+        "builder/graph/nodes/finalize.py": "2fde3bbcf81faf324c777a2a72aee642c980e6b7a1c94534d7e0c6a478dc5752"
+      },
+      "saved_status": "dry_run",
+      "saved_errors": [],
+      "saved_tests": {
+        "passed": 1,
+        "total": 1
+      },
+      "error_count": 0,
+      "warning_count": 0,
+      "declared_fixture_provenance": {
+        "trace_start_utc": "2026-10-11T09:46:14.958Z",
+        "trace_argv": [
+          "evals/synthetic_briefs/v02_raw/Mail_thread_collections_ops.eml",
+          "evals/synthetic_briefs/v02_raw/Memo_2026-11-02_changes.txt",
+          "evals/synthetic_briefs/v02_raw/Policy_extract_v3.txt",
+          "evals/synthetic_briefs/v02_raw/outcome_codes.csv",
+          "evals/synthetic_briefs/v02_raw/openapi.json",
+          "--dry-run",
+          "--fake-llm",
+          "C:/Users/FELLAD~1/AppData/Local/Temp/claude/C--Users-Felladien-Documents-Projects-Python-FreyaHackaton/74a4f260-79f7-48fe-bbbc-fbee03e71cec/scratchpad/audit_opus/integrate/fx_v02-raw",
+          "--slot",
+          "v-integ-v02"
+        ],
+        "fake_llm_flag": true,
+        "dry_run_flag": true,
+        "fixture_directory_from_trace": "C:/Users/FELLAD~1/AppData/Local/Temp/claude/C--Users-Felladien-Documents-Projects-Python-FreyaHackaton/74a4f260-79f7-48fe-bbbc-fbee03e71cec/scratchpad/audit_opus/integrate/fx_v02-raw",
+        "fixture_directory_contents_independently_audited": false,
+        "trace_models": [
+          "fixture/fixture"
+        ]
+      },
+      "issues": [],
+      "route_after_two_repairs_no_agentic": "guard_policy",
+      "product_naming": {
+        "card": "card ending {card_last4}",
+        "loan": "personal loan",
+        "vehicle_finance": "vehicle finance"
+      },
+      "refuse_to_talk_intents": [
+        {
+          "rule_ids": [
+            "EXT-8.7a",
+            "EXT-8.7b",
+            "EXT-M7"
+          ],
+          "key": "refuse_to_talk",
+          "description": "Says they do not want to talk or wants the call to end.",
+          "examples": [],
+          "scope": "before_verification",
+          "response": "",
+          "actions": [],
+          "outcome": {
+            "outcome": "declined",
+            "reason": "rejected"
+          },
+          "note_reason": null,
+          "precedence": 50,
+          "overrides": [],
+          "offer": "",
+          "declined_outcome": null,
+          "min_occurrences": 2
+        },
+        {
+          "rule_ids": [
+            "EXT-8.7a",
+            "EXT-8.7b",
+            "EXT-M7"
+          ],
+          "key": "refuse_to_talk",
+          "description": "Says they do not want to talk or wants the call to end.",
+          "examples": [],
+          "scope": "after_verification",
+          "response": "",
+          "actions": [],
+          "outcome": {
+            "outcome": "declined",
+            "reason": "rejected"
+          },
+          "note_reason": "rejected",
+          "precedence": 50,
+          "overrides": [],
+          "offer": "",
+          "declined_outcome": null,
+          "min_occurrences": 2
+        }
+      ]
+    }
+  ]
+}

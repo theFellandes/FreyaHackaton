@@ -175,6 +175,30 @@ class FakeProvider:
         return StructuredResult(value=value, raw_text=json.dumps(value), input_tokens=21, output_tokens=9)
 
 
+@dataclass
+class ModelGatedProvider(FakeProvider):
+    """A provider whose keys may use only some models: ``denied[secret]`` lists the models answered with a 403.
+
+    The key itself is fine - this is the per-model permission error (``Project ... does not have access to model``).
+    """
+
+    denied: dict[str, set[str]] = field(default_factory=dict)
+
+    async def complete_text(
+        self, key: ApiKey, model: str, system: str, user: str, *, max_tokens: int, timeout_s: float
+    ) -> TextResult:
+        if model in self.denied.get(key.secret, set()):
+            self.calls.append(Call(self.name, key.secret, model, system, user, max_tokens, timeout_s, False))
+            raise model_denied(model)
+        return await super().complete_text(
+            key, model, system, user, max_tokens=max_tokens, timeout_s=timeout_s
+        )
+
+
+def model_denied(model: str) -> Exception:
+    return FakeStatusError(f"Project `proj_x` does not have access to model `{model}`", 403)
+
+
 class Answer(BaseModel):
     answer: str
 
@@ -414,6 +438,223 @@ async def test_circuit_opens_after_three_provider_failures(tmp_path: Path, clock
     third = await gw.text(purpose="p3", system="", user="u")
     assert third.provider == "anthropic"  # half-open trial succeeded
     assert gw.describe()["providers"]["anthropic"]["circuit"] == "closed"
+
+
+async def test_an_open_circuit_does_not_refuse_the_only_provider(tmp_path: Path, clock: FakeClock) -> None:
+    """With one provider the circuit breaker protects nothing: the next call is tried, not refused unattempted."""
+    anthropic = FakeProvider("anthropic", {A1: [overloaded(), overloaded(), overloaded()]})
+    gw = make_gateway(
+        tmp_path, {"anthropic": anthropic}, clock, env={"ANTHROPIC_API_KEY": A1}, llm_providers="anthropic"
+    )
+
+    with pytest.raises(AllProvidersFailed):
+        await gw.text(purpose="p1", system="", user="u")
+    assert gw.describe()["providers"]["anthropic"]["circuit"] == "open"
+    sent = len(anthropic.calls)
+
+    result = await gw.text(
+        purpose="p2", system="", user="u"
+    )  # the circuit is still open: no 120 s of lost access
+
+    assert result.provider == "anthropic" and len(anthropic.calls) == sent + 1
+    assert gw.describe()["providers"]["anthropic"]["circuit"] == "closed"
+
+
+async def test_open_circuit_is_tried_when_alternative_keys_are_cooling(
+    tmp_path: Path, clock: FakeClock
+) -> None:
+    anthropic = FakeProvider("anthropic")
+    openai = FakeProvider("openai")
+    gw = make_gateway(tmp_path, {"anthropic": anthropic, "openai": openai}, clock)
+    for _ in range(3):
+        gw._breakers["anthropic"].record_failure()
+    gw.key_pool("openai").mark_cooling(ApiKey("openai", 1, O1), 120)
+
+    result = await gw.text(purpose="p", system="", user="u")
+
+    assert result.provider == "anthropic"
+    assert len(anthropic.calls) == 1
+    assert openai.calls == []
+    assert clock.sleeps == []
+
+
+async def test_provider_probe_does_not_skip_open_circuit_for_an_unallowed_alternative(
+    tmp_path: Path, clock: FakeClock
+) -> None:
+    anthropic = FakeProvider("anthropic")
+    openai = FakeProvider("openai")
+    gw = make_gateway(tmp_path, {"anthropic": anthropic, "openai": openai}, clock)
+    for _ in range(3):
+        gw._breakers["anthropic"].record_failure()
+
+    report = await gw.probe()
+
+    assert report["anthropic"]["ok"] is True
+    assert len(anthropic.calls) == 1
+    assert report["openai"]["ok"] is True
+
+
+async def test_an_open_circuit_with_one_provider_still_retries_with_backoff(
+    tmp_path: Path, clock: FakeClock
+) -> None:
+    """REPO-11: after a burst the only provider is tried again with its normal retry budget, not once and out."""
+    anthropic = FakeProvider("anthropic", {A1: [overloaded(), overloaded(), overloaded()]})
+    gw = make_gateway(
+        tmp_path, {"anthropic": anthropic}, clock, env={"ANTHROPIC_API_KEY": A1}, llm_providers="anthropic"
+    )
+    with pytest.raises(AllProvidersFailed):
+        await gw.text(purpose="p1", system="", user="u")
+    assert gw.describe()["providers"]["anthropic"]["circuit"] == "open"
+    clock.sleeps.clear()
+    anthropic.outcomes[A1] = [overloaded(), "recovered"]  # one more blip, then the provider is back
+
+    result = await gw.text(purpose="p2", system="", user="u")
+
+    assert result.value == "recovered"
+    assert [a.ok for a in result.attempts] == [False, True]
+    assert len(clock.sleeps) == 1 and 1.0 <= clock.sleeps[0] <= 1.25  # the normal first backoff step
+    assert gw.describe()["providers"]["anthropic"]["circuit"] == "closed"
+
+
+async def test_an_open_circuit_with_one_provider_still_stops_at_the_deadline(
+    tmp_path: Path, clock: FakeClock
+) -> None:
+    anthropic = FakeProvider("anthropic", {A1: [overloaded(), overloaded(), overloaded()]})
+    gw = make_gateway(
+        tmp_path, {"anthropic": anthropic}, clock, env={"ANTHROPIC_API_KEY": A1}, llm_providers="anthropic"
+    )
+    with pytest.raises(AllProvidersFailed):
+        await gw.text(purpose="p1", system="", user="u")
+    clock.sleeps.clear()
+    anthropic.outcomes[A1] = [overloaded(), "too late"]
+    sent = len(anthropic.calls)
+
+    with pytest.raises(AllProvidersFailed) as info:
+        # 16 s left: one attempt fits (timeout 11 s), the backoff plus a following attempt does not
+        await gw.text(purpose="p2", system="", user="u", deadline=clock.monotonic() + 16)
+
+    assert len(anthropic.calls) == sent + 1 and clock.sleeps == []
+    assert "deadline reached" in str(info.value)
+
+
+# ------------------------------------------------------------------------------ per-model 403 (REPO-14)
+
+
+async def test_a_model_the_key_may_not_use_does_not_kill_the_key(tmp_path: Path, clock: FakeClock) -> None:
+    openai = ModelGatedProvider("openai", denied={O1: {"openai-strong"}})
+    gw = make_gateway(tmp_path, {"openai": openai}, clock, env={"OPENAI_API_KEY": O1}, llm_providers="openai")
+
+    result = await gw.text(purpose="strong job", system="", user="u")
+
+    assert (result.provider, result.model) == ("openai", "openai-fast")  # the provider's other tier answered
+    assert [c.model for c in openai.calls] == ["openai-strong", "openai-fast"]
+    assert [a.error_kind for a in result.attempts] == [ErrorKind.MODEL_UNAVAILABLE, None]
+    assert result.attempts[0].action == "next_model"
+    key = gw.key_pool("openai").keys[0]
+    assert gw.key_pool("openai").status(key) is KeyStatus.ACTIVE
+    assert HealthStore(tmp_path / "key_health.json", 21600).dead_entries() == {}  # nothing remembered for 6 h
+    fresh = make_gateway(
+        tmp_path,
+        {"openai": ModelGatedProvider("openai")},
+        clock,
+        env={"OPENAI_API_KEY": O1},
+        llm_providers="openai",
+    )
+    assert fresh.key_pool("openai").status(key) is KeyStatus.ACTIVE  # the next run starts with the key
+
+
+async def test_an_unavailable_model_is_remembered_for_the_rest_of_the_run(
+    tmp_path: Path, clock: FakeClock
+) -> None:
+    openai = ModelGatedProvider("openai", denied={O1: {"openai-strong"}})
+    gw = make_gateway(tmp_path, {"openai": openai}, clock, env={"OPENAI_API_KEY": O1}, llm_providers="openai")
+
+    await gw.text(purpose="first", system="", user="u")
+    await gw.text(purpose="second", system="", user="u")
+
+    assert [c.model for c in openai.calls] == ["openai-strong", "openai-fast", "openai-fast"]
+    described = gw.describe()["providers"]["openai"]
+    assert described["unavailable_models"] == {gw.key_pool("openai").keys[0].label: ["openai-strong"]}
+
+
+async def test_a_fast_call_falls_back_to_the_strong_model_when_the_fast_one_is_denied(
+    tmp_path: Path, clock: FakeClock
+) -> None:
+    openai = ModelGatedProvider("openai", denied={O1: {"openai-fast"}})
+    gw = make_gateway(tmp_path, {"openai": openai}, clock, env={"OPENAI_API_KEY": O1}, llm_providers="openai")
+
+    result = await gw.text(purpose="audit", system="", user="u", role=LLMRole.FAST)
+
+    assert result.model == "openai-strong"
+    assert [c.model for c in openai.calls] == ["openai-fast", "openai-strong"]
+
+
+async def test_another_key_of_the_provider_is_tried_before_a_weaker_model(
+    tmp_path: Path, clock: FakeClock
+) -> None:
+    anthropic = ModelGatedProvider("anthropic", denied={A1: {"anthropic-strong"}})
+    gw = make_gateway(tmp_path, {"anthropic": anthropic}, clock, llm_providers="anthropic")
+
+    result = await gw.text(purpose="strong job", system="", user="u")
+
+    assert result.model == "anthropic-strong" and result.key_label == "anthropic#2(…2222)"
+    assert [(c.secret, c.model) for c in anthropic.calls] == [
+        (A1, "anthropic-strong"),
+        (A2, "anthropic-strong"),
+    ]
+    assert gw.key_pool("anthropic").status(ApiKey("anthropic", 1, A1)) is KeyStatus.ACTIVE
+    unavailable = gw.describe()["providers"]["anthropic"]["unavailable_models"]
+    assert unavailable == {gw.key_pool("anthropic").keys[0].label: ["anthropic-strong"]}
+
+
+async def test_a_cooling_key_is_waited_for_instead_of_downgrading_the_model(
+    tmp_path: Path, clock: FakeClock
+) -> None:
+    anthropic = ModelGatedProvider("anthropic", denied={A2: {"anthropic-strong"}})
+    gw = make_gateway(tmp_path, {"anthropic": anthropic}, clock, llm_providers="anthropic")
+    gw.key_pool("anthropic").mark_cooling(ApiKey("anthropic", 1, A1), 10)  # the key that can serve the model
+
+    result = await gw.text(purpose="strong job", system="", user="u")
+
+    assert result.model == "anthropic-strong" and result.key_label == "anthropic#1(…1111)"
+    assert [(c.secret, c.model) for c in anthropic.calls] == [
+        (A2, "anthropic-strong"),
+        (A1, "anthropic-strong"),
+    ]
+    assert len(clock.sleeps) == 1 and 9 <= clock.sleeps[0] <= 11  # waited for the cooldown, no weaker model
+
+
+async def test_when_no_model_of_a_provider_is_available_the_next_provider_answers(
+    tmp_path: Path, clock: FakeClock
+) -> None:
+    anthropic = ModelGatedProvider("anthropic", denied={A1: {"anthropic-strong", "anthropic-fast"}})
+    openai = FakeProvider("openai")
+    gw = make_gateway(
+        tmp_path,
+        {"anthropic": anthropic, "openai": openai},
+        clock,
+        env={"ANTHROPIC_API_KEY": A1, "OPENAI_API_KEY": O1},
+    )
+
+    first = await gw.text(purpose="p1", system="", user="u")
+    second = await gw.text(purpose="p2", system="", user="u")
+
+    assert first.provider == second.provider == "openai"
+    assert [c.model for c in anthropic.calls] == ["anthropic-strong", "anthropic-fast"]  # not asked again
+    assert gw.key_pool("anthropic").status(ApiKey("anthropic", 1, A1)) is KeyStatus.ACTIVE
+    assert HealthStore(tmp_path / "key_health.json", 21600).dead_entries() == {}
+    assert gw.describe()["providers"]["anthropic"]["circuit"] == "closed"  # not a provider-health problem
+
+
+async def test_a_plain_403_still_marks_the_key_dead(tmp_path: Path, clock: FakeClock) -> None:
+    anthropic = FakeProvider("anthropic", {A1: [FakeStatusError("Forbidden", 403)]})
+    gw = make_gateway(tmp_path, {"anthropic": anthropic}, clock, llm_providers="anthropic")
+
+    result = await gw.text(purpose="p", system="", user="u")
+
+    assert result.key_label == "anthropic#2(…2222)"
+    assert result.attempts[0].error_kind is ErrorKind.AUTH
+    assert gw.key_pool("anthropic").status(ApiKey("anthropic", 1, A1)) is KeyStatus.DEAD
 
 
 async def test_unknown_errors_rotate_keys_then_provider(tmp_path: Path, clock: FakeClock) -> None:

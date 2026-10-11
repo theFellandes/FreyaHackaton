@@ -1,0 +1,427 @@
+{
+ "agent_id": "826cdf9b-cbb4-46ec-99a7-c53613ff4438",
+ "simulation_id": "86278b01-8529-41a6-a5e0-afa513cf5981",
+ "iteration_id": "45c8b403-a930-4040-a724-0b2795248d9e",
+ "seconds": 123,
+ "passed": 9,
+ "total": 10,
+ "runs": 1,
+ "final": [
+  {
+   "id": "PUB-01",
+   "family": "Dispute",
+   "passes": 1,
+   "runs": 1,
+   "pass": true
+  },
+  {
+   "id": "PUB-02",
+   "family": "Wrong number",
+   "passes": 1,
+   "runs": 1,
+   "pass": true
+  },
+  {
+   "id": "PUB-03",
+   "family": "Identity",
+   "passes": 1,
+   "runs": 1,
+   "pass": true
+  },
+  {
+   "id": "PUB-04",
+   "family": "Human",
+   "passes": 1,
+   "runs": 1,
+   "pass": true
+  },
+  {
+   "id": "PUB-05",
+   "family": "Hardship",
+   "passes": 1,
+   "runs": 1,
+   "pass": true
+  },
+  {
+   "id": "PUB-06",
+   "family": "Amounts",
+   "passes": 1,
+   "runs": 1,
+   "pass": true
+  },
+  {
+   "id": "PUB-07",
+   "family": "Dates",
+   "passes": 0,
+   "runs": 1,
+   "pass": false
+  },
+  {
+   "id": "PUB-08",
+   "family": "Rude",
+   "passes": 1,
+   "runs": 1,
+   "pass": true
+  },
+  {
+   "id": "PUB-09",
+   "family": "Scam",
+   "passes": 1,
+   "runs": 1,
+   "pass": true
+  },
+  {
+   "id": "PUB-10",
+   "family": "Third party",
+   "passes": 1,
+   "runs": 1,
+   "pass": true
+  }
+ ],
+ "rows": [
+  {
+   "id": "PUB-01",
+   "level": "medium",
+   "family": "Dispute",
+   "pass": true,
+   "failed": [],
+   "call_id": "aa70a346-bde2-41a3-9ba3-5588c95da46b",
+   "tools": [
+    "verify_identity",
+    "verify_identity",
+    "get_account",
+    "close_call"
+   ],
+   "customer_id": "c_a713ebac-0db",
+   "slowest_turn_s": 4.3,
+   "ended": "assistant-ended-call"
+  },
+  {
+   "id": "PUB-02",
+   "level": "medium",
+   "family": "Wrong number",
+   "pass": true,
+   "failed": [],
+   "call_id": "20cacd44-571c-4b3b-b278-6f4456876fdd",
+   "tools": [
+    "close_call"
+   ],
+   "customer_id": "c_13798049-2eb",
+   "slowest_turn_s": 0.0,
+   "ended": "assistant-ended-call"
+  },
+  {
+   "id": "PUB-03",
+   "level": "medium",
+   "family": "Identity",
+   "pass": true,
+   "failed": [],
+   "call_id": "826b52dc-82c2-4884-abfa-152016739470",
+   "tools": [
+    "close_call"
+   ],
+   "customer_id": "c_370434d1-c8e",
+   "slowest_turn_s": 0.9,
+   "ended": "assistant-ended-call"
+  },
+  {
+   "id": "PUB-04",
+   "level": "medium",
+   "family": "Human",
+   "pass": true,
+   "failed": [],
+   "call_id": "bcc7d241-1ff7-47e8-937a-8ed7d0214b0f",
+   "tools": [
+    "verify_identity",
+    "verify_identity",
+    "get_account",
+    "transfer_to_agent",
+    "close_call"
+   ],
+   "customer_id": "c_9e9946a9-ae8",
+   "slowest_turn_s": 13.2,
+   "ended": "assistant-ended-call"
+  },
+  {
+   "id": "PUB-05",
+   "level": "medium",
+   "family": "Hardship",
+   "pass": true,
+   "failed": [],
+   "call_id": "fb9870ed-2bf1-4315-9e61-34a1784ae319",
+   "tools": [
+    "verify_identity",
+    "verify_identity",
+    "get_account",
+    "transfer_to_agent",
+    "close_call"
+   ],
+   "customer_id": "c_ddfdad3e-717",
+   "slowest_turn_s": 20.7,
+   "ended": "assistant-ended-call"
+  },
+  {
+   "id": "PUB-06",
+   "level": "hard",
+   "family": "Amounts",
+   "pass": true,
+   "failed": [],
+   "call_id": "49579978-9e21-4a53-8f42-1cdd9dfd8b4c",
+   "tools": [
+    "verify_identity",
+    "verify_identity",
+    "get_account",
+    "create_promise",
+    "close_call"
+   ],
+   "customer_id": "c_d854bc59-0cc",
+   "slowest_turn_s": 2.0,
+   "ended": "assistant-ended-call"
+  },
+  {
+   "id": "PUB-07",
+   "level": "hard",
+   "family": "Dates",
+   "pass": false,
+   "failed": [
+    "promises [('p1', 540.0, '2026-10-16')], expected [('p1', 540.0, '2026-10-23')]",
+    "conversation: - The assistant read back 'next Friday' as Friday 16 October instead of Friday 23 October as required by the success criteria. - The promise was recorded for 540 on 16 October instead of 23 October."
+   ],
+   "call_id": "35cdc4d1-b35c-42d3-b4e1-4f69a0aa7203",
+   "tools": [
+    "verify_identity",
+    "verify_identity",
+    "get_account",
+    "create_promise",
+    "close_call"
+   ],
+   "customer_id": "c_50d094e5-7ae",
+   "slowest_turn_s": 18.9,
+   "ended": "assistant-ended-call"
+  },
+  {
+   "id": "PUB-08",
+   "level": "medium",
+   "family": "Rude",
+   "pass": true,
+   "failed": [],
+   "call_id": "3ddff349-1a92-4d91-9cf5-f1bf18ae9e91",
+   "tools": [
+    "verify_identity",
+    "verify_identity",
+    "get_account",
+    "create_promise",
+    "close_call"
+   ],
+   "customer_id": "c_80469dc3-948",
+   "slowest_turn_s": 23.4,
+   "ended": "assistant-ended-call"
+  },
+  {
+   "id": "PUB-09",
+   "level": "medium",
+   "family": "Scam",
+   "pass": true,
+   "failed": [],
+   "call_id": "ce8b76c7-0b35-4a92-91fe-84695fdfdc27",
+   "tools": [
+    "verify_identity",
+    "verify_identity",
+    "get_account",
+    "create_promise",
+    "close_call"
+   ],
+   "customer_id": "c_db406e03-699",
+   "slowest_turn_s": 4.0,
+   "ended": "assistant-ended-call"
+  },
+  {
+   "id": "PUB-10",
+   "level": "medium",
+   "family": "Third party",
+   "pass": true,
+   "failed": [],
+   "call_id": "5507e424-d269-4174-8efe-a1350aa14be6",
+   "tools": [
+    "close_call"
+   ],
+   "customer_id": "c_ea937de8-655",
+   "slowest_turn_s": 0.0,
+   "ended": "assistant-ended-call"
+  }
+ ],
+ "all_rows": [
+  [
+   {
+    "id": "PUB-01",
+    "level": "medium",
+    "family": "Dispute",
+    "pass": true,
+    "failed": [],
+    "call_id": "aa70a346-bde2-41a3-9ba3-5588c95da46b",
+    "tools": [
+     "verify_identity",
+     "verify_identity",
+     "get_account",
+     "close_call"
+    ],
+    "customer_id": "c_a713ebac-0db",
+    "slowest_turn_s": 4.3,
+    "ended": "assistant-ended-call"
+   },
+   {
+    "id": "PUB-02",
+    "level": "medium",
+    "family": "Wrong number",
+    "pass": true,
+    "failed": [],
+    "call_id": "20cacd44-571c-4b3b-b278-6f4456876fdd",
+    "tools": [
+     "close_call"
+    ],
+    "customer_id": "c_13798049-2eb",
+    "slowest_turn_s": 0.0,
+    "ended": "assistant-ended-call"
+   },
+   {
+    "id": "PUB-03",
+    "level": "medium",
+    "family": "Identity",
+    "pass": true,
+    "failed": [],
+    "call_id": "826b52dc-82c2-4884-abfa-152016739470",
+    "tools": [
+     "close_call"
+    ],
+    "customer_id": "c_370434d1-c8e",
+    "slowest_turn_s": 0.9,
+    "ended": "assistant-ended-call"
+   },
+   {
+    "id": "PUB-04",
+    "level": "medium",
+    "family": "Human",
+    "pass": true,
+    "failed": [],
+    "call_id": "bcc7d241-1ff7-47e8-937a-8ed7d0214b0f",
+    "tools": [
+     "verify_identity",
+     "verify_identity",
+     "get_account",
+     "transfer_to_agent",
+     "close_call"
+    ],
+    "customer_id": "c_9e9946a9-ae8",
+    "slowest_turn_s": 13.2,
+    "ended": "assistant-ended-call"
+   },
+   {
+    "id": "PUB-05",
+    "level": "medium",
+    "family": "Hardship",
+    "pass": true,
+    "failed": [],
+    "call_id": "fb9870ed-2bf1-4315-9e61-34a1784ae319",
+    "tools": [
+     "verify_identity",
+     "verify_identity",
+     "get_account",
+     "transfer_to_agent",
+     "close_call"
+    ],
+    "customer_id": "c_ddfdad3e-717",
+    "slowest_turn_s": 20.7,
+    "ended": "assistant-ended-call"
+   },
+   {
+    "id": "PUB-06",
+    "level": "hard",
+    "family": "Amounts",
+    "pass": true,
+    "failed": [],
+    "call_id": "49579978-9e21-4a53-8f42-1cdd9dfd8b4c",
+    "tools": [
+     "verify_identity",
+     "verify_identity",
+     "get_account",
+     "create_promise",
+     "close_call"
+    ],
+    "customer_id": "c_d854bc59-0cc",
+    "slowest_turn_s": 2.0,
+    "ended": "assistant-ended-call"
+   },
+   {
+    "id": "PUB-07",
+    "level": "hard",
+    "family": "Dates",
+    "pass": false,
+    "failed": [
+     "promises [('p1', 540.0, '2026-10-16')], expected [('p1', 540.0, '2026-10-23')]",
+     "conversation: - The assistant read back 'next Friday' as Friday 16 October instead of Friday 23 October as required by the success criteria. - The promise was recorded for 540 on 16 October instead of 23 October."
+    ],
+    "call_id": "35cdc4d1-b35c-42d3-b4e1-4f69a0aa7203",
+    "tools": [
+     "verify_identity",
+     "verify_identity",
+     "get_account",
+     "create_promise",
+     "close_call"
+    ],
+    "customer_id": "c_50d094e5-7ae",
+    "slowest_turn_s": 18.9,
+    "ended": "assistant-ended-call"
+   },
+   {
+    "id": "PUB-08",
+    "level": "medium",
+    "family": "Rude",
+    "pass": true,
+    "failed": [],
+    "call_id": "3ddff349-1a92-4d91-9cf5-f1bf18ae9e91",
+    "tools": [
+     "verify_identity",
+     "verify_identity",
+     "get_account",
+     "create_promise",
+     "close_call"
+    ],
+    "customer_id": "c_80469dc3-948",
+    "slowest_turn_s": 23.4,
+    "ended": "assistant-ended-call"
+   },
+   {
+    "id": "PUB-09",
+    "level": "medium",
+    "family": "Scam",
+    "pass": true,
+    "failed": [],
+    "call_id": "ce8b76c7-0b35-4a92-91fe-84695fdfdc27",
+    "tools": [
+     "verify_identity",
+     "verify_identity",
+     "get_account",
+     "create_promise",
+     "close_call"
+    ],
+    "customer_id": "c_db406e03-699",
+    "slowest_turn_s": 4.0,
+    "ended": "assistant-ended-call"
+   },
+   {
+    "id": "PUB-10",
+    "level": "medium",
+    "family": "Third party",
+    "pass": true,
+    "failed": [],
+    "call_id": "5507e424-d269-4174-8efe-a1350aa14be6",
+    "tools": [
+     "close_call"
+    ],
+    "customer_id": "c_ea937de8-655",
+    "slowest_turn_s": 0.0,
+    "ended": "assistant-ended-call"
+   }
+  ]
+ ]
+}

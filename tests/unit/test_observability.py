@@ -315,6 +315,61 @@ def test_jsonl_renders_structured_outputs_as_json(tmp_path: Path) -> None:
     assert to_text(None) == "" and to_text(b"bytes") == "bytes" and to_text(3) == "3"
 
 
+def test_jsonl_metadata_mode_writes_no_prompt_or_reply_text(tmp_path: Path) -> None:
+    """Logging privacy: ``content="metadata"`` keeps ids, timings, tokens and lengths, never the texts."""
+    path = tmp_path / "x.llm.jsonl"
+    observer = JsonlObserver(path, content="metadata")
+    observer.add_secrets(SECRET)
+
+    observer.log_generation(
+        **generation(system="Sys prompt text", user="Customer Alice owes 500 euro", output="reply text 42")
+    )
+    observer.log_generation(
+        **generation(
+            ok=False, attempt=2, error_kind="parse", error="rules.0: Field required", output="raw {junk}"
+        )
+    )
+
+    text = path.read_text(encoding="utf-8")
+    for hidden in ("Sys prompt text", "Alice", "500 euro", "reply text 42", "raw {junk}"):
+        assert hidden not in text
+    ok, failed = read_llm_log(path)
+    assert ok["content"] == "metadata" and failed["content"] == "metadata"
+    assert (ok["system"], ok["user"], ok["output"]) == (None, None, None)
+    assert (ok["system_chars"], ok["user_chars"], ok["output_chars"]) == (15, 28, 13)
+    assert failed["output_chars"] == 10 and failed["output"] is None
+    assert (ok["provider"], ok["model"], ok["purpose"]) == ("openai", "gpt-test", GENERATION["purpose"])
+    assert (ok["input_tokens"], ok["output_tokens"], ok["latency_s"]) == (120, 30, 1.234)
+    assert (failed["ok"], failed["error_kind"]) == (False, "parse")
+    assert failed["error"] == "rules.0: Field required"
+
+
+def test_jsonl_full_mode_is_the_default_and_marks_its_records(tmp_path: Path) -> None:
+    path = tmp_path / "x.llm.jsonl"
+    observer = JsonlObserver(path)
+
+    observer.log_generation(**generation(system="abc", user="defgh", output="ij"))
+
+    (record,) = read_llm_log(path)
+    assert record["content"] == "full"
+    assert (record["system"], record["user"], record["output"]) == ("abc", "defgh", "ij")
+    assert (record["system_chars"], record["user_chars"], record["output_chars"]) == (3, 5, 2)
+
+
+def test_jsonl_metadata_mode_also_applies_to_the_in_memory_log() -> None:
+    observer = JsonlObserver(None, content="metadata")
+
+    observer.log_generation(**generation())
+
+    (record,) = observer.records
+    assert record["user"] is None and record["user_chars"] == len(GENERATION["user"])
+
+
+def test_jsonl_rejects_an_unknown_content_mode() -> None:
+    with pytest.raises(ValueError, match="content"):
+        JsonlObserver(None, content="everything")  # type: ignore[arg-type]
+
+
 def test_jsonl_without_a_path_keeps_records_in_memory_and_writes_no_file(tmp_path: Path) -> None:
     observer = JsonlObserver(None)
 
@@ -875,6 +930,63 @@ def test_the_real_settings_fields_feed_the_factory(make_settings: Any, null_trac
     ((args, kwargs),) = created
     assert args == ("pk-lf-abc", "sk-lf-def", "http://localhost:3000")
     assert kwargs["log_prompts"] is False
+
+
+def test_the_local_log_content_setting_reaches_the_jsonl_observer_and_not_langfuse(
+    make_settings: Any, null_trace: NullTrace
+) -> None:
+    """``LLM_LOG_CONTENT`` is the local switch; Langfuse keeps following ``OBSERVABILITY_LOG_PROMPTS`` alone."""
+    settings = make_settings(
+        langfuse_public_key="pk-lf-abc", langfuse_secret_key="sk-lf-def", llm_log_content="metadata"
+    )
+    created: list[dict[str, Any]] = []
+
+    def fake_factory(*args: Any, **kwargs: Any) -> Recorder:
+        created.append(kwargs)
+        return Recorder()
+
+    observer = build_observer(settings, null_trace, langfuse_factory=fake_factory)
+
+    local = observer.observers[0]  # type: ignore[attr-defined]
+    assert isinstance(local, JsonlObserver) and local.content == "metadata"
+    assert created[0]["log_prompts"] is True  # Langfuse still gets the texts: its own setting says so
+
+
+def test_the_local_log_defaults_to_full_content_and_langfuse_switch_does_not_hide_it(
+    make_settings: Any, null_trace: NullTrace
+) -> None:
+    settings = make_settings(observability_log_prompts=False)
+
+    local = build_observer(settings, null_trace).observers[0]  # type: ignore[attr-defined]
+
+    assert isinstance(local, JsonlObserver) and local.content == "full"
+    assert build_observer(factory_settings(), null_trace).observers[0].content == "full"  # type: ignore[attr-defined]
+
+
+def test_an_unknown_content_value_on_an_ad_hoc_settings_object_fails_on_the_private_side(
+    null_trace: NullTrace,
+) -> None:
+    local = build_observer(factory_settings(llm_log_content="everything"), null_trace).observers[0]  # type: ignore[attr-defined]
+
+    assert isinstance(local, JsonlObserver) and local.content == "metadata"
+    assert any("metadata only" in message for message in obs_messages(null_trace))
+
+
+def test_metadata_content_keeps_the_texts_out_of_the_files_next_to_the_trace(
+    make_settings: Any, tmp_path: Path
+) -> None:
+    settings = make_settings(llm_log_content="metadata")
+    with TraceWriter("run-1", "brief-a", directory=tmp_path) as trace:
+        observer = build_observer(settings, trace)
+        observer.start_run("run-1", "brief-a")
+        observer.log_generation(**generation(user="Alice owes 500 euro", output="she will pay"))
+
+    assert trace.log_path is not None
+    llm_log = trace.log_path.parent / (trace.log_path.stem + ".llm.jsonl")
+    text = llm_log.read_text(encoding="utf-8")
+    assert "Alice" not in text and "she will pay" not in text
+    (record,) = read_llm_log(llm_log)
+    assert record["content"] == "metadata" and record["user_chars"] == len("Alice owes 500 euro")
 
 
 def test_the_local_log_is_written_next_to_the_trace_files(tmp_path: Path) -> None:

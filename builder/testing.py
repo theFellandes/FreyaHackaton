@@ -10,8 +10,9 @@ Both let the *whole* graph run without a model, a key or a network - in unit tes
   ``MODEL`` line (provider ``fixture``), so a dry run has the same trace shape as a real build. The class holds no
   brief values: the fixtures come from the caller (tests keep them under ``tests/fixtures``).
 * :class:`FakeFreya` mimics :class:`builder.freya.client.FreyaClient` in memory: validation, save (a workflow id, an
-  agent id, versions), read-back, export, chat and the simulation lock. Behaviour switches (reject the first
-  validations, fail the save, scripted chat replies) make the failure paths testable.
+  agent id, versions, the editor layout ``node_positions`` every create and update sends, the published version),
+  read-back, export, chat and the simulation lock. Behaviour switches (reject the first validations, fail the save,
+  scripted chat replies) make the failure paths testable.
 
 Neither class is used by a production build.
 """
@@ -35,6 +36,7 @@ from builder.freya.client import (
     FreyaValidationError,
     count_nodes,
     count_tools,
+    editor_layout,
 )
 from builder.llm.gateway import LLMCallResult
 from builder.llm.providers import LLMRole
@@ -368,6 +370,8 @@ class FakeFreya:
         self.calls: list[tuple[str, tuple[Any, ...]]] = []
         self.saved: dict[str, dict[str, Any]] = {}
         self.versions: dict[str, int] = {}
+        self.node_positions: dict[str, dict[str, dict[str, float]]] = {}  # slot -> the layout of the last save
+        self.published_versions: dict[str, int] = {}  # slot -> the version the last save published
         self.chats: dict[str, list[tuple[str, str]]] = {}
         self.chat_variables: list[dict[str, Any] | None] = []
         self._ids = itertools.count(1)
@@ -395,8 +399,15 @@ class FakeFreya:
         self._reject(self._validation_rejections, "validate")
         return {"valid": True}
 
-    def save(self, slot: str, workflow: dict[str, Any], state_file: Path | str | None = None) -> DeployInfo:
-        """Create or update the slot's fake workflow."""
+    def save(
+        self,
+        slot: str,
+        workflow: dict[str, Any],
+        state_file: Path | str | None = None,
+        *,
+        inputs_sha: str | None = None,
+    ) -> DeployInfo:
+        """Create or update the slot's fake workflow (``inputs_sha`` is accepted like the real client's)."""
         self._note("save", slot)
         if self.fail_save:
             raise FreyaError("fake transport failure", action="save", kind="transport")
@@ -410,6 +421,8 @@ class FakeFreya:
         entry = self.saved[slot]
         entry["workflow"] = json.loads(json.dumps(workflow))
         self.versions[entry["workflow_id"]] = self.versions.get(entry["workflow_id"], 0) + 1
+        self.node_positions[slot] = editor_layout(workflow)  # what the real client sends next to the definition
+        self.published_versions[slot] = self.versions[entry["workflow_id"]]  # ... and then publishes
         return DeployInfo(
             workflow_id=entry["workflow_id"],
             agent_id=entry["agent_id"],

@@ -83,7 +83,9 @@ def test_the_guard_does_not_wait_for_a_blocked_platform_call(
     release = threading.Event()
 
     class BlockedFreya:
-        def save(self, slot: str, workflow: dict[str, Any], state_file: Any = None) -> DeployInfo:
+        def save(
+            self, slot: str, workflow: dict[str, Any], state_file: Any = None, *, inputs_sha: Any = None
+        ) -> DeployInfo:
             release.wait(6.0)  # a slow urllib request
             return DeployInfo(
                 workflow_id="wf_late", agent_id="ag_late", version=1, created=True, node_count=1, tool_count=0
@@ -121,13 +123,14 @@ async def test_a_deploy_that_finishes_inside_the_grace_period_is_reported_not_or
     monkeypatch.setattr(build, "INFLIGHT_GRACE_S", 5.0)
     platform = FakePlatform(default_llm=EVENT_LLM)
     kit = make_kit(platform)
-    real_save = kit.save_workflow
+    real_api = kit.api
 
-    def slow_save(slot: str, workflow: dict[str, Any], state_file: str = ".freya-agents.json") -> Any:
-        time.sleep(0.5)  # the guard (0.2 s) fires while the workflow is being created
-        return real_save(slot, workflow, state_file)
+    def slow_api(method: str, path: str, body: Any = None, **params: Any) -> Any:
+        if (method, path) == ("POST", "/api/v2/workflow") and not params:
+            time.sleep(0.5)  # the guard (0.2 s) fires while the workflow is being created
+        return real_api(method, path, body, **params)
 
-    kit.save_workflow = slow_save
+    kit.api = slow_api
     trace = NullTrace()
     client = FreyaClient(
         trace, kit=kit, state_file=tmp_path / "state.json", limiter=False, sleep=lambda s: None
@@ -220,18 +223,14 @@ async def test_a_cut_off_redeploy_keeps_the_published_version_and_warns(
     monkeypatch.setattr(build, "INFLIGHT_GRACE_S", 5.0)
     platform = FakePlatform(default_llm=EVENT_LLM)
     kit = make_kit(platform)
-    real_save = kit.save_workflow
-    saves = {"n": 0}
+    real_api = kit.api
 
-    def second_save_is_slow(
-        slot: str, workflow: dict[str, Any], state_file: str = ".freya-agents.json"
-    ) -> Any:
-        saves["n"] += 1
-        if saves["n"] == 2:
-            time.sleep(1.0)
-        return real_save(slot, workflow, state_file)
+    def slow_update(method: str, path: str, body: Any = None, **params: Any) -> Any:
+        if method == "PUT":
+            time.sleep(1.0)  # the guard (0.6 s) fires while the second deploy replaces the definition
+        return real_api(method, path, body, **params)
 
-    kit.save_workflow = second_save_is_slow
+    kit.api = slow_update
     trace = NullTrace()
     client = FreyaClient(
         trace, kit=kit, state_file=tmp_path / "state.json", limiter=False, sleep=lambda s: None

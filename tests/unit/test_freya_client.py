@@ -55,20 +55,35 @@ def http_error(method: str, path: str, status: int, body: str) -> RuntimeError:
 class FakePlatform:
     """In-memory Freya: workflows, versions, publish, dry run, chat and calls. Records every call."""
 
-    def __init__(self, *, default_llm: dict[str, Any] | None = None, honour_publish: bool = True) -> None:
+    def __init__(
+        self,
+        *,
+        default_llm: dict[str, Any] | None = None,
+        honour_publish: bool = True,
+        list_route: bool = True,
+        unique_names: bool = False,
+    ) -> None:
         self.default_llm = dict(default_llm or PLATFORM_DEFAULT_LLM)
         self.honour_publish = honour_publish
+        self.list_route = list_route
+        self.unique_names = unique_names
         self.workflows: dict[str, dict[str, Any]] = {}
         self.versions: dict[str, list[dict[str, Any]]] = {}
         self.calls: list[tuple[str, str, Any, dict[str, Any]]] = []
         self.failures: dict[tuple[str, str], list[BaseException]] = {}
+        self.lost: dict[tuple[str, str], list[BaseException]] = {}
         self.dry_run_result: Any = {"valid": True}
         self.chat_result: dict[str, Any] | None = None
         self._ids = itertools.count(1)
 
     # -- test helpers
     def fail(self, method: str, path: str, *errors: BaseException) -> None:
+        """The next requests to the route fail *before* they are applied."""
         self.failures.setdefault((method, path), []).extend(errors)
+
+    def lose_response(self, method: str, path: str, *errors: BaseException) -> None:
+        """The next requests to the route are applied, but the caller gets the error (a lost response)."""
+        self.lost.setdefault((method, path), []).extend(errors)
 
     def count(self, method: str, pattern: str) -> int:
         return sum(1 for m, p, _, _ in self.calls if m == method and re.fullmatch(pattern, p))
@@ -86,16 +101,36 @@ class FakePlatform:
         queued = self.failures.get((method, path))
         if queued:
             raise queued.pop(0)
+        result = self._handle(method, path, body, **params)
+        lost = self.lost.get((method, path))
+        if lost:
+            raise lost.pop(0)
+        return result
+
+    def _handle(self, method: str, path: str, body: Any = None, **params: Any) -> Any:
         if (method, path) == ("GET", "/api/v2/workspaces"):
             return {"workspaces": [{"id": "ws_1"}]}
+        if (method, path) == ("GET", "/api/v2/workflow"):  # list / search by name
+            if not self.list_route:
+                raise http_error(method, path, 404, "<html>not found</html>")
+            needle = str(params.get("search") or "")
+            found = [r for r in self.workflows.values() if needle in r["name"]]
+            return {"workflows": [{k: r[k] for k in ("id", "agentId", "name")} for r in found]}
         if (method, path) == ("POST", "/api/v2/workflow"):
             if params.get("dryRun") == "true":
                 return copy.deepcopy(self.dry_run_result)
-            return {"workflow": copy.deepcopy(self._create(body["name"], body["workflow"]))}
+            self._check_body(method, path, body)
+            if self.unique_names and any(r["name"] == body["name"] for r in self.workflows.values()):
+                raise http_error(method, path, 409, "A workflow with this name already exists")
+            record = self._create(body["name"], body["workflow"])
+            record["nodePositions"] = copy.deepcopy(body.get("nodePositions"))
+            return {"workflow": copy.deepcopy(record)}
         if match := re.fullmatch(r"/api/v2/workflow/([^/]+)", path):
             record = self._record(method, path, match[1])
             if method == "PUT":
+                self._check_body(method, path, body)
                 self._store(record, body["workflow"])
+                record["nodePositions"] = copy.deepcopy(body.get("nodePositions"))
             return {"workflow": copy.deepcopy(record)}
         if (match := re.fullmatch(r"/api/v2/versions/workflow/([^/]+)", path)) and method == "GET":
             self._record(method, path, match[1])
@@ -115,6 +150,14 @@ class FakePlatform:
         if (match := re.fullmatch(r"/api/v2/call/([^/]+)", path)) and method == "GET":
             return {"call": {"id": match[1], "messages": [{"role": "assistant", "message": "Hello"}]}}
         raise AssertionError(f"unexpected Freya call {method} {path}")
+
+    @staticmethod
+    def _check_body(method: str, path: str, body: Any) -> None:
+        """The real platform rejects ``nodePositions`` inside the definition and accepts it next to it."""
+        if "nodePositions" in (body.get("workflow") or {}):
+            raise http_error(
+                method, path, 400, json.dumps({"success": False, "details": ["Unrecognized key: nodePositions"]})
+            )
 
     def _create(self, name: str, definition: dict[str, Any]) -> dict[str, Any]:
         number = next(self._ids)
@@ -297,7 +340,7 @@ def test_first_save_creates_sets_event_model_and_publishes(
     assert stored["agent_config"]["llmConfig"]["provider"] == "experimental-5"
     assert stored["agent_config"]["llmConfig"]["model"] == "experimental-5"
     assert platform.versions["wf_1"][-1]["isPublished"] is True
-    assert read_state(tmp_path) == {"brief-x": {"workflow_id": "wf_1", "agent_id": "ag_1"}}
+    assert read_state(tmp_path) == {"brief-x": {"workflow_id": "wf_1", "agent_id": "ag_1", "workspace_id": "ws_1"}}
     assert platform.count("POST", r"/api/v2/workflow") == 1
     assert "set_agent_llm" in trace.actions()
     assert trace.last("save")["created"] is True
@@ -382,19 +425,92 @@ def test_a_404_from_another_route_never_creates_a_second_workflow(
     assert read_state(tmp_path)["slot"]["workflow_id"] == "wf_1"
 
 
-def test_save_failure_is_not_retried_and_carries_the_status(
-    client: FreyaClient, platform: FakePlatform, trace: RecordingTrace, sleeps: list[float]
+def _seed_state(tmp_path: Path, entries: dict[str, Any]) -> Path:
+    state = tmp_path / "state" / "agents.json"
+    state.parent.mkdir(parents=True, exist_ok=True)
+    state.write_text(json.dumps(entries))
+    return state
+
+
+def test_a_403_on_the_recorded_workflow_recreates_the_slot(
+    client: FreyaClient, platform: FakePlatform, tmp_path: Path
 ) -> None:
-    platform.fail("POST", "/api/v2/workflow", http_error("POST", "/api/v2/workflow", 503, "upstream down"))
+    """AUD-42: an entry another workspace's key cannot touch (403) is recreated in this workspace, not a failed deploy."""
+    _seed_state(tmp_path, {"slot": {"workflow_id": "wf_foreign", "agent_id": "ag_foreign"}})
+    route = "/api/v2/workflow/wf_foreign"
+    platform.fail("PUT", route, http_error("PUT", route, 403, '{"error":"forbidden"}'))
+
+    info = client.save("slot", sample_workflow())
+
+    assert info.created is True and info.workflow_id == "wf_1"
+    assert read_state(tmp_path)["slot"]["workflow_id"] == "wf_1"
+    assert platform.count("POST", r"/api/v2/workflow") == 1
+
+
+@pytest.mark.parametrize("status", [400, 401])
+def test_other_statuses_on_the_recorded_workflow_still_fail_and_keep_the_entry(
+    client: FreyaClient, platform: FakePlatform, tmp_path: Path, status: int
+) -> None:
+    _seed_state(tmp_path, {"slot": {"workflow_id": "wf_foreign", "agent_id": "ag_foreign"}})
+    route = "/api/v2/workflow/wf_foreign"
+    platform.fail("PUT", route, http_error("PUT", route, status, '{"error":"no"}'))
 
     with pytest.raises(FreyaError) as caught:
         client.save("slot", sample_workflow())
 
-    assert caught.value.status == 503
+    assert caught.value.status == status
+    assert platform.count("POST", r"/api/v2/workflow") == 0
+    assert read_state(tmp_path)["slot"]["workflow_id"] == "wf_foreign"
+
+
+def test_an_entry_from_another_workspace_is_never_touched(
+    client: FreyaClient, platform: FakePlatform, trace: RecordingTrace, tmp_path: Path
+) -> None:
+    _seed_state(tmp_path, {"slot": {"workflow_id": "wf_foreign", "agent_id": "ag_x", "workspace_id": "ws_other"}})
+
+    info = client.save("slot", sample_workflow())
+
+    assert info.created is True and info.workflow_id == "wf_1"
+    assert not [call for call in platform.calls if "wf_foreign" in call[1]]
+    assert read_state(tmp_path)["slot"] == {"workflow_id": "wf_1", "agent_id": "ag_1", "workspace_id": "ws_1"}
+    assert trace.last("foreign_slot")["recorded_workspace"] == "ws_other"
+
+
+def test_saves_stamp_the_workspace_and_the_inputs(client: FreyaClient, platform: FakePlatform, tmp_path: Path) -> None:
+    client.save("slot", sample_workflow(), inputs_sha="a" * 64)
+    assert read_state(tmp_path)["slot"]["workspace_id"] == "ws_1"
+    assert read_state(tmp_path)["slot"]["inputs_sha"] == "a" * 64
+    _seed_state(tmp_path, {"legacy": {"workflow_id": "wf_1", "agent_id": "ag_1"}})
+    info = client.save("legacy", sample_workflow(), inputs_sha="b" * 64)
+    assert info.created is False and info.workflow_id == "wf_1"  # a legacy entry is adopted and stamped
+    entry = read_state(tmp_path)["legacy"]
+    assert (entry["workspace_id"], entry["inputs_sha"]) == ("ws_1", "b" * 64)
+
+
+def test_an_explicit_slot_reused_for_other_inputs_is_updated_and_restamped(
+    client: FreyaClient, trace: RecordingTrace, tmp_path: Path
+) -> None:
+    client.save("slot", sample_workflow(), inputs_sha="a" * 64)
+    info = client.save("slot", sample_workflow(), inputs_sha="c" * 64)
+    assert info.created is False
+    assert read_state(tmp_path)["slot"]["inputs_sha"] == "c" * 64
+    assert trace.last("slot_inputs_changed")["slot"] == "slot"
+
+
+def test_a_non_transient_save_failure_is_not_retried_and_carries_the_status(
+    client: FreyaClient, platform: FakePlatform, trace: RecordingTrace, sleeps: list[float]
+) -> None:
+    """A 500 on a write is not one of the transient statuses (429/502/503/504): repeating it repeats the bug."""
+    platform.fail("POST", "/api/v2/workflow", http_error("POST", "/api/v2/workflow", 500, "internal error"))
+
+    with pytest.raises(FreyaError) as caught:
+        client.save("slot", sample_workflow())
+
+    assert caught.value.status == 500
     assert caught.value.kind == "http"
-    assert caught.value.body == "upstream down"
+    assert caught.value.body == "internal error"
     assert caught.value.retryable is True
-    assert platform.count("POST", r"/api/v2/workflow") == 1  # writes are never retried
+    assert platform.count("POST", r"/api/v2/workflow") == 1  # not retried
     assert sleeps == []
     assert trace.last("save")["ok"] is False
 
@@ -523,6 +639,19 @@ def test_validate_retries_a_server_error(
     assert client.validate("slot", sample_workflow()) == {"valid": True}
     assert platform.count("POST", r"/api/v2/workflow") == 2
     assert sleeps == [2.0]
+
+
+def test_validate_reports_a_persistent_504_as_platform_trouble_not_a_rejection(
+    client: FreyaClient, platform: FakePlatform, sleeps: list[float]
+) -> None:
+    """A dry run the gateway keeps answering with 504 is not the workflow's fault: plain FreyaError, never a rejection."""
+    gateway_timeouts = [http_error("POST", "/api/v2/workflow", 504, "Gateway Timeout") for _ in range(5)]
+    platform.fail("POST", "/api/v2/workflow", *gateway_timeouts)
+    with pytest.raises(FreyaError) as caught:
+        client.validate("slot", sample_workflow())
+    assert not isinstance(caught.value, FreyaValidationError)
+    assert caught.value.status == 504 and caught.value.write_retryable
+    assert platform.count("POST", r"/api/v2/workflow") == 3  # the call and its two read retries
 
 
 def test_validate_refuses_null_values(client: FreyaClient, platform: FakePlatform) -> None:
@@ -1081,3 +1210,503 @@ def test_load_kit_rejects_a_file_that_is_not_the_kit(
     monkeypatch.setattr(kit_mod.paths, "REPO_ROOT", tmp_path)
     with pytest.raises(KitError, match="does not look like"):
         load_kit()
+
+
+# ---------------------------------------------------------------------------------------------------------- editor layout
+
+
+def writes(platform: FakePlatform) -> list[tuple[str, str, dict[str, Any]]]:
+    """Every create / update request the platform received: ``(method, path, body)``."""
+    return [
+        (method, path, body)
+        for method, path, body, params in platform.calls
+        if ((method, path) == ("POST", "/api/v2/workflow") and not params)
+        or (method == "PUT" and path.startswith("/api/v2/workflow/"))
+    ]
+
+
+def node_keys(workflow: dict[str, Any]) -> set[str]:
+    return set(workflow["nodes"]) | set(workflow.get("global_nodes") or {})
+
+
+def test_every_create_and_update_carries_the_editor_layout(
+    client: FreyaClient, platform: FakePlatform, tmp_path: Path
+) -> None:
+    from builder.compiler.layout import compute_layout
+
+    client.save("slot", sample_workflow())
+
+    sent = writes(platform)
+    # create, the kit-style update after the create, and the agent_config re-save
+    assert [(m, p) for m, p, _ in sent] == [
+        ("POST", "/api/v2/workflow"),
+        ("PUT", "/api/v2/workflow/wf_1"),
+        ("PUT", "/api/v2/workflow/wf_1"),
+    ]
+    for _, _, body in sent:
+        assert "nodePositions" not in body["workflow"]  # the platform rejects it inside the definition
+        assert body["nodePositions"] == compute_layout(body["workflow"])
+        assert set(body["nodePositions"]) == node_keys(body["workflow"])
+    assert sent[-1][2]["workflow"]["agent_config"]["llmConfig"]["model"] == "experimental-5"  # the AGENT_LLM re-save
+    assert set(platform.workflows["wf_1"]["nodePositions"]) == node_keys(sample_workflow())  # stored by the platform
+
+    platform.calls.clear()
+    changed = sample_workflow()
+    changed["system_prompt"] = "Changed."
+    client.save("slot", changed)
+    # the platform fills in its default agent_config on every PUT, so an update re-saves the model as well
+    update = writes(platform)
+    assert [(m, p) for m, p, _ in update] == [("PUT", "/api/v2/workflow/wf_1")] * 2
+    assert update[0][2]["nodePositions"] == compute_layout(changed)
+    assert update[1][2]["nodePositions"] == compute_layout(update[1][2]["workflow"])
+    assert update[1][2]["workflow"]["agent_config"]["llmConfig"]["model"] == "experimental-5"
+
+
+def test_the_update_publishes_the_newest_version_like_the_kits_update_workflow(
+    client: FreyaClient, platform: FakePlatform
+) -> None:
+    client.save("slot", sample_workflow())
+    changed = sample_workflow()
+    changed["system_prompt"] = "Changed."
+
+    info = client.save("slot", changed)
+
+    versions = platform.versions["wf_1"]
+    newest = max(versions, key=lambda v: v["versionNumber"])
+    assert newest["isPublished"] is True and [v["isPublished"] for v in versions].count(True) == 1
+    assert info.version == newest["versionNumber"] and info.published is True
+    last_publish = [b for m, p, b, _ in platform.calls if p.endswith("/publish")][-1]
+    assert last_publish == {"versionId": newest["id"]}
+
+
+def test_a_create_is_named_slot_and_timestamp_like_the_kits(
+    client: FreyaClient, platform: FakePlatform
+) -> None:
+    client.save("brief-x", sample_workflow())
+    name = platform.workflows["wf_1"]["name"]
+    assert re.fullmatch(r"brief-x \d{4}-\d{6}", name), name  # "<slot> <MMDD-HHMMSS>"
+
+
+def test_a_layout_that_cannot_be_computed_never_blocks_the_deploy(
+    client: FreyaClient, platform: FakePlatform, trace: RecordingTrace, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import builder.compiler.layout as layout_mod
+
+    def broken(workflow: Any) -> Any:
+        raise RuntimeError("layout bug")
+
+    monkeypatch.setattr(layout_mod, "compute_layout", broken)
+
+    info = client.save("slot", sample_workflow())
+
+    assert info.published is True
+    assert all("nodePositions" not in body for _, _, body in writes(platform))
+    assert trace.last("layout")["ok"] is False
+
+
+def test_the_state_file_follows_the_kits_slot_semantics(client: FreyaClient, tmp_path: Path) -> None:
+    client.save("slot", sample_workflow())
+    assert read_state(tmp_path) == {  # a create records no version
+        "slot": {"workflow_id": "wf_1", "agent_id": "ag_1", "workspace_id": "ws_1"}
+    }
+    client.save("slot", sample_workflow())
+    entry = read_state(tmp_path)["slot"]
+    assert (entry["workflow_id"], entry["agent_id"]) == ("wf_1", "ag_1")
+    assert isinstance(entry["version"], int)  # an update records the published version number
+    client.save("other", sample_workflow())
+    assert set(read_state(tmp_path)) == {"slot", "other"}
+
+
+
+#: Keys the client records in a state entry beyond the kit's own (the kit and its tools ignore them).
+STATE_STAMPS = {"workspace_id", "inputs_sha"}
+
+
+def without_stamps(entry: dict[str, Any]) -> dict[str, Any]:
+    return {key: value for key, value in entry.items() if key not in STATE_STAMPS}
+
+
+@pytest.mark.usefixtures("no_network", "kit_env")
+def test_the_update_matches_the_real_kits_update_except_for_the_layout(tmp_path: Path) -> None:
+    """The client's update performs the kit's ``save_workflow`` for an existing slot, plus the layout, step for step."""
+    results = []
+    for use_client in (False, True):
+        platform = FakePlatform()  # the platform default model differs from the event's: the re-save happens
+        workflow_id = platform.seed(published=True, llm=PLATFORM_DEFAULT_LLM)
+        state_file = tmp_path / f"state-{use_client}.json"
+        state_file.write_text(json.dumps({"slot": {"workflow_id": workflow_id, "agent_id": "ag_1"}}))
+        changed = sample_workflow()
+        changed["system_prompt"] = "Second build."
+        if use_client:
+            FreyaClient(NullTrace(), load_real_kit(platform), state_file=state_file).save("slot", changed)
+        else:
+            load_real_kit(platform).save_workflow("slot", changed, state_file=str(state_file))
+        sent = [
+            (m, p, b["workflow"])
+            for m, p, b, params in platform.calls
+            if m in ("PUT", "POST") and not params and not p.endswith("/publish")
+        ]
+        results.append(
+            {
+                "writes": sent,
+                "stored": platform.workflows[workflow_id]["workflow"],
+                "versions": platform.versions[workflow_id],
+                "state": json.loads(state_file.read_text()),
+            }
+        )
+    kit, mine = results
+    assert mine["writes"] == kit["writes"]  # same requests, same order, same definitions
+    assert mine["stored"] == kit["stored"]
+    assert mine["versions"] == kit["versions"]  # the same published version
+    # the kit's entry, plus only the documented stamps (AUD-42 workspace, AUD-05 inputs) that the kit ignores
+    assert {slot: without_stamps(entry) for slot, entry in mine["state"].items()} == kit["state"]
+    assert set(mine["state"]["slot"]) - set(kit["state"]["slot"]) <= STATE_STAMPS
+
+
+@pytest.mark.usefixtures("no_network", "kit_env")
+def test_the_create_matches_the_real_kits_create_except_for_the_layout(tmp_path: Path) -> None:
+    """The first request of a new slot is the kit's: same route, same name pattern, same definition, same state entry."""
+    results = []
+    for use_client in (False, True):
+        platform = FakePlatform()
+        state_file = tmp_path / f"state-{use_client}.json"
+        if use_client:
+            FreyaClient(NullTrace(), load_real_kit(platform), state_file=state_file).save("slot", sample_workflow())
+        else:
+            load_real_kit(platform).save_workflow("slot", sample_workflow(), state_file=str(state_file))
+        first = next(c for c in platform.calls if c[:2] == ("POST", "/api/v2/workflow"))
+        results.append((first[2], json.loads(state_file.read_text())))
+    (kit_body, kit_state), (my_body, my_state) = results
+    assert my_body["workflow"] == kit_body["workflow"]
+    assert re.fullmatch(r"slot \d{4}-\d{6}", my_body["name"]) and re.fullmatch(r"slot \d{4}-\d{6}", kit_body["name"])
+    assert set(my_body) - set(kit_body) == {"nodePositions"}
+    assert kit_state == {"slot": {"workflow_id": "wf_1", "agent_id": "ag_1"}}
+    assert my_state == {"slot": {**kit_state["slot"], "workspace_id": "ws_1"}}  # the kit's entry + the AUD-42 stamp
+
+
+# ---------------------------------------------------------------------------------------------------------- transient errors
+
+
+def test_a_transient_503_on_the_create_is_retried_and_creates_one_workflow(
+    client: FreyaClient, platform: FakePlatform, sleeps: list[float]
+) -> None:
+    platform.fail("POST", "/api/v2/workflow", http_error("POST", "/api/v2/workflow", 503, "upstream unavailable"))
+
+    info = client.save("slot", sample_workflow())
+
+    assert info.created is True and info.published is True
+    assert list(platform.workflows) == ["wf_1"]
+    assert platform.count("POST", r"/api/v2/workflow") == 2  # the failed attempt and the one that created
+    assert sleeps == [2.0]
+
+
+@pytest.mark.parametrize("status", [429, 502, 504])
+def test_the_other_transient_statuses_are_retried_too(
+    client: FreyaClient, platform: FakePlatform, sleeps: list[float], status: int
+) -> None:
+    platform.fail("POST", "/api/v2/workflow", http_error("POST", "/api/v2/workflow", status, "later"))
+    assert client.save("slot", sample_workflow()).published is True
+    assert len(platform.workflows) == 1 and sleeps == [2.0]
+
+
+def test_a_persistent_503_gives_up_after_a_bounded_number_of_attempts(
+    client: FreyaClient, platform: FakePlatform, sleeps: list[float], trace: RecordingTrace
+) -> None:
+    platform.fail(
+        "POST",
+        "/api/v2/workflow",
+        *[http_error("POST", "/api/v2/workflow", 503, "upstream unavailable") for _ in range(10)],
+    )
+
+    with pytest.raises(FreyaError) as caught:
+        client.save("slot", sample_workflow())
+
+    assert (caught.value.status, caught.value.kind) == (503, "http")
+    assert platform.count("POST", r"/api/v2/workflow") == 5  # one attempt and four retries
+    assert sleeps == [2.0, 4.0, 6.0, 8.0]  # bounded linear back-off: 20 s at most
+    assert platform.workflows == {}
+    assert trace.last("save")["ok"] is False
+
+
+@pytest.mark.parametrize("status", [400, 401, 403, 404, 409, 422])
+def test_a_rejected_create_is_never_retried(
+    client: FreyaClient, platform: FakePlatform, sleeps: list[float], status: int
+) -> None:
+    platform.fail("POST", "/api/v2/workflow", http_error("POST", "/api/v2/workflow", status, "no"))
+    with pytest.raises(FreyaError) as caught:
+        client.save("slot", sample_workflow())
+    assert caught.value.status == status
+    assert platform.count("POST", r"/api/v2/workflow") == 1 and sleeps == []
+
+
+def test_a_lost_create_response_never_leaves_a_duplicate_workflow(
+    client: FreyaClient, platform: FakePlatform, trace: RecordingTrace, tmp_path: Path
+) -> None:
+    """The create was applied but the answer timed out: the retry finds the workflow by its unique name instead."""
+    platform.lose_response("POST", "/api/v2/workflow", TimeoutError("timed out"))
+
+    info = client.save("slot", sample_workflow())
+
+    assert info.created is True and info.workflow_id == "wf_1" and info.published is True
+    assert list(platform.workflows) == ["wf_1"]
+    assert platform.count("POST", r"/api/v2/workflow") == 1  # the create was not repeated
+    assert read_state(tmp_path)["slot"] == {"workflow_id": "wf_1", "agent_id": "ag_1", "workspace_id": "ws_1"}
+    assert trace.last("adopt_created")["ok"] is True
+
+
+def test_a_lost_create_response_is_reconciled_through_the_state_file_first(
+    platform: FakePlatform, tmp_path: Path
+) -> None:
+    """Another process may have recorded the slot meanwhile: its workflow is updated, nothing is created."""
+    state = tmp_path / "state" / "agents.json"
+    state.parent.mkdir(parents=True)
+    wf_id = platform.seed(published=True)
+    real_api = platform.api
+
+    def api(method: str, path: str, body: Any = None, **params: Any) -> Any:
+        if (method, path) == ("POST", "/api/v2/workflow") and not params:
+            state.write_text(json.dumps({"slot": {"workflow_id": wf_id, "agent_id": "ag_1"}}))
+            raise TimeoutError("timed out")
+        return real_api(method, path, body, **params)
+
+    kit = make_kit(platform)
+    kit.api = api
+    mine = FreyaClient(None, kit, state_file=state, sleep=lambda s: None)
+
+    info = mine.save("slot", sample_workflow())
+
+    assert info.workflow_id == wf_id and len(platform.workflows) == 1
+
+
+def test_without_a_search_route_the_repeated_create_may_leave_an_orphan_but_the_build_survives(
+    client: FreyaClient, platform: FakePlatform, trace: RecordingTrace, tmp_path: Path
+) -> None:
+    """Documented limit: the platform cannot be searched, so an ambiguous create is repeated (a stray workflow is
+    cheaper than a failed build). The slot must point at the workflow that was actually deployed."""
+    platform.list_route = False
+    platform.lose_response("POST", "/api/v2/workflow", TimeoutError("timed out"))
+
+    info = client.save("slot", sample_workflow())
+
+    assert info.created is True and info.published is True
+    assert len(platform.workflows) == 2
+    assert read_state(tmp_path)["slot"]["workflow_id"] == info.workflow_id
+    assert trace.last("adopt_created")["ok"] is False
+
+
+def test_a_409_after_an_ambiguous_create_adopts_the_workflow_that_holds_the_name(
+    client: FreyaClient, platform: FakePlatform
+) -> None:
+    # attempt 1 is applied but lost; the first search fails; attempt 2 meets the existing name (409); the search works now
+    platform.unique_names = True
+    platform.lose_response("POST", "/api/v2/workflow", TimeoutError("timed out"))
+    platform.fail("GET", "/api/v2/workflow", http_error("GET", "/api/v2/workflow", 500, "search is down"))
+
+    info = client.save("slot", sample_workflow())
+
+    assert info.workflow_id == "wf_1" and list(platform.workflows) == ["wf_1"]
+
+
+def test_a_transient_error_on_the_update_is_retried(
+    client: FreyaClient, platform: FakePlatform, sleeps: list[float]
+) -> None:
+    client.save("slot", sample_workflow())
+    sleeps.clear()
+    platform.fail("PUT", "/api/v2/workflow/wf_1", http_error("PUT", "/api/v2/workflow/wf_1", 502, "bad gateway"))
+    changed = sample_workflow()
+    changed["system_prompt"] = "Changed."
+
+    info = client.save("slot", changed)
+
+    assert info.created is False and info.published is True
+    assert platform.workflows["wf_1"]["workflow"]["system_prompt"] == "Changed."
+    assert sleeps == [2.0]
+
+
+def test_a_lost_update_response_is_safe_to_repeat(client: FreyaClient, platform: FakePlatform) -> None:
+    client.save("slot", sample_workflow())
+    platform.lose_response("PUT", "/api/v2/workflow/wf_1", TimeoutError("timed out"))
+    changed = sample_workflow()
+    changed["system_prompt"] = "Changed."
+
+    info = client.save("slot", changed)
+
+    assert platform.workflows["wf_1"]["workflow"]["system_prompt"] == "Changed."
+    newest = max(platform.versions["wf_1"], key=lambda v: v["versionNumber"])
+    assert newest["isPublished"] is True and info.version == newest["versionNumber"]
+
+
+def test_a_transient_error_on_publish_is_retried_after_reading_the_versions_again(
+    platform: FakePlatform, trace: RecordingTrace, tmp_path: Path, sleeps: list[float]
+) -> None:
+    platform.default_llm = dict(EVENT_LLM)  # no model re-save: the publish is the last step
+    publish = "/api/v2/versions/workflow/wf_1/publish"
+    platform.fail("POST", publish, http_error("POST", publish, 503, "unavailable"))
+    client = FreyaClient(trace, make_kit(platform), state_file=tmp_path / "agents.json", sleep=sleeps.append)
+
+    info = client.save("slot", sample_workflow())
+
+    assert info.published is True
+    assert platform.count("POST", publish) == 2 and sleeps == [2.0]
+    assert platform.count("GET", r"/api/v2/versions/workflow/wf_1") >= 3  # read again before the repeat
+
+
+def test_a_publish_whose_response_was_lost_is_not_repeated(
+    platform: FakePlatform, trace: RecordingTrace, tmp_path: Path
+) -> None:
+    platform.default_llm = dict(EVENT_LLM)
+    publish = "/api/v2/versions/workflow/wf_1/publish"
+    platform.lose_response("POST", publish, TimeoutError("timed out"))
+    client = FreyaClient(trace, make_kit(platform), state_file=tmp_path / "agents.json", sleep=lambda s: None)
+
+    info = client.save("slot", sample_workflow())
+
+    assert info.published is True
+    assert platform.count("POST", publish) == 1  # the re-read showed that it had gone through
+
+
+def test_a_persistent_publish_failure_is_reported_after_bounded_attempts(
+    platform: FakePlatform, trace: RecordingTrace, tmp_path: Path, sleeps: list[float]
+) -> None:
+    platform.default_llm = dict(EVENT_LLM)
+    publish = "/api/v2/versions/workflow/wf_1/publish"
+    platform.fail("POST", publish, *[http_error("POST", publish, 503, "unavailable") for _ in range(10)])
+    client = FreyaClient(trace, make_kit(platform), state_file=tmp_path / "agents.json", sleep=sleeps.append)
+
+    with pytest.raises(FreyaError) as caught:
+        client.save("slot", sample_workflow())
+
+    assert caught.value.status == 503
+    assert platform.count("POST", publish) == 5 and sleeps == [2.0, 4.0, 6.0, 8.0]
+
+
+def test_an_export_is_retried_on_a_transient_error(
+    client: FreyaClient, platform: FakePlatform, sleeps: list[float], tmp_path: Path
+) -> None:
+    wf_id = platform.seed()
+    path = f"/api/v2/workflow/{wf_id}"
+    platform.fail("GET", path, http_error("GET", path, 504, "gateway timeout"))
+    target = client.export(wf_id, tmp_path / "e.json")
+    assert json.loads(target.read_text())["workflow_id"] == wf_id and sleeps == [2.0]
+
+
+# ---------------------------------------------------------------------------------------------------------- the deadline
+
+
+def test_no_retry_is_scheduled_when_the_deadline_is_too_close(
+    platform: FakePlatform, trace: RecordingTrace, tmp_path: Path, sleeps: list[float]
+) -> None:
+    import time
+
+    platform.fail("POST", "/api/v2/workflow", *[http_error("POST", "/api/v2/workflow", 503, "x")] * 3)
+    client = FreyaClient(
+        trace,
+        make_kit(platform),
+        state_file=tmp_path / "agents.json",
+        sleep=sleeps.append,
+        deadline=time.monotonic() + 3.0,  # the back-off alone (2 s) plus a request would pass it
+    )
+
+    with pytest.raises(FreyaError) as caught:
+        client.save("slot", sample_workflow())
+
+    assert caught.value.status == 503
+    assert platform.count("POST", r"/api/v2/workflow") == 1 and sleeps == []
+
+
+def test_a_client_deadline_that_has_passed_starts_no_request(
+    platform: FakePlatform, trace: RecordingTrace, tmp_path: Path
+) -> None:
+    import time
+
+    from builder.freya.background import PlatformCancelled
+
+    client = FreyaClient(
+        trace, make_kit(platform), state_file=tmp_path / "agents.json", deadline=time.monotonic() - 1.0
+    )
+    with pytest.raises(PlatformCancelled):
+        client.save("slot", sample_workflow())
+    with pytest.raises(PlatformCancelled):
+        client.get_call("call_1")
+    assert platform.calls == []
+
+
+def test_the_token_deadline_limits_the_retries_of_a_worker_thread(
+    platform: FakePlatform, trace: RecordingTrace, tmp_path: Path, sleeps: list[float]
+) -> None:
+    import time
+
+    from builder.freya.background import CancelToken, bound_token
+
+    platform.fail("POST", "/api/v2/workflow", *[http_error("POST", "/api/v2/workflow", 503, "x")] * 3)
+    client = FreyaClient(trace, make_kit(platform), state_file=tmp_path / "agents.json", sleep=sleeps.append)
+    with bound_token(CancelToken(deadline=time.monotonic() + 3.0)), pytest.raises(FreyaError):
+        client.save("slot", sample_workflow())
+    assert platform.count("POST", r"/api/v2/workflow") == 1 and sleeps == []
+
+
+def test_a_cancel_during_the_back_off_stops_the_retry(
+    platform: FakePlatform, trace: RecordingTrace, tmp_path: Path
+) -> None:
+    from builder.freya.background import CancelToken, PlatformCancelled, bound_token
+
+    token = CancelToken()
+    platform.fail("POST", "/api/v2/workflow", *[http_error("POST", "/api/v2/workflow", 503, "x")] * 3)
+    client = FreyaClient(
+        trace,
+        make_kit(platform),
+        state_file=tmp_path / "agents.json",
+        sleep=lambda s: token.cancel("the guard fired"),
+    )
+    with bound_token(token), pytest.raises(PlatformCancelled):
+        client.save("slot", sample_workflow())
+    assert platform.count("POST", r"/api/v2/workflow") == 1
+
+
+def test_a_kit_the_client_loads_itself_gets_the_bounded_transport(
+    monkeypatch: pytest.MonkeyPatch, platform: FakePlatform
+) -> None:
+    kit = make_kit(platform)
+    kit.URL, kit.HEADERS = "http://127.0.0.1:9", {}
+    monkeypatch.setattr(client_mod, "load_kit", lambda: kit)
+    client = FreyaClient(NullTrace(), limiter=False)
+    assert client.kit is kit
+    assert getattr(kit.api, "_freya_bounded", False) is True
+
+
+def test_an_injected_kit_keeps_its_own_api(platform: FakePlatform) -> None:
+    kit = make_kit(platform)
+    kit.URL, kit.HEADERS = "http://127.0.0.1:9", {}
+    original = kit.api
+    FreyaClient(NullTrace(), kit, limiter=False).workspace_id()
+    assert kit.api is original  # tests and callers that bring their own transport are not rewired
+
+
+def test_which_failures_a_write_may_be_repeated_after() -> None:
+    def error(status: int | None, kind: str = "http") -> FreyaError:
+        return FreyaError("x", action="save", status=status, kind=kind)
+
+    assert [error(s).write_retryable for s in (429, 502, 503, 504)] == [True] * 4
+    assert [error(s).write_retryable for s in (400, 401, 403, 404, 409, 422, 500, 501)] == [False] * 8
+    assert error(None, "transport").write_retryable is True  # timeouts, resets, DNS
+    assert error(None, "response").write_retryable is False  # an answer we could not read: not a transport problem
+    assert error(None, "local").write_retryable is False
+
+
+def test_the_state_file_is_written_atomically_and_survives_a_refused_swap(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    import os
+
+    path = tmp_path / "agents.json"
+    client_mod._write_state(path, {"a": {"workflow_id": "wf_1"}})
+    assert json.loads(path.read_text()) == {"a": {"workflow_id": "wf_1"}}
+    assert not (tmp_path / "agents.json.part").exists()  # no half-written leftovers
+
+    def refused(src: Any, dst: Any) -> None:
+        raise PermissionError("the file is held open by a virus scanner")
+
+    monkeypatch.setattr(os, "replace", refused)
+    client_mod._write_state(path, {"a": {"workflow_id": "wf_2"}})  # falls back to an in-place write
+    assert json.loads(path.read_text()) == {"a": {"workflow_id": "wf_2"}}
+    assert not (tmp_path / "agents.json.part").exists()

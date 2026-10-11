@@ -38,9 +38,18 @@ from typing import Literal, get_args
 
 from pydantic import BaseModel, Field
 
+from builder.compiler.roles import (
+    account_roles,
+    close_roles,
+    customer_binding,
+    note_roles,
+    queue_field,
+    verify_roles,
+)
 from builder.ingest.tool_api import FieldSpec, ToolApi
 from builder.policy.intents import canonical_intent_key
 from builder.policy.ir import (
+    Band,
     OutcomeRef,
     PolicyIR,
     ProposalDateKind,
@@ -50,6 +59,7 @@ from builder.policy.ir import (
     template_fields,
 )
 from builder.policy.outcomes import STRUCTURAL_ORDER, TRANSFER_PREFIX, Situation, is_transfer_situation
+from builder.understand.date_cues import corrected_proposal_date
 
 __all__ = [
     "EXTERNAL_ISSUE_PREFIXES",
@@ -135,9 +145,16 @@ class ToolVocabulary:
     reason_exempt_outcomes: set[str] | None = None
     note_reasons: list[str] | None = None
     queues: list[str] | None = None
+    queue_field: str = "queue"
     product_types: list[str] | None = None
     product_fields: set[str] = field(default_factory=set)
     request_fields: dict[str, dict[str, FieldSpec]] = field(default_factory=dict)
+    field_names: dict[str, str] = field(default_factory=dict)
+    """Role (``outcome``, ``reason``, ``selector``, ``note_reason``, ``product_type``) -> the API's field name."""
+
+    def name_of(self, role: str, default: str) -> str:
+        """The tool API's field name for ``role`` (``default`` when unknown)."""
+        return self.field_names.get(role) or default
 
     def describe(self) -> str:
         """A short bullet list of the vocabularies, for prompts."""
@@ -147,17 +164,18 @@ class ToolVocabulary:
             if values:
                 lines.append(f"- {label}: {' | '.join(values)}")
 
-        add("verify_identity field values", self.identity_fields)
-        add("close_call outcome values", self.outcomes)
-        add("close_call reason values", self.reasons)
+        reason = self.name_of("reason", "reason")
+        add(f"verify_identity {self.name_of('selector', 'field')} values", self.identity_fields)
+        add(f"close_call {self.name_of('outcome', 'outcome')} values", self.outcomes)
+        add(f"close_call {reason} values", self.reasons)
         if self.reason_exempt_outcomes is not None:
             exempt = sorted(self.reason_exempt_outcomes)
             lines.append(
-                "- close_call reason is required for every outcome except: " + (", ".join(exempt) or "(none)")
+                f"- close_call {reason} is required for every outcome except: " + (", ".join(exempt) or "(none)")
             )
-        add("add_note reason values", self.note_reasons)
-        add("transfer_to_agent queue values", self.queues)
-        add("get_account product type values", self.product_types)
+        add(f"add_note {self.name_of('note_reason', 'reason')} values", self.note_reasons)
+        add(f"transfer_to_agent {self.queue_field} values", self.queues)
+        add(f"get_account product {self.name_of('product_type', 'type')} values", self.product_types)
         add("get_account product fields", sorted(self.product_fields))
         return "\n".join(lines)
 
@@ -192,6 +210,12 @@ _ALL_PRODUCTS = re.compile(
     r"\ball\s+(?:of\s+)?(?:them|these|those|the\s+(?:products?|accounts?|loans?|cards?|debts?)|your\s+\w+)\b",
     re.IGNORECASE,
 )
+# a percentage OF the past-due amount (a percentage of the balance or of anything else is not a floor rule here: the
+# product's own floor field may already hold it)
+_PERCENT = re.compile(r"(\d+(?:[.,]\d+)?)\s*(?:%|percent\b|per\s+cent\b)\s+of\s+(?:the\s+|their\s+|its\s+)?"
+                      r"[`'\"]?(?:total\s+)?(?:past[-\s_]?due|overdue|arrears?|late)\b", re.IGNORECASE)
+_FLOOR_WORDS = re.compile(r"\b(?:minimum|at\s+least|floor|lowest|no\s+less\s+than|not\s+less\s+than|smallest|partial)\b",
+                          re.IGNORECASE)
 _DAYS_NAME = re.compile(r"day|age|dpd|late|overdue|arrear|delinq", re.IGNORECASE)
 _AMOUNT_NAME = re.compile(r"due|arrear|overdue|owed|outstanding|balance|amount|debt", re.IGNORECASE)
 
@@ -253,16 +277,58 @@ def resolve_product_fields(ir: PolicyIR, tool_api: ToolApi) -> tuple[str, str]:
     return amount, days
 
 
+def _role_fields(tool_api: ToolApi) -> dict[str, str]:
+    """The field names that hold the closed vocabularies, found by role the way the compiler finds them (AUD-20).
+
+    A hidden tool API may rename ``close_call.outcome`` (``disposition``), ``verify_identity.field`` (``question``) or
+    the product ``type`` (``kind``); the compiler follows the rename through :mod:`builder.compiler.roles`, so the
+    validator, the safe fixes, the extraction prompt and the output guard must read the same fields. A role that cannot
+    be resolved keeps the kit name, so this never raises.
+    """
+    names = {"outcome": "outcome", "reason": "reason", "selector": "field", "note_reason": "reason",
+             "product_type": "type"}
+    try:
+        cust = customer_binding(tool_api).field
+    except Exception:  # a degenerate contract keeps the kit names
+        cust = "customer_id"
+    tools = tool_api.tools
+    resolvers: list[tuple[str, Callable[[], str | None]]] = []
+    if "close_call" in tools:
+        resolvers += [("outcome", lambda: close_roles(tools["close_call"], cust).outcome),
+                      ("reason", lambda: close_roles(tools["close_call"], cust).reason)]
+    if "verify_identity" in tools:
+        resolvers.append(("selector", lambda: verify_roles(tools["verify_identity"], cust).selector))
+    if "add_note" in tools:
+        resolvers.append(("note_reason", lambda: note_roles(tools["add_note"], cust).reason))
+    if "get_account" in tools:
+        resolvers.append(("product_type", lambda: account_roles(tool_api, (), cust).type_key))
+    for key, resolve in resolvers:
+        try:
+            found = resolve()
+        except Exception:  # CompileError or a malformed contract: keep the kit name
+            continue
+        if found:
+            names[key] = found
+    return names
+
+
 def tool_vocabulary(tool_api: ToolApi) -> ToolVocabulary:
-    """Read the closed vocabularies the validator needs out of ``tool_api`` (missing tools give ``None`` entries)."""
+    """Read the closed vocabularies the validator needs out of ``tool_api`` (missing tools give ``None`` entries).
+
+    Every vocabulary is read from the field that holds its role (:func:`_role_fields`), so a renamed field stays checked.
+    """
+    fields = _role_fields(tool_api)
     vocab = ToolVocabulary(tool_names=set(tool_api.tools))
-    vocab.identity_fields = _request_enum(tool_api, "verify_identity", "field")
-    vocab.outcomes = _request_enum(tool_api, "close_call", "outcome")
-    vocab.reasons = _request_enum(tool_api, "close_call", "reason")
-    vocab.note_reasons = _request_enum(tool_api, "add_note", "reason")
-    vocab.queues = _request_enum(tool_api, "transfer_to_agent", "queue")
+    vocab.field_names = dict(fields)
+    vocab.identity_fields = _request_enum(tool_api, "verify_identity", fields["selector"])
+    vocab.outcomes = _request_enum(tool_api, "close_call", fields["outcome"])
+    vocab.reasons = _request_enum(tool_api, "close_call", fields["reason"])
+    vocab.note_reasons = _request_enum(tool_api, "add_note", fields["note_reason"])
+    transfer = tool_api.tools.get("transfer_to_agent")
+    vocab.queue_field = (queue_field(transfer) if transfer is not None else None) or "queue"  # the API's own name
+    vocab.queues = _request_enum(tool_api, "transfer_to_agent", vocab.queue_field)
     close = tool_api.tools.get("close_call")
-    reason_spec = close.get_field("reason", "request") if close else None
+    reason_spec = close.get_field(fields["reason"], "request") if close else None
     if reason_spec is not None and vocab.outcomes:
         text = f"{reason_spec.description} {close.description if close else ''}"
         match = _EXCEPT.search(text)
@@ -271,7 +337,7 @@ def tool_vocabulary(tool_api: ToolApi) -> ToolVocabulary:
             vocab.reason_exempt_outcomes = {o for o in vocab.outcomes if re.search(rf"\b{re.escape(o.lower())}\b", tail)}
     products = _product_spec(tool_api)
     vocab.product_fields = {spec.name for spec in products}
-    type_spec = next((spec for spec in products if spec.name == "type"), None)
+    type_spec = next((spec for spec in products if spec.name == fields["product_type"]), None)
     vocab.product_types = list(type_spec.enum) if type_spec is not None and type_spec.enum else None
     for name, contract in tool_api.tools.items():
         vocab.request_fields[name] = {spec.name: spec for spec in contract.request_fields}
@@ -452,6 +518,7 @@ class _Checker:
         self.persuasion_dates()
         self.disclosure_text()
         self.products()
+        self.floor_rules()
         self.product_fields()
         self.today_question()
         self.placeholders()
@@ -606,18 +673,36 @@ class _Checker:
         names = [band.name for band in bands]
         for name in dict.fromkeys(n for n in names if names.count(n) > 1):
             self.add("BAND_NAME_DUPLICATE", f"band name {name!r} is used more than once.", path="bands")
-        ordered = sorted(bands, key=lambda b: (b.days_late_min, b.days_late_max))
-        for before, after in itertools.pairwise(ordered):
-            ids = [*before.rule_ids, *after.rule_ids]
-            if after.days_late_min <= before.days_late_max:
-                self.add("BANDS_OVERLAP",
-                         f"bands {before.name!r} ({before.days_late_min}-{before.days_late_max}) and {after.name!r} "
-                         f"({after.days_late_min}-{after.days_late_max}) overlap.", path="bands", rule_ids=ids)
-            elif after.days_late_min > before.days_late_max + 1:
-                self.add("BANDS_GAP",
-                         f"days late {before.days_late_max + 1}-{after.days_late_min - 1} fall in no band "
-                         f"(between {before.name!r} and {after.name!r}).", severity="warning", path="bands",
-                         rule_ids=ids)
+        # AUD-39: rows typed for some product types form their own table (they win over untyped rows for those types)
+        untyped = [band for band in bands if not band.product_types]
+        typed_for = {t: [b for b in bands if t in b.product_types] for b0 in bands for t in b0.product_types}
+        tables: list[tuple[str, list[Band]]] = [("", untyped)] + [(f" for product type {t!r}", rows)
+                                                                  for t, rows in typed_for.items()]
+        for label, table in tables:
+            ordered = sorted(table, key=lambda b: (b.days_late_min, b.days_late_max))
+            for before, after in itertools.pairwise(ordered):
+                if after.days_late_min <= before.days_late_max:
+                    self.add("BANDS_OVERLAP",
+                             f"bands {before.name!r} ({before.days_late_min}-{before.days_late_max}) and {after.name!r} "
+                             f"({after.days_late_min}-{after.days_late_max}) overlap{label}.", path="bands",
+                             rule_ids=[*before.rule_ids, *after.rule_ids])
+            rows = sorted(table if not label else [*table, *untyped], key=lambda b: (b.days_late_min, b.days_late_max))
+            reach: Band | None = None
+            for after in rows:
+                if reach is not None and after.days_late_min > reach.days_late_max + 1:
+                    self.add("BANDS_GAP",
+                             f"days late {reach.days_late_max + 1}-{after.days_late_min - 1} fall in no band{label} "
+                             f"(between {reach.name!r} and {after.name!r}).", severity="warning", path="bands",
+                             rule_ids=[*reach.rule_ids, *after.rule_ids])
+                if reach is None or after.days_late_max > reach.days_late_max:
+                    reach = after
+        types = self.vocab.product_types
+        for index, band in enumerate(bands):
+            for name in band.product_types:
+                if types is not None and name not in types:
+                    self.add("PRODUCT_TYPE", f"band {band.name!r} names product type {name!r}, which is not a "
+                             f"get_account product type; allowed: {', '.join(types)}.",
+                             path=f"bands[{index}].product_types", rule_ids=band.rule_ids)
         for index, band in enumerate(bands):
             if band.deadline.kind == "custom":
                 self.add("DEADLINE_CUSTOM", f"band {band.name!r} has a deadline the compiler cannot compute "
@@ -625,11 +710,15 @@ class _Checker:
                          rule_ids=band.rule_ids)
             wanted = band.persuasion_attempts
             available = len(self.ir.persuasion.steps_for(band.name))
-            if wanted > available:
+            if wanted > available:  # AUD-30: an error, so a repair completes the ladder or states the real count
                 self.add("PERSUASION_STEPS_SHORT",
-                         f"band {band.name!r} allows {wanted} persuasion attempts but only {available} "
-                         f"persuasion steps apply to it.", severity="warning", path=f"bands[{index}]",
-                         rule_ids=[*band.rule_ids, *self.ir.persuasion.rule_ids])
+                         f"band {band.name!r} allows {wanted} persuasion attempts but only {available} persuasion "
+                         f"steps apply to it (steps whose bands list is empty or names it), so the agent would make "
+                         f"only {available}. If the documents describe the missing step(s), add them exactly as stated "
+                         f"(attempt number, bands, amount, date, text). Otherwise set this band's persuasion_attempts "
+                         f"to {available}: the agent never repeats an offer, so it can only make the distinct steps the "
+                         f"documents describe. Never invent an offer.",
+                         path=f"bands[{index}]", rule_ids=[*band.rule_ids, *self.ir.persuasion.rule_ids])
         known = set(names)
         for index, step in enumerate(self.ir.persuasion.steps):
             for name in step.bands:
@@ -670,11 +759,16 @@ class _Checker:
                     self.add("PRODUCT_TYPE", f"floor_field_by_type key {name!r} is not a get_account product type; "
                              f"allowed: {', '.join(types)}.", path="amounts.floor_field_by_type",
                              rule_ids=amounts.rule_ids)
+            for name in amounts.floor_rule_by_type:
+                if name not in types:
+                    self.add("PRODUCT_TYPE", f"floor_rule_by_type key {name!r} is not a get_account product type; "
+                             f"allowed: {', '.join(types)}.", path="amounts.floor_rule_by_type",
+                             rule_ids=amounts.rule_ids)
             for name in types:
                 if name not in disclosure.product_naming:
                     self.add("PRODUCT_TYPE_UNCOVERED", f"product type {name!r} has no spoken name in disclosure.product_naming.",
                              severity="warning", path="disclosure.product_naming", rule_ids=disclosure.rule_ids)
-                if name not in amounts.floor_field_by_type:
+                if not amounts.has_floor(name):
                     self.add("PRODUCT_TYPE_UNCOVERED", f"product type {name!r} has no floor field in amounts.floor_field_by_type.",
                              severity="warning", path="amounts.floor_field_by_type", rule_ids=amounts.rule_ids)
         fields = vocab.product_fields
@@ -697,6 +791,35 @@ class _Checker:
                              path=f"disclosure.product_naming.{name}", rule_ids=disclosure.rule_ids)
 
 
+    # ---- floors stated as a computation (AUD-10) -----------------------------------------------------------------------
+
+    def floor_rules(self) -> None:
+        amounts = self.ir.amounts
+        for name, rule in amounts.floor_rule_by_type.items():
+            problem = rule.problem()
+            if problem:
+                self.add("FLOOR_RULE_INVALID", f"amounts.floor_rule_by_type[{name!r}]: {problem}.",
+                         path=f"amounts.floor_rule_by_type.{name}", rule_ids=amounts.rule_ids)
+        stated = {round(rule.percent_of_amount, 4) for rule in amounts.floor_rule_by_type.values()
+                  if rule.percent_of_amount is not None}
+        for rule_id in amounts.rule_ids:
+            entry = self.ledger.get(rule_id)
+            if entry is None or not entry.active:
+                continue
+            for sentence in re.split(r"(?<=[.;])\s+", entry.quote):
+                if not _FLOOR_WORDS.search(sentence):
+                    continue
+                for match in _PERCENT.finditer(sentence):
+                    value = round(float(match.group(1).replace(",", ".")), 4)
+                    if value not in stated:
+                        self.add("FLOOR_RULE_UNEXPRESSED",
+                                 f"rule {rule_id} states a minimum amount as {match.group(0).strip()!r} of an amount, "
+                                 f"but no amounts.floor_rule_by_type entry carries percent_of_amount {value:g}; the "
+                                 f"agent would offer only the floor field (or nothing) and the promise guard would block "
+                                 f"the amounts the rule allows. Add floor_rule_by_type for the product types it applies "
+                                 f"to (percent_of_amount, fixed, combine, rounding as the documents state them).",
+                                 path="amounts.floor_rule_by_type", rule_ids=[rule_id])
+
     # ---- persuasion dates ---------------------------------------------------------------------------------------------
 
     def persuasion_dates(self) -> None:
@@ -709,6 +832,16 @@ class _Checker:
                          f"persuasion step {step.attempt} has date 'custom' but no text; the compiled agent applies a "
                          f"custom date rule from the text, so write the rule there in the documents' words.",
                          path=path, rule_ids=ids)
+            better = corrected_proposal_date(step.date, step.n, step.text)
+            if better is not None:  # AUD-18: the kind contradicts the date rule its own text states
+                wanted = better[0] + (f" with n={better[1]}" if better[1] is not None else "")
+                self.add("PERSUASION_DATE_KIND",
+                         f"persuasion step {step.attempt} has date {step.date!r}"
+                         f"{f' (n={step.n})' if step.n is not None else ''}, but its text states another date rule "
+                         f"({step.text!r}); the compiled agent would propose the wrong day on every call. Use "
+                         f"{wanted}, or 'custom' when the text holds a rule no kind expresses.",
+                         path=f"{path}.date", rule_ids=ids)
+                continue
             found = _DATE_RULE.search(step.text) if step.date == "customer" else None
             if found is not None:
                 self.add("PERSUASION_DATE_KIND",
@@ -730,10 +863,13 @@ class _Checker:
                      "the institution's name), or quote the whole sentence in phrases.extra['disclosure_intro'].",
                      path="disclosure.team_phrase", rule_ids=disclosure.rule_ids)
         elif disclosure.team_phrase and not has_intro and looks_like_sentence(disclosure.team_phrase):
+            # an opener ("This is ...") is certain; a full stop inside ("... Inc. Collections") only a suspicion
+            certain = looks_like_sentence(disclosure.team_phrase, opener_only=True)
             self.add("TEAM_PHRASE_SENTENCE",
-                     f'disclosure.team_phrase {disclosure.team_phrase!r} is a whole sentence, but the agent says "I am '
-                     f'calling from " + team_phrase. Keep only the words that complete that sentence, or move the '
-                     f"sentence to phrases.extra['disclosure_intro'].",
+                     f'disclosure.team_phrase {disclosure.team_phrase!r} reads as a whole sentence, but the agent says '
+                     f'"I am calling from " + team_phrase. Keep only the words that complete that sentence, or move '
+                     f"the sentence to phrases.extra['disclosure_intro'].",
+                     severity="error" if certain else "warning",
                      path="disclosure.team_phrase", rule_ids=disclosure.rule_ids)
         numeric = self._numeric_fields()
         for name, template in disclosure.product_naming.items():
@@ -804,7 +940,9 @@ class _Checker:
             self.add("TODAY_QUESTION_ALL",
                      f"the first ask {asked!r} is about all products, but the agent asks the same question when the "
                      f"customer has only one. Put the single-product wording in phrases.today_question (and "
-                     f"persuasion.first_ask) and this sentence in phrases.extra['today_question_all'].",
+                     f"persuasion.first_ask) and this sentence in phrases.extra['today_question_all']. If the "
+                     f"documents give no separate single-product wording, adapt this one minimally (for example "
+                     f"'all of them' becomes 'this') and add nothing else.",
                      path="phrases.today_question", rule_ids=[*self.ir.phrases.rule_ids, *self.ir.persuasion.rule_ids])
 
     # ---- placeholders ------------------------------------------------------------------------------------------------
@@ -846,6 +984,17 @@ class _Checker:
                 self.add("PRECEDENCE_UNKNOWN",
                          f"closing.precedence names {key!r}, which is neither a table situation, a structural situation "
                          f"nor an intent key.", severity="warning", path="closing.precedence", rule_ids=closing.rule_ids)
+        # AUD-46: the first matching row wins, so a later row for the same situation and verification state never applies
+        for index, row in enumerate(closing.rows):
+            states = (True, False) if row.requires_verified is None else (row.requires_verified,)
+            earlier = closing.rows[:index]
+            if all(any(other.matches(row.situation, state) for other in earlier) for state in states):
+                self.add("ROW_SHADOWED",
+                         f"closing.rows[{index}] ({row.situation!r} -> {row.outcome}/{row.reason}) never applies: an "
+                         f"earlier row for the same situation and verification state always wins. The IR cannot pick "
+                         f"between rows by anything else (for example the terms of a promise); keep one row per "
+                         f"situation and verification state.", severity="warning", path=f"closing.rows[{index}]",
+                         rule_ids=list(row.rule_ids) or list(closing.rule_ids))
 
     # ---- misc --------------------------------------------------------------------------------------------------------
 

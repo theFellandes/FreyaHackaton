@@ -98,6 +98,22 @@ class Budget:
         """The instant (on the budget's monotonic clock) at which the budget runs out."""
         return self._start + self.total_s
 
+    def deadline_before(self, *stages: str, margin_s: float = 30.0) -> float:
+        """The instant by which optional work must be finished so that ``stages`` still fit before the budget ends.
+
+        The LLM calls that deploy cannot do without (the rule-ledger passages, the IR extraction) use :meth:`deadline`;
+        optional ones (the prose draft, which has a template-only fallback; the ledger's re-quote / completeness /
+        amendment-link calls and the policy repair, whose failure is swallowed) use this, so a slow model can never eat
+        the time the later stages need (audit AUD-53).
+
+        Raises:
+            KeyError: A stage has no estimate.
+            ValueError: ``margin_s`` is negative.
+        """
+        if margin_s < 0:
+            raise ValueError("margin_s must not be negative")
+        return self.deadline() - sum(estimate(stage) for stage in stages) - margin_s
+
     def snapshot(self) -> dict[str, float]:
         """Elapsed / remaining / total seconds, rounded, for traces and graph state."""
         return {

@@ -186,6 +186,80 @@ def test_a_contract_without_a_success_flag_falls_back_to_the_envelope_status(kit
     assert "NOT recorded" in post(hook, {"promise_id": "pr1"}, status="error")
 
 
+@pytest.mark.parametrize("profile", ["staged", "lean"])
+@pytest.mark.parametrize("separator", [". ", "; ", " and "])
+def test_an_audit_boolean_never_acknowledges_the_promise(kit: ToolApi, profile: str, separator: str) -> None:
+    def edit(api: ToolApi) -> None:
+        promise = api.tools["create_promise"]
+        promise.response_fields.insert(0, FieldSpec(name="audit_logged", type="boolean",
+                                                   description="Whether an audit event was saved."))
+        promise.response_description = ("`audit_logged` reports audit storage" + separator
+                                        + "`ok` is false when the action was not carried out.")
+    api = variant(kit, edit)
+    workflow = compile_ab(api, profile)
+    hook = tool_of(workflow, "negotiate", "create_promise")["post_process_code"]
+    assert "NOT recorded" in post(hook, {"audit_logged": True, "ok": False})
+    assert "IS recorded" in post(hook, {"audit_logged": False, "ok": True})
+    assert lint_errors(workflow, api) == []
+
+
+def test_an_opaque_success_name_uses_its_documented_action_meaning(kit: ToolApi) -> None:
+    def edit(api: ToolApi) -> None:
+        rename_response(api, "create_promise", "ok", "receipt")
+        promise = api.tools["create_promise"]
+        promise.response_description = ""
+        promise.field("receipt", "response").description = "True when the promise was recorded."
+        promise.response_fields.insert(0, FieldSpec(name="metadata_ready", type="boolean",
+                                                   description="Whether audit metadata was successfully stored."))
+    api = variant(kit, edit)
+    workflow = compile_ab(api)
+    hook = tool_of(workflow, "negotiate", "create_promise")["post_process_code"]
+    assert "NOT recorded" in post(hook, {"metadata_ready": True, "receipt": False})
+    assert "IS recorded" in post(hook, {"metadata_ready": False, "receipt": True})
+
+
+def test_two_documented_action_acknowledgements_are_not_selected_by_order(kit: ToolApi) -> None:
+    def edit(api: ToolApi) -> None:
+        api.tools["create_promise"].response_fields.append(
+            FieldSpec(name="receipt", type="boolean", description="True when the operation succeeded."))
+    with pytest.raises(CompileError, match="ambiguous action-success"):
+        compile_ab(variant(kit, edit))
+
+
+def test_documented_success_does_not_silently_override_another_supported_flag(kit: ToolApi) -> None:
+    def edit(api: ToolApi) -> None:
+        promise = api.tools["create_promise"]
+        promise.response_description = ""
+        promise.response_fields.append(FieldSpec(
+            name="receipt", type="boolean", description="True when the operation succeeded."))
+    with pytest.raises(CompileError, match="ambiguous action-success"):
+        compile_ab(variant(kit, edit))
+
+
+def test_an_unexplained_boolean_does_not_fall_back_to_http_success(kit: ToolApi) -> None:
+    def edit(api: ToolApi) -> None:
+        promise = api.tools["create_promise"]
+        promise.response_fields = [FieldSpec(name="receipt", type="boolean")]
+        promise.response_description = ""
+    with pytest.raises(CompileError, match="action-success semantics"):
+        compile_ab(variant(kit, edit))
+
+
+@pytest.mark.parametrize("description", [
+    "True when the action was not performed.",
+    "When true, the action did not succeed.",
+    "True means the promise was not recorded.",
+    "False when the action was performed.",
+])
+def test_an_inverted_action_flag_is_not_used_as_a_positive_acknowledgement(
+    kit: ToolApi, description: str,
+) -> None:
+    def edit(api: ToolApi) -> None:
+        api.tools["create_promise"].field("ok", "response").description = description
+    with pytest.raises(CompileError, match="inverted action-success"):
+        compile_ab(variant(kit, edit))
+
+
 # ---- C-03: the get_account item keys and the customer / queue fields -------------------------------------------------------
 
 
@@ -320,7 +394,11 @@ def _routes(workflow: dict[str, Any]) -> dict[str, list[str]]:
 
 
 def test_a_renamed_overall_flag_still_routes_deterministically(kit: ToolApi) -> None:
-    api = variant(kit, lambda a: rename_response(a, "verify_identity", "all_verified", "passed"))
+    def edit(api: ToolApi) -> None:
+        rename_response(api, "verify_identity", "all_verified", "passed")
+        api.tools["verify_identity"].field("passed", "response").description = (
+            "True when all security answers are verified.")
+    api = variant(kit, edit)
     workflow = compile_ab(api)
     assert _routes(workflow)["load_account"] == ["verify_identity_response.data.passed=true",
                                                  "verify_identity_response.data.passed=True"]
@@ -355,10 +433,14 @@ def test_a_renamed_remaining_counter_still_ends_the_check(kit: ToolApi) -> None:
 def test_a_counter_that_counts_up_ends_the_check_at_the_policy_limit(kit: ToolApi) -> None:
     api = variant(kit, lambda a: rename_response(a, "verify_identity", "wrong_answers_left", "strikes"))
     workflow = compile_ab(api)
-    assert _routes(workflow)["identity_failed"] == ["verify_identity_response.data.strikes=3"]
+    # AUD-50: "at the limit or past it" (two answers checked in one message can skip the exact limit)
+    failed = next(t for t in _identity_node(workflow)["transitions"] if t["target_node"] == "identity_failed")
+    assert failed["condition"]["conditions"] == [
+        {"variable": "verify_identity_response.data.strikes", "operator": "greater_than", "operand": 2}]
     hook = tool_of(workflow, "identity", "verify_identity")["post_process_code"]
     assert post(hook, {"ok": True, "verified": False, "strikes": 1}).startswith("This answer is wrong")
     assert "identity check has ended" in post(hook, {"ok": True, "verified": False, "strikes": 3})
+    assert "identity check has ended" in post(hook, {"ok": True, "verified": False, "strikes": 4})
     decide = extract_code_snippets(workflow)["decide"]
     failing = run_snippet(decide, {"chosen_end": "auto", "verify_identity_response.data.strikes": 3})
     assert (failing["final_outcome"], failing["final_reason"]) == ("not_verified", "failed")
@@ -404,6 +486,89 @@ def test_a_verify_response_without_any_verified_flag_is_a_compile_error(kit: Too
         compile_ab(variant(kit, edit))
 
 
+@pytest.mark.parametrize("auxiliary", ["is_mobile", "all_cached", "all_devices_verified"])
+def test_unrelated_booleans_never_route_a_per_answer_contract_to_account(kit: ToolApi, auxiliary: str) -> None:
+    def edit(api: ToolApi) -> None:
+        verify = api.tools["verify_identity"]
+        verify.response_fields = [s for s in verify.response_fields if s.name != "all_verified"]
+        verify.response_fields.append(FieldSpec(name=auxiliary, type="boolean"))
+    api = variant(kit, edit)
+    workflow = compile_ab(api)
+    # AUD-23: the only way to the account is the counted-questions variable, never the auxiliary boolean nor the model
+    assert _routes(workflow)["load_account"] == ["identity_all_verified=yes"]
+    assert not any(t["target_node"] == "load_account" and t.get("is_tool_call")
+                   for t in _identity_node(workflow)["transitions"])
+    hook = tool_of(workflow, "identity", "verify_identity")["post_process_code"]
+    assert auxiliary not in hook
+    wrong = post(hook, {"ok": True, "verified": False, auxiliary: True, "wrong_answers_left": 2})
+    assert wrong.startswith("This answer is wrong") and "All security answers" not in wrong
+    right = post(hook, {"ok": True, "verified": True, auxiliary: False, "wrong_answers_left": 3})
+    assert right.startswith("This answer is correct") and "All security answers" not in right
+    assert lint_errors(workflow, api) == []
+
+
+def test_an_overall_only_contract_does_not_treat_metadata_as_an_answer_verdict(kit: ToolApi) -> None:
+    def edit(api: ToolApi) -> None:
+        verify = api.tools["verify_identity"]
+        verify.response_fields = [s for s in verify.response_fields if s.name != "verified"]
+        verify.response_fields.append(FieldSpec(name="is_mobile", type="boolean",
+                                                description="The caller uses a mobile device."))
+    api = variant(kit, edit)
+    workflow = compile_ab(api)
+    assert _routes(workflow)["load_account"] == ["verify_identity_response.data.all_verified=true",
+                                                 "verify_identity_response.data.all_verified=True"]
+    hook = tool_of(workflow, "identity", "verify_identity")["post_process_code"]
+    text = post(hook, {"ok": True, "all_verified": False, "is_mobile": True, "wrong_answers_left": 2})
+    assert "does not say whether this answer was right" in text and "This answer is correct" not in text
+
+
+def test_opaque_identity_names_follow_separate_documented_scopes(kit: ToolApi) -> None:
+    def edit(api: ToolApi) -> None:
+        rename_response(api, "verify_identity", "verified", "answer_result")
+        rename_response(api, "verify_identity", "all_verified", "check_result")
+        verify = api.tools["verify_identity"]
+        verify.response_description += (" `answer_result` is true when this answer is correct."
+                                        " `check_result` is true when all security answers are verified.")
+    api = variant(kit, edit)
+    workflow = compile_ab(api)
+    assert _routes(workflow)["load_account"] == ["verify_identity_response.data.check_result=true",
+                                                 "verify_identity_response.data.check_result=True"]
+    hook = tool_of(workflow, "identity", "verify_identity")["post_process_code"]
+    assert post(hook, {"ok": True, "answer_result": False, "check_result": False}).startswith("This answer is wrong")
+    assert "next security question" in post(hook, {"ok": True, "answer_result": True, "check_result": False})
+    assert "All security answers are verified" in post(hook, {"ok": True, "answer_result": True, "check_result": True})
+    assert lint_errors(workflow, api) == []
+
+
+def test_metadata_alone_cannot_supply_an_identity_verdict(kit: ToolApi) -> None:
+    def edit(api: ToolApi) -> None:
+        verify = api.tools["verify_identity"]
+        verify.response_fields = [s for s in verify.response_fields if s.name not in ("verified", "all_verified")]
+        verify.response_fields.append(FieldSpec(name="is_mobile", type="boolean"))
+    with pytest.raises(CompileError, match="verify_identity"):
+        compile_ab(variant(kit, edit))
+
+
+def test_ambiguous_overall_identity_verdicts_fail_compilation(kit: ToolApi) -> None:
+    def edit(api: ToolApi) -> None:
+        api.tools["verify_identity"].response_fields.append(FieldSpec(
+            name="check_result", type="boolean", description="True when the entire identity is verified."))
+    with pytest.raises(CompileError, match="ambiguous overall verification"):
+        compile_ab(variant(kit, edit))
+
+
+@pytest.mark.parametrize("description", [
+    "False when all security answers are verified.",
+    "When true, the entire identity is not verified.",
+    "True means all answers are incorrect.",
+])
+def test_an_inverted_identity_verdict_is_not_used_for_account_access(kit: ToolApi, description: str) -> None:
+    def edit(api: ToolApi) -> None:
+        api.tools["verify_identity"].field("all_verified", "response").description = description
+    with pytest.raises(CompileError, match="inverted verification"):
+        compile_ab(variant(kit, edit))
+
+
 # ---- C-08: ids and enum values keep the spelling of the data ---------------------------------------------------------------
 
 UPPER_PRODUCTS = [
@@ -432,9 +597,11 @@ def test_upper_case_product_ids_pass_the_guard_and_keep_their_spelling(kit: Tool
 def test_notes_are_logged_under_the_canonical_id_and_the_paid_rule_sees_them(kit: ToolApi) -> None:
     workflow = compile_ab(kit)
     state = _facts(workflow, UPPER_PRODUCTS)
-    note = tool_of(workflow, "negotiate", "add_note")["pre_process_code"]
+    note = tool_of(workflow, "negotiate", "add_note")
     for sent in ("cc-4821", "LN-77"):
-        state = run_hook(note, vars=state, config={"url": "u", "body": {"product_id": sent, "reason": "paid"}})["vars"]
+        state = run_hook(note["pre_process_code"], vars=state, config={
+            "url": "u", "body": {"product_id": sent, "reason": "paid"}})["vars"]
+        state = run_hook(note["post_process_code"], vars=state, result={"status": "success", "data": {"ok": True}})["vars"]
     assert state["notes_log"] == "CC-4821:paid;LN-77:paid;"
     state.update({"identity_verified": "yes", "chosen_end": "flat_refusal", "add_note_success_count": 2})
     done = run_snippet(extract_code_snippets(workflow)["decide"], state)
@@ -457,13 +624,14 @@ def test_an_enum_value_is_sent_in_the_spelling_of_the_contract(kit: ToolApi) -> 
             if spec.name == "reason":
                 spec.enum = ["Refused", "Hardship", "Dispute", "Paid", "Service_error"]
     api = variant(kit, edit)
-    note = tool_of(compile_ab(api), "negotiate", "add_note")["pre_process_code"]
+    note = tool_of(compile_ab(api), "negotiate", "add_note")
     for sent, canonical in (("hardship", "Hardship"), ("Hardship", "Hardship"), (" service error ", "Service_error"),
                             ("something else", "something else")):
-        out = run_hook(note, vars={"product_ids": "p1"}, config={"url": "u", "body": {
+        out = run_hook(note["pre_process_code"], vars={"product_ids": "p1"}, config={"url": "u", "body": {
             "product_id": "p1", "reason": sent}})
         assert out["config"]["body"]["reason"] == canonical, sent
-    assert out["vars"]["notes_log"] == "p1:something else;"
+    saved = run_hook(note["post_process_code"], vars=out["vars"], result={"status": "success", "data": {"ok": True}})
+    assert saved["vars"]["notes_log"] == "p1:something else;"
 
 
 def test_a_value_that_is_not_in_the_enum_keeps_its_own_spelling_for_the_service_to_judge(kit: ToolApi) -> None:
@@ -471,3 +639,66 @@ def test_a_value_that_is_not_in_the_enum_keeps_its_own_spelling_for_the_service_
     out = run_hook(note, vars={"product_ids": "p1,p2"}, config={"url": "u", "body": {
         "product_id": "P9", "reason": "Maybe"}})
     assert out["config"]["body"] == {"product_id": "P9", "reason": "Maybe"}
+
+
+def test_the_lean_prompt_uses_the_field_names_of_the_contract(kit: ToolApi) -> None:
+    def edit(api: ToolApi) -> None:
+        rename_request(api, "close_call", "outcome", "disposition")
+        rename_request(api, "close_call", "reason", "reason_code")
+        rename_request(api, "transfer_to_agent", "queue", "team")
+    api = variant(kit, edit)
+    workflow = compile_ab(api, "lean")
+    task = workflow["nodes"]["negotiate"]["task_message"]
+    assert 'call close_call with disposition "promise"' in task
+    assert 'call close_call with disposition "no_promise" and reason_code "refused"' in task
+    assert ('call transfer_to_agent with team "support", then close_call with disposition "transferred" and '
+            'reason_code "support"') in task
+    assert "outcome " not in task.replace("the outcome", "")  # no stale field name
+    assert lint_errors(workflow, api) == []
+
+
+# ---- F04 / F17: the acknowledged records follow the explicit success role, never "any true boolean" -----------------------------
+
+
+def _audit_variant(kit: ToolApi, tool: str, flag: str) -> ToolApi:
+    def edit(api: ToolApi) -> None:
+        contract = api.tools[tool]
+        if flag != "ok":
+            rename_response(api, tool, "ok", flag)
+        contract.response_fields.insert(0, FieldSpec(name="audit_logged", type="boolean",
+                                                    description="Whether an audit event was saved."))
+        contract.response_description = (f"`audit_logged` reports audit storage. `{flag}` is false when the action was not "
+                                         "carried out.")
+    return variant(kit, edit)
+
+
+@pytest.mark.parametrize("profile", ["staged", "lean"])
+@pytest.mark.parametrize("flag", ["ok", "success"])
+def test_the_acknowledged_promise_follows_the_success_role_not_an_audit_boolean(
+    kit: ToolApi, profile: str, flag: str,
+) -> None:
+    api = _audit_variant(kit, "create_promise", flag)
+    tool = tool_of(compile_ab(api, profile), "negotiate", "create_promise")
+    state = {"product_ids": "p1,p2"}
+    for data, acknowledged in (({"audit_logged": True, flag: False}, False), ({"audit_logged": False, flag: True}, True),
+                               ({"audit_logged": True}, False), ({}, False)):
+        pre = run_hook(tool["pre_process_code"], vars=dict(state), config={"url": "u", "body": {
+            "customer_id": "c", "product_id": "p1", "amount": 1, "date": "2026-10-14"}})
+        pre["vars"]["promise_pending_product"] = "p1"  # whatever the guard decided: the post-hook alone commits
+        out = run_hook(tool["post_process_code"], vars=pre["vars"], result={"status": "success", "data": dict(data)})
+        assert bool(out["vars"].get("promised_products")) is acknowledged, data
+
+
+@pytest.mark.parametrize("profile", ["staged", "lean"])
+@pytest.mark.parametrize("flag", ["ok", "success"])
+def test_the_acknowledged_note_follows_the_success_role_not_an_audit_boolean(
+    kit: ToolApi, profile: str, flag: str,
+) -> None:
+    api = _audit_variant(kit, "add_note", flag)
+    tool = tool_of(compile_ab(api, profile), "negotiate", "add_note")
+    for data, acknowledged in (({"audit_logged": True, flag: False}, False), ({"audit_logged": False, flag: True}, True),
+                               ({"audit_logged": True}, False)):
+        pre = run_hook(tool["pre_process_code"], vars={"product_ids": "p1"}, config={"url": "u", "body": {
+            "customer_id": "c", "product_id": "p1", "reason": "paid"}})
+        out = run_hook(tool["post_process_code"], vars=pre["vars"], result={"status": "success", "data": dict(data)})
+        assert bool(out["vars"].get("notes_log")) is acknowledged, data

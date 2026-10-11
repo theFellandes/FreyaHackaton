@@ -20,6 +20,11 @@ the new version cannot be confirmed as published.
 
 Every platform call runs in an abandonable daemon thread (:func:`builder.freya.background.run_blocking`) bound to
 ``ctx.cancel``: if the wall-clock guard fires, the node returns at once and the thread starts no further request.
+
+A repair round replaces a version that was already deployed *and tested*. If the budget no longer covers a deploy plus a
+smoke test (:data:`REDEPLOY_STAGES`), the round is not deployed at all (``redeploy_skipped``): publishing a version that
+nothing can test would leave the platform serving something other than what the trace, the self-tests and the export
+describe. The earlier version stays live, reported and exported, and the run ends.
 """
 
 from __future__ import annotations
@@ -28,11 +33,13 @@ import asyncio
 import contextlib
 import json
 import os
+import re
 from pathlib import Path
 from typing import Any
 
 from langgraph.runtime import Runtime
 
+from builder.budget import DEFAULT_RESERVE_S, estimate
 from builder.freya.background import PlatformCancelled, run_blocking
 from builder.freya.client import DeployInfo, FreyaError, FreyaValidationError
 from builder.freya.diff import stripped_fields
@@ -61,6 +68,26 @@ EXPORT_ATTEMPTS = 3
 EXPORT_RETRY_DELAY_S = 2.0
 #: No retry rounds are started when less than this many seconds of the budget are left.
 RETRY_MIN_BUDGET_S = 30.0
+#: Stages that must still fit (with the usual reserve) for a repair round to be deployed: the deploy and one test of it.
+REDEPLOY_STAGES: tuple[str, ...] = ("deploy", "smoke")
+
+
+#: A create refused for capacity names a limit and what is counted (both must appear; AUD-56). Only a *create* can hit
+#: the workspace's workflow cap, so an update with such wording stays a content rejection.
+_CAPACITY_RE = re.compile(r"\b(limit|quota|maximum|capacity|too many|cap)\b", re.IGNORECASE)
+_COUNTED_RE = re.compile(r"\b(workflows|agents)\b|number of (workflows|agents)", re.IGNORECASE)
+
+
+def is_capacity_rejection(exc: FreyaError) -> bool:
+    """True when a create was refused because the workspace holds no more workflows (not a problem of the content)."""
+    body = exc.body or ""
+    return (
+        exc.kind == "http"
+        and exc.action == "create"
+        and exc.status in {400, 403, 409, 422, 429}
+        and bool(_CAPACITY_RE.search(body))
+        and bool(_COUNTED_RE.search(body))
+    )
 
 
 def is_content_rejection(exc: FreyaError) -> bool:
@@ -203,17 +230,53 @@ async def _export(
     return None, problem, False
 
 
+def _redeploy_skipped(state: BuilderState, ctx: BuilderContext) -> dict[str, Any] | None:
+    """The update for a repair round that cannot be tested in the time left, or ``None`` when it may be deployed."""
+    round_no = int(state.get("selftest_repairs", 0))
+    live = state.get("deploy") or {}
+    if round_no <= 0 or not live.get("workflow_id") or live.get("published") is not True:
+        return None  # the first deployment is never skipped; there is no tested version to protect
+    needed = sum(estimate(stage) for stage in REDEPLOY_STAGES)
+    if ctx.budget.allows(needed, DEFAULT_RESERVE_S):
+        return None
+    message = (
+        f"repair round {round_no} was not deployed: {ctx.budget.remaining():.0f} s left cannot cover a deploy and a "
+        f"test of it; the earlier tested version {live.get('version')} stays live"
+    )
+    ctx.trace.decision(f"{NAME}: {message}")
+    return {"redeploy_skipped": True, "notes": [f"{NAME}: {message}"]}
+
+
+def _inputs_sha(state: BuilderState) -> str | None:
+    """The inputs' fingerprint recorded with the slot (:func:`builder.inputs.input_fingerprint`), when known."""
+    inputs = state.get("inputs") or {}
+    value = inputs.get("inputs_sha") if isinstance(inputs, dict) else None
+    return str(value) if value else None
+
+
 async def _body(state: BuilderState, ctx: BuilderContext) -> dict[str, Any]:
     workflow = workflow_of(state)
     if workflow is None:
         return failure(NAME, "there is no workflow to deploy")
     if ctx.freya is None:
         return failure(NAME, "no Freya client (dry run)")
+    skipped = _redeploy_skipped(state, ctx)
+    if skipped is not None:
+        return skipped
     slot = state["slot"]
     local = write_workflow_file(slot, workflow)
     try:
-        info = await run_blocking(ctx.freya.save, slot, workflow, token=ctx.cancel)
+        info = await run_blocking(
+            ctx.freya.save, slot, workflow, inputs_sha=_inputs_sha(state), token=ctx.cancel
+        )
     except FreyaError as exc:
+        if is_capacity_rejection(exc):  # no repair can make room in the workspace: say so and stop
+            ctx.trace.error("the workspace cannot hold another workflow", error=short(exc))
+            return failure(
+                NAME,
+                f"workspace workflow limit reached on create (not a workflow problem): {short(exc)}",
+                workflow_path=str(local),
+            )
         if is_content_rejection(exc):
             problems = getattr(exc, "problems", None) or [short(exc)]
             ctx.trace.test(

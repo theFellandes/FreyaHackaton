@@ -1,5 +1,7 @@
 # 03 - Freya CALL DATA and OBSERVABILITY reference
 
+> Status: pre-kit research note (10 October 2026), kept for background. Where it disagrees with the kit ([research/11](11_hackathon_rules_and_kit.md), `docs/api.md`, `docs/workflow-format.md`) or with the code, those win.
+
 Sources: `docs/openapi_prod.json` (OpenAPI 3.1, 96 paths; staging spec is byte-identical for every endpoint below, only `POST /agents` differs), `docs/llms-full.txt` guides, live GETs against staging on 2026-10-10 (saved under `research/live03/`), and the base workflow `live/workflow_base.pretty.json`.
 Anything not stated in the spec or docs is marked **INFERRED**. Nothing was POSTed, PUT, PATCHed or DELETEd.
 

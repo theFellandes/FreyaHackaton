@@ -1,6 +1,6 @@
 """Node ``static_checks``: lint the workflow offline, with the same rules for both tracks.
 
-:func:`builder.checks.lint.lint_workflow` (rules L001-L027: no ``null``, tools only on conversation nodes, reachable
+:func:`builder.checks.lint.lint_workflow` (rules L001-L029: no ``null``, tools only on conversation nodes, reachable
 nodes, code that compiles and has no double braces, resolvable ``{{variables}}``, tool URLs and enums equal to the tool
 API, the close call last ...). ``lint["ok"]`` is true when there is no error; warnings are reported but never block.
 

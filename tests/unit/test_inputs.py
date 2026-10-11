@@ -180,3 +180,102 @@ def test_slug_rules(stems: list[str], expected: str) -> None:
     assert len(slug) <= 48
     assert all(ch.isascii() and (ch.islower() or ch.isdigit() or ch == "-") for ch in slug)
     assert not slug.startswith("-") and not slug.endswith("-")
+
+
+# --- AUD-54: identical tool API copies ---------------------------------------------------------------------------------
+
+
+def test_identical_tool_api_copies_are_collapsed(
+    tmp_path: Path, kit_copy: Path, settings: Settings, caplog: pytest.LogCaptureFixture
+) -> None:
+    copy = tmp_path / "api-copy.json"
+    shutil.copy(kit_copy / "openapi.json", copy)
+    with caplog.at_level("WARNING", logger="builder.inputs"):
+        bundle = classify_inputs([kit_copy / "brief-a.md", kit_copy / "openapi.json", copy], settings=settings)
+    assert bundle.tool_api_path.name == "openapi.json"
+    assert [path.name for path in bundle.brief_paths] == ["brief-a.md"] and bundle.slot == "brief-a"
+    assert "api-copy.json" in caplog.text
+    folder = classify_inputs([kit_copy, copy], settings=settings)
+    assert not [path for path in folder.brief_paths if path.suffix == ".json"]
+    assert folder.slot == "brief-a-brief-b"
+
+
+def test_a_copy_that_differs_only_in_bom_and_line_endings_is_identical(
+    tmp_path: Path, kit_copy: Path, settings: Settings
+) -> None:
+    text = (kit_copy / "openapi.json").read_text(encoding="utf-8")
+    copy = tmp_path / "api-crlf.json"
+    copy.write_bytes(b"\xef\xbb\xbf" + text.replace("\n", "\r\n").encode("utf-8"))
+    bundle = classify_inputs([kit_copy / "brief-a.md", copy, kit_copy / "openapi.json"], settings=settings)
+    assert bundle.tool_api_path == copy.resolve() and len(bundle.brief_paths) == 1
+
+
+# --- AUD-05: two different briefs with the same file name ---------------------------------------------------------------
+
+
+def _same_stem_pair(tmp_path: Path, kit_copy: Path) -> tuple[Path, Path]:
+    first, second = tmp_path / "h1", tmp_path / "h2"
+    for folder, source in ((first, "brief-a.md"), (second, "brief-b.md")):
+        folder.mkdir()
+        shutil.copy(kit_copy / source, folder / "brief.md")
+        shutil.copy(kit_copy / "openapi.json", folder / "openapi.json")
+    return first, second
+
+
+def test_same_named_briefs_with_different_content_never_share_a_recorded_slot(
+    tmp_path: Path, kit_copy: Path, make_settings: MakeSettings
+) -> None:
+    import json
+
+    state = tmp_path / "state.json"
+    settings = make_settings(freya_state_file=state)
+    first, second = _same_stem_pair(tmp_path, kit_copy)
+    one = classify_inputs([first], settings=settings)
+    assert one.slot == "brief" and len(one.inputs_sha) == 64
+    state.write_text(json.dumps({"brief": {"workflow_id": "w1", "agent_id": "a1", "inputs_sha": one.inputs_sha}}))
+    assert classify_inputs([first], settings=settings).slot == "brief"  # a rerun updates its own workflow
+    two = classify_inputs([second], settings=settings)
+    assert two.slot != "brief" and two.slot.startswith("brief-") and len(two.slot) <= 48
+    assert classify_inputs([second], settings=settings).slot == two.slot  # deterministic
+    assert two.slot.endswith(two.inputs_sha[:8])
+
+
+def test_a_legacy_state_entry_keeps_its_slot(tmp_path: Path, kit_copy: Path, make_settings: MakeSettings) -> None:
+    import json
+
+    state = tmp_path / "state.json"
+    state.write_text(json.dumps({"brief-a": {"workflow_id": "w1", "agent_id": "a1"}}))
+    settings = make_settings(freya_state_file=state)
+    assert classify_inputs([kit_copy / "brief-a.md", kit_copy / "openapi.json"], settings=settings).slot == "brief-a"
+
+
+def test_an_unreadable_state_file_never_blocks_the_inputs(
+    tmp_path: Path, kit_copy: Path, make_settings: MakeSettings
+) -> None:
+    state = tmp_path / "state.json"
+    state.write_text("{not json")
+    settings = make_settings(freya_state_file=state)
+    assert classify_inputs([kit_copy / "brief-a.md", kit_copy / "openapi.json"], settings=settings).slot == "brief-a"
+
+
+def test_an_explicit_slot_is_kept_even_when_its_entry_belongs_to_other_inputs(
+    tmp_path: Path, kit_copy: Path, make_settings: MakeSettings
+) -> None:
+    import json
+
+    state = tmp_path / "state.json"
+    state.write_text(json.dumps({"mine": {"workflow_id": "w1", "inputs_sha": "0" * 64}}))
+    settings = make_settings(freya_state_file=state)
+    args = [kit_copy / "brief-a.md", kit_copy / "openapi.json"]
+    assert classify_inputs(args, slot="mine", settings=settings).slot == "mine"
+
+
+def test_the_fingerprint_ignores_bom_and_line_endings(tmp_path: Path, kit_copy: Path, settings: Settings) -> None:
+    crlf = tmp_path / "crlf"
+    crlf.mkdir()
+    for name in ("brief-a.md", "openapi.json"):
+        text = (kit_copy / name).read_text(encoding="utf-8")
+        (crlf / name).write_bytes(b"\xef\xbb\xbf" + text.replace("\n", "\r\n").encode("utf-8"))
+    plain = classify_inputs([kit_copy / "brief-a.md", kit_copy / "openapi.json"], settings=settings)
+    assert classify_inputs([crlf], settings=settings).inputs_sha == plain.inputs_sha
+    assert plain.as_dict()["inputs_sha"] == plain.inputs_sha

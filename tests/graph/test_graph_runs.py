@@ -81,6 +81,56 @@ async def test_full_build_deploys_exports_and_self_tests(
     ]
 
 
+async def test_the_deployed_workflow_is_sent_with_editor_positions_for_every_node(
+    make_ctx: Any,
+    make_gateway: Any,
+    make_freya: Any,
+    practice_ok: Any,
+    invoke: Any,
+    tmp_dirs: SimpleNamespace,
+) -> None:
+    """A compiled workflow without positions would be unreadable in the editor (all nodes on one spot)."""
+    freya = make_freya()
+    state = await invoke(make_ctx(make_gateway(), freya, practice_runner=practice_ok))
+    deployed = state["compiled"]["workflow"]
+    expected = set(deployed["nodes"]) | set(deployed.get("global_nodes") or {})
+    positions = freya.node_positions[state["slot"]]
+    assert set(positions) == expected and len(expected) > 5
+    assert len({(round(p["x"]), round(p["y"])) for p in positions.values()}) == len(positions)  # no two on one spot
+    assert freya.published_versions[state["slot"]] == state["final"]["version"]
+
+
+async def test_the_optional_prose_draft_stops_in_time_for_the_deploy(
+    make_ctx: Any,
+    make_gateway: Any,
+    make_freya: Any,
+    practice_ok: Any,
+    invoke: Any,
+    tmp_dirs: SimpleNamespace,
+) -> None:
+    """The mandatory calls (rule passages, IR extraction) get the whole budget; the optional ones (prose draft, ledger
+    completeness / re-quote / reconcile) must leave the time the later stages need (P-04, AUD-53)."""
+    from builder.budget import estimate
+
+    gateway = make_gateway()
+    ctx = make_ctx(gateway, make_freya(), practice_runner=practice_ok)
+    await invoke(ctx)
+
+    end = ctx.budget.deadline()
+    prose = next(c for c in gateway.calls if c.schema == "ProseDraft")
+    tail = estimate("compile") + estimate("remote_validate") + estimate("deploy")
+    assert prose.deadline is not None and prose.deadline <= end - tail
+    optional_prefixes = ("rule ledger: completeness", "rule ledger: re-quote", "rule ledger: link amendments")
+    optional = [c for c in gateway.calls if c.purpose.startswith(optional_prefixes)]
+    assert optional and all(
+        c.deadline is not None and c.deadline <= end - tail - estimate("extract") for c in optional
+    )  # an optional ledger call can never leave extraction without time
+    mandatory = [
+        c for c in gateway.calls if c.schema != "ProseDraft" and c not in optional and c.deadline is not None
+    ]
+    assert mandatory and all(c.deadline == end for c in mandatory)  # mandatory stages keep the full budget
+
+
 async def test_self_test_none_skips_the_tests_and_still_deploys(
     make_ctx: Any, make_gateway: Any, make_freya: Any, invoke: Any
 ) -> None:
@@ -174,6 +224,21 @@ async def test_validator_errors_are_repaired_by_the_model(
     assert any(e["kind"] == "validate" and "1 error" in e["message"] for e in null_trace.events)
 
 
+async def test_a_policy_repair_leaves_time_for_compile_validation_and_deploy(
+    make_ctx: Any, make_gateway: Any, invoke: Any
+) -> None:
+    """AUD-53: the repair is optional (a failure keeps the old IR); its call must not run to the budget's end."""
+    from builder.budget import estimate
+
+    answers = iter([broken_ir(), load_ir("brief_a")])
+    gateway = make_gateway(responders={"PolicyIR": lambda call: next(answers)})
+    ctx = make_ctx(gateway)
+    await invoke(ctx)
+    repair = next(c for c in gateway.calls if c.purpose.startswith("repair policy IR"))
+    tail = estimate("compile") + estimate("remote_validate") + estimate("deploy")
+    assert repair.deadline is not None and repair.deadline <= ctx.budget.deadline() - tail
+
+
 async def test_unrepairable_policy_falls_back_to_the_agentic_track(
     make_ctx: Any, make_gateway: Any, make_freya: Any, invoke: Any, compiled_a_workflow: dict[str, Any]
 ) -> None:
@@ -192,6 +257,28 @@ async def test_unrepairable_policy_falls_back_to_the_agentic_track(
     assert state["agentic_attempts"] == 1
 
 
+async def test_a_crashing_policy_repair_uses_up_its_rounds_instead_of_looping(
+    make_ctx: Any, make_gateway: Any, invoke: Any, null_trace: NullTrace
+) -> None:
+    """An exception other than AllProvidersFailed in the repair used to leave the counter at 0: 48 validate/repair
+    rounds until LangGraph's recursion limit, and ``failed`` with an empty error list (audit REPO-10)."""
+    purposes: list[str] = []
+
+    def respond(call: Any) -> PolicyIR:
+        purposes.append(call.purpose)
+        if len(purposes) == 1:
+            return broken_ir()
+        raise RuntimeError("the repair crashed")
+
+    gateway = make_gateway(responders={"PolicyIR": respond})
+    state = await invoke(make_ctx(gateway))
+    repairs = [purpose for purpose in purposes if purpose.startswith("repair policy IR")]
+    assert 1 <= len(repairs) <= 2  # max_policy_repairs, not one per recursion step
+    assert state["policy_repairs"] == 2
+    assert any("RuntimeError" in e for e in state.get("errors", []))
+    assert state["final"]["errors"], "a failed or best-effort build must say what went wrong"
+
+
 async def test_blocked_policy_that_cannot_be_repaired_ends_blocked(
     make_ctx: Any, make_gateway: Any, invoke: Any, monkeypatch: pytest.MonkeyPatch
 ) -> None:
@@ -204,6 +291,35 @@ async def test_blocked_policy_that_cannot_be_repaired_ends_blocked(
     state = await invoke(make_ctx(gateway))
     assert state["final"]["status"] == "blocked" and state["policy_repairs"] == 2
     assert not [c for c in gateway.calls if c.schema == "ProseDraft"]  # nothing was compiled
+
+
+@pytest.mark.parametrize("guard", ["ungrounded_date", "ungrounded_amount", "ungrounded_number"])
+async def test_grounding_findings_left_after_the_repairs_deploy_best_effort(
+    make_ctx: Any, make_gateway: Any, invoke: Any, monkeypatch: pytest.MonkeyPatch, null_trace: NullTrace, guard: str
+) -> None:
+    """AUD-14: a grounding heuristic the repairs cannot clear (a holiday written as a name, a date spelling the guard
+    cannot read) used to end the build blocked with no agent - a certain 0. After the repair rounds it is kept as a
+    warning and the run goes on, with the decision in the trace and the summary."""
+    soft = GuardReport(stage="policy")
+    soft.block(guard, "the IR states a value the guard cannot find in the briefs", "calendar.holidays[1]")
+    monkeypatch.setattr("builder.graph.nodes.guard_policy.check_policy", lambda *a, **k: soft)
+    gateway = make_gateway()
+    state = await invoke(make_ctx(gateway))
+    assert state["policy_repairs"] == 2  # the repairs still ran first
+    assert state["final"]["status"] == "dry_run"
+    assert any("best effort" in note for note in state["notes"])
+    assert any("best effort" in e["message"] for e in null_trace.of_kind("decision"))
+
+
+async def test_a_hard_finding_left_after_the_repairs_still_ends_blocked(
+    make_ctx: Any, make_gateway: Any, invoke: Any, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    mixed = GuardReport(stage="policy")
+    mixed.block("ungrounded_date", "a date the guard cannot find", "calendar.holidays[1]")
+    mixed.block("injection", "text addressed to a model", "phrases.extra.x")
+    monkeypatch.setattr("builder.graph.nodes.guard_policy.check_policy", lambda *a, **k: mixed)
+    state = await invoke(make_ctx(make_gateway()))
+    assert state["final"]["status"] == "blocked" and state["policy_repairs"] == 2
 
 
 # ------------------------------------------------------------------------------------------------ guards and crashes
@@ -303,6 +419,40 @@ async def test_a_failing_walkthrough_triggers_one_policy_repair_round_and_a_rede
         state["final"]["tests"]["passed"] == state["final"]["tests"]["total"] - 1
     )  # the first round's failure is kept
     assert any("requesting policy repair round 1" in e["message"] for e in null_trace.of_kind("decision"))
+
+
+async def test_the_default_self_test_never_redeploys_a_tested_version(
+    make_ctx: Any, make_gateway: Any, make_freya: Any, invoke: Any, practice_ok: Any
+) -> None:
+    """AUD-01: with the default settings (what the organisers' bare command runs) a walkthrough finding cannot replace
+    the tested version 1 - the walkthrough and its repair round are explicit opt-ins."""
+    from builder.selftest.walkthrough import WalkthroughReport
+
+    defaults = Settings.model_fields
+    gateway = make_gateway(
+        responders={
+            "WalkthroughReport": lambda call: WalkthroughReport.model_validate(
+                {
+                    "issues": [{"rule_id": "A-1b", "verdict": "missing", "where": "opening", "explanation": "x"}],
+                    "checked": 1000,
+                }
+            )
+        }
+    )
+    freya = make_freya()
+    ctx = make_ctx(
+        gateway,
+        freya,
+        practice_runner=practice_ok,
+        builder_track=defaults["builder_track"].default,
+        self_test=defaults["self_test"].default,
+    )
+    state = await invoke(ctx)
+    assert state["final"]["status"] == "deployed"
+    assert freya.versions[state["final"]["workflow_id"]] == 1
+    assert int(state.get("selftest_repairs") or 0) == 0
+    assert [t["name"] for t in state["self_tests"]] == ["smoke"]
+    assert not [c for c in gateway.calls if c.purpose.startswith("repair policy IR")]
 
 
 async def test_no_repair_round_when_the_budget_does_not_cover_it(
@@ -487,3 +637,26 @@ async def test_auto_track_with_a_verified_login_keeps_the_agentic_fallback_on(
     )
     assert state["limits"]["allow_agentic"] is True and state["final"]["status"] == "deployed"
     assert not [e for e in null_trace.of_kind("decision") if e["message"].startswith("agentic track skipped")]
+
+
+# ------------------------------------------------------------------------------------------------ A11 redaction sinks
+
+
+async def test_a_secret_inside_an_error_text_never_reaches_the_result_file(
+    make_ctx: Any, make_gateway: Any, make_freya: Any, invoke: Any, tmp_dirs: SimpleNamespace
+) -> None:
+    from builder.freya.client import FreyaError
+
+    secret = "sk-test-secret-value-0123456789"  # one of make_ctx's secrets
+    freya = make_freya()
+
+    def leaky_save(*args: Any, **kwargs: Any) -> Any:
+        raise FreyaError(f"save: HTTP 401 Unauthorized for key {secret} (synthetic)", action="save", status=401)
+
+    freya.save = leaky_save
+    state = await invoke(make_ctx(make_gateway(), freya))
+    assert state["final"]["status"] == "failed"
+    written = list(tmp_dirs.results.glob("*.build.json"))
+    assert written, "the result file is written"
+    text = written[0].read_text(encoding="utf-8")
+    assert secret not in text and "***" in text

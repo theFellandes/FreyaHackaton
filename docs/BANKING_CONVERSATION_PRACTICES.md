@@ -4,6 +4,8 @@
 
 This review combines current source inspection, synthetic offline probes and primary-source research checked on **10 October 2026**. It reviews the generated collections agent and its bank-write path. Proposed acceptance scenarios below have **not** been executed as live calls. No implementation was changed or committed for this review.
 
+**Status, 11 October:** later rounds fixed the recorded-action state (F04, F17, AUD-06, AUD-07), the padded persuasion ladder (F19) and the clarification branch of a support offer (F18). Binding a promise to the customer's exact confirmation is a prompt rule by design (F16: hooks cannot read the transcript). The table below marks each row; current status lives in [FIXING_ISSUES.md](FIXING_ISSUES.md).
+
 ## Which rules apply
 
 The [official kit](../KIT_README.md), supplied brief and supplied tool API govern the hackathon. An external design recommendation must not introduce a new repayment plan, change an attempt budget, replace identity questions, alter required sentences or add an unauthorized tool. Bank-specific behavior must still be extracted into the policy model.
@@ -14,18 +16,18 @@ The distinction also matters for numbers: cross-call contact-frequency provision
 
 ## What the current project actually establishes
 
-The local [conversation probe script](../.cache/project-audit/conversation-practices/probe_source_capabilities.py) and [results](../.cache/project-audit/conversation-practices/capability_probe_results.json) use fixture policy and synthetic requests. A nonempty request URL means the hook **leaves the request enabled**; no real request was sent. Source hashes are included. These ignored cache artifacts should become portable regression tests during repairs.
+The local conversation probe script and results (`.cache/project-audit/conversation-practices/`, git-ignored, so only on the machine that ran them) use fixture policy and synthetic requests. A nonempty request URL means the hook **leaves the request enabled**; no real request was sent. Source hashes are included. These ignored cache artifacts should become portable regression tests during repairs.
 
 | Area | Current evidence | Assessment |
 |---|---|---|
 | Persuasion boundaries | [Negotiation prompt](../builder/prompts/agent/negotiate.v1.j2) distinguishes date/amount proposals from refusal, specifies per-product attempts and forbids repeating rejected offers. | Good instructions; no explicit per-product offer history or refusal counter was found in the inspected compiled profiles. |
 | Entry repetition | [Staged profile](../builder/compiler/profiles/staged.py) sets `on_enter_first_entry_only=true` for negotiation. | Prevents the entry debt statement replaying on ordinary reentry. Does not enforce the model's later questions or offers. |
-| Missing persuasion steps | [Validation](../builder/understand/validate.py) warns when too few steps exist; [code generation](../builder/compiler/codegen.py) pads by repeating the final step. | Synthetic compilation produces identical first and second attempts. See F19 in the [backlog](FIXING_ISSUES.md). |
-| Readback and clear agreement | Tool description and negotiation prompt require readback, confirmation and fresh readback after changed terms. | A valid synthetic request remains enabled with no confirmation state. The hook checks values, not whether those values were confirmed. |
-| One immutable promise per product | Negotiation prompt forbids a second promise or an in-call change after recording. | Same-product repeats and changed values remain enabled by the pre-hook even with an injected success counter. No deterministic protection was demonstrated. |
-| Support offer clarification | [Context generator](../builder/compiler/context.py) treats an answer other than “yes” as declining an offered handoff. | Conflicts with clarification or a request for thinking time; no live misclassification was measured. |
-| Acknowledged notes | [Note pre-hook](../builder/compiler/hooks.py) appends to `notes_log` before receiving a response. | A failed response leaves the entry present; a retry appends it again. Confirmed synthetic state defect, already F04. |
-| Success and handoff routing | [Staged routes](../builder/compiler/profiles/staged.py) and [decision code](../builder/compiler/codegen.py) use tool counters. | Review execution success versus bank acknowledgment. A synthetic failure-only transfer counter produces a transferred outcome, but actual transfer completion and the intended failure outcome remain unverified. |
+| Missing persuasion steps | [Validation](../builder/understand/validate.py) now reports too few steps as an error; [code generation](../builder/compiler/codegen.py) no longer pads. | Fixed (F19, AUD-30). On 10 October the ladder was padded by repeating the final step. |
+| Readback and clear agreement | Tool description and negotiation prompt require readback, confirmation and fresh readback after changed terms. | A valid synthetic request remains enabled with no confirmation state. The hook checks values, not whether those values were confirmed. By design (F16, CRITICAL-GAPS gap 2): a hook cannot read the transcript. |
+| One immutable promise per product | Negotiation prompt forbids a second promise or an in-call change after recording; the promise guard blocks any request for a product whose promise was acknowledged. | Fixed (F17, `tests/unit/test_compiled_promise_once.py`). On 10 October no deterministic protection existed. |
+| Support offer clarification | [Context generator](../builder/compiler/context.py) writes separate accept, decline and clarification branches. | Fixed (F18, AUD-37). On 10 October an answer other than “yes” declined the offer. |
+| Acknowledged notes | The [note post-hook](../builder/compiler/hooks.py) appends to `notes_log` only after the bank acknowledged the note. | Fixed (F04, AUD-26). On 10 October the pre-hook appended before the response. |
+| Success and handoff routing | [Staged routes](../builder/compiler/profiles/staged.py) and [decision code](../builder/compiler/codegen.py) read acknowledgement flags written by post-hooks (`promise_acked`, `callback_acked`), not the engine's HTTP success counters. | Fixed for promises and callbacks (AUD-07). A transfer is retried once and still counts as a transfer after a failure (AUD-25); the intended failure outcome remains unverified. |
 | Audio configuration | Inspected A staged, A+B staged and A+B lean outputs have no explicit speech/idle/interruption settings or global interrupt nodes. | Does not prove platform barge-in is disabled: defaults and real playback behavior were not measured. |
 | Practice evidence | [Practice client](../freya.py) uses `mode="chat"`; [platform API](api.md) describes text simulation. | Can evaluate conversational responses and bank records. Cannot establish acoustic interruption performance. |
 

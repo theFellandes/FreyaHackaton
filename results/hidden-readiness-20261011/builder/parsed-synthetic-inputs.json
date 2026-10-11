@@ -1,0 +1,148 @@
+[
+  {
+    "kind": "SYNTHETIC real document/API parsing; no LLM interpretation",
+    "variant": "v01_clean",
+    "inputs_sha": "c00aaa430b8e6be723b491d285bd7d36c2607b9d44f6cf5060724d688ddb55b0",
+    "brief_documents": [
+      {
+        "name": "brief.md",
+        "kind": "markdown",
+        "chars": 11608,
+        "sha256": "1cb6ffaf1c62f581b3ec7b2a72840ee512cc0149e503a9b5f60292445fc100b4"
+      }
+    ],
+    "normalized_chars": 11608,
+    "api_title": "Meridian Savings Bank arrears tools",
+    "api_tool_names": [
+      "verify_identity",
+      "get_account",
+      "create_promise",
+      "add_note",
+      "schedule_callback",
+      "transfer_to_agent",
+      "close_call"
+    ],
+    "missing_tools": [],
+    "extra_tools": [],
+    "tool_request_fields": {
+      "verify_identity": [
+        "customer_id",
+        "field",
+        "answer"
+      ],
+      "get_account": [
+        "customer_id"
+      ],
+      "create_promise": [
+        "customer_id",
+        "product_id",
+        "amount",
+        "date"
+      ],
+      "add_note": [
+        "customer_id",
+        "product_id",
+        "reason",
+        "text"
+      ],
+      "schedule_callback": [
+        "customer_id",
+        "date",
+        "time"
+      ],
+      "transfer_to_agent": [
+        "customer_id",
+        "queue"
+      ],
+      "close_call": [
+        "customer_id",
+        "outcome",
+        "reason"
+      ]
+    },
+    "llm_calls": 0,
+    "platform_calls": 0
+  },
+  {
+    "kind": "SYNTHETIC real document/API parsing; no LLM interpretation",
+    "variant": "v02_raw",
+    "inputs_sha": "d4c99c98662cd8530988a09683a33cd8ad5a508280f45587936b632d270db0c6",
+    "brief_documents": [
+      {
+        "name": "Mail_thread_collections_ops.eml",
+        "kind": "email",
+        "chars": 4800,
+        "sha256": "8dfc1ec8be4cd4221864e026b5f45b4d8ba4dacc94f7ba33689c8b5ca529de21"
+      },
+      {
+        "name": "Memo_2026-11-02_changes.txt",
+        "kind": "text",
+        "chars": 856,
+        "sha256": "c1ee43a135bccb249b1c5af5e509ef041bb7f74a649d0b1a161257d266b0cc85"
+      },
+      {
+        "name": "outcome_codes.csv",
+        "kind": "csv",
+        "chars": 1331,
+        "sha256": "ae21e4aa7036345fbc50be9fa1d489ef054e75e60f4704cf74bb68711806eef8"
+      },
+      {
+        "name": "Policy_extract_v3.txt",
+        "kind": "text",
+        "chars": 7006,
+        "sha256": "981bb8455544a40dabacccf8ec4e9eba4c935acc125e8963f7e302d86d0a99fb"
+      }
+    ],
+    "normalized_chars": 13993,
+    "api_title": "Meridian Savings Bank arrears tools",
+    "api_tool_names": [
+      "verify_identity",
+      "get_account",
+      "create_promise",
+      "add_note",
+      "schedule_callback",
+      "transfer_to_agent",
+      "close_call"
+    ],
+    "missing_tools": [],
+    "extra_tools": [],
+    "tool_request_fields": {
+      "verify_identity": [
+        "customer_id",
+        "field",
+        "answer"
+      ],
+      "get_account": [
+        "customer_id"
+      ],
+      "create_promise": [
+        "customer_id",
+        "product_id",
+        "amount",
+        "date"
+      ],
+      "add_note": [
+        "customer_id",
+        "product_id",
+        "reason",
+        "text"
+      ],
+      "schedule_callback": [
+        "customer_id",
+        "date",
+        "time"
+      ],
+      "transfer_to_agent": [
+        "customer_id",
+        "queue"
+      ],
+      "close_call": [
+        "customer_id",
+        "outcome",
+        "reason"
+      ]
+    },
+    "llm_calls": 0,
+    "platform_calls": 0
+  }
+]

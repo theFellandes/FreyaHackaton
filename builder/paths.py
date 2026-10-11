@@ -21,6 +21,7 @@ at call time (``paths.OUT_DIR``) rather than binding it at import time.
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 #: The repository root (the directory that holds ``builder/``, ``tools/`` and the kit's ``freya.py``).
@@ -39,8 +40,11 @@ RESULTS_DIR: Path = REPO_ROOT / "results"
 DATA_DIR: Path = REPO_ROOT / "data"
 #: The hackathon kit's ``tools/`` directory (reference material, never edited).
 KIT_TOOLS_DIR: Path = REPO_ROOT / "tools"
-#: The ``.env`` file read by :mod:`builder.settings`.
-ENV_FILE: Path = REPO_ROOT / ".env"
+#: Environment variable that points the builder at another dotenv file (tests point it at a file that does not exist,
+#: so a child process they start can never read the developer's keys).
+ENV_FILE_VARIABLE = "FREYA_BUILDER_ENV_FILE"
+#: The ``.env`` file read by :mod:`builder.settings` (``$FREYA_BUILDER_ENV_FILE`` when set).
+ENV_FILE: Path = Path(os.environ[ENV_FILE_VARIABLE]) if os.environ.get(ENV_FILE_VARIABLE) else REPO_ROOT / ".env"
 
 
 def output_dirs() -> tuple[Path, ...]:

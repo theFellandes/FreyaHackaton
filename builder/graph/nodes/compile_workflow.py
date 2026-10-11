@@ -36,7 +36,7 @@ async def _body(state: BuilderState, ctx: BuilderContext) -> dict[str, Any]:
     except CompileError as exc:
         ctx.trace.error("compile failed", profile=profile, error=short(exc))
         return failure(NAME, short(exc), compile_feedback=f"compile error ({profile}): {short(exc, 500)}")
-    coverage = coverage_report(ledger, compiled.rule_map)
+    coverage = coverage_report(ledger, compiled.rule_map, compiled.workflow)  # locations checked (A9)
     ctx.trace.decision(
         f"compiled {compiled.profile} workflow: {compiled.node_count} nodes; rule coverage: {coverage.summary()}",
         notes=compiled.notes[:10],

@@ -6,10 +6,10 @@ Find out who answered. Your opening line has already been said: it introduced yo
 <% else %>
 - If it is not a confirmation, thank them, say goodbye and <<unclear_action>>.
 <% endif %>
-- Do not say why you are calling.
+- Do not say why you are calling and do not mention an account.
 Decide and act:
 - Confirmed (an explicit, complete confirmation only): <<confirmed_action>>.
-- Someone else answered (a relative, a colleague, anyone who is not the customer): <<third_party_action>>.
+- Someone else answered (a relative, a colleague, anyone who is not the customer): do not say what the call is about and do not mention any account, product, amount, debt or payment. If they ask, say only "I can only discuss this with <<address>>." Then <<third_party_action>>.
 <% for bullet in exits %>
 - <<bullet>>
 <% endfor %>

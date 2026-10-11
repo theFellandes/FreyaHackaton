@@ -545,3 +545,63 @@ def test_the_summary_block_keeps_the_published_label_for_a_confirmed_version(wri
     writer.freya("save", workflow_id="wf-1", agent_id="ag-1", version=3, published=True)
     writer.summary({"status": "deployed"})
     assert "  - published version: 3" in writer.log_path.read_text(encoding="utf-8")  # type: ignore[union-attr]
+
+
+# ------------------------------------------------------------------------------------------------ AUD-57
+
+
+def test_repository_paths_are_written_relative_to_the_repository(tmp_path: Path) -> None:
+    """Committed traces must not carry the local folder layout (the user name) of the machine that built them."""
+    from builder import paths
+
+    target = paths.REPO_ROOT / "out" / "x.workflow.json"
+    trace = TraceWriter("r1", "s", directory=tmp_path)
+    trace.event("freya", f"exported to {target}", path=target, text_path=str(target), posix=target.as_posix())
+    trace.summary({"status": "dry_run", "slot": "s", "exported": str(target)})
+    trace.close()
+    for written in (trace.log_path, trace.jsonl_path):
+        assert written is not None
+        text = written.read_text(encoding="utf-8")
+        assert str(paths.REPO_ROOT) not in text and paths.REPO_ROOT.as_posix() not in text
+        assert str(paths.REPO_ROOT).replace("\\", "\\\\") not in text  # nor JSON-escaped
+        assert "out/x.workflow.json" in text.replace("\\\\", "/").replace("\\", "/")
+
+
+def test_a_path_outside_the_repository_is_kept(tmp_path: Path) -> None:
+    trace = NullTrace()
+    trace.event("x", f"wrote {tmp_path / 'a.json'}")
+    assert str(tmp_path / "a.json") in trace.text
+
+
+def test_the_start_records_the_commit_the_dirty_count_and_the_arguments(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import sys
+
+    from builder import trace as trace_module
+
+    monkeypatch.setattr(trace_module, "_git_state", lambda: {"git_commit": "abc1234def", "git_dirty": 3})
+    monkeypatch.setattr(sys, "argv", ["build.py", "briefs/x.md", "--key", "sk-ant-api03-AAAAAAAAAAAAAAAAAAAAAAAA"])
+    writer = NullTrace()
+    start = writer.of_kind("start")[0]["data"]
+    assert start["git_commit"] == "abc1234def" and start["git_dirty"] == 3
+    assert start["argv"][0] == "briefs/x.md" and "sk-ant-api03" not in json.dumps(start["argv"])
+    assert "commit abc1234+dirty" in writer.lines[0]
+
+
+def test_a_missing_git_never_stops_the_trace(monkeypatch: pytest.MonkeyPatch) -> None:
+    import subprocess
+
+    from builder import trace as trace_module
+
+    def broken(*args: object, **kwargs: object) -> object:
+        raise FileNotFoundError("git")
+
+    monkeypatch.setattr(subprocess, "run", broken)
+    trace_module._git_state.cache_clear()
+    try:
+        start = NullTrace().of_kind("start")[0]["data"]
+        assert start.get("git_commit") is None and start.get("git_dirty") is None  # None values are left out
+        assert "argv" in start
+    finally:
+        trace_module._git_state.cache_clear()

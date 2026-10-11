@@ -1,5 +1,7 @@
 # 05 — Base workflow deep analysis ("Freya Bank Collections Base (2 nodes)")
 
+> Status: pre-kit research note (10 October 2026), kept for background. Where it disagrees with the kit ([research/11](11_hackathon_rules_and_kit.md), `docs/api.md`, `docs/workflow-format.md`) or with the code, those win.
+
 Sources read: `live/workflow_base.pretty.json` (GET /workflow/252ee2df-…), `live/agent_base.pretty.json` (GET /agents/2f8dcbea-…),
 `live/agents_defaults.pretty.json` (GET /agents/defaults), `live/versions_base.pretty.json`, `docs/openapi_prod.json`
 (tool item schema under `POST /agents` → `config.llmConfig.tools.items`), `docs/llms-full.txt`, other agents' spec dumps in

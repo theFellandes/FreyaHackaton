@@ -1,0 +1,75 @@
+{
+  "slot": "brief-a-brief-b",
+  "track": "compiled",
+  "workflow_id": "b5638c83-1842-4615-ab28-23834f631e2f",
+  "agent_id": "4ae00ca3-a702-465e-ae60-4b8d1c54726f",
+  "version": 3,
+  "exported": "C:\\Users\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\out\\brief-a-brief-b.exported.json",
+  "export_ok": true,
+  "trace": "C:\\Users\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\traces\\brief-a-brief-b-20261011T134036Z.log",
+  "status": "deployed",
+  "workflow_file": "C:\\Users\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\out\\brief-a-brief-b.workflow.json",
+  "tests": {
+    "passed": 3,
+    "total": 3
+  },
+  "errors": [],
+  "policy_issues": [
+    {
+      "code": "ROW_SHADOWED",
+      "severity": "warning",
+      "message": "closing.rows[10] ('product_notes' -> no_promise/None) never applies: an earlier row for the same situation and verification state always wins. The IR cannot pick between rows by anything else (for example the terms of a promise); keep one row per situation and verification state.",
+      "rule_ids": [
+        "B-CLOSING-c"
+      ],
+      "path": "closing.rows[10]"
+    }
+  ],
+  "notes": [
+    "policy: 0 error(s), 1 warning(s) unresolved after 0 policy repair(s) (ROW_SHADOWED); the build went on best effort (see policy_issues)",
+    "decide: all self-tests passed"
+  ],
+  "tests_detail": [
+    {
+      "name": "smoke",
+      "passed": true,
+      "summary": "2 turn(s) answered; replies non-empty; forbidden words checked: 4; opening elements checked: 2",
+      "details": {
+        "call_id": "ba56fb37-05d8-4623-a33b-aec1d26248aa",
+        "turns": [
+          {
+            "user": "Hello?",
+            "agent": "I am Freya Bank's digital assistant, and we record this call. Am I speaking with Mr Morgan?"
+          },
+          {
+            "user": "Sorry, who is this and what is this about?",
+            "agent": "I am Freya Bank's digital assistant. Am I speaking with Mr Morgan?"
+          }
+        ],
+        "problems": [],
+        "checks": [
+          "replies non-empty",
+          "forbidden words checked: 4",
+          "opening elements checked: 2"
+        ],
+        "variables": [
+          "customer_id",
+          "first_name",
+          "last_name",
+          "now",
+          "title"
+        ],
+        "attempts": [
+          {
+            "attempt": 1,
+            "call_id": "ba56fb37-05d8-4623-a33b-aec1d26248aa",
+            "error": null,
+            "transient": false
+          }
+        ],
+        "platform_error": false
+      },
+      "round": 0
+    }
+  ]
+}

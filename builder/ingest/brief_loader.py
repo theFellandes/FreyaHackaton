@@ -97,6 +97,8 @@ class BriefDocument(BaseModel):
         kind: The detected format (see the module table).
         text: The complete converted text (``\\n`` line endings, no BOM, never truncated).
         sha256: SHA-256 of the raw file bytes.
+        label: What the document is when it is not plain policy material (an example conversation of a case
+            folder); shown in its ``=== FILE`` header. Empty for ordinary brief files.
     """
 
     model_config = ConfigDict(frozen=True)
@@ -106,6 +108,7 @@ class BriefDocument(BaseModel):
     kind: BriefKind
     text: str
     sha256: str
+    label: str = ""
 
 
 class BriefBundle(BaseModel):
@@ -134,9 +137,14 @@ class BriefBundle(BaseModel):
         return [doc.name for doc in self.documents]
 
     def combined_text(self) -> str:
-        """Every document as ``=== FILE: {name} ({kind}) ===`` followed by its text, separated by blank lines."""
+        """Every document as ``=== FILE: {name} ({kind}) ===`` followed by its text, separated by blank lines.
+
+        A labelled document says what it is in its header: ``=== FILE: {name} ({kind}; {label}) ===``.
+        """
         return "\n".join(
-            f"=== FILE: {doc.name} ({doc.kind}) ===\n{doc.text.rstrip(chr(10))}\n" for doc in self.documents
+            f"=== FILE: {doc.name} ({doc.kind}{'; ' + doc.label if doc.label else ''}) ===\n"
+            f"{doc.text.rstrip(chr(10))}\n"
+            for doc in self.documents
         )
 
 
@@ -145,13 +153,30 @@ def kind_for(path: Path) -> BriefKind:
     return KIND_BY_SUFFIX.get(path.suffix.lower(), "other")
 
 
-def load_briefs(paths: Iterable[Path | str]) -> BriefBundle:
+#: Header label of an example conversation of a case folder (policy material of the lowest priority).
+EXAMPLE_LABEL = (
+    "example conversation - an illustration of how a call can go, not a rule; the brief and the other documents win "
+    "where they differ"
+)
+
+
+def load_briefs(paths: Iterable[Path | str], *, examples: Iterable[Path | str] = ()) -> BriefBundle:
     """Load every brief file into one :class:`BriefBundle` (order kept).
+
+    Args:
+        paths: The brief files.
+        examples: Those of ``paths`` that are example conversations; they carry :data:`EXAMPLE_LABEL`.
 
     Raises:
         InputError: If no path is given, a file cannot be read, or a PDF cannot be converted.
     """
-    documents = [load_brief(Path(path)) for path in paths]
+    labelled = {Path(path) for path in examples}
+    documents = []
+    for path in paths:
+        document = load_brief(Path(path))
+        if Path(path) in labelled:
+            document = document.model_copy(update={"label": EXAMPLE_LABEL})
+        documents.append(document)
     if not documents:
         raise InputError("No brief files to load.")
     return BriefBundle.from_documents(documents)
@@ -610,6 +635,7 @@ _CONVERTERS: dict[BriefKind, Callable[[bytes, Path], str]] = {
 
 
 __all__ = [
+    "EXAMPLE_LABEL",
     "KIND_BY_SUFFIX",
     "BriefBundle",
     "BriefDocument",

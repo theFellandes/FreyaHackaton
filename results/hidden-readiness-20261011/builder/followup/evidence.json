@@ -1,0 +1,387 @@
+{
+  "kind": "Focused current-validator follow-up to historical 653-test capture",
+  "started_utc": "2026-10-11T10:00:37.931509+00:00",
+  "finished_utc": "2026-10-11T10:00:40.297470+00:00",
+  "elapsed_s": 2.3289999999997235,
+  "python": "C:\\Users\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\.venv-playground\\Scripts\\python.exe",
+  "python_version": "3.12.14 (main, Aug 25 2026, 14:01:42) [MSC v.1944 64 bit (AMD64)]",
+  "command": [
+    "C:\\Users\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\.venv-playground\\Scripts\\python.exe",
+    "-m",
+    "pytest",
+    "tests/unit/test_validate_policy.py",
+    "-m",
+    "not live",
+    "-o",
+    "addopts=",
+    "-p",
+    "no:langsmith",
+    "-q",
+    "--tb=short",
+    "-r",
+    "a",
+    "--basetemp",
+    "C:\\Users\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\.cache\\hidden-readiness-20261011\\builder\\followup\\pytest-temp",
+    "-o",
+    "cache_dir=C:\\Users\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\.cache\\hidden-readiness-20261011\\builder\\followup\\pytest-cache",
+    "--junitxml",
+    "C:\\Users\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\results\\hidden-readiness-20261011\\builder\\followup\\pytest-junit.xml"
+  ],
+  "exit_code": 0,
+  "totals": {
+    "passed": 69,
+    "failed": 0,
+    "error": 0,
+    "skipped": 0
+  },
+  "test_cases": [
+    {
+      "module": "tests.unit.test_validate_policy",
+      "name": "test_kit_fixture_irs_have_no_issues[brief_a]",
+      "status": "passed"
+    },
+    {
+      "module": "tests.unit.test_validate_policy",
+      "name": "test_kit_fixture_irs_have_no_issues[brief_ab]",
+      "status": "passed"
+    },
+    {
+      "module": "tests.unit.test_validate_policy",
+      "name": "test_vocabulary_is_read_from_the_tool_api",
+      "status": "passed"
+    },
+    {
+      "module": "tests.unit.test_validate_policy",
+      "name": "test_a_tool_api_without_the_tools_skips_vocabulary_checks",
+      "status": "passed"
+    },
+    {
+      "module": "tests.unit.test_validate_policy",
+      "name": "test_identity_field_must_be_a_verify_identity_value",
+      "status": "passed"
+    },
+    {
+      "module": "tests.unit.test_validate_policy",
+      "name": "test_outcome_and_reason_must_be_close_call_values",
+      "status": "passed"
+    },
+    {
+      "module": "tests.unit.test_validate_policy",
+      "name": "test_reason_is_required_except_for_the_outcomes_the_api_names",
+      "status": "passed"
+    },
+    {
+      "module": "tests.unit.test_validate_policy",
+      "name": "test_transfer_after_promise_outcome_may_omit_the_reason",
+      "status": "passed"
+    },
+    {
+      "module": "tests.unit.test_validate_policy",
+      "name": "test_note_reason_queue_and_action_parameters",
+      "status": "passed"
+    },
+    {
+      "module": "tests.unit.test_validate_policy",
+      "name": "test_product_types_and_fields_must_exist",
+      "status": "passed"
+    },
+    {
+      "module": "tests.unit.test_validate_policy",
+      "name": "test_unknown_placeholder_in_an_opening_phrase_is_a_warning",
+      "status": "passed"
+    },
+    {
+      "module": "tests.unit.test_validate_policy",
+      "name": "test_bands_overlap_is_an_error_and_a_gap_a_warning",
+      "status": "passed"
+    },
+    {
+      "module": "tests.unit.test_validate_policy",
+      "name": "test_band_names_must_be_unique_and_known_to_the_persuasion_ladder",
+      "status": "passed"
+    },
+    {
+      "module": "tests.unit.test_validate_policy",
+      "name": "test_no_bands_and_too_few_persuasion_steps",
+      "status": "passed"
+    },
+    {
+      "module": "tests.unit.test_validate_policy",
+      "name": "test_implausible_holidays_are_flagged",
+      "status": "passed"
+    },
+    {
+      "module": "tests.unit.test_validate_policy",
+      "name": "test_identity_needs_questions_and_a_limit",
+      "status": "passed"
+    },
+    {
+      "module": "tests.unit.test_validate_policy",
+      "name": "test_outcome_table_is_required",
+      "status": "passed"
+    },
+    {
+      "module": "tests.unit.test_validate_policy",
+      "name": "test_unknown_precedence_key_is_a_warning",
+      "status": "passed"
+    },
+    {
+      "module": "tests.unit.test_validate_policy",
+      "name": "test_duplicate_intents_are_a_warning",
+      "status": "passed"
+    },
+    {
+      "module": "tests.unit.test_validate_policy",
+      "name": "test_uncovered_active_rules_are_listed_in_one_warning",
+      "status": "passed"
+    },
+    {
+      "module": "tests.unit.test_validate_policy",
+      "name": "test_a_residual_rule_covers_a_ledger_rule",
+      "status": "passed"
+    },
+    {
+      "module": "tests.unit.test_validate_policy",
+      "name": "test_superseded_rules_must_not_be_cited",
+      "status": "passed"
+    },
+    {
+      "module": "tests.unit.test_validate_policy",
+      "name": "test_unknown_rule_ids_and_dangling_supersessions",
+      "status": "passed"
+    },
+    {
+      "module": "tests.unit.test_validate_policy",
+      "name": "test_an_empty_ledger_is_an_error",
+      "status": "passed"
+    },
+    {
+      "module": "tests.unit.test_validate_policy",
+      "name": "test_issue_helpers",
+      "status": "passed"
+    },
+    {
+      "module": "tests.unit.test_validate_policy",
+      "name": "test_safe_fixes_respell_vocabulary_and_catalog_keys",
+      "status": "passed"
+    },
+    {
+      "module": "tests.unit.test_validate_policy",
+      "name": "test_safe_fixes_clean_rule_ids_and_cover_every_active_rule",
+      "status": "passed"
+    },
+    {
+      "module": "tests.unit.test_validate_policy",
+      "name": "test_safe_fixes_keep_a_valid_ir_unchanged",
+      "status": "passed"
+    },
+    {
+      "module": "tests.unit.test_validate_policy",
+      "name": "test_empty_described_phrases_are_errors_that_name_the_prescribing_rules",
+      "status": "passed"
+    },
+    {
+      "module": "tests.unit.test_validate_policy",
+      "name": "test_each_prescribed_phrase_is_checked_on_its_own[opening_sentence]",
+      "status": "passed"
+    },
+    {
+      "module": "tests.unit.test_validate_policy",
+      "name": "test_each_prescribed_phrase_is_checked_on_its_own[robot_answer]",
+      "status": "passed"
+    },
+    {
+      "module": "tests.unit.test_validate_policy",
+      "name": "test_each_prescribed_phrase_is_checked_on_its_own[scam_answer]",
+      "status": "passed"
+    },
+    {
+      "module": "tests.unit.test_validate_policy",
+      "name": "test_each_prescribed_phrase_is_checked_on_its_own[identity_failed_sentence]",
+      "status": "passed"
+    },
+    {
+      "module": "tests.unit.test_validate_policy",
+      "name": "test_each_prescribed_phrase_is_checked_on_its_own[paid_sentence]",
+      "status": "passed"
+    },
+    {
+      "module": "tests.unit.test_validate_policy",
+      "name": "test_each_prescribed_phrase_is_checked_on_its_own[goodbye_sentence]",
+      "status": "passed"
+    },
+    {
+      "module": "tests.unit.test_validate_policy",
+      "name": "test_each_prescribed_phrase_is_checked_on_its_own[right_party_question]",
+      "status": "passed"
+    },
+    {
+      "module": "tests.unit.test_validate_policy",
+      "name": "test_each_prescribed_phrase_is_checked_on_its_own[deceased_sentence]",
+      "status": "passed"
+    },
+    {
+      "module": "tests.unit.test_validate_policy",
+      "name": "test_filled_phrases_raise_no_issue",
+      "status": "passed"
+    },
+    {
+      "module": "tests.unit.test_validate_policy",
+      "name": "test_an_empty_phrase_is_fine_when_no_active_rule_prescribes_it",
+      "status": "passed"
+    },
+    {
+      "module": "tests.unit.test_validate_policy",
+      "name": "test_described_rules_in_any_category_are_recognised",
+      "status": "passed"
+    },
+    {
+      "module": "tests.unit.test_validate_policy",
+      "name": "test_rules_that_only_mention_a_topic_do_not_prescribe_a_sentence",
+      "status": "passed"
+    },
+    {
+      "module": "tests.unit.test_validate_policy",
+      "name": "test_the_kit_ledgers_prescribe_phrases_their_fixtures_fill",
+      "status": "passed"
+    },
+    {
+      "module": "tests.unit.test_validate_policy",
+      "name": "test_a_customer_date_whose_text_names_a_date_rule_is_an_error",
+      "status": "passed"
+    },
+    {
+      "module": "tests.unit.test_validate_policy",
+      "name": "test_a_customer_date_with_a_neutral_text_is_fine",
+      "status": "passed"
+    },
+    {
+      "module": "tests.unit.test_validate_policy",
+      "name": "test_a_custom_date_without_text_is_an_error",
+      "status": "passed"
+    },
+    {
+      "module": "tests.unit.test_validate_policy",
+      "name": "test_an_empty_team_phrase_without_a_full_intro_sentence_is_an_error",
+      "status": "passed"
+    },
+    {
+      "module": "tests.unit.test_validate_policy",
+      "name": "test_a_team_phrase_that_is_a_whole_sentence_is_an_error",
+      "status": "passed"
+    },
+    {
+      "module": "tests.unit.test_validate_policy",
+      "name": "test_product_naming_must_not_state_the_amount_or_the_days",
+      "status": "passed"
+    },
+    {
+      "module": "tests.unit.test_validate_policy",
+      "name": "test_product_naming_with_inner_sentence_punctuation_is_an_error",
+      "status": "passed"
+    },
+    {
+      "module": "tests.unit.test_validate_policy",
+      "name": "test_a_days_field_that_the_tool_api_calls_something_else_is_found_and_checked",
+      "status": "passed"
+    },
+    {
+      "module": "tests.unit.test_validate_policy",
+      "name": "test_state_fields_without_a_days_field_are_resolved_from_the_tool_api",
+      "status": "passed"
+    },
+    {
+      "module": "tests.unit.test_validate_policy",
+      "name": "test_a_state_field_list_that_starts_with_the_type_does_not_make_the_type_the_amount",
+      "status": "passed"
+    },
+    {
+      "module": "tests.unit.test_validate_policy",
+      "name": "test_fields_the_state_fields_already_make_clear_are_left_alone",
+      "status": "passed"
+    },
+    {
+      "module": "tests.unit.test_validate_policy",
+      "name": "test_an_unusable_amount_field_is_an_error",
+      "status": "passed"
+    },
+    {
+      "module": "tests.unit.test_validate_policy",
+      "name": "test_a_first_ask_about_all_products_needs_its_own_single_product_wording",
+      "status": "passed"
+    },
+    {
+      "module": "tests.unit.test_validate_policy",
+      "name": "test_a_pre_verification_intent_with_a_note_reason_needs_an_outcome",
+      "status": "passed"
+    },
+    {
+      "module": "tests.unit.test_validate_policy",
+      "name": "test_the_product_notes_row_needs_no_reason_when_the_notes_pick_it",
+      "status": "passed"
+    },
+    {
+      "module": "tests.unit.test_validate_policy",
+      "name": "test_a_model_written_lead_in_no_longer_doubles_in_the_debt_statement",
+      "status": "passed"
+    },
+    {
+      "module": "tests.unit.test_validate_policy",
+      "name": "test_a_product_name_that_ends_in_a_full_stop_no_longer_breaks_the_statement",
+      "status": "passed"
+    },
+    {
+      "module": "tests.unit.test_validate_policy",
+      "name": "test_a_whole_sentence_team_phrase_moves_to_the_intro_sentence",
+      "status": "passed"
+    },
+    {
+      "module": "tests.unit.test_validate_policy",
+      "name": "test_an_empty_team_phrase_falls_back_to_the_institution_name",
+      "status": "passed"
+    },
+    {
+      "module": "tests.unit.test_validate_policy",
+      "name": "test_an_any_scope_intent_that_records_a_note_is_split_at_the_verification_boundary",
+      "status": "passed"
+    },
+    {
+      "module": "tests.unit.test_validate_policy",
+      "name": "test_a_before_verification_note_is_dropped_when_the_intent_has_an_outcome",
+      "status": "passed"
+    },
+    {
+      "module": "tests.unit.test_validate_policy",
+      "name": "test_an_abbreviation_in_the_team_name_is_not_taken_for_a_sentence",
+      "status": "passed"
+    },
+    {
+      "module": "tests.unit.test_validate_policy",
+      "name": "test_vocabulary_follows_renamed_api_fields[kit_names]",
+      "status": "passed"
+    },
+    {
+      "module": "tests.unit.test_validate_policy",
+      "name": "test_vocabulary_follows_renamed_api_fields[renamed_fields]",
+      "status": "passed"
+    },
+    {
+      "module": "tests.unit.test_validate_policy",
+      "name": "test_a_renamed_product_type_field_keeps_the_product_types",
+      "status": "passed"
+    },
+    {
+      "module": "tests.unit.test_validate_policy",
+      "name": "test_a_band_with_more_attempts_than_steps_is_an_error_that_names_both_remedies",
+      "status": "passed"
+    },
+    {
+      "module": "tests.unit.test_validate_policy",
+      "name": "test_a_shadowed_outcome_row_is_a_warning",
+      "status": "passed"
+    }
+  ],
+  "source_files_hashed": 144,
+  "source_changed_during_run": [],
+  "limits": "Only test_validate_policy.py executed. test_floor_rules.py was hashed for freshness, not run here. No real model/platform calls; fixture supplied IRs do not establish hidden extraction accuracy."
+}

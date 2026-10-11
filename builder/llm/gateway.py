@@ -6,22 +6,28 @@ try it then try other api key". The gateway implements that as a fallback chain 
 * **keys within a provider** - every provider has a :class:`builder.llm.keys.KeyPool`; a key with no credits
   or an invalid key is marked DEAD (and remembered in ``data/key_health.json`` for the next run), a
   rate-limited key COOLS down, and the next key of the same provider is tried;
+* **models within a key** - a key that may not use one model (per-model 403, ``ErrorKind.MODEL_UNAVAILABLE``) stays
+  alive: the model is remembered as off limits for that key (this run only), another key is tried for it, and only
+  then the provider's other model tier (STRONG <-> FAST) - never a weaker model while a key that could serve the
+  requested one is merely cooling;
 * **providers in a chain** - configured by ``LLM_PROVIDERS`` (default ``anthropic,openai,claude_code``); a
   provider is left when it has no usable key, when its circuit breaker is open (3 consecutive provider-level
-  failures -> open for 120 s) or when the request itself is rejected (bad request / context too long /
-  structured output unparseable twice).
+  failures -> open for 120 s; ignored when no other provider could answer, so a single-provider setup is never
+  refused without an attempt and keeps its retry budget) or when the request itself is rejected (bad request /
+  context too long / structured output unparseable twice).
 
 Algorithm of one call (``text`` or ``structured``)::
 
     repeat (bounded):
         for provider in configured order (skipping providers finished for this call):
-            while the provider's circuit allows and it has a usable key:
+            while the provider's circuit allows (or nobody else could answer) and it has a usable (key, model):
                 for attempt on that key (1 + llm_retries_per_key for transient errors, 1 repair for PARSE):
                     run the provider with timeout = min(llm_timeout_s, time left before the deadline)
                     trace.model_call(...)                      # one MODEL line per attempt
                     success -> mark key ok, close circuit, return LLMCallResult
                     failure -> classify_error -> POLICY: retry same key (backoff 1, 2, 4 s + jitter) |
-                               rotate key (dead / cooling / exhausted) | next provider
+                               rotate key (dead / cooling / exhausted) | next model (key stays alive) |
+                               next provider
         if only cooling keys remain and the soonest cooldown <= llm_max_cooldown_wait_s: sleep, repeat
         else if keys were skipped only because a previous run marked them dead: revive them once, repeat
     raise AllProvidersFailed(attempts)
@@ -50,6 +56,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import random
+import threading
 import time
 from collections.abc import Awaitable, Callable, Iterable, Mapping, Sequence
 from dataclasses import dataclass, field
@@ -378,6 +385,7 @@ class _CallState:
     waits: int = 0
     revived: bool = False
     stopped: bool = False
+    circuit_overridden: set[str] = field(default_factory=set)
 
     def note(self, reason: str) -> None:
         if reason not in self.reasons:
@@ -446,6 +454,10 @@ class LLMGateway:
         self._breakers: dict[str, CircuitBreaker] = {
             name: CircuitBreaker(clock=monotonic) for name in self._order
         }
+        # Models a key was told it may not use (per-model 403), by (provider, key fingerprint). Kept for the life
+        # of the gateway only: the key stays usable for its other models and is never written to the health file.
+        self._unavailable: dict[tuple[str, str], set[str]] = {}
+        self._unavailable_lock = threading.Lock()
         self._secrets: list[str] = self._collect_secrets()
         self._limiter: RateLimiter | None = (
             None
@@ -509,12 +521,68 @@ class LLMGateway:
                 "keys": self._pools[name].snapshot(),
                 "circuit": self._breakers[name].state.value,
                 "available": name in self.available_providers(),
+                "unavailable_models": self._unavailable_models(name),
             }
         return {
             "order": list(self._order),
             "providers": providers,
             "key_health_file": str(self.config.key_health_file) if self.config.key_health_file else None,
         }
+
+    def _has_alternative(self, name: str, spec: _CallSpec, state: _CallState) -> bool:
+        """Whether another provider allowed for this call could answer it right now (usable key, circuit not open)."""
+        return any(
+            other != name
+            and other not in state.finished
+            and not self._breakers[other].is_open
+            and self._select(other, spec, state) is not None
+            for other in self._call_order(spec)
+        )
+
+    # ---------------------------------------------------------------------------------------------- models
+
+    def _models_for(self, name: str, spec: _CallSpec) -> list[str]:
+        """The models this call may use at ``name``: the requested role's first, the other role's as a fallback."""
+        provider = self._providers[name]
+        other_role = LLMRole.FAST if spec.role is LLMRole.STRONG else LLMRole.STRONG
+        requested = provider.model_for(spec.role, self._settings)
+        other = provider.model_for(other_role, self._settings)
+        return [requested] if not other or other == requested else [requested, other]
+
+    def _is_unavailable(self, name: str, key: ApiKey, model: str) -> bool:
+        with self._unavailable_lock:
+            return model in self._unavailable.get((name, key.fingerprint), ())
+
+    def _mark_unavailable(self, name: str, key: ApiKey, model: str) -> None:
+        with self._unavailable_lock:
+            self._unavailable.setdefault((name, key.fingerprint), set()).add(model)
+
+    def _unavailable_models(self, name: str) -> dict[str, list[str]]:
+        """``{masked key label: [models it may not use]}`` for ``describe()`` (no secrets)."""
+        with self._unavailable_lock:
+            return {
+                key.label: sorted(self._unavailable[(name, key.fingerprint)])
+                for key in self._pools[name].keys
+                if self._unavailable.get((name, key.fingerprint))
+            }
+
+    def _select(self, name: str, spec: _CallSpec, state: _CallState) -> tuple[ApiKey, str] | None:
+        """The ``(key, model)`` to try next at ``name``, or ``None`` when nothing is usable right now.
+
+        The requested model comes first, on any usable key that is not known to be barred from it. Only when no key
+        can serve it - and none is merely cooling, because waiting for a rate limit beats a weaker answer - does the
+        provider's other model tier get a turn.
+        """
+        pool = self._pools[name]
+        excluded = state.excluded.setdefault(name, [])
+        for model in self._models_for(name, spec):
+            blocked = [*excluded, *(k for k in pool.keys if self._is_unavailable(name, k, model))]
+            key = pool.next_key(exclude=blocked)
+            if key is not None:
+                return key, model
+            if any(pool.status(k) is KeyStatus.COOLING for k in pool.keys if k not in blocked):
+                return None
+        return None
 
     def available_providers(self) -> list[str]:
         """Providers that currently have a non-dead key and a closed (or half-open) circuit."""
@@ -709,15 +777,30 @@ class LLMGateway:
         excluded = state.excluded.setdefault(name, [])
         while True:
             if not breaker.allow():
-                state.note(f"{name}: circuit open ({breaker.remaining_open_s():.0f}s left)")
+                if self._has_alternative(name, spec, state):
+                    state.note(f"{name}: circuit open ({breaker.remaining_open_s():.0f}s left)")
+                    return None
+                # No other provider could answer this call, so refusing it protects nothing: the call would fail
+                # without an attempt and the open circuit would cost a single-provider setup its next 120 s of
+                # model access. Try anyway, with the normal retry budget and backoff (a success closes the
+                # circuit, a failure keeps it open).
+                if name not in state.circuit_overridden:
+                    state.circuit_overridden.add(name)
+                    self._event(
+                        f"{name}: circuit open, but no other provider can answer; trying anyway",
+                        purpose=spec.purpose,
+                    )
+            choice = self._select(name, spec, state)
+            if choice is None:
+                if not pool.has_live_keys():
+                    state.note(f"{name}: no usable key left")
+                elif self._unavailable_models(name):
+                    state.note(f"{name}: keys cooling, exhausted or barred from the models this call may use")
+                else:
+                    state.note(f"{name}: keys cooling or exhausted")
                 return None
-            key = pool.next_key(exclude=excluded)
-            if key is None:
-                state.note(
-                    f"{name}: {'no usable key left' if not pool.has_live_keys() else 'keys cooling or exhausted'}"
-                )
-                return None
-            outcome = await self._try_key(name, key, spec, state)
+            key, model = choice
+            outcome = await self._try_key(name, key, model, spec, state)
             if outcome.result is not None:
                 return outcome.result
             if outcome.action is None:  # deadline / attempt cap
@@ -725,13 +808,21 @@ class LLMGateway:
             if outcome.action is Action.NEXT_PROVIDER:
                 state.finished.add(name)
                 return None
+            if outcome.action is Action.NEXT_MODEL:
+                # The key is fine, it may only not use this model (already remembered): next key or other tier.
+                self._event(
+                    f"{name}: {key.label} may not use {model}; trying another key or model",
+                    purpose=spec.purpose,
+                )
+                continue
             if pool.status(key) is KeyStatus.ACTIVE:  # exhausted retries / unknown error: not again this call
                 excluded.append(key)
             self._event(f"{name}: rotating away from {key.label}", purpose=spec.purpose)
 
-    async def _try_key(self, name: str, key: ApiKey, spec: _CallSpec, state: _CallState) -> _KeyOutcome:
+    async def _try_key(
+        self, name: str, key: ApiKey, model: str, spec: _CallSpec, state: _CallState
+    ) -> _KeyOutcome:
         provider, pool, breaker = self._providers[name], self._pools[name], self._breakers[name]
-        model = provider.model_for(spec.role, self._settings)
         # Same-key retry budgets per policy: the transient kinds share one policy (and so one budget),
         # PARSE has its own, so an earlier overload never eats the repair retry.
         retries_used: dict[ErrorPolicy, int] = {}
@@ -768,7 +859,13 @@ class LLMGateway:
                 pool.mark_failure(key, kind.value)
                 if policy.provider_failure:
                     breaker.record_failure()
-                action = self._next_action(policy, retries_used.get(policy, 0), breaker)
+                action = self._next_action(
+                    policy,
+                    retries_used.get(policy, 0),
+                    # An open circuit hands the call over only when somebody else can take it (single-provider
+                    # setups keep their retry budget instead of failing the call after one attempt).
+                    hand_over=breaker.is_open and self._has_alternative(name, spec, state),
+                )
                 self._record(
                     state,
                     spec.purpose,
@@ -791,6 +888,8 @@ class LLMGateway:
                 )
                 if kind is ErrorKind.RATE_LIMIT:
                     self._penalize(name, key, exc, spec.purpose)
+                if kind is ErrorKind.MODEL_UNAVAILABLE:
+                    self._mark_unavailable(name, key, model)
                 self._apply_key_effect(pool, key, kind, policy, exc, error_text)  # after the MODEL line
                 logger.info("LLM %r: %s on %s -> %s", spec.purpose, kind.value, key.label, action.value)
                 if action is not Action.RETRY_SAME:
@@ -954,10 +1053,10 @@ class LLMGateway:
 
     # ---------------------------------------------------------------------------------------------- helpers
 
-    def _next_action(self, policy: ErrorPolicy, retries_used: int, breaker: CircuitBreaker) -> Action:
+    def _next_action(self, policy: ErrorPolicy, retries_used: int, *, hand_over: bool) -> Action:
         if policy.action is not Action.RETRY_SAME:
             return policy.action
-        if breaker.is_open:
+        if hand_over:
             return Action.NEXT_PROVIDER
         limit = self.config.retries_per_key if policy.retry_limit is None else policy.retry_limit
         return Action.RETRY_SAME if retries_used < limit else policy.exhausted_action

@@ -166,7 +166,7 @@ def test_band_names_must_be_unique_and_known_to_the_persuasion_ladder(ir_a, ledg
 def test_no_bands_and_too_few_persuasion_steps(ir_a, ledger_a, kit_tool_api) -> None:
     short = copy.deepcopy(ir_a)
     short["bands"][0]["persuasion_attempts"] = 5
-    assert "PERSUASION_STEPS_SHORT" in codes(check(short, ledger_a, kit_tool_api), "warning")
+    assert "PERSUASION_STEPS_SHORT" in codes(check(short, ledger_a, kit_tool_api), "error")  # AUD-30: was a warning
     empty = copy.deepcopy(ir_a)
     empty["bands"] = []
     assert "BANDS_EMPTY" in codes(check(empty, ledger_a, kit_tool_api), "error")
@@ -656,3 +656,99 @@ def test_a_before_verification_note_is_dropped_when_the_intent_has_an_outcome(ir
     kept = fixed.intent("refuse_to_talk", verified=False)
     assert kept is not None and kept.note_reason is None and kept.outcome is not None
     assert any("refuse_to_talk" in line and "note" in line for line in log)
+
+
+def test_an_abbreviation_in_the_team_name_is_not_taken_for_a_sentence(ir_a, ledger_a, kit_tool_api) -> None:
+    ir_a["phrases"]["extra"].pop("collections_intro")
+    ir_a["disclosure"]["team_phrase"] = "Acme Inc. Collections"
+    issues = check(ir_a, ledger_a, kit_tool_api)
+    suspect = [i for i in issues if i.code == "TEAM_PHRASE_SENTENCE"]
+    assert [i.severity for i in suspect] == ["warning"]  # worth a look, not worth a repair round
+    fixed, _ = apply_safe_fixes(PolicyIR.model_validate(ir_a), ledger_a, kit_tool_api)
+    assert fixed.disclosure.team_phrase == "Acme Inc. Collections" and "disclosure_intro" not in fixed.phrases.extra
+
+
+# --- AUD-20: the vocabularies follow renamed tool fields ---------------------------------------------------------------
+
+
+def _renamed_api(api: ToolApi, renames: dict[tuple[str, str], str]) -> ToolApi:
+    """A deep copy of ``api`` with request fields renamed (``(tool, old) -> new``)."""
+    copy_api = copy.deepcopy(api)
+    for (tool, old), new in renames.items():
+        for spec in copy_api.tools[tool].request_fields:
+            if spec.name == old:
+                spec.name = new
+    return copy_api
+
+
+RENAMES = {("close_call", "outcome"): "disposition", ("verify_identity", "field"): "question"}
+
+
+@pytest.mark.parametrize("renamed", [False, True], ids=["kit_names", "renamed_fields"])
+def test_vocabulary_follows_renamed_api_fields(renamed: bool, ir_a, ledger_a, kit_tool_api) -> None:
+    from builder.guardrails.models import GuardReport
+    from builder.guardrails.output_guard import _check_ir_against_tool_api
+
+    api = _renamed_api(kit_tool_api, RENAMES) if renamed else kit_tool_api
+    vocab = tool_vocabulary(api)
+    assert vocab.identity_fields == ["date_of_birth", "phone_last4"]
+    assert vocab.outcomes and "no_promise" in vocab.outcomes
+    assert vocab.reason_exempt_outcomes == {"promise", "paid"}
+    if renamed:
+        assert "close_call disposition values" in vocab.describe()
+        assert "verify_identity question values" in vocab.describe()
+    bad = copy.deepcopy(ir_a)
+    bad["identity"]["questions"][0]["field"] = "Date-Of-Birth"
+    bad["persuasion"]["stop_outcome"]["outcome"] = "No Promise"
+    found = codes(check(bad, ledger_a, api), "error")
+    assert "IDENTITY_FIELD" in found and "OUTCOME_UNKNOWN" in found
+    fixed, _ = apply_safe_fixes(PolicyIR.model_validate(bad), ledger_a, api)
+    assert fixed.identity.questions[0].field == "date_of_birth"
+    assert fixed.persuasion.stop_outcome.outcome == "no_promise"
+    report = GuardReport(stage="policy")
+    _check_ir_against_tool_api(PolicyIR.model_validate(bad), api, report)
+    assert len([v for v in report.violations if v.guard == "enum"]) >= 2
+
+
+def test_a_renamed_product_type_field_keeps_the_product_types(ir_a, ledger_a, kit_tool_api) -> None:
+    api = copy.deepcopy(kit_tool_api)
+    contract = api.tools["get_account"]
+    items = next(spec.items for spec in contract.response_fields if spec.items)
+    for spec in items:
+        if spec.name == "type":
+            spec.name = "kind"
+    vocab = tool_vocabulary(api)
+    assert vocab.product_types == ["credit_card", "personal_loan", "car_loan"]
+    assert "get_account product kind values" in vocab.describe()
+
+
+# --- AUD-30: a ladder shorter than a band's attempts is repaired, not silently cut -----------------------------------
+
+
+def test_a_band_with_more_attempts_than_steps_is_an_error_that_names_both_remedies(ir_a, ledger_a, kit_tool_api) -> None:
+    short = copy.deepcopy(ir_a)
+    short["persuasion"]["steps"] = [s for s in short["persuasion"]["steps"] if not s["bands"]]  # keep the all-bands step
+    issues = [i for i in check(short, ledger_a, kit_tool_api) if i.code == "PERSUASION_STEPS_SHORT"]
+    assert len(issues) == 1 and issues[0].severity == "error" and issues[0].path == "bands[1]"
+    assert "add them exactly as stated" in issues[0].message and "persuasion_attempts to 1" in issues[0].message
+    lowered = copy.deepcopy(short)
+    lowered["bands"][1]["persuasion_attempts"] = 1
+    assert "PERSUASION_STEPS_SHORT" not in codes(check(lowered, ledger_a, kit_tool_api))
+
+
+# --- AUD-46: an outcome row that can never apply is reported --------------------------------------------------------
+
+
+def test_a_shadowed_outcome_row_is_a_warning(ir_a, ledger_a, kit_tool_api) -> None:
+    assert "ROW_SHADOWED" not in codes(check(ir_a, ledger_a, kit_tool_api))
+    shadow = copy.deepcopy(ir_a)
+    first = next(r for r in shadow["closing"]["rows"] if r["situation"] == "promise_recorded")
+    shadow["closing"]["rows"].append(dict(first))  # same situation, same verification state: dead row
+    issues = [i for i in check(shadow, ledger_a, kit_tool_api) if i.code == "ROW_SHADOWED"]
+    assert len(issues) == 1 and issues[0].severity == "warning"
+    assert issues[0].path == f"closing.rows[{len(shadow['closing']['rows']) - 1}]"
+    split = copy.deepcopy(ir_a)
+    row = next(r for r in split["closing"]["rows"] if r["situation"] == "identity_declined")
+    split["closing"]["rows"] = [r for r in split["closing"]["rows"] if r is not row]
+    split["closing"]["rows"] += [dict(row, requires_verified=False), dict(row, requires_verified=True)]
+    assert "ROW_SHADOWED" not in codes(check(split, ledger_a, kit_tool_api))

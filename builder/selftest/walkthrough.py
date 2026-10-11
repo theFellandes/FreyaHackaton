@@ -2,7 +2,9 @@
 
 One FAST-role call (:data:`builder.prompts` template ``audit/walkthrough.v1.j2``) receives the active rules (id, stages,
 statement, short quote) and a condensed text of the workflow - the system prompt, each node's task message, fixed
-spoken lines, transitions, tools and the variables each code step computes - and reports the rules that look
+spoken lines, transitions, tools, the variables each code step and tool hook computes and the policy data they compute
+it from (the decoded configuration tables: holidays, bands, ladder, outcome rows ..., so changing an enforced policy
+value changes what the auditor reads; audit A9 / F09) - and reports the rules that look
 ``missing``, ``contradicted`` or ``unclear``. It is a second pair of eyes on top of the static checks: it needs no
 platform call, so it can run before or after deployment, and a failure of the model only skips the test.
 
@@ -18,6 +20,8 @@ the trace (``details["unknown_rule_ids"]``), not dropped silently.
 
 from __future__ import annotations
 
+import ast
+import json
 import re
 from collections.abc import Mapping
 from typing import Any, Literal
@@ -37,6 +41,9 @@ MAX_QUOTE_CHARS = 160
 MIN_EXAMINED_SHARE = 0.9
 _WRITES = re.compile(r"vars\[\s*['\"]([A-Za-z_][A-Za-z0-9_]*)['\"]\s*\]\s*=")
 _COMMENT = re.compile(r"^\s*#\s*(.+)$", re.MULTILINE)
+_JSON_LITERAL = re.compile(r"json\.loads\(('(?:[^'\\]|\\.)*'|\"(?:[^\"\\]|\\.)*\")\)")
+#: (characters of a code summary, characters of its decoded policy data), tried from the most detailed down.
+_DETAIL_TIERS: tuple[tuple[int, int], ...] = ((700, 4000), (700, 1500), (700, 0), (250, 0))
 
 
 class WalkIssue(BaseModel):
@@ -96,17 +103,33 @@ def _code_of(item: Mapping[str, Any]) -> str:
     return str(code.get("default", "")) if isinstance(code, Mapping) else ""
 
 
-def _describe_code(code: str, limit: int) -> str:
-    """What a code step computes: the variables it writes and its comment lines (the data tables are left out)."""
+def _code_data(code: str) -> str:
+    """The policy tables a generated code step embeds (``json.loads('...')`` literals), decoded to compact JSON."""
+    found: list[str] = []
+    for match in _JSON_LITERAL.finditer(code):
+        try:
+            value = json.loads(ast.literal_eval(match.group(1)))
+        except (ValueError, SyntaxError, TypeError):
+            continue
+        found.append(json.dumps(value, ensure_ascii=False, separators=(",", ":")))
+    return " ".join(found)
+
+
+def _describe_code(code: str, limit: int, data_limit: int = 0, label: str = "code step") -> str:
+    """What a code step computes: the variables it writes, its comment lines and (``data_limit``) its decoded data."""
     writes = list(dict.fromkeys(_WRITES.findall(code)))
     comments = [c.strip() for c in _COMMENT.findall(code)][:12]
-    text = "code step writes: " + (", ".join(writes) if writes else "(nothing recognisable)")
+    text = f"{label} writes: " + (", ".join(writes) if writes else "(nothing recognisable)")
     if comments:
         text += "; notes: " + " / ".join(comments)
-    return text[:limit]
+    text = text[:limit]
+    data = _code_data(code) if data_limit > 0 else ""
+    if data:
+        text += "\n  policy data: " + (data if len(data) <= data_limit else data[:data_limit] + " ...")
+    return text
 
 
-def _node_text(name: str, node: Mapping[str, Any], code_chars: int) -> str:
+def _node_text(name: str, node: Mapping[str, Any], code_chars: int, data_chars: int = 0) -> str:
     lines = [f"## node {name} ({node.get('node_type', '?')})"]
     if node.get("task_message"):
         lines.append("TASK MESSAGE:\n" + str(node["task_message"]))
@@ -123,21 +146,27 @@ def _node_text(name: str, node: Mapping[str, Any], code_chars: int) -> str:
         if isinstance(tool, Mapping):
             function = tool.get("function") or {}
             lines.append(f"TOOL {_function_name(tool)}: {function.get('description', '')}")
+            for hook in ("pre_process_code", "post_process_code") if data_chars > 0 else ():
+                body = tool.get(hook)
+                if isinstance(body, str) and body.strip():
+                    label = f"  {hook.split('_')[0]}-hook of {_function_name(tool)}"
+                    lines.append(_describe_code(body, code_chars, data_chars, label))
     for action in node.get("pre_actions") or []:
         if isinstance(action, Mapping):
             code = _code_of(action)
-            lines.append(_describe_code(code, code_chars) if code else f"PRE-ACTION {_function_name(action)}")
+            lines.append(_describe_code(code, code_chars, data_chars) if code
+                         else f"PRE-ACTION {_function_name(action)}")
     return "\n".join(lines)
 
 
 def workflow_text(workflow: Mapping[str, Any], max_chars: int = MAX_WORKFLOW_CHARS) -> str:
     """A condensed, model-readable rendering of a workflow (see the module docstring)."""
-    for code_chars in (700, 250):
+    for code_chars, data_chars in _DETAIL_TIERS:
         parts = ["SYSTEM PROMPT:\n" + str(workflow.get("system_prompt", ""))]
         for name, node in (workflow.get("nodes") or {}).items():
-            parts.append(_node_text(name, node, code_chars))
+            parts.append(_node_text(name, node, code_chars, data_chars))
         for name, node in (workflow.get("global_nodes") or {}).items():
-            parts.append(_node_text(f"{name} (global)", node, code_chars))
+            parts.append(_node_text(f"{name} (global)", node, code_chars, data_chars))
         text = "\n\n".join(parts)
         if len(text) <= max_chars:
             return text

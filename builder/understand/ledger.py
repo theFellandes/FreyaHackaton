@@ -103,7 +103,7 @@ _FILLER_WORDS = frozenset(
      "update", "bank", "collections", "collection", "spec", "specification", "guide", "instructions", "file"}
 )
 _JSON_KEY = re.compile(r'"(?:id|quote|category|statement|scope|supersedes|rules|ambiguities)"\s*:|\\"(?:id|quote|statement)\\"')
-_FOREIGN_BRACKETS = re.compile("[【】：，「」]")  # CJK / full-width brackets, colon, comma
+_FOREIGN_BRACKETS = re.compile(r"[\u3010\u3011\uff1a\uff0c\u300c\u300d]")  # CJK / full-width brackets, colon, comma
 _MAX_STATEMENT_CHARS = 700
 _STATEMENT_TO_QUOTE_RATIO = 4
 _COMPLETENESS_BATCH_CHARS = 4500
@@ -393,6 +393,7 @@ async def build_rule_ledger(
     trace: TraceLike | None,
     *,
     deadline: float | None = None,
+    optional_deadline: float | None = None,
     max_chunk_chars: int = DEFAULT_CHUNK_CHARS,
     max_parallel: int = 3,
 ) -> RuleLedger:
@@ -404,6 +405,9 @@ async def build_rule_ledger(
         tool_api: The tool contracts, shown to the model as vocabulary for rule statements.
         trace: Run trace; every ambiguity and supersession is written to it. ``None`` silences tracing.
         deadline: ``time.monotonic()`` value after which the gateway starts no new attempt.
+        optional_deadline: The same for the optional calls whose failure is swallowed (re-quote, completeness check,
+            amendment links); defaults to ``deadline``. An earlier value keeps a slow provider on an optional call from
+            leaving the mandatory stages after it without time (audit AUD-53).
         max_chunk_chars: Passage size limit (characters) for one extraction call.
         max_parallel: How many extraction calls may run at the same time.
 
@@ -415,6 +419,7 @@ async def build_rule_ledger(
         builder.llm.errors.AllProvidersFailed: An extraction call failed on every provider.
     """
     ctx = _Context(llm, bundle, tool_api, trace, deadline)
+    ctx.optional_deadline = optional_deadline if optional_deadline is not None else deadline
     chunks = plan_chunks(bundle, max_chunk_chars)
     trace_event(trace, "ledger", f"reading {len(bundle.documents)} file(s) in {len(chunks)} passage(s)",
                 files=bundle.names, passages=len(chunks))
@@ -439,6 +444,7 @@ class _Context:
         self.bundle = bundle
         self.trace = trace
         self.deadline = deadline
+        self.optional_deadline = deadline  # optional calls (re-quote, completeness, reconcile); see build_rule_ledger
         self.full_text = wrap_bundle(bundle, labeled=True)  # what the prompts show: documents as untrusted data
         self.source_text = bundle.combined_text()  # the plain text, for checks against what the model wrote
         self.tool_api_text = tool_api.describe() if tool_api is not None else ""
@@ -651,7 +657,7 @@ async def _ground(ctx: _Context, ledger: RuleLedger) -> RuleLedger:
     try:
         answer = await call_structured(ctx.llm, purpose="rule ledger: re-quote unfound quotes", schema=RequoteResult,
                                        system=prompt.system, user=prompt.user, role=LLMRole.FAST,
-                                       max_tokens=MAX_OUTPUT_TOKENS, deadline=ctx.deadline)
+                                       max_tokens=MAX_OUTPUT_TOKENS, deadline=ctx.optional_deadline)
     except Exception as exc:  # the ledger is still usable; report instead of failing the build
         trace_error(ctx.trace, f"re-quote call failed ({type(exc).__name__}); unfound quotes are kept", error=str(exc)[:300])
         return ledger
@@ -724,7 +730,7 @@ async def _complete(ctx: _Context, ledger: RuleLedger) -> RuleLedger:
             part = await call_structured(
                 ctx.llm, purpose=f"rule ledger: completeness check {number}/{len(batches)}", schema=LedgerPart,
                 system=prompt.system, user=prompt.user, role=LLMRole.STRONG, max_tokens=MAX_OUTPUT_TOKENS,
-                deadline=ctx.deadline,
+                deadline=ctx.optional_deadline,
             )
         except Exception as exc:
             trace_error(ctx.trace, f"completeness call failed ({type(exc).__name__}); ledger kept as it is",
@@ -820,7 +826,7 @@ async def _reconcile(ctx: _Context, ledger: RuleLedger) -> RuleLedger:
         answer = await call_structured(
             ctx.llm, purpose="rule ledger: link amendments and cross-document ambiguities",
             schema=LedgerReconciliation, system=prompt.system, user=prompt.user, role=LLMRole.STRONG,
-            max_tokens=MAX_OUTPUT_TOKENS, deadline=ctx.deadline,
+            max_tokens=MAX_OUTPUT_TOKENS, deadline=ctx.optional_deadline,
         )
     except Exception as exc:
         trace_error(ctx.trace, f"reconcile call failed ({type(exc).__name__}); supersession links come from the "

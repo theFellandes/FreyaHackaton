@@ -1,0 +1,182 @@
+2026-10-11T14:55:46.562Z | START  | run c131265685c2 started | slot=brief-a-brief-b | builder 0.1.0, python 3.13.16 | commit 6d75847+dirty
+2026-10-11T14:55:46.563Z | CONFIG | effective configuration | freya_api_url=https://staging-app.freyavoice.ai freya_api_key=set freya_bank_team_key=set freya_workspace_id=auto llm_providers=[anthropic, openai, claude_code] builder_track=compiled agent_profile=staged self_test=smoke build_time_budget_s=1680 build_slot=auto dry_run=False langfuse=disabled llm_log_content=full langfuse_log_prompts=True
+2026-10-11T14:55:46.564Z | OBS    | langfuse disabled (no keys)
+2026-10-11T14:55:46.566Z | CONFIG | LLM key changer | order=[anthropic, openai, claude_code] key_health_file=.\data\key_health.json
+2026-10-11T14:55:46.577Z | STAGE  | load_inputs | start | budget_left_s=1680
+2026-10-11T14:55:46.578Z | DECIDE | track compiled (requested compiled; agentic fallback off) | profile=staged dry_run=False
+2026-10-11T14:55:46.578Z | INPUT  | 2 brief file(s), tool API with 7 tool(s) | briefs=[brief-a.md, brief-b.md] chars=12567 brief_sha=73c673e809cb tools=[add_note, close_call, create_promise, get_account, schedule_callback, transfer_to_agent, verify_identity]
+2026-10-11T14:55:46.578Z | STAGE  | load_inputs | end 0.0s | budget_left_s=1680
+2026-10-11T14:55:46.579Z | STAGE  | guard_inputs | start | budget_left_s=1680
+2026-10-11T14:55:46.587Z | GUARD  | inputs | ok | 0 violations | blocked=False violations=[]
+2026-10-11T14:55:46.587Z | STAGE  | guard_inputs | end 0.0s | budget_left_s=1680
+2026-10-11T14:55:46.588Z | STAGE  | understand_brief | start | budget_left_s=1680
+2026-10-11T14:55:46.588Z | LEDGER | reading 2 file(s) in 4 passage(s) | files=[brief-a.md, brief-b.md] passages=4
+2026-10-11T14:56:09.793Z | MODEL  | openai/gpt-5.6-terra | key=openai#1(…yRAA) | ok 22.5s in=6983 out=3814 attempt=1 | rule ledger: brief-a.md passage 2/4
+2026-10-11T14:56:09.803Z | LEDGER | passage 2/4 (brief-a.md): 60 rules, 1 ambiguities
+2026-10-11T14:56:09.803Z | RATE   | waited 22.5 s for openai#1(…yRAA) | purpose=rule ledger: brief-a.md passage 3/4 provider=openai waited_s=22.47
+2026-10-11T14:56:15.362Z | MODEL  | openai/gpt-5.6-terra | key=openai#1(…yRAA) | ok 28.8s in=6984 out=4156 attempt=1 | rule ledger: brief-a.md passage 1/4
+2026-10-11T14:56:15.373Z | LEDGER | passage 1/4 (brief-a.md): 54 rules, 1 ambiguities
+2026-10-11T14:56:15.373Z | RATE   | waited 5.6 s for openai#1(…yRAA) | purpose=rule ledger: brief-b.md passage 4/4 provider=openai waited_s=5.57
+2026-10-11T14:56:22.912Z | MODEL  | openai/gpt-5.6-terra | key=openai#1(…yRAA) | ok 13.1s in=6523 out=2256 attempt=1 | rule ledger: brief-a.md passage 3/4
+2026-10-11T14:56:22.920Z | LEDGER | passage 3/4 (brief-a.md): 34 rules, 1 ambiguities
+2026-10-11T14:56:31.261Z | MODEL  | openai/gpt-5.6-terra | key=openai#1(…yRAA) | ok 15.9s in=6518 out=2490 attempt=1 | rule ledger: brief-b.md passage 4/4
+2026-10-11T14:56:31.272Z | LEDGER | passage 4/4 (brief-b.md): 35 rules, 1 ambiguities
+2026-10-11T14:56:33.685Z | MODEL  | openai/gpt-5.6-terra | key=openai#1(…yRAA) | ok 2.4s in=1879 out=142 attempt=1 | rule ledger: completeness check 1/1
+2026-10-11T14:56:33.709Z | LEDGER | completeness check added 1 rule(s) | rule_ids=[A-M1]
+2026-10-11T14:57:19.114Z | MODEL  | openai/gpt-5.6-terra | key=openai#1(…yRAA) | ok 45.4s in=9891 out=4590 attempt=1 | rule ledger: link amendments and cross-document ambiguities
+2026-10-11T14:57:19.127Z | LEDGER | ledger ready: 184 rules (183 active), 6 ambiguities, 1 superseded | rules=184 active=183 ambiguities=6
+2026-10-11T14:57:19.127Z | AMBIG  | [A-6a, A-7a] Whether a callback on today is permitted when today is not a business day. -> chosen: Permit a callback today regardless of whether today is a business day, provided the time is from 10:00 to 19:00 inclusive and later than now. (because: The disjunctive wording is "today or the next business day"; it expressly labels only the second alternative as a business day.)
+2026-10-11T14:57:19.127Z | AMBIG  | [A-19c, A-20a] What should happen if a customer names a weekend day or holiday on or before the deadline, but the next business day is after the deadline? -> chosen: Do not offer a next business day that is after the deadline. (because: Rule 20 says to offer "the next business day," but rule 19 unconditionally states that a promise date must be "not after the deadline." The conservative reading preserves the express prohibition on recording a date after the deadline.)
+2026-10-11T14:57:19.128Z | AMBIG  | [A-45a, A-45b] Must the customer's two statements that they do not want to talk be consecutive to trigger closure? -> chosen: Close after any two such statements during the call, even if separated by other conversation. (because: The rule says "If the customer says twice that they do not want to talk" and does not require the statements to be consecutive.)
+2026-10-11T14:57:19.128Z | AMBIG  | [B-8c, B-9b] Which `add_note` reason must be used when one product has a dispute or an "already paid" claim? -> chosen: Use `dispute` for a dispute and `paid` for an "already paid" claim. (because: Rule 9 says "A dispute or an "already paid" claim on one product" and then says "Note it"; the reason list explicitly includes the corresponding values `dispute` and `paid`.)
+2026-10-11T14:57:19.128Z | AMBIG  | [B-7c, B-11a, B-11b] After one product's `create_promise` fails twice during the batch, must the agent still attempt `create_promise` for promised products that have not yet been processed? -> chosen: Continue with the remaining promised products, because rule B-7c requires one `create_promise` call per product after confirmation. (because: The batch-recording instruction expressly covers every product, while rule B-11 only directs retention of already recorded promises and a note for the failed product; it does not instruct the agent to stop the remaining required calls.)
+2026-10-11T14:57:19.128Z | AMBIG  | [A-32b, A-32e, B-8a, B-8b, B-8c] When hardship is raised for one product in a multi-product call and support is declined, does the call end immediately as hardship or continue to the other products with a hardship note for that product? -> chosen: Close immediately as `no_promise` / `hardship` under Brief A rule 32. (because: Brief A expressly directs closure when support is declined, while Brief B expressly requires continuing after paid claims and disputes but does not expressly extend that continuation instruction to hardship.)
+2026-10-11T14:57:19.129Z | DECIDE | supersession: B-1a narrows A-JOB-a: Only for customers with two or three late products, `get_account` and the call scope are no longer limited to one product. (they stay in force otherwise)
+2026-10-11T14:57:19.129Z | DECIDE | supersession: B-4a narrows A-28: Only when there are multiple products, the initial payment-today question concerns all products rather than one payment. (they stay in force otherwise)
+2026-10-11T14:57:19.129Z | DECIDE | supersession: B-6a narrows A-23a: Only where one shared requested date exceeds a particular product's deadline, that product is set to its deadline rather than offered the deadline as an alternative. (they stay in force otherwise)
+2026-10-11T14:57:19.129Z | DECIDE | supersession: B-7a narrows A-34a: Only for multiple promised products, all product, amount, and date details are read back together rather than product by product. (they stay in force otherwise)
+2026-10-11T14:57:19.129Z | DECIDE | supersession: B-7b narrows A-34a: Only for multiple promised products, one confirmation is obtained for the combined read-back rather than separate confirmations. (they stay in force otherwise)
+2026-10-11T14:57:19.129Z | DECIDE | supersession: B-8a narrows A-31c: Only when other products remain, refusal of one product does not end the call because the customer may promise other products. (they stay in force otherwise)
+2026-10-11T14:57:19.129Z | DECIDE | supersession: B-8b replaces A-ADD-NOTE: For Brief B products without a promise, `add_note` is required despite Brief A's prohibition on that tool.
+2026-10-11T14:57:19.129Z | DECIDE | supersession: B-9a narrows A-39c, A-40c: Only where other products remain, a paid claim or dispute for one product does not close the entire call. (they stay in force otherwise)
+2026-10-11T14:57:19.130Z | DECIDE | supersession: B-10e narrows B-8b, B-9b, B-11b: Only when the call transfers, no product notes may be added despite otherwise applicable note requirements. (they stay in force otherwise)
+2026-10-11T14:57:19.130Z | DECIDE | supersession: B-11a narrows A-37c: Only in a multi-product call, failure twice to create one product's promise does not require closing before retaining any promises already recorded. (they stay in force otherwise)
+2026-10-11T14:57:19.130Z | DECIDE | supersession: B-CLOSING-b narrows A-OUTCOME-PAID: Only with multiple products and no recorded promise, `paid` requires every product to be noted paid. (they stay in force otherwise)
+2026-10-11T14:57:19.130Z | DECIDE | supersession: B-CLOSING-c narrows A-OUTCOME-NO-PROMISE: Only with multiple products and no recorded promise, the no-promise reason is selected from the first non-paid product note in account order. (they stay in force otherwise)
+2026-10-11T14:57:19.178Z | GUARD  | ledger | ok | 0 violations | blocked=False violations=[]
+2026-10-11T14:57:19.178Z | DECIDE | rule ledger: 184 rules (183 active), 6 ambiguities, 12 supersessions
+2026-10-11T14:57:19.179Z | STAGE  | understand_brief | end 92.6s | budget_left_s=1587.4
+2026-10-11T14:57:19.181Z | STAGE  | extract_policy | start | budget_left_s=1587.4
+2026-10-11T14:57:55.427Z | MODEL  | openai/gpt-5.6-terra | key=openai#1(…yRAA) | ok 36.2s in=30400 out=6697 attempt=1 | extract policy IR from the rule ledger
+2026-10-11T14:57:55.456Z | EXTRACT | safe fix: persuasion date kinds set to the rule their own text states: attempt 1: last_business_day_this_week -> last_business_day_next_week_if_today_is_last
+2026-10-11T14:57:55.602Z | GROUNDING | warning: phrases.goodbye_sentence: sentence not found in the briefs: 'Thank you and goodbye.'
+2026-10-11T14:57:55.602Z | GROUNDING | warning: phrases.extra.below_floor: sentence not found in the briefs: 'That amount cannot be recorded. I can offer the {floor_label} of {floor_amount}.'
+2026-10-11T14:57:55.602Z | GROUNDING | warning: phrases.extra.hardship_sympathy: sentence not found in the briefs: 'I am sorry to hear that.'
+2026-10-11T14:57:55.603Z | GROUNDING | warning: phrases.extra.hardship_offer: sentence not found in the briefs: 'Would you like me to connect you with the customer support team?'
+2026-10-11T14:57:55.603Z | GROUNDING | warning: phrases.extra.after_deadline: sentence not found in the briefs: 'The latest date I can record is {deadline}. Can you make the payment on that date?'
+2026-10-11T14:57:55.603Z | GROUNDING | warning: identity.questions[0].ask: sentence not found in the briefs: 'What is your date of birth?'
+2026-10-11T14:57:55.604Z | EXTRACT | policy IR extracted: 2 band(s), 11 intent(s), 19 outcome row(s), 26 residual rule(s) | cited_rules=183
+2026-10-11T14:57:55.605Z | STAGE  | extract_policy | end 36.4s | budget_left_s=1551
+2026-10-11T14:57:55.606Z | STAGE  | validate_policy | start | budget_left_s=1551
+2026-10-11T14:57:55.618Z | VALIDATE | policy IR: 1 error(s), 1 warning(s) | codes=[INTENT_NOTE_BEFORE_VERIFICATION, ROW_SHADOWED]
+2026-10-11T14:57:55.618Z | VALIDATE | issues: - ERROR INTENT_NOTE_BEFORE_VERIFICATION at intents[8]: intent 'refuse_to_talk' (any) only records the note 'refused', but before the identity is verified the agent has no note tool and must close the call. Give it the close outcome the documents prescribe for this situation before verification (outcome / reason from the outcome table), and keep the note for the after_verification entry. [A-45a, A-45b] - WARNING ROW_SHADOWED at closing.rows[3]: closing.rows[3] ('product_notes' -> no_promise/refused) never applies: an earlier row for the same situation and verification state always wins. The IR cannot pick between rows by anything else (for example the terms of a promise); keep one row per situation and verification state. [A-31c, B-CLOSING-c]
+2026-10-11T14:57:55.773Z | VALIDATE | 6 fixed sentence(s) not found in the briefs | sentences=[phrases.goodbye_sentence: sentence not found in the briefs: 'Thank you and goodbye.', phrases.extra.below_floor: sen...
+2026-10-11T14:57:55.797Z | VALIDATE | offline invariants: 17 passed, 0 failed, 1 unchecked | failing=[]
+2026-10-11T14:57:55.797Z | STAGE  | validate_policy | end 0.2s | budget_left_s=1550.8
+2026-10-11T14:57:55.800Z | STAGE  | repair_policy | start | budget_left_s=1550.8
+2026-10-11T14:57:55.801Z | DECIDE | policy repair round 1: 2 issue(s) | codes=[INTENT_NOTE_BEFORE_VERIFICATION, ROW_SHADOWED]
+2026-10-11T14:57:55.841Z | REPAIR | asking the model to fix 2 issue(s) (round 1) | codes=[INTENT_NOTE_BEFORE_VERIFICATION, ROW_SHADOWED]
+2026-10-11T14:58:23.713Z | MODEL  | openai/gpt-5.6-terra | key=openai#1(…yRAA) | ok 27.9s in=31655 out=6123 attempt=1 | repair policy IR (round 1, 1 errors)
+2026-10-11T14:58:23.731Z | STAGE  | repair_policy | end 27.9s | budget_left_s=1522.8
+2026-10-11T14:58:23.731Z | STAGE  | validate_policy | start | budget_left_s=1522.8
+2026-10-11T14:58:23.736Z | VALIDATE | policy IR: 0 error(s), 0 warning(s) | codes=[]
+2026-10-11T14:58:23.810Z | VALIDATE | 6 fixed sentence(s) not found in the briefs | sentences=[phrases.goodbye_sentence: sentence not found in the briefs: 'Thank you and goodbye.', phrases.extra.below_floor: sen...
+2026-10-11T14:58:23.820Z | VALIDATE | offline invariants: 17 passed, 0 failed, 1 unchecked | failing=[]
+2026-10-11T14:58:23.821Z | STAGE  | validate_policy | end 0.1s | budget_left_s=1522.7
+2026-10-11T14:58:23.822Z | STAGE  | guard_policy | start | budget_left_s=1522.7
+2026-10-11T14:58:23.847Z | GUARD  | policy | ok | 0 violations | blocked=False violations=[]
+2026-10-11T14:58:23.848Z | STAGE  | guard_policy | end 0.0s | budget_left_s=1522.7
+2026-10-11T14:58:23.848Z | STAGE  | draft_prose | start | budget_left_s=1522.7
+2026-10-11T14:58:52.675Z | MODEL  | openai/gpt-5.6-luna | key=openai#1(…yRAA) | ok 28.8s in=8954 out=3210 attempt=1 | draft node prose (staged profile)
+2026-10-11T14:58:52.683Z | PROSE  | node negotiate: text cut from 4582 to 2827 characters
+2026-10-11T14:58:52.683Z | PROSE  | drafted prose for 4 node(s) | nodes={"opening": 925, "third_party": 1138, "identity": 1245, "negotiate": 2827}
+2026-10-11T14:58:52.727Z | GUARD  | prose | ok | 0 violations | blocked=False violations=[]
+2026-10-11T14:58:52.727Z | STAGE  | draft_prose | end 28.9s | budget_left_s=1493.8
+2026-10-11T14:58:52.728Z | STAGE  | compile_workflow | start | budget_left_s=1493.8
+2026-10-11T14:58:52.800Z | DECIDE | compiled staged workflow: 45 nodes; rule coverage: 183 of 183 active rules mapped to existing workflow locations (100%; a declaration, not behavioural evidence); 1 superseded; 0 dangling location(s); uncovered: none | notes=[phrases.extra.after_deadline is said by no node of the workflow; it is placed word for word in negotiate]
+2026-10-11T14:58:52.801Z | STAGE  | compile_workflow | end 0.1s | budget_left_s=1493.8
+2026-10-11T14:58:52.802Z | STAGE  | static_checks | start | budget_left_s=1493.8
+2026-10-11T14:58:52.816Z | LINT   | static checks: 0 errors, 1 warnings (ok) | errors=[] warnings=[L018 warning nodes.negotiate.task_message: 13748 characters (> 6000); long prompts dilute the rules]
+2026-10-11T14:58:52.816Z | TEST   | PASS static_checks | 0 errors, 1 warnings
+2026-10-11T14:58:52.816Z | STAGE  | static_checks | end 0.0s | budget_left_s=1493.7
+2026-10-11T14:58:52.817Z | STAGE  | guard_workflow | start | budget_left_s=1493.7
+2026-10-11T14:58:52.837Z | GUARD  | workflow | ok | 0 violations | blocked=False violations=[]
+2026-10-11T14:58:52.837Z | STAGE  | guard_workflow | end 0.0s | budget_left_s=1493.7
+2026-10-11T14:58:52.838Z | STAGE  | remote_validate | start | budget_left_s=1493.7
+2026-10-11T14:58:53.292Z | REQUEST | Freya wrapper attempt completed | service=freya scope=wrapper operation=validate request_id=550751073a824e0eb281c1f7ee9c5d27 attempt=1 max_attempts=3 ok=True duration_ms=450.301 method=POST path=/api/v2/workflow retryable=False retry_scheduled=False retry_delay_ms=0
+2026-10-11T14:58:53.293Z | FREYA  | validate | ok=True name=brief-a-brief-b node_count=45 tool_count=8
+2026-10-11T14:58:53.293Z | TEST   | PASS remote_validate | the platform accepted the workflow (dry run)
+2026-10-11T14:58:53.293Z | STAGE  | remote_validate | end 0.5s | budget_left_s=1493.3
+2026-10-11T14:58:53.294Z | STAGE  | deploy | start | budget_left_s=1493.3
+2026-10-11T14:58:53.468Z | REQUEST | Freya wrapper attempt completed | service=freya scope=wrapper operation=workspace request_id=b89e37aa1fd54cf089927d578fe5e5da attempt=1 max_attempts=3 ok=True duration_ms=168.897 retryable=False retry_scheduled=False retry_delay_ms=0
+2026-10-11T14:58:53.950Z | REQUEST | Freya wrapper attempt completed | service=freya scope=wrapper operation=update request_id=3680949b0d9f44589696d9ccfc7811ae attempt=1 max_attempts=5 ok=True duration_ms=479.314 method=PUT path=/api/v2/workflow/b5638c83-1842-4615-ab28-23834f631e2f retryable=False retry_scheduled=False retry_delay_ms=0 workflow_id=b5638c83-1842-4615-ab28-23834f631e2f
+2026-10-11T14:58:53.951Z | REQUEST | Freya wrapper attempt completed | service=freya scope=wrapper operation=workspace request_id=8984bbe452964f44a199c75ab2cfa83f attempt=1 max_attempts=3 ok=True duration_ms=0.001 retryable=False retry_scheduled=False retry_delay_ms=0
+2026-10-11T14:58:54.810Z | REQUEST | Freya wrapper attempt completed | service=freya scope=wrapper operation=get_workflow request_id=6738cf23705a45259be2f40405975875 attempt=1 max_attempts=3 ok=True duration_ms=858.924 method=GET path=/api/v2/workflow/b5638c83-1842-4615-ab28-23834f631e2f retryable=False retry_scheduled=False retry_delay_ms=0 workflow_id=b5638c83-1842-4615-ab28-23834f631e2f
+2026-10-11T14:58:54.810Z | REQUEST | Freya wrapper attempt completed | service=freya scope=wrapper operation=workspace request_id=b65b3eb9e5a24e3eb9bdb87efc2a6605 attempt=1 max_attempts=3 ok=True duration_ms=0.001 retryable=False retry_scheduled=False retry_delay_ms=0
+2026-10-11T14:58:55.066Z | REQUEST | Freya wrapper attempt completed | service=freya scope=wrapper operation=versions request_id=91f80406810a4d2fb518754ccc2e5b97 attempt=1 max_attempts=3 ok=True duration_ms=255.502 method=GET path=/api/v2/versions/workflow/b5638c83-1842-4615-ab28-23834f631e2f retryable=False retry_scheduled=False retry_delay_ms=0 workflow_id=b5638c83-1842-4615-ab28-23834f631e2f
+2026-10-11T14:58:56.236Z | REQUEST | Freya wrapper attempt completed | service=freya scope=wrapper operation=publish request_id=0691f45e5869443cb24eee70e1a27936 attempt=1 max_attempts=5 ok=True duration_ms=1169.64 method=POST path=/api/v2/versions/workflow/b5638c83-1842-4615-ab28-23834f631e2f/publish retryable=False retry_scheduled=False retry_delay_ms=0 workflow_id=b5638c83-1842-4615-ab28-23834f631e2f
+2026-10-11T14:58:56.236Z | REQUEST | Freya wrapper attempt completed | service=freya scope=wrapper operation=workspace request_id=412bbffc98ce445c8098dd2e52e31a61 attempt=1 max_attempts=3 ok=True duration_ms=0.001 retryable=False retry_scheduled=False retry_delay_ms=0
+2026-10-11T14:58:56.434Z | REQUEST | Freya wrapper attempt completed | service=freya scope=wrapper operation=versions request_id=f5ec750f3d9f4d6cb6162a6bf68294ab attempt=1 max_attempts=3 ok=True duration_ms=198.155 method=GET path=/api/v2/versions/workflow/b5638c83-1842-4615-ab28-23834f631e2f retryable=False retry_scheduled=False retry_delay_ms=0 workflow_id=b5638c83-1842-4615-ab28-23834f631e2f
+2026-10-11T14:58:56.434Z | FREYA  | publish | ok=True workflow_id=b5638c83-1842-4615-ab28-23834f631e2f version=5 version_id=a06be376-0e9a-4df0-b694-01ee5e142ebc confirmed=True
+2026-10-11T14:58:56.436Z | FREYA  | save | ok=True state_file=.\.freya-agents.json workflow_id=b5638c83-1842-4615-ab28-23834f631e2f agent_id=4ae00ca3-a702-465e-ae60-4b8d1c54726f version=5 created=False node_count=45 tool_count=8 slot=brief-a-brief-b published=True
+2026-10-11T14:58:56.436Z | REQUEST | Freya wrapper attempt completed | service=freya scope=wrapper operation=workspace request_id=038d4053f54f4f729c730827b38d32db attempt=1 max_attempts=3 ok=True duration_ms=0.001 retryable=False retry_scheduled=False retry_delay_ms=0
+2026-10-11T14:58:58.114Z | REQUEST | Freya wrapper attempt completed | service=freya scope=wrapper operation=get_workflow request_id=73e95a1eba3f4b419a7c65e53915c3ed attempt=1 max_attempts=3 ok=True duration_ms=1677.64 method=GET path=/api/v2/workflow/b5638c83-1842-4615-ab28-23834f631e2f retryable=False retry_scheduled=False retry_delay_ms=0 workflow_id=b5638c83-1842-4615-ab28-23834f631e2f
+2026-10-11T14:59:00.667Z | REQUEST | Freya wrapper attempt completed | service=freya scope=wrapper operation=export request_id=3d434f81ec184ee586383a97e6ad78db attempt=1 max_attempts=3 ok=True duration_ms=2549.16 method=GET path=/api/v2/workflow/b5638c83-1842-4615-ab28-23834f631e2f retryable=False retry_scheduled=False retry_delay_ms=0 workflow_id=b5638c83-1842-4615-ab28-23834f631e2f
+2026-10-11T14:59:00.667Z | FREYA  | export | ok=True workflow_id=b5638c83-1842-4615-ab28-23834f631e2f path=.\out\brief-a-brief-b.exported.json.part
+2026-10-11T14:59:00.669Z | STAGE  | deploy | end 7.4s | budget_left_s=1485.9
+2026-10-11T14:59:00.670Z | STAGE  | self_test | start | budget_left_s=1485.9
+2026-10-11T14:59:00.670Z | TEST   | START smoke
+2026-10-11T14:59:01.859Z | REQUEST | Freya wrapper attempt completed | service=freya scope=wrapper operation=chat request_id=7f28ca9d0d2d4549809c31c6588f78f4 attempt=1 max_attempts=1 ok=True duration_ms=1187.88 method=POST path=/api/v2/chat/message retryable=False retry_scheduled=False retry_delay_ms=0 workflow_id=b5638c83-1842-4615-ab28-23834f631e2f call_id=b63c47c6-55ae-4e0a-afff-8092df9153a0
+2026-10-11T14:59:01.860Z | FREYA  | chat | ok=True workflow_id=b5638c83-1842-4615-ab28-23834f631e2f call_id=b63c47c6-55ae-4e0a-afff-8092df9153a0 message=Hello? response=I am a digital assistant calling from Freya Bank, and we record this call. Am I speaking with Mr Morgan? ended_by_agent=False
+2026-10-11T14:59:03.498Z | REQUEST | Freya wrapper attempt completed | service=freya scope=wrapper operation=chat request_id=38d8f90cd2934936a1cc79dd0254b1c5 attempt=1 max_attempts=1 ok=True duration_ms=1637.35 method=POST path=/api/v2/chat/message retryable=False retry_scheduled=False retry_delay_ms=0 workflow_id=b5638c83-1842-4615-ab28-23834f631e2f call_id=b63c47c6-55ae-4e0a-afff-8092df9153a0
+2026-10-11T14:59:03.499Z | FREYA  | chat | ok=True workflow_id=b5638c83-1842-4615-ab28-23834f631e2f call_id=b63c47c6-55ae-4e0a-afff-8092df9153a0 message=Sorry, who is this and what is this about? response=I am Freya Bank's digital assistant. Am I speaking with Mr Morgan? ended_by_agent=False
+2026-10-11T14:59:03.623Z | REQUEST | Freya wrapper attempt completed | service=freya scope=wrapper operation=chat_end request_id=e3909ab40b1c452a81ed39059d81a776 attempt=1 max_attempts=1 ok=True duration_ms=121.684 method=POST path=/api/v2/chat/end retryable=False retry_scheduled=False retry_delay_ms=0 call_id=b63c47c6-55ae-4e0a-afff-8092df9153a0
+2026-10-11T14:59:03.623Z | FREYA  | chat_end | ok=True call_id=b63c47c6-55ae-4e0a-afff-8092df9153a0
+2026-10-11T14:59:03.624Z | TEST   | PASS smoke | 2 turn(s) answered; replies non-empty; forbidden words checked: 4; opening elements checked: 2
+2026-10-11T14:59:03.624Z | STAGE  | self_test | end 3.0s | budget_left_s=1482.9
+2026-10-11T14:59:03.625Z | STAGE  | decide | start | budget_left_s=1482.9
+2026-10-11T14:59:03.625Z | DECIDE | self-test verdict round 0: all self-tests passed; finishing | issues=0 budget_left_s=1483 round_cost_s=830
+2026-10-11T14:59:03.625Z | STAGE  | decide | end 0.0s | budget_left_s=1482.9
+2026-10-11T14:59:03.626Z | STAGE  | finalize | start | budget_left_s=1482.9
+2026-10-11T14:59:03.629Z | FINAL  | run c131265685c2 finished
+====================================================================================================
+BUILD SUMMARY
+run id       : c131265685c2
+slot         : brief-a-brief-b
+track        : compiled
+status       : deployed
+started      : 2026-10-11T14:55:46.390Z
+ended        : 2026-10-11T14:59:03.629Z
+duration     : 197.2 s (3 min 17 s)
+model calls  : 9 (9 ok, 0 failed)
+  - openai/gpt-5.6-luna: calls=1 (1 ok, 0 failed), tokens in=8954 out=3210
+  - openai/gpt-5.6-terra: calls=8 (8 ok, 0 failed), tokens in=100833 out=30268
+Freya        :
+  - steps (nodes): 45
+  - tools: 8
+  - workflow id: b5638c83-1842-4615-ab28-23834f631e2f
+  - published version: 5
+  - agent id: 4ae00ca3-a702-465e-ae60-4b8d1c54726f
+  - slot: brief-a-brief-b
+  - published: True
+  - exported: .\out\brief-a-brief-b.exported.json
+tests        : 3 (3 passed, 0 failed)
+  - PASS static_checks: 0 errors, 1 warnings
+  - PASS remote_validate: the platform accepted the workflow
+  - PASS smoke: 2 turn(s) answered; replies non-empty; forbidden words checked: 4; opening elements checked: 2
+stages       :
+  - load_inputs: end 0.0s
+  - guard_inputs: end 0.0s
+  - understand_brief: end 92.6s
+  - extract_policy: end 36.4s
+  - validate_policy: end 0.2s
+  - repair_policy: end 27.9s
+  - validate_policy: end 0.1s
+  - guard_policy: end 0.0s
+  - draft_prose: end 28.9s
+  - compile_workflow: end 0.1s
+  - static_checks: end 0.0s
+  - guard_workflow: end 0.0s
+  - remote_validate: end 0.5s
+  - deploy: end 7.4s
+  - self_test: end 3.0s
+  - decide: end 0.0s
+errors       : 0
+profile      : staged
+coverage     : 183 of 183 active rules mapped to existing workflow locations (100%; a declaration, not behavioural evidence); 1 superseded; 0 dangling location(s); uncovered: none
+notes        : [compiler: phrases.extra.after_deadline is said by no node of the workflow; it is placed word for word in negotiate, decide: all self-tests passed]
+errors_list  : []
+export_ok    : True
+====================================================================================================
+2026-10-11T14:59:03.631Z | STAGE  | finalize | end 0.0s | budget_left_s=1482.9
+2026-10-11T14:59:03.632Z | END    | run c131265685c2 closed after 197.2 s | duration_s=197.239

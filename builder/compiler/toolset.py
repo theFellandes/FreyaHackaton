@@ -1,7 +1,7 @@
 """The model-called tools of an agent, built from the tool contracts and the IR, with their hooks.
 
 Both profiles use the same library: ``verify_identity`` (answer normalising pre-hook, ``what_to_do_next`` post-hook),
-``create_promise`` (argument-cleaning pre-hook, promise guard, retry post-hook), ``add_note`` (notes-log pre-hook),
+``create_promise`` (argument-cleaning pre-hook, promise guard, retry post-hook), ``add_note`` (acknowledged notes log),
 ``schedule_callback`` (post-hook) and, for the lean profile only, ``transfer_to_agent`` and ``close_call`` as tools the
 model calls itself.
 
@@ -18,6 +18,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from builder.compiler import hooks
+from builder.compiler.codegen import clock_variable
 from builder.compiler.context import (
     deferred_notes,
     failure_note_reason,
@@ -27,6 +28,7 @@ from builder.compiler.context import (
 from builder.compiler.errors import CompileError
 from builder.compiler.hooks import CoerceKind
 from builder.compiler.roles import (
+    DEFAULT_MINOR_SCALE,
     AccountRoles,
     CloseRoles,
     CustomerBinding,
@@ -36,14 +38,17 @@ from builder.compiler.roles import (
     account_roles,
     close_roles,
     customer_binding,
+    minor_scale,
+    minor_units,
     note_roles,
     promise_roles,
     queue_field,
     success_flag,
+    success_status,
     verify_roles,
     verify_shape,
 )
-from builder.compiler.tools import model_tool
+from builder.compiler.tools import guessed_fields, model_tool
 from builder.ingest.tool_api import FieldSpec, ToolApi, ToolContract
 from builder.policy.ir import PolicyIR
 
@@ -56,14 +61,18 @@ NEUTRAL_VERIFY_DEFAULT = (
 
 
 def success_rule(contract: ToolContract) -> str:
-    """The post-hook condition for "the tool did its job": its success flag, else the status of the result envelope."""
+    """The post-hook condition for "the tool did its job": its success flag, else its string / enum status (only a
+    documented success value acknowledges, AUD-04), else the status of the result envelope."""
     flag = success_flag(contract)
-    return hooks.flag_true(flag) if flag else hooks.envelope_ok()
+    if flag:
+        return hooks.flag_true(flag)
+    status = success_status(contract)
+    return hooks.status_in(status.field, status.success) if status else hooks.envelope_ok()
 
 
 def product_types(ir: PolicyIR) -> set[str]:
     """Product types the policy knows (the keys of the naming and floor tables)."""
-    return set(ir.disclosure.product_naming) | set(ir.amounts.floor_field_by_type)
+    return set(ir.disclosure.product_naming) | set(ir.amounts.floor_field_by_type) | set(ir.amounts.floor_rule_by_type)
 
 
 def field_kinds(
@@ -92,11 +101,19 @@ def _kind_of(spec: FieldSpec, product_field: str | None) -> CoerceKind | None:
         return "date_iso"
     if "time" in lowered and spec.type == "string":
         return "time_hhmm"
+    if (spec.type == "number" or ("amount" in lowered and spec.type != "boolean" and not spec.enum)) and minor_units(spec):
+        return "money_minor"
     if spec.type == "number" or ("amount" in lowered and spec.type != "boolean" and not spec.enum):
         return "money"
     if spec.enum:
         return "token"
     return None
+
+
+def _integer_ids(contract: ToolContract, field: str) -> list[str]:
+    """``[field]`` when the contract types the product id as an integer (the hooks then send a JSON integer)."""
+    spec = contract.get_field(field, "request")
+    return [field] if spec is not None and spec.type == "integer" else []
 
 
 def _enums(contract: ToolContract) -> dict[str, list[str]]:
@@ -125,6 +142,9 @@ class ToolSet:
     promise_fields: PromiseRoles | None = None
     queue: str | None = None
     notes: list[str] = field(default_factory=list)
+    #: The identity response has a per-answer flag but no overall one: the hooks count the verified questions and write
+    #: ``identity_all_verified`` (AUD-23), the variable the profiles route to ``load_account`` on.
+    identity_tracked: bool = False
 
 
 def _identity_answer_note(ir: PolicyIR) -> str:
@@ -148,6 +168,9 @@ def _identity_rules(
     if shape.all_verified:
         rules.append((hooks.flag_true(shape.all_verified),
                       "All security answers are verified. Say nothing now; the call continues automatically."))
+    elif shape.verified:  # AUD-23: no overall flag: the post-hook counts the verified questions and the graph moves on
+        rules.append((hooks.IDENTITY_ALL_VERIFIED,
+                      "All security answers are verified. Say nothing now; the call continues automatically."))
     if shape.ok:
         unreadable = hooks.flag_false(shape.ok)
         if shape.hint:
@@ -160,11 +183,9 @@ def _identity_rules(
             suffix = "" if hint.counts_as_wrong else " This does not count as a wrong answer."
             rules.append((hooks.is_value(shape.hint, hint.value), hint.instruction.strip() + suffix))
     if shape.verified:
-        if shape.all_verified is None and done:  # the response has no overall flag: the model has to move on itself
-            correct = (f"This answer is correct. If every security question is now answered correctly, {done} (no text "
-                       "needed); otherwise ask the next security question that has not been answered yet.")
-        else:
-            correct = "This answer is correct. Now ask the next security question that has not been answered yet."
+        # without an overall flag the post-hook counts the verified questions (AUD-23), so the model never has to
+        # judge on its own whether every question is answered (``done`` is no longer needed for this shape)
+        correct = "This answer is correct. Now ask the next security question that has not been answered yet."
         rules.append((hooks.flag_true(shape.verified), correct))
     counter = shape.left or shape.wrong
     if counter:
@@ -172,7 +193,7 @@ def _identity_rules(
         sentence = ir.phrases.identity_failed_sentence.strip()
         ending = ((f'Say "{sentence}", then say goodbye and {finish}.' if sentence else f"Say goodbye and {finish}.")
                   if finish else "Say nothing more; the call continues automatically.")
-        ended = (hooks.is_zero(counter) if shape.left else hooks.is_count(counter, ir.identity.max_wrong_total))
+        ended = (hooks.is_zero(counter) if shape.left else hooks.is_at_least(counter, ir.identity.max_wrong_total))
         rules.append((ended,
                       f"{words(ir.identity.max_wrong_total).capitalize()} wrong answers: the identity check has ended. "
                       f"{failed} {ending}".replace("  ", " ")))
@@ -216,6 +237,7 @@ def build_tools(
     # ---- verify_identity -------------------------------------------------------------------------------------------
     verify = api.tools["verify_identity"]
     result.shape = shape = verify_shape(verify, [h.value for h in ir.identity.hints])
+    result.identity_tracked = shape.all_verified is None and shape.verified is not None
     vroles = verify_roles(verify, customer.field)
     formats = {q.field: q.answer_format for q in ir.identity.questions}
     selector_spec = verify.get_field(vroles.selector, "request")
@@ -228,12 +250,17 @@ def build_tools(
         field_notes={vroles.selector: f"Which question this answer belongs to: {question_fields}.",
                      vroles.answer: _identity_answer_note(ir)},
         pre_process_code=hooks.pre_hook_identity_answers(
-            vroles.selector, vroles.answer, formats, ir.calendar.date_input_order),
-        post_process_code=hooks.post_hook(
-            _identity_rules(ir, shape, identity_failed_phrase, identity_done_phrase),
-            default=("This answer is wrong. Do not say what the right answer is. Ask the same question again."
-                     if shape.verified else NEUTRAL_VERIFY_DEFAULT),
-            error_message="The check service failed. Ask the same question again.",
+            vroles.selector, vroles.answer, formats, ir.calendar.date_input_order,
+            {q.field: q.digits for q in ir.identity.questions if q.digits}, track=result.identity_tracked),
+        post_process_code=hooks.join_hooks(
+            hooks.post_hook_identity_progress(shape.verified, len(ir.identity.questions))
+            if result.identity_tracked and shape.verified else "",
+            hooks.post_hook(
+                _identity_rules(ir, shape, identity_failed_phrase, identity_done_phrase),
+                default=("This answer is wrong. Do not say what the right answer is. Ask the same question again."
+                         if shape.verified else NEUTRAL_VERIFY_DEFAULT),
+                error_message="The check service failed. Ask the same question again.",
+            ),
         ),
         **base,
     )
@@ -250,15 +277,35 @@ def build_tools(
             "a promise the rules forbid could be recorded")
     assert roles.product and roles.amount and roles.date
     kinds = field_kinds(promise, skip=(customer.field,), product_field=roles.product)
+    # a minor-unit amount in another scale than cents (thousandths, 3 decimals) is converted with the stated factor
+    amount_scale = DEFAULT_MINOR_SCALE
+    if kinds.get(roles.amount) == "money_minor":
+        amount_spec = promise.get_field(roles.amount, "request")
+        if amount_spec is not None:
+            amount_scale, scale_note = minor_scale(amount_spec)
+            if scale_note:
+                result.notes.append(f"{promise.name}: {scale_note}")
+    result.notes.extend(f"get_account: {note}" for note in account.scale_notes)
+    # acknowledged = the transport succeeded AND the contract's success flag (or the envelope) says so
+    promise_ok = hooks.all_of(hooks.envelope_ok(), success_rule(promise))
     success = ir.recording.success_sentence.strip() or ir.phrases.recorded_sentence.strip()
     note_name = ir.multi_product.note_tool or "add_note"
     notes_for_failure = bool(ir.multi_product.enabled and failure_note_reason(ir))
     _prompt_rule, fail_text = recording_failure_texts(
         ir, promise.name, failed_phrase=promise_failed_phrase, note_tool=note_name, with_note=notes_for_failure)
     ok_message = "The promise IS recorded. If this was the only product, say nothing: the system confirms it."
-    ok_message += (f' Otherwise tell the customer it is recorded, say exactly: "{success}"' if success
-                   else " Otherwise tell the customer it is recorded")
-    ok_message += " Then continue with the next product, or close the call if every product is handled."
+    joint = ir.multi_product.enabled and ir.confirmation.single_confirmation_for_all_products
+    if joint:  # AUD-32: one read-back and one yes for every product; record the rest without asking again
+        ok_message += (f" If the customer confirmed other products in the same read-back that are not recorded yet, "
+                       f"call {promise.name} for the next one now, without asking again. Once all of them are recorded, "
+                       "tell the customer they are recorded"
+                       + (f', say exactly: "{success}" once' if success else "")
+                       + ", then continue with any product not handled yet, or close the call if every product is "
+                         "handled.")
+    else:
+        ok_message += (f' Otherwise tell the customer it is recorded, say exactly: "{success}"' if success
+                       else " Otherwise tell the customer it is recorded")
+        ok_message += " Then continue with the next product, or close the call if every product is handled."
     fail_message = f"The promise was NOT recorded. Never say it is recorded. {fail_text}"
     # The platform does not run a post-hook when the pre-hook emptied the URL (experiment E-9), so in the staged graph the
     # spoken correction comes from the ``promise_fix`` node. This line is a safety net for any path that does reach it.
@@ -274,20 +321,45 @@ def build_tools(
     }
     result.promise = model_tool(
         promise,
-        description=(f"Record ONE payment promise for ONE product. CALL it only after you read back "
-                     f"{', '.join(ir.confirmation.readback_fields)} and the customer clearly said yes."),
+        description=(("Record ONE payment promise for ONE product. CALL it only after the one joint read-back of every "
+                      f"agreed promise ({', '.join(ir.confirmation.readback_fields)}) and the customer's clear yes; then "
+                      "call it for each agreed product, one call at a time.") if joint else
+                     (f"Record ONE payment promise for ONE product. CALL it only after you read back "
+                      f"{', '.join(ir.confirmation.readback_fields)} and the customer clearly said yes.")),
         field_notes=notes,
         pre_process_code=hooks.join_hooks(
-            hooks.pre_hook_coerce(kinds, enums=_enums(promise)),
+            hooks.pre_hook_coerce(kinds, enums=_enums(promise), date_order=ir.calendar.date_input_order,
+                                  minor_scales={roles.amount: amount_scale}),
             hooks.pre_hook_promise_guard(roles.product, roles.amount, roles.date,
                                          accept_between=ir.amounts.accept_between_floor_and_full,
                                          currency=ir.currency_word, after_deadline=ir.promise_dates.after_deadline,
-                                         shift=ir.promise_dates.non_business_day_shift),
+                                          shift=ir.promise_dates.non_business_day_shift,
+                                          allow_today=ir.promise_dates.allow_today,
+                                          business_days_only=ir.promise_dates.business_days_only,
+                                          business_weekdays=ir.calendar.business_weekdays,
+                                          holidays=[day.isoformat() for day in ir.calendar.holidays],
+                                          not_after_deadline=ir.promise_dates.not_after_deadline,
+                                          once_per_product=ir.recording.one_promise_per_product,
+                                          recorded_say=ir.recording.immutable_sentence,
+                                          below_floor=ir.amounts.below_floor,
+                                          amount_minor=kinds.get(roles.amount) == "money_minor",
+                                          minor_scale=amount_scale,
+                                          tool_name=promise.name, clock=clock_variable(ir)),
+            hooks.pre_hook_integer_fields(_integer_ids(promise, roles.product)),
         ),
-        post_process_code=hooks.post_hook([(success_rule(promise), ok_message)], default=fail_message,
-                                          error_message=fail_message, blocked_message=blocked_message),
+        post_process_code=hooks.join_hooks(
+            hooks.post_hook_promise_log(promise_ok),
+            hooks.post_hook([(promise_ok, ok_message)], default=fail_message,
+                            error_message=fail_message, blocked_message=blocked_message),
+        ),
         **base,
     )
+    if kinds.get(roles.amount) == "money_minor":
+        # the model and the policy speak major units; the pre-hook converts to the contract's integer minor units
+        leaf = result.promise["function"]["parameters"]["properties"]["body"]["properties"][roles.amount]
+        leaf["type"] = "number"
+        leaf["description"] = ("Promised amount in the main currency unit with 2 decimals, e.g. 120.50 "
+                               "(the system converts it).")
 
     # ---- add_note (multi-product) ----------------------------------------------------------------------------------
     if ir.multi_product.enabled:
@@ -302,6 +374,7 @@ def build_tools(
         reason_spec = note.field(nroles.reason, "request")
         reasons = ", ".join(reason_spec.enum or [])
         later = deferred_notes(ir)
+        note_ok = hooks.all_of(hooks.envelope_ok(), success_rule(note))
         result.note = model_tool(
             note,
             description=(
@@ -309,38 +382,60 @@ def build_tools(
                 "product is handled and the call is not being transferred - never before a transfer - once for every "
                 "product that gets no promise, with that product's id and reason." if later else
                 "Record why ONE product ended without a promise. CALL it once for every product that gets no promise, "
-                "with that product's id and reason."),
+                "with that product's id and reason.") + (" A second note for a product, or a note for a product with a "
+                                                    "recorded promise, is refused with an error: do not repeat it."),
             field_notes={nroles.reason: f"Why this product has no promise: {reasons}." if reasons else "",
                          nroles.product: "The product id exactly as listed in LATE PRODUCTS."},
-            pre_process_code=hooks.pre_hook_notes_log(nroles.product, nroles.reason, reasons=reason_spec.enum or ()),
-            post_process_code=hooks.post_hook(
-                [(success_rule(note),
-                  "The note is saved. Continue with the next product, or close the call if every product is handled.")],
-                default=f"The note was NOT saved. Call {note_name} once more with the same values.",
-                error_message=f"The note was NOT saved. Call {note_name} once more with the same values.",
+            pre_process_code=hooks.join_hooks(
+                hooks.pre_hook_notes_log(
+                    nroles.product, nroles.reason, reasons=reason_spec.enum or (), tool_name=note.name,
+                    # AUD-26: in the lean profile the model transfers itself; no note follows a transfer
+                    transfer_counters=[f"transfer_to_agent_{k}_count" for k in ("success", "failure")]
+                    if lean and "transfer_to_agent" in api.tools and not ir.multi_product.notes_on_transfer else ()),
+                hooks.pre_hook_integer_fields(_integer_ids(note, nroles.product)),
+            ),
+            post_process_code=hooks.join_hooks(
+                hooks.post_hook_notes_log(note_ok),
+                hooks.post_hook(
+                    [(note_ok,
+                      "The note is saved. Continue with the next product, or close the call if every product is handled.")],
+                    default=f"The note was NOT saved. Call {note_name} once more with the same values.",
+                    error_message=f"The note was NOT saved. Call {note_name} once more with the same values.",
+                ),
             ),
             **base,
         )
 
     # ---- schedule_callback -----------------------------------------------------------------------------------------
-    if ir.third_party.callback is not None:
+    # also when an intent books a callback ("call me back later", AUD-08), even if the third-party section has no rule
+    if ir.third_party.callback is not None or any(
+            a.tool == "schedule_callback" for i in ir.intents for a in i.actions):
         if "schedule_callback" not in api.tools:
             raise CompileError("the policy books callbacks but the tool API has no 'schedule_callback' tool")
         callback = api.tools["schedule_callback"]
+        callback_kinds = field_kinds(callback, skip=(customer.field,))
+        dates = [name for name, kind in callback_kinds.items() if kind == "date_iso"]
+        times = [name for name, kind in callback_kinds.items() if kind == "time_hhmm"]
+        slot_fields = (dates[0], times[0]) if len(dates) == 1 and len(times) == 1 else None
         booked = ("The callback is booked. " + ("Say goodbye and finish the call as instructed."
                                                  if lean else "Say nothing; the system confirms it and closes the call."))
         result.callback = model_tool(
             callback,
             description=("Book a callback for the customer. CALL it only when the person gave a day and time inside "
                          "the allowed callback times."),
-            pre_process_code=hooks.pre_hook_coerce(field_kinds(callback, skip=(customer.field,)),
-                                                   enums=_enums(callback)),
-            post_process_code=hooks.post_hook(
+            pre_process_code=hooks.join_hooks(
+                hooks.pre_hook_coerce(callback_kinds, enums=_enums(callback), date_order=ir.calendar.date_input_order),
+                # AUD-29: a slot outside the allowed callback times never reaches the bank
+                hooks.pre_hook_callback_guard(*slot_fields, max_extra_asks=ir.third_party.callback.max_extra_asks
+                                              if ir.third_party.callback else 1) if slot_fields else "",
+            ),
+            post_process_code=hooks.join_hooks(hooks.post_hook_ack(
+                hooks.all_of(hooks.envelope_ok(), success_rule(callback)), hooks.CALLBACK_ACKS), hooks.post_hook(
                 [(success_rule(callback), booked)],
                 default=("The callback was NOT booked. Do not say it is booked. Check the date and time against the "
                          "allowed callback times and ask again."),
                 error_message="The callback was NOT booked (service error). Try once more with the same values.",
-            ),
+            )),
             **base,
         )
 
@@ -356,6 +451,7 @@ def build_tools(
                 transfer,
                 description="Transfer the call to a queue. CALL it only when the instructions say to transfer, with the named queue.",
                 field_notes={queue: f"Team that takes over. One of: {queues}." if queues else ""} if queue else {},
+                max_retries=1,  # a failed transfer recorded nothing (500 = may be repeated)
                 post_process_code=hooks.post_hook(
                     [(success_rule(transfer), "The transfer is done. Now close the call as instructed.")],
                     default="The transfer failed. Say so briefly and close the call as instructed.",
@@ -382,4 +478,17 @@ def build_tools(
         )
     elif "transfer_to_agent" in api.tools:
         result.queue = queue_field(api.tools["transfer_to_agent"], customer.field)
+    # engine calls fill a required enum field the contract does not settle with its first value: say so in the trace
+    engine = [(api.tools["get_account"], {customer.field: customer.ref})]
+    if not lean:
+        reason = {croles.reason: ""} if croles.reason else {}
+        engine.append((close, {customer.field: customer.ref, croles.outcome: "", **reason}))
+        if "transfer_to_agent" in api.tools and result.queue:
+            engine.append((api.tools["transfer_to_agent"], {customer.field: customer.ref, result.queue: ""}))
+    for contract in api.tools.values():  # credentials / headers the contract asks for and the agent cannot send
+        result.notes.extend(note for note in contract.notes if note not in result.notes)
+    for contract, baked in engine:
+        for name in guessed_fields(contract, baked):
+            result.notes.append(f"{contract.name}.{name} is required and the contract fixes no value; the engine call "
+                                f"sends its first allowed value {contract.enum(name)[0]!r}")
     return result

@@ -4,6 +4,8 @@ The project uses several kinds of evidence to develop an automatic builder: offi
 
 This distinction matters because a planned feature, an implemented mechanism and a verified behavior are different claims. The evidence below is a development snapshot from 10 October 2026. Source changes continued during the audit, so later changes require their own verification.
 
+**Status, 11 October:** this is a historical snapshot. Every counterexample in the tables below has since been fixed with a regression test, the walkthrough no longer passes an empty audit, triage reads every repetition, and the project `.venv` (Python 3.13) runs the full suite. Automatic builds were later published, exported and scored live. Current status: [FIXING_ISSUES.md](FIXING_ISSUES.md); measured results: [results/BASELINE.md](../results/BASELINE.md) and [results/QUALITY_REVIEW.md](../results/QUALITY_REVIEW.md).
+
 ## What the hackathon requires
 
 The deliverable is a program that reads unfamiliar bank briefs and their tool API, then creates the phone agent without a manual editing step. Final evaluation checks bank records, conversation policy and honesty. Customers may have up to three products, speak naturally and call on different calendar days. A customer counts only when all three repetitions pass. The exported workflow is what the organisers load and score. These requirements come from the [official kit](../KIT_README.md), especially its scoring, final and rules sections.
@@ -47,7 +49,7 @@ An offline suite run started at **22:33:59 Istanbul time on 10 October 2026**, u
 
 Seven failures were in [agentic tests](../tests/graph/test_agentic.py), where the environment lacked the optional Claude Agent SDK and mocks did not fully isolate availability checks. One failure in [staged compiler tests](../tests/unit/test_compile_staged.py) expected the first negotiation transition to target `promise_done`; the implementation targeted `promise_fix`. This is a test and implementation mismatch requiring review, not evidence by itself that either route is correct.
 
-Both skips were real Langfuse SDK compatibility tests in [observability tests](../tests/unit/test_observability.py), because Langfuse was absent. Ruff passed for `builder` and `tests`; extending the check to `evals` found an unused suppression in `triage.py`. The [local JUnit report](../.cache/project-audit/pytest-full.xml) preserves this snapshot but lives in an ignored cache and is not a portable submission artifact. These counts describe that run, not an enduring current status.
+Both skips were real Langfuse SDK compatibility tests in [observability tests](../tests/unit/test_observability.py), because Langfuse was absent. Ruff passed for `builder` and `tests`; extending the check to `evals` found an unused suppression in `triage.py`. The local JUnit report (`.cache/project-audit/pytest-full.xml`, git-ignored, so only on the machine that ran it) preserves this snapshot; it is not a portable submission artifact. These counts describe that run, not an enduring current status.
 
 ## Lessons from targeted audits
 
@@ -59,7 +61,7 @@ The [coverage report](../builder/checks/coverage.py) counts rules with a mapped 
 
 ## Compiler and runtime counterexamples
 
-The audit also used small synthetic policies, tool responses and fake platform calls to challenge assumptions outside the public practice cases. The table records observed results, not fixes. The [local audit manifest](../.cache/project-audit/assessment.json) and compiler and runtime reproduction scripts in the same ignored directory preserve the inputs and outputs on this machine. Those files are local development evidence and need deliberate packaging if they are to accompany a shared report.
+The audit also used small synthetic policies, tool responses and fake platform calls to challenge assumptions outside the public practice cases. The table records observed results, not fixes. The local audit manifest (`.cache/project-audit/assessment.json`) and the compiler and runtime reproduction scripts in the same git-ignored directory preserve the inputs and outputs on the machine that ran them. Those files are local development evidence and need deliberate packaging if they are to accompany a shared report.
 
 | Area | Observed counterexample | Implementation to review |
 |---|---|---|

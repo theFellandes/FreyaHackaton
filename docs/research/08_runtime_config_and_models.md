@@ -1,5 +1,7 @@
 # 07 gap 2: Which config drives a workflow call, and which English STT/TTS/LLM/temperature values are valid on staging
 
+> Status: pre-kit research note (10 October 2026), kept for background. Where it disagrees with the kit ([research/11](11_hackathon_rules_and_kit.md), `docs/api.md`, `docs/workflow-format.md`) or with the code, those win.
+
 Tags: **[LIVE]** = observed via a GET in this session (staging, workspace `01e07b69-486a-4070-a7fd-3a2fc3120bf2`); **[SPEC]** = openapi_staging.json; **[UI]** = web-app i18n strings (`research/tools/i18n.json`); **[INFERRED]** = my reasoning, not stated anywhere.
 Raw data: `research/live07_gap2/models.json` (full `GET /models` body, 241 KB) and `research/live07_gap2/models_summary.json`. (A copy is also in `research/live07/`, a folder that another agent is using too.)
 

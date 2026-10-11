@@ -1,5 +1,14 @@
 # Implementation Plan: Freya "Build the Builder"
 
+> **Status: historical planning document (Oct 10); the as-built system is described in [HOW_IT_WORKS.md](HOW_IT_WORKS.md).**
+> Open defects are in [FIXING_ISSUES.md](FIXING_ISSUES.md), measured results in
+> [results/BASELINE.md](../results/BASELINE.md), the submission procedure in [SUBMISSION.md](SUBMISSION.md). Where this
+> document and the code disagree, the code wins. Differences that matter most: the defaults are `BUILDER_TRACK=compiled`
+> and `SELF_TEST=smoke` (not `auto`); lint rules run L001 to L029; the platform export is written to
+> `out/<slot>.exported.json` (`out/<slot>.workflow.json` is the definition that was sent) and is copied to
+> `submission/hidden-N.workflow.json` for the form; the planned `tests/compliance/` folder does not exist (the check is
+> `tests/unit/test_compliance.py`).
+
 Version 1, written Sat 2026-10-10 11:30 UTC. Single source of truth: decisions brief v2 (requirements R1–R9,
 ADR-01..ADR-16, builder graph node names, repo layout, phases P0..P7, milestones M1..M4, experiments E-1..E-8,
 questions Q-1..Q-8, risks RK-1..RK-12). This document must agree with [ARCHITECTURE.md](ARCHITECTURE.md),
@@ -1078,6 +1087,11 @@ persona, `run_cases.py`).
 
 ## 10. Hidden-brief day runbook (P7)
 
+> **Superseded.** This section is the plan of 10 October. Follow [FINAL_RUNBOOK.md](FINAL_RUNBOOK.md) and [SUBMISSION.md](SUBMISSION.md)
+> instead: they submit the platform export (`submission/hidden-N.workflow.json`, copied from
+> `out/hidden-N.exported.json`) and the `tee` log of the run (`traces/hidden-N.log`), not the locally sent definition
+> (audit AUD-19).
+
 ### 10.1 Ready before 16:30
 
 - `m3-freeze` candidate commit green (§11.2 G6); Docker image `builder` built and cached.
@@ -1153,8 +1167,10 @@ skills or tests.
 Crash-fix protocol:
 1. Read the traceback from the console log and the trace, not from the brief.
 2. Reproduce with a synthetic input in `tests/` that has the same structure and invented content.
-3. Fix generically; run `uv run pytest -q tests/unit tests/graph tests/compliance` and the hidden-brief compliance
-   variant (§9.4).
+3. Fix generically; run `uv run pytest -q tests/unit tests/graph tests/variants` and the hidden-brief compliance
+   variant (§9.4): `COMPLIANCE_BRIEFS="inputs/hidden-1/*:inputs/hidden-2/*" uv run pytest tests/unit/test_compliance.py`
+   (`;` instead of `:` on Windows). It scans `builder/` and `.claude/skills/collections-workflow-patterns` for the dates,
+   amounts, numbers, times, quoted sentences and names of the named briefs; nothing is copied out of `inputs/`.
 4. The user commits `fix(crash): <generic description>`; the run notes record
    the commit SHA.
 5. Re-run the builder on that brief with the same command; the new run's trace and export are the ones submitted.

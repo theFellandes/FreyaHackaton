@@ -1,0 +1,59 @@
+2026-10-11T08:15:26.180Z | START  | run dbc2991dc82f started | slot=brief-a | builder 0.1.0, python 3.14.6
+2026-10-11T08:15:26.180Z | CONFIG | effective configuration | freya_api_url=https://staging-app.freyavoice.ai freya_api_key=not set freya_bank_team_key=not set freya_workspace_id=auto llm_providers=[anthropic, openai, claude_code] builder_track=compiled agent_profile=staged self_test=smoke build_time_budget_s=1680 build_slot=auto dry_run=True langfuse=disabled llm_log_content=full langfuse_log_prompts=True
+2026-10-11T08:15:26.182Z | OBS    | langfuse disabled (no keys)
+2026-10-11T08:15:26.184Z | CONFIG | LLM key changer | order=[anthropic, openai, claude_code] key_health_file=C:\Users\Felladien\Documents\Projects\Python\FreyaHackaton\data\key_health.json
+2026-10-11T08:15:26.200Z | STAGE  | load_inputs | start | budget_left_s=1680
+2026-10-11T08:15:26.201Z | DECIDE | track compiled (requested compiled; agentic fallback off) | profile=staged dry_run=True
+2026-10-11T08:15:26.201Z | INPUT  | 1 brief file(s), tool API with 7 tool(s) | briefs=[brief-a.md] chars=10174 brief_sha=97a030a681d1 tools=[add_note, close_call, create_promise, get_account, schedule_callback, transfer_to_agent, verify_identity]
+2026-10-11T08:15:26.201Z | STAGE  | load_inputs | end 0.0s | budget_left_s=1680
+2026-10-11T08:15:26.203Z | STAGE  | guard_inputs | start | budget_left_s=1680
+2026-10-11T08:15:26.210Z | GUARD  | inputs | ok | 0 violations | blocked=False violations=[]
+2026-10-11T08:15:26.210Z | STAGE  | guard_inputs | end 0.0s | budget_left_s=1680
+2026-10-11T08:15:26.211Z | STAGE  | understand_brief | start | budget_left_s=1680
+2026-10-11T08:15:26.211Z | LEDGER | reading 1 file(s) in 3 passage(s) | files=[brief-a.md] passages=3
+2026-10-11T08:15:29.838Z | MODEL  | claude_code/claude-sonnet-5-5 | key=claude_code#0(login) | FAIL auth 2.1s attempt=1 | rule ledger: brief-a.md passage 2/3 | error: ResultError: Claude Code returned an error result: Not logged in · Please run /login (exit code: 1)
+2026-10-11T08:15:29.846Z | LLM    | claude_code#0(login) marked dead (auth) | provider=claude_code
+2026-10-11T08:15:29.846Z | LLM    | claude_code: rotating away from claude_code#0(login) | purpose=rule ledger: brief-a.md passage 2/3
+2026-10-11T08:15:29.846Z | RATE   | waited 2.1 s for claude_code#0(login) | purpose=rule ledger: brief-a.md passage 3/3 provider=claude_code waited_s=2.12
+2026-10-11T08:15:29.873Z | MODEL  | claude_code/claude-sonnet-5-5 | key=claude_code#0(login) | FAIL auth 3.7s attempt=1 | rule ledger: brief-a.md passage 1/3 | error: ResultError: Claude Code returned an error result: Not logged in · Please run /login (exit code: 1)
+2026-10-11T08:15:29.881Z | LLM    | claude_code#0(login) marked dead (auth) | provider=claude_code
+2026-10-11T08:15:29.881Z | LLM    | claude_code: rotating away from claude_code#0(login) | purpose=rule ledger: brief-a.md passage 1/3
+2026-10-11T08:15:31.163Z | MODEL  | claude_code/claude-sonnet-5-5 | key=claude_code#0(login) | FAIL auth 1.3s attempt=1 | rule ledger: brief-a.md passage 3/3 | error: ResultError: Claude Code returned an error result: Not logged in · Please run /login (exit code: 1)
+2026-10-11T08:15:31.168Z | LLM    | claude_code#0(login) marked dead (auth) | provider=claude_code
+2026-10-11T08:15:31.168Z | LLM    | claude_code: rotating away from claude_code#0(login) | purpose=rule ledger: brief-a.md passage 3/3
+2026-10-11T08:15:31.168Z | ERROR  | could not build the rule ledger | error=All LLM providers failed for 'rule ledger: brief-a.md passage 1/3' | attempts: claude_code/claude_code#0(login): auth...
+2026-10-11T08:15:31.168Z | STAGE  | understand_brief | failed 5.0s | budget_left_s=1675
+2026-10-11T08:15:31.170Z | STAGE  | finalize | start | budget_left_s=1675
+2026-10-11T08:15:31.170Z | FINAL  | run dbc2991dc82f finished
+====================================================================================================
+BUILD SUMMARY
+run id       : dbc2991dc82f
+slot         : brief-a
+track        : compiled
+status       : failed
+started      : 2026-10-11T08:15:26.084Z
+ended        : 2026-10-11T08:15:31.170Z
+duration     : 5.1 s (0 min 05 s)
+model calls  : 3 (0 ok, 3 failed)
+  - claude_code/claude-sonnet-5-5: calls=3 (0 ok, 3 failed), tokens in=0 out=0
+Freya        :
+  - slot: brief-a
+tests        : 0 (0 passed, 0 failed)
+stages       :
+  - load_inputs: end 0.0s
+  - guard_inputs: end 0.0s
+  - understand_brief: failed 5.0s
+errors       : 1
+workflow_id  : null
+agent_id     : null
+version      : null
+node_count   : null
+tool_count   : null
+exported     : null
+profile      : staged
+coverage     : null
+notes        : []
+errors_list  : [understand_brief: All LLM providers failed for 'rule ledger: brief-a.md passage 1/3' | attempts: claude_code/claude_code#0(login): auth | skipped: anthropic: no keys configured; openai: no keys configured; claude_code: no usable key left]
+====================================================================================================
+2026-10-11T08:15:31.171Z | STAGE  | finalize | end 0.0s | budget_left_s=1675
+2026-10-11T08:15:31.172Z | END    | run dbc2991dc82f closed after 5.1 s | duration_s=5.088

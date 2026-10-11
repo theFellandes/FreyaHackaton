@@ -1,0 +1,43 @@
+{
+  "slot": "brief-a",
+  "track": "compiled",
+  "workflow_id": "58bd49f0-7417-413e-9f8b-19de1836e563",
+  "agent_id": "826cdf9b-cbb4-46ec-99a7-c53613ff4438",
+  "version": 3,
+  "exported": "C:\\Users\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\out\\brief-a.exported.json",
+  "export_ok": true,
+  "trace": "C:\\Users\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\traces\\brief-a-20261011T101533Z.log",
+  "status": "deployed",
+  "workflow_file": "C:\\Users\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\out\\brief-a.workflow.json",
+  "tests": {
+    "passed": 2,
+    "total": 3
+  },
+  "errors": [],
+  "notes": [
+    "decide: failing: smoke (FreyaError: chat: HTTP 504 on POST /api/v2/chat/message: error code: 504)"
+  ],
+  "tests_detail": [
+    {
+      "name": "smoke",
+      "passed": false,
+      "summary": "FreyaError: chat: HTTP 504 on POST /api/v2/chat/message: error code: 504",
+      "details": {
+        "call_id": null,
+        "turns": [],
+        "problems": [
+          "FreyaError: chat: HTTP 504 on POST /api/v2/chat/message: error code: 504"
+        ],
+        "checks": [],
+        "variables": [
+          "customer_id",
+          "first_name",
+          "last_name",
+          "now",
+          "title"
+        ]
+      },
+      "round": 0
+    }
+  ]
+}

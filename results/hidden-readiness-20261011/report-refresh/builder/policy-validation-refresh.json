@@ -1,0 +1,484 @@
+{
+  "kind": "Current policy-routing/final-summary source audit and pure helper probes with historical synthetic evidence",
+  "started_utc": "2026-10-11T10:32:08.892976+00:00",
+  "finished_utc": "2026-10-11T10:32:08.895480+00:00",
+  "python": "3.12.14 (main, Aug 25 2026, 14:01:42) [MSC v.1944 64 bit (AMD64)]",
+  "llm_calls": 0,
+  "platform_calls": 0,
+  "new_builds": 0,
+  "pytest_modules_run": [],
+  "historical_evidence_path": "results/hidden-readiness-20261011/builder/followup/saved-synthetic-ir-validation.json",
+  "historical_evidence_sha256": "746aca80c6285e8e3fc058b6f54236df8543192728b72a16dada7ed77a28fe00",
+  "source_before_sha256": {
+    "builder/understand/validate.py": "ffe4effc3c46a95e22ec650a1236ad253fcd6d07feaa9fcd7e912a1cf3d5752f",
+    "builder/graph/routing.py": "80af7cda1369b3a34afa95e0b8e97767658003da2c9cb32d18f67238b3937dc9",
+    "builder/graph/nodes/validate_policy.py": "dc370f0f8cb6dd3f6dc3a304f1dc6ec98fe564b8238dcca862c45bdda6668a12",
+    "builder/graph/nodes/guard_policy.py": "47407b74c2f82e10eb94e64062b05d3bec68f8e9a19c1390732cfcf95eb9c15b",
+    "builder/graph/nodes/finalize.py": "2fde3bbcf81faf324c777a2a72aee642c980e6b7a1c94534d7e0c6a478dc5752",
+    "builder/graph/nodes/_common.py": "a4f8ca12df9013c6e5c752e8448cef9e130a35cf16527b5cf9a299c2de291590",
+    "builder/build.py": "4496775c9efc42b40d8c2fe4d09fab3202377724e28a71287079ecf2b9719686",
+    "tests/graph/test_routing.py": "9e30256135ccb665b07454b2da18738df612f31159dc48a319188eda1fbf9075"
+  },
+  "source_after_sha256": {
+    "builder/understand/validate.py": "ffe4effc3c46a95e22ec650a1236ad253fcd6d07feaa9fcd7e912a1cf3d5752f",
+    "builder/graph/routing.py": "80af7cda1369b3a34afa95e0b8e97767658003da2c9cb32d18f67238b3937dc9",
+    "builder/graph/nodes/validate_policy.py": "dc370f0f8cb6dd3f6dc3a304f1dc6ec98fe564b8238dcca862c45bdda6668a12",
+    "builder/graph/nodes/guard_policy.py": "47407b74c2f82e10eb94e64062b05d3bec68f8e9a19c1390732cfcf95eb9c15b",
+    "builder/graph/nodes/finalize.py": "2fde3bbcf81faf324c777a2a72aee642c980e6b7a1c94534d7e0c6a478dc5752",
+    "builder/graph/nodes/_common.py": "a4f8ca12df9013c6e5c752e8448cef9e130a35cf16527b5cf9a299c2de291590",
+    "builder/build.py": "4496775c9efc42b40d8c2fe4d09fab3202377724e28a71287079ecf2b9719686",
+    "tests/graph/test_routing.py": "9e30256135ccb665b07454b2da18738df612f31159dc48a319188eda1fbf9075"
+  },
+  "source_changed_during_refresh": [],
+  "source_anchors": {
+    "validation_issues_only": "builder/graph/nodes/validate_policy.py:58",
+    "validation_repair_gate": "builder/graph/routing.py:89",
+    "validation_best_effort": "builder/graph/routing.py:132-141",
+    "clear_guard_continues": "builder/graph/routing.py:144-150",
+    "grounding_only_override": "builder/graph/nodes/guard_policy.py:38-59",
+    "status_ignores_policy_issues": "builder/graph/nodes/finalize.py:58-78",
+    "tests_exclude_policy_validation": "builder/graph/nodes/finalize.py:81-109",
+    "summary_errors_from_state_errors": "builder/graph/nodes/finalize.py:147-172",
+    "trace_errors_list": "builder/graph/nodes/finalize.py:200",
+    "persisted_build_result_omits_policy_issues": "builder/graph/nodes/finalize.py:215-222",
+    "cli_exit_ignores_errors": "builder/build.py:574-578",
+    "naming_rule": "builder/understand/validate.py:877-883",
+    "shadowed_row_rule": "builder/understand/validate.py:987-997",
+    "note_before_identity_rule": "builder/understand/validate.py:1004-1010",
+    "intentional_best_effort_test": "tests/graph/test_routing.py:64-80"
+  },
+  "conclusion": "Current helpers reproduce guard_policy continuation with unresolved v01 issues and a constructed dry_run final summary with errors[] and tests 1/1. Historical v01 final IR had 4 errors/2 warnings; v02 had 0/0. Current validator/router/validator-node/finalizer hashes match that revalidation. Original artifacts are absent, so no fresh final-IR revalidation is claimed.",
+  "limits": "Fixture-model synthetic artifacts only; no proof of actual LLM extraction, conversation correctness, live deployment, unseen hidden-brief accuracy or official customer scoring.",
+  "builds": [
+    {
+      "slot": "v-integ-v01",
+      "variant": "v01_clean",
+      "historical_revalidated_utc": "2026-10-11T10:00:43.127183+00:00",
+      "original_artifact_availability": {
+        "out/v-integ-v01.ir.json": false,
+        "out/v-integ-v01.ledger.json": false,
+        "evals/synthetic_briefs/v01_clean/openapi.json": true,
+        "results/v-integ-v01-e639fd1ee443.build.json": false,
+        "traces/v-integ-v01-20261011T094611Z.jsonl": false
+      },
+      "fresh_ir_revalidation_performed": false,
+      "fresh_ir_revalidation_limitation": "Original final IR/ledger/build/trace artifacts are absent; exact issues are from the preserved 10:00:43 UTC revalidation, not a fresh IR run.",
+      "source_unchanged_since_historical_revalidation": {
+        "builder/understand/validate.py": true,
+        "builder/graph/routing.py": true,
+        "builder/graph/nodes/validate_policy.py": true,
+        "builder/graph/nodes/finalize.py": true
+      },
+      "historical_saved_status": "dry_run",
+      "historical_saved_errors": [],
+      "historical_saved_tests": {
+        "passed": 1,
+        "total": 1
+      },
+      "historical_error_count": 4,
+      "historical_warning_count": 2,
+      "exact_historical_issues": [
+        {
+          "code": "INTENT_NOTE_BEFORE_VERIFICATION",
+          "message": "intent 'refuse_to_talk' (any) only records the note 'rejected', but before the identity is verified the agent has no note tool and must close the call. Give it the close outcome the documents prescribe for this situation before verification (outcome / reason from the outcome table), and keep the note for the after_verification entry.",
+          "rule_ids": [
+            "D1-45a",
+            "D1-45b"
+          ],
+          "severity": "error",
+          "path": "intents[3]"
+        },
+        {
+          "code": "PRODUCT_NAMING_STATEMENT",
+          "message": "product_naming['card'] uses {past_due}, {days_overdue}: the debt statement already says the amount and the days late, so the name must only identify the product (for example 'loan ending {account_suffix}'), with no amount, days or verb.",
+          "rule_ids": [
+            "D1-16",
+            "D1-17a",
+            "D1-17b",
+            "D1-17c",
+            "D1-48a",
+            "D1-48b",
+            "D1-49a"
+          ],
+          "severity": "error",
+          "path": "disclosure.product_naming.card"
+        },
+        {
+          "code": "PRODUCT_NAMING_STATEMENT",
+          "message": "product_naming['loan'] uses {past_due}, {days_overdue}: the debt statement already says the amount and the days late, so the name must only identify the product (for example 'loan ending {account_suffix}'), with no amount, days or verb.",
+          "rule_ids": [
+            "D1-16",
+            "D1-17a",
+            "D1-17b",
+            "D1-17c",
+            "D1-48a",
+            "D1-48b",
+            "D1-49a"
+          ],
+          "severity": "error",
+          "path": "disclosure.product_naming.loan"
+        },
+        {
+          "code": "PRODUCT_NAMING_STATEMENT",
+          "message": "product_naming['vehicle_finance'] uses {past_due}, {days_overdue}: the debt statement already says the amount and the days late, so the name must only identify the product (for example 'loan ending {account_suffix}'), with no amount, days or verb.",
+          "rule_ids": [
+            "D1-16",
+            "D1-17a",
+            "D1-17b",
+            "D1-17c",
+            "D1-48a",
+            "D1-48b",
+            "D1-49a"
+          ],
+          "severity": "error",
+          "path": "disclosure.product_naming.vehicle_finance"
+        },
+        {
+          "code": "ROW_SHADOWED",
+          "message": "closing.rows[19] ('product_notes' -> declined/rejected) never applies: an earlier row for the same situation and verification state always wins. The IR cannot pick between rows by anything else (for example the terms of a promise); keep one row per situation and verification state.",
+          "rule_ids": [
+            "D1-55b"
+          ],
+          "severity": "warning",
+          "path": "closing.rows[19]"
+        },
+        {
+          "code": "ROW_SHADOWED",
+          "message": "closing.rows[8] ('hardship' -> declined/vulnerable) never applies: an earlier row for the same situation and verification state always wins. The IR cannot pick between rows by anything else (for example the terms of a promise); keep one row per situation and verification state.",
+          "rule_ids": [
+            "D1-32d",
+            "D1-46g"
+          ],
+          "severity": "warning",
+          "path": "closing.rows[8]"
+        }
+      ],
+      "historical_product_naming": {
+        "card": "card ending {card_last4}, with an overdue amount of {past_due} and {days_overdue} days overdue",
+        "loan": "personal loan, with an overdue amount of {past_due} and {days_overdue} days overdue",
+        "vehicle_finance": "vehicle finance, with an overdue amount of {past_due} and {days_overdue} days overdue"
+      },
+      "historical_refuse_to_talk_intents": [
+        {
+          "rule_ids": [
+            "D1-45a",
+            "D1-45b"
+          ],
+          "key": "refuse_to_talk",
+          "description": "Says they do not want to talk or wants the call to end.",
+          "examples": [],
+          "scope": "any",
+          "response": "",
+          "actions": [],
+          "outcome": null,
+          "note_reason": "rejected",
+          "precedence": 50,
+          "overrides": [],
+          "offer": "",
+          "declined_outcome": null,
+          "min_occurrences": 2
+        }
+      ],
+      "historical_declared_fixture_provenance": {
+        "trace_start_utc": "2026-10-11T09:46:11.563Z",
+        "trace_argv": [
+          "evals/synthetic_briefs/v01_clean/brief.md",
+          "evals/synthetic_briefs/v01_clean/openapi.json",
+          "--dry-run",
+          "--fake-llm",
+          "C:/Users/FELLAD~1/AppData/Local/Temp/claude/C--Users-Felladien-Documents-Projects-Python-FreyaHackaton/74a4f260-79f7-48fe-bbbc-fbee03e71cec/scratchpad/audit_opus/integrate/fx_v01-clean",
+          "--slot",
+          "v-integ-v01"
+        ],
+        "fake_llm_flag": true,
+        "dry_run_flag": true,
+        "fixture_directory_from_trace": "C:/Users/FELLAD~1/AppData/Local/Temp/claude/C--Users-Felladien-Documents-Projects-Python-FreyaHackaton/74a4f260-79f7-48fe-bbbc-fbee03e71cec/scratchpad/audit_opus/integrate/fx_v01-clean",
+        "fixture_directory_contents_independently_audited": false,
+        "trace_models": [
+          "fixture/fixture"
+        ]
+      },
+      "current_routing_helper_results": {
+        "no_agentic_two_repairs": {
+          "has_policy_errors": true,
+          "can_repair_policy": false,
+          "fallback_target": "finalize",
+          "next_node": "guard_policy"
+        },
+        "agentic_allowed_two_repairs": {
+          "has_policy_errors": true,
+          "can_repair_policy": false,
+          "fallback_target": "agentic_build",
+          "next_node": "agentic_build"
+        },
+        "no_affordable_repair_or_agentic": {
+          "has_policy_errors": true,
+          "can_repair_policy": false,
+          "fallback_target": "finalize",
+          "next_node": "guard_policy"
+        }
+      },
+      "current_clear_policy_guard_next_node": "draft_prose",
+      "current_blocked_policy_guard_next_node_after_two_repairs": "finalize",
+      "current_finalize_helper_probe": {
+        "kind": "Constructed state; actual current finalize_run, no-write idempotent path; not an end-to-end build",
+        "supplied_unresolved_policy_issues": [
+          {
+            "code": "INTENT_NOTE_BEFORE_VERIFICATION",
+            "message": "intent 'refuse_to_talk' (any) only records the note 'rejected', but before the identity is verified the agent has no note tool and must close the call. Give it the close outcome the documents prescribe for this situation before verification (outcome / reason from the outcome table), and keep the note for the after_verification entry.",
+            "rule_ids": [
+              "D1-45a",
+              "D1-45b"
+            ],
+            "severity": "error",
+            "path": "intents[3]"
+          },
+          {
+            "code": "PRODUCT_NAMING_STATEMENT",
+            "message": "product_naming['card'] uses {past_due}, {days_overdue}: the debt statement already says the amount and the days late, so the name must only identify the product (for example 'loan ending {account_suffix}'), with no amount, days or verb.",
+            "rule_ids": [
+              "D1-16",
+              "D1-17a",
+              "D1-17b",
+              "D1-17c",
+              "D1-48a",
+              "D1-48b",
+              "D1-49a"
+            ],
+            "severity": "error",
+            "path": "disclosure.product_naming.card"
+          },
+          {
+            "code": "PRODUCT_NAMING_STATEMENT",
+            "message": "product_naming['loan'] uses {past_due}, {days_overdue}: the debt statement already says the amount and the days late, so the name must only identify the product (for example 'loan ending {account_suffix}'), with no amount, days or verb.",
+            "rule_ids": [
+              "D1-16",
+              "D1-17a",
+              "D1-17b",
+              "D1-17c",
+              "D1-48a",
+              "D1-48b",
+              "D1-49a"
+            ],
+            "severity": "error",
+            "path": "disclosure.product_naming.loan"
+          },
+          {
+            "code": "PRODUCT_NAMING_STATEMENT",
+            "message": "product_naming['vehicle_finance'] uses {past_due}, {days_overdue}: the debt statement already says the amount and the days late, so the name must only identify the product (for example 'loan ending {account_suffix}'), with no amount, days or verb.",
+            "rule_ids": [
+              "D1-16",
+              "D1-17a",
+              "D1-17b",
+              "D1-17c",
+              "D1-48a",
+              "D1-48b",
+              "D1-49a"
+            ],
+            "severity": "error",
+            "path": "disclosure.product_naming.vehicle_finance"
+          },
+          {
+            "code": "ROW_SHADOWED",
+            "message": "closing.rows[19] ('product_notes' -> declined/rejected) never applies: an earlier row for the same situation and verification state always wins. The IR cannot pick between rows by anything else (for example the terms of a promise); keep one row per situation and verification state.",
+            "rule_ids": [
+              "D1-55b"
+            ],
+            "severity": "warning",
+            "path": "closing.rows[19]"
+          },
+          {
+            "code": "ROW_SHADOWED",
+            "message": "closing.rows[8] ('hardship' -> declined/vulnerable) never applies: an earlier row for the same situation and verification state always wins. The IR cannot pick between rows by anything else (for example the terms of a promise); keep one row per situation and verification state.",
+            "rule_ids": [
+              "D1-32d",
+              "D1-46g"
+            ],
+            "severity": "warning",
+            "path": "closing.rows[8]"
+          }
+        ],
+        "summary": {
+          "slot": "report-refresh-probe",
+          "track": "compiled",
+          "workflow_id": null,
+          "agent_id": null,
+          "version": null,
+          "exported": "C:\\Users\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\results\\hidden-readiness-20261011\\report-refresh\\builder\\NOT-CREATED.workflow.json",
+          "export_ok": null,
+          "trace": "",
+          "status": "dry_run",
+          "workflow_file": "C:\\Users\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\results\\hidden-readiness-20261011\\report-refresh\\builder\\NOT-CREATED.workflow.json",
+          "tests": {
+            "passed": 1,
+            "total": 1
+          },
+          "errors": []
+        },
+        "tests_detail": [
+          {
+            "name": "static_checks",
+            "passed": true,
+            "summary": "supplied helper-probe lint; no compiler or lint execution"
+          }
+        ],
+        "workflow_file_created": false
+      }
+    },
+    {
+      "slot": "v-integ-v02",
+      "variant": "v02_raw",
+      "historical_revalidated_utc": "2026-10-11T10:00:43.127183+00:00",
+      "original_artifact_availability": {
+        "out/v-integ-v02.ir.json": false,
+        "out/v-integ-v02.ledger.json": false,
+        "evals/synthetic_briefs/v02_raw/openapi.json": true,
+        "results/v-integ-v02-1a498c53e17d.build.json": false,
+        "traces/v-integ-v02-20261011T094614Z.jsonl": false
+      },
+      "fresh_ir_revalidation_performed": false,
+      "fresh_ir_revalidation_limitation": "Original final IR/ledger/build/trace artifacts are absent; exact issues are from the preserved 10:00:43 UTC revalidation, not a fresh IR run.",
+      "source_unchanged_since_historical_revalidation": {
+        "builder/understand/validate.py": true,
+        "builder/graph/routing.py": true,
+        "builder/graph/nodes/validate_policy.py": true,
+        "builder/graph/nodes/finalize.py": true
+      },
+      "historical_saved_status": "dry_run",
+      "historical_saved_errors": [],
+      "historical_saved_tests": {
+        "passed": 1,
+        "total": 1
+      },
+      "historical_error_count": 0,
+      "historical_warning_count": 0,
+      "exact_historical_issues": [],
+      "historical_product_naming": {
+        "card": "card ending {card_last4}",
+        "loan": "personal loan",
+        "vehicle_finance": "vehicle finance"
+      },
+      "historical_refuse_to_talk_intents": [
+        {
+          "rule_ids": [
+            "EXT-8.7a",
+            "EXT-8.7b",
+            "EXT-M7"
+          ],
+          "key": "refuse_to_talk",
+          "description": "Says they do not want to talk or wants the call to end.",
+          "examples": [],
+          "scope": "before_verification",
+          "response": "",
+          "actions": [],
+          "outcome": {
+            "outcome": "declined",
+            "reason": "rejected"
+          },
+          "note_reason": null,
+          "precedence": 50,
+          "overrides": [],
+          "offer": "",
+          "declined_outcome": null,
+          "min_occurrences": 2
+        },
+        {
+          "rule_ids": [
+            "EXT-8.7a",
+            "EXT-8.7b",
+            "EXT-M7"
+          ],
+          "key": "refuse_to_talk",
+          "description": "Says they do not want to talk or wants the call to end.",
+          "examples": [],
+          "scope": "after_verification",
+          "response": "",
+          "actions": [],
+          "outcome": {
+            "outcome": "declined",
+            "reason": "rejected"
+          },
+          "note_reason": "rejected",
+          "precedence": 50,
+          "overrides": [],
+          "offer": "",
+          "declined_outcome": null,
+          "min_occurrences": 2
+        }
+      ],
+      "historical_declared_fixture_provenance": {
+        "trace_start_utc": "2026-10-11T09:46:14.958Z",
+        "trace_argv": [
+          "evals/synthetic_briefs/v02_raw/Mail_thread_collections_ops.eml",
+          "evals/synthetic_briefs/v02_raw/Memo_2026-11-02_changes.txt",
+          "evals/synthetic_briefs/v02_raw/Policy_extract_v3.txt",
+          "evals/synthetic_briefs/v02_raw/outcome_codes.csv",
+          "evals/synthetic_briefs/v02_raw/openapi.json",
+          "--dry-run",
+          "--fake-llm",
+          "C:/Users/FELLAD~1/AppData/Local/Temp/claude/C--Users-Felladien-Documents-Projects-Python-FreyaHackaton/74a4f260-79f7-48fe-bbbc-fbee03e71cec/scratchpad/audit_opus/integrate/fx_v02-raw",
+          "--slot",
+          "v-integ-v02"
+        ],
+        "fake_llm_flag": true,
+        "dry_run_flag": true,
+        "fixture_directory_from_trace": "C:/Users/FELLAD~1/AppData/Local/Temp/claude/C--Users-Felladien-Documents-Projects-Python-FreyaHackaton/74a4f260-79f7-48fe-bbbc-fbee03e71cec/scratchpad/audit_opus/integrate/fx_v02-raw",
+        "fixture_directory_contents_independently_audited": false,
+        "trace_models": [
+          "fixture/fixture"
+        ]
+      },
+      "current_routing_helper_results": {
+        "no_agentic_two_repairs": {
+          "has_policy_errors": false,
+          "can_repair_policy": false,
+          "fallback_target": "finalize",
+          "next_node": "guard_policy"
+        },
+        "agentic_allowed_two_repairs": {
+          "has_policy_errors": false,
+          "can_repair_policy": false,
+          "fallback_target": "agentic_build",
+          "next_node": "guard_policy"
+        },
+        "no_affordable_repair_or_agentic": {
+          "has_policy_errors": false,
+          "can_repair_policy": false,
+          "fallback_target": "finalize",
+          "next_node": "guard_policy"
+        }
+      },
+      "current_clear_policy_guard_next_node": "draft_prose",
+      "current_blocked_policy_guard_next_node_after_two_repairs": "finalize",
+      "current_finalize_helper_probe": {
+        "kind": "Constructed state; actual current finalize_run, no-write idempotent path; not an end-to-end build",
+        "supplied_unresolved_policy_issues": [],
+        "summary": {
+          "slot": "report-refresh-probe",
+          "track": "compiled",
+          "workflow_id": null,
+          "agent_id": null,
+          "version": null,
+          "exported": "C:\\Users\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\results\\hidden-readiness-20261011\\report-refresh\\builder\\NOT-CREATED.workflow.json",
+          "export_ok": null,
+          "trace": "",
+          "status": "dry_run",
+          "workflow_file": "C:\\Users\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\results\\hidden-readiness-20261011\\report-refresh\\builder\\NOT-CREATED.workflow.json",
+          "tests": {
+            "passed": 1,
+            "total": 1
+          },
+          "errors": []
+        },
+        "tests_detail": [
+          {
+            "name": "static_checks",
+            "passed": true,
+            "summary": "supplied helper-probe lint; no compiler or lint execution"
+          }
+        ],
+        "workflow_file_created": false
+      }
+    }
+  ]
+}

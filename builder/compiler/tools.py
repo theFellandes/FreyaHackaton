@@ -23,9 +23,12 @@ from builder.ingest.tool_api import FieldSpec, ToolContract
 __all__ = [
     "api_parameters",
     "code_exec",
+    "contract_fills",
     "end_terminal",
     "engine_call",
     "field_leaf",
+    "fixed_value",
+    "guessed_fields",
     "model_tool",
 ]
 
@@ -53,6 +56,47 @@ def field_leaf(spec: FieldSpec, *, default: str | None = None, note: str = "") -
     return leaf
 
 
+def fixed_value(spec: FieldSpec) -> Any:
+    """The value the contract fixes for ``spec`` (see ``FieldSpec.fixed``) as a JSON value of the field's type."""
+    text = spec.fixed
+    if text is None:
+        return None
+    try:
+        if spec.type == "integer":
+            return int(text)
+        if spec.type == "number":
+            return float(text)
+    except ValueError:
+        return text
+    if spec.type == "boolean":
+        return text.strip().lower() == "true"
+    return text
+
+
+def contract_fills(contract: ToolContract, baked: Mapping[str, Any], *, guess_enum: bool = False) -> dict[str, Any]:
+    """Values for the required request fields ``baked`` leaves out that the contract itself settles.
+
+    A field the contract fixes (``const``, an enum of one, a ``default``) gets that value. With ``guess_enum`` (engine
+    calls, where nobody else can choose) a required enum field gets its first allowed value. Free-text fields get
+    nothing: the caller decides whether that is an error.
+    """
+    fills: dict[str, Any] = {}
+    for spec in contract.request_fields:
+        if not spec.required or spec.name in baked:
+            continue
+        if spec.fixed is not None:
+            fills[spec.name] = fixed_value(spec)
+        elif guess_enum and spec.enum:
+            fills[spec.name] = spec.enum[0]
+    return fills
+
+
+def guessed_fields(contract: ToolContract, baked: Mapping[str, Any]) -> list[str]:
+    """Required enum fields an engine call fills with a guessed first value (the contract fixes no value)."""
+    fixed = contract_fills(contract, baked)
+    return [name for name in contract_fills(contract, baked, guess_enum=True) if name not in fixed]
+
+
 def api_parameters(contract: ToolContract, body: Mapping[str, Any], required: Sequence[str] = ()) -> dict[str, Any]:
     """The ``parameters`` object of an ``api_call`` function: baked ``url``/``method``/``headers`` and the ``body``."""
     return {
@@ -62,7 +106,10 @@ def api_parameters(contract: ToolContract, body: Mapping[str, Any], required: Se
             "method": {"type": "string", "default": contract.method or "POST"},
             "headers": {
                 "type": "object",
-                "properties": {"Content-Type": {"type": "string", "default": "application/json"}},
+                "properties": {
+                    "Content-Type": {"type": "string", "default": "application/json"},
+                    **{name: {"type": "string", "default": value} for name, value in contract.headers.items()},
+                },
             },
             "body": {"type": "object", "properties": dict(body), "required": list(required)},
         },
@@ -104,6 +151,9 @@ def model_tool(
     notes = dict(field_notes or {})
     body: dict[str, Any] = {}
     required: list[str] = []
+    for name, value in contract_fills(contract, baked_values).items():  # the contract's own value, not the model's
+        if name not in notes:
+            baked_values[name] = value
     for spec in contract.request_fields:
         wanted = spec.name in baked_values or spec.required or spec.name in include_optional
         if not wanted:
@@ -149,9 +199,11 @@ def engine_call(
 
     ``baked`` maps request field names to literal values or ``{{var}}`` references. ``name`` overrides the function
     name (default: the tool name, which also names the ``<tool>_response`` variables).
+    Required fields ``baked`` leaves out get the value the contract fixes, or the first value of their enum
+    (:func:`contract_fills`), so a contract that adds such a field never loses the call.
     """
     body: dict[str, Any] = {}
-    for field_name, value in baked.items():
+    for field_name, value in {**baked, **contract_fills(contract, baked, guess_enum=True)}.items():
         spec = contract.get_field(field_name, "request")
         kind = spec.type if spec is not None and spec.type in _JSON_LEAF_TYPES else "string"
         body[field_name] = {"type": kind, "default": value}

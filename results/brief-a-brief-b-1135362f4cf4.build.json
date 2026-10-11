@@ -1,0 +1,45 @@
+{
+  "slot": "brief-a-brief-b",
+  "track": "compiled",
+  "workflow_id": "b5638c83-1842-4615-ab28-23834f631e2f",
+  "agent_id": "4ae00ca3-a702-465e-ae60-4b8d1c54726f",
+  "version": 2,
+  "exported": "C:\\Users\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\out\\brief-a-brief-b.exported.json",
+  "export_ok": true,
+  "trace": "C:\\Users\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\traces\\brief-a-brief-b-20261011T101950Z.log",
+  "status": "deployed",
+  "workflow_file": "C:\\Users\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\out\\brief-a-brief-b.workflow.json",
+  "tests": {
+    "passed": 2,
+    "total": 3
+  },
+  "errors": [],
+  "notes": [
+    "compiler: phrases.extra.hardship_sympathy is said by no node of the workflow; it is placed word for word in system_prompt",
+    "compiler: phrases.extra.hardship_support_offer is said by no node of the workflow; it is placed word for word in system_prompt",
+    "decide: failing: smoke (FreyaError: chat: HTTP 504 on POST /api/v2/chat/message: error code: 504)"
+  ],
+  "tests_detail": [
+    {
+      "name": "smoke",
+      "passed": false,
+      "summary": "FreyaError: chat: HTTP 504 on POST /api/v2/chat/message: error code: 504",
+      "details": {
+        "call_id": null,
+        "turns": [],
+        "problems": [
+          "FreyaError: chat: HTTP 504 on POST /api/v2/chat/message: error code: 504"
+        ],
+        "checks": [],
+        "variables": [
+          "customer_id",
+          "first_name",
+          "last_name",
+          "now",
+          "title"
+        ]
+      },
+      "round": 0
+    }
+  ]
+}

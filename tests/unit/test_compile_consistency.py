@@ -109,9 +109,14 @@ def test_the_retry_rule_follows_retries_on_failure_in_the_prompt_and_in_the_hook
 def test_several_product_notes_are_written_at_the_end_never_before_a_transfer(profile: str, api: ToolApi) -> None:
     task = build(IR_AB, LEDGER_AB, api, profile)["nodes"]["negotiate"]["task_message"]
     assert "On any transfer add no notes at all." in task
-    for reason in ("paid", "dispute", "refused"):
+    for reason in ("paid", "dispute"):
         assert (f'Take no promise for this product; add_note reason "{reason}" (do not call add_note yet - write it only '
                 "at the very end); continue with the others.") in task
+    # a refusal to talk at all closes the call (AUD-11): every open product is noted at once, then the call ends
+    refuse = next(line for line in task.splitlines() if line.startswith("- Says they do not want to talk"))
+    assert "continue with the others" not in refuse
+    assert ('Call add_note once for each product without a promise - with the reason already remembered for it, else '
+            'reason "refused" - and wait for the results; then, in your next message, thank them, say goodbye and ') in refuse
     assert "Call add_note only at the very end" in task
     # every sentence that mentions the notes tool defers it: the transfer rule and the notes can no longer collide
     for line in task.splitlines():
@@ -286,6 +291,7 @@ def _blank_phrases(ir: PolicyIR) -> PolicyIR:
     ir.phrases.extra.pop("decline_explanation", None)
     ir.phrases.opening_sentence = ""
     ir.phrases.right_party_question = ""
+    ir.right_party.confirm_examples = []
     return ir
 
 
@@ -293,7 +299,7 @@ LEDGER_WITHOUT_RECORDING_RULE = LEDGER_A.model_copy(update={"rules": [r for r in
 
 
 def test_a_missing_opening_sentence_is_an_error_when_the_brief_requires_a_recording_notice(api: ToolApi) -> None:
-    with pytest.raises(CompileError, match="A-1a.*recording notice"):
+    with pytest.raises(CompileError, match=r"A-1a.*recording notice"):
         compile_workflow(_blank_phrases(IR_A), api, LEDGER_A)
 
 
@@ -303,6 +309,9 @@ def test_blank_phrases_never_become_empty_quotes(api: ToolApi) -> None:
     texts = [workflow["system_prompt"], *(n.get("task_message", "") for n in workflow["nodes"].values())]
     for text in texts:
         assert '""' not in text, [line for line in text.splitlines() if '""' in line]
+    opening = workflow["nodes"]["opening"]["task_message"]
+    assert "- Only \"yes\", \"that's me\" or \"speaking\" confirms that you are speaking with" in opening
+    assert "Only  confirms" not in opening
     negotiate = workflow["nodes"]["negotiate"]["task_message"]
     assert 'You already stated the debt and asked: "Can you pay the full amount today?"' in negotiate
     assert 'ask exactly "Is that correct?"' in negotiate

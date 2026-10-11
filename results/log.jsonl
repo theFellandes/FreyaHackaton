@@ -22,3 +22,20 @@
 {"at": "2026-10-10 22:04:20", "agent_id": "c5568351-05bf-4e34-9206-d05a577b4ff8", "brief": "A", "runs": 3, "passed": 9, "total": 10, "seconds": 1286, "failed": ["PUB-04"]}
 {"at": "2026-10-10 22:12:48", "agent_id": "4b0c9003-d157-4cc0-828f-1f9512a92e46", "brief": "B", "runs": 2, "passed": 0, "total": 3, "seconds": 498, "failed": ["PUB-11", "PUB-12", "PUB-13"]}
 {"at": "2026-10-10 22:41:42", "agent_id": "c5568351-05bf-4e34-9206-d05a577b4ff8", "brief": "A", "runs": 2, "passed": 6, "total": 10, "seconds": 879, "failed": ["PUB-02", "PUB-04", "PUB-05", "PUB-07"]}
+{"at": "2026-10-11 01:32:19", "agent_id": "826cdf9b-cbb4-46ec-99a7-c53613ff4438", "brief": "A", "runs": 3, "passed": 8, "total": 10, "seconds": 477, "failed": ["PUB-03", "PUB-07"]}
+{"at": "2026-10-11 01:40:50", "agent_id": "4ae00ca3-a702-465e-ae60-4b8d1c54726f", "brief": "B", "runs": 3, "passed": 3, "total": 3, "seconds": 366, "failed": []}
+{"at": "2026-10-11 16:02:57", "agent_id": "826cdf9b-cbb4-46ec-99a7-c53613ff4438", "brief": "A", "runs": 3, "passed": 7, "total": 10, "seconds": 957, "failed": ["PUB-03", "PUB-09", "PUB-10"]}
+{"at": "2026-10-11 16:24:09", "agent_id": "4ae00ca3-a702-465e-ae60-4b8d1c54726f", "brief": null, "runs": 3, "passed": 6, "total": 13, "seconds": 1234, "failed": ["PUB-03", "PUB-05", "PUB-07", "PUB-08", "PUB-10", "PUB-11", "PUB-12"]}
+{"at": "2026-10-11 16:56:10", "agent_id": "826cdf9b-cbb4-46ec-99a7-c53613ff4438", "brief": "A", "runs": 3, "passed": 10, "total": 10, "seconds": 733, "failed": []}
+{"at": "2026-10-11 17:01:22", "agent_id": "4ae00ca3-a702-465e-ae60-4b8d1c54726f", "brief": "B", "runs": 3, "passed": 3, "total": 3, "seconds": 299, "failed": []}
+{"at": "2026-10-11 17:03:34", "agent_id": "826cdf9b-cbb4-46ec-99a7-c53613ff4438", "brief": null, "runs": 1, "passed": 9, "total": 10, "seconds": 123, "failed": ["PUB-07"]}
+{"at": "2026-10-11 17:05:44", "agent_id": "4ae00ca3-a702-465e-ae60-4b8d1c54726f", "brief": null, "runs": 1, "passed": 3, "total": 3, "seconds": 125, "failed": []}
+{"at": "2026-10-11 17:31:50", "agent_id": "826cdf9b-cbb4-46ec-99a7-c53613ff4438", "brief": null, "runs": 1, "passed": 9, "total": 10, "seconds": 190, "failed": ["PUB-03"]}
+{"at": "2026-10-11 17:34:40", "agent_id": "4ae00ca3-a702-465e-ae60-4b8d1c54726f", "brief": null, "runs": 1, "passed": 2, "total": 3, "seconds": 164, "failed": ["PUB-13"]}
+{"at": "2026-10-11 17:41:28", "agent_id": "826cdf9b-cbb4-46ec-99a7-c53613ff4438", "brief": "A", "runs": 3, "passed": 10, "total": 10, "seconds": 381, "failed": []}
+{"at": "2026-10-11 17:48:40", "agent_id": "4ae00ca3-a702-465e-ae60-4b8d1c54726f", "brief": "B", "runs": 3, "passed": 2, "total": 3, "seconds": 415, "failed": ["PUB-13"]}
+{"at": "2026-10-11 18:00:57", "agent_id": "826cdf9b-cbb4-46ec-99a7-c53613ff4438", "brief": null, "runs": 1, "passed": 10, "total": 10, "seconds": 103, "failed": []}
+{"at": "2026-10-11 18:07:24", "agent_id": "4ae00ca3-a702-465e-ae60-4b8d1c54726f", "brief": null, "runs": 1, "passed": 0, "total": 3, "seconds": 382, "failed": ["PUB-11", "PUB-12", "PUB-13"]}
+{"at": "2026-10-11 18:12:31", "agent_id": "826cdf9b-cbb4-46ec-99a7-c53613ff4438", "brief": "A", "runs": 3, "passed": 8, "total": 10, "seconds": 279, "failed": ["PUB-06", "PUB-07"]}
+{"at": "2026-10-11 18:18:03", "agent_id": "4ae00ca3-a702-465e-ae60-4b8d1c54726f", "brief": "B", "runs": 3, "passed": 0, "total": 3, "seconds": 324, "failed": ["PUB-11", "PUB-12", "PUB-13"]}
+{"at": "2026-10-11 18:33:25", "agent_id": "826cdf9b-cbb4-46ec-99a7-c53613ff4438", "brief": null, "runs": 3, "passed": 0, "total": 3, "seconds": 250, "failed": ["PUB-03", "PUB-04", "PUB-07"]}

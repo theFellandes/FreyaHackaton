@@ -1,0 +1,19 @@
+{
+  "slot": "v-aud28-ab",
+  "track": "compiled",
+  "workflow_id": null,
+  "agent_id": null,
+  "version": null,
+  "exported": "C:\\Users\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\out\\v-aud28-ab.workflow.json",
+  "export_ok": null,
+  "trace": "C:\\Users\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\traces\\v-aud28-ab-20261011T000823Z.log",
+  "status": "dry_run",
+  "workflow_file": "C:\\Users\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\out\\v-aud28-ab.workflow.json",
+  "tests": {
+    "passed": 1,
+    "total": 1
+  },
+  "errors": [],
+  "notes": [],
+  "tests_detail": []
+}

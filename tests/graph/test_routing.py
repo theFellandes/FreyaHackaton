@@ -144,6 +144,9 @@ def test_deploy_routes() -> None:
     rejected = {"ok": False, "kind": "invalid"}
     assert r.after_deploy(state(remote_validation=rejected, compile_repairs=0)) == "repair_compile"
     assert r.after_deploy(state(remote_validation=rejected, deploy={"workflow_id": "wf"})) == "finalize"
+    # a repair round that was not deployed (no time to test it) must not be self-tested again: the old version is live
+    skipped = state(remote_validation=ok, deploy={"workflow_id": "wf"}, redeploy_skipped=True)
+    assert r.after_deploy(skipped) == "finalize"
 
 
 def test_self_test_and_decide_routes() -> None:

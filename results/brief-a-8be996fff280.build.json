@@ -1,0 +1,64 @@
+{
+  "slot": "brief-a",
+  "track": "compiled",
+  "workflow_id": "58bd49f0-7417-413e-9f8b-19de1836e563",
+  "agent_id": "826cdf9b-cbb4-46ec-99a7-c53613ff4438",
+  "version": 7,
+  "exported": "C:\\Users\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\out\\brief-a.exported.json",
+  "export_ok": true,
+  "trace": "C:\\Users\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\traces\\brief-a-20261011T152455Z.log",
+  "status": "deployed",
+  "workflow_file": "C:\\Users\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\out\\brief-a.workflow.json",
+  "tests": {
+    "passed": 2,
+    "total": 3
+  },
+  "errors": [],
+  "policy_issues": [],
+  "notes": [
+    "decide: failing: smoke (attempt 1 failed: HTTP 504 (platform); attempt 2: platform error (HTTP 504): Fr…)"
+  ],
+  "tests_detail": [
+    {
+      "name": "smoke",
+      "passed": false,
+      "summary": "attempt 1 failed: HTTP 504 (platform); attempt 2: platform error (HTTP 504): FreyaError: chat: HTTP 504 on POST /api/v2/chat/message: error code: 504",
+      "details": {
+        "call_id": "68c4e932-bb98-4bee-a2c4-220d18509e15",
+        "turns": [
+          {
+            "user": "Hello?",
+            "agent": "I am a digital assistant calling from Freya Bank, and we record this call. Am I speaking with Mr Morgan?"
+          }
+        ],
+        "problems": [
+          "platform error (HTTP 504): FreyaError: chat: HTTP 504 on POST /api/v2/chat/message: error code: 504"
+        ],
+        "checks": [],
+        "variables": [
+          "customer_id",
+          "first_name",
+          "last_name",
+          "now",
+          "title"
+        ],
+        "attempts": [
+          {
+            "attempt": 1,
+            "call_id": "47bce59d-8eae-4e70-b571-ada6d11d4d49",
+            "error": "HTTP 504",
+            "transient": true
+          },
+          {
+            "attempt": 2,
+            "call_id": "68c4e932-bb98-4bee-a2c4-220d18509e15",
+            "error": "HTTP 504",
+            "transient": true
+          }
+        ],
+        "platform_error": true
+      },
+      "round": 0
+    }
+  ]
+}

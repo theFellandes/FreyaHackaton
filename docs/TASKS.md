@@ -1,5 +1,14 @@
 # TASKS — executable backlog for the Freya "Build the Builder" builder
 
+> **Status: historical planning document (Oct 10); the as-built system is described in [HOW_IT_WORKS.md](HOW_IT_WORKS.md).**
+> Open defects are in [FIXING_ISSUES.md](FIXING_ISSUES.md), measured results in
+> [results/BASELINE.md](../results/BASELINE.md), the submission procedure in [SUBMISSION.md](SUBMISSION.md). Where this
+> document and the code disagree, the code wins. Differences that matter most: the defaults are `BUILDER_TRACK=compiled`
+> and `SELF_TEST=smoke` (not `auto`); lint rules run L001 to L029; the platform export is written to
+> `out/<slot>.exported.json` (`out/<slot>.workflow.json` is the definition that was sent) and is copied to
+> `submission/hidden-N.workflow.json` for the form; the planned `tests/compliance/` folder does not exist (the check is
+> `tests/unit/test_compliance.py`).
+
 Date: Sat 2026-10-10. Source of truth: decisions brief v2 (requirements R1–R9, ADR-01..16, phases P0–P7, milestones
 M1–M4, experiments E-1..E-8, questions Q-1..Q-8, risks RK-1..RK-12). Companion documents:
 [ARCHITECTURE](ARCHITECTURE.md), [FOLDER_STRUCTURE](FOLDER_STRUCTURE.md), [IMPLEMENTATION_PLAN](IMPLEMENTATION_PLAN.md).
@@ -340,7 +349,7 @@ Phase load: 20 tasks, 10.5 h; compared with the window in the [Summary](#summary
 
 - [x] **T1.5 · builder/settings.py: env aliases and defaults** — `MUST` · 0.25 h · deps: T1.1 · tags: `R8`
   - **Do:** Settings from the process env (and `.env` when present natively): `FREYA_API_KEY` (fallback `FREYA_KEY`),
-    `FREYA_API_URL`, `FREYA_BANK_TEAM_KEY`, `FREYA_WORKSPACE_ID`, `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, the per-provider model settings (`ANTHROPIC_STRONG_MODEL` = `claude-sonnet-5-5`, `OPENAI_STRONG_MODEL` = `gpt-5.6-terra`, …), `BUILDER_TRACK` (`compiled|agentic|auto`, default `auto`), `BUILD_TIME_BUDGET_S` (1680),
+    `FREYA_API_URL`, `FREYA_BANK_TEAM_KEY`, `FREYA_WORKSPACE_ID`, `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, the per-provider model settings (`ANTHROPIC_STRONG_MODEL` = `claude-sonnet-5-5`, `OPENAI_STRONG_MODEL` = `gpt-5.6-terra`, …), `BUILDER_TRACK` (`compiled|agentic|auto`, default `compiled`), `BUILD_TIME_BUDGET_S` (1680),
     `SELF_TEST` (`auto|none|smoke|practice`), `BUILD_SLOT`, `DRY_RUN`. Secrets as `SecretStr`.
     `export_for_kit()` writes `FREYA_API_KEY`/`FREYA_API_URL` into `os.environ` before anything imports the root
     `freya.py`, which reads them at import time.

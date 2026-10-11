@@ -4,6 +4,8 @@ Pure and deterministic (no I/O, no LLM calls). Modules:
 
 * :mod:`builder.compiler.workflow_model` - typed, tolerant mirror of the workflow JSON.
 * :mod:`builder.compiler.tools` - tool-function builders (model-called tools, engine pre-actions, code, end terminals).
+* :mod:`builder.compiler.roles` - the role of every tool field (success flag, customer id, close outcome / reason,
+  promise product / amount / date, account item keys, identity response shape), found from the contracts.
 * :mod:`builder.compiler.hooks` - safe pre/post Python hooks that shape tool inputs and results.
 * :mod:`builder.compiler.codegen` - code-node snippets (date table, account facts, outcome decision) generated from the IR.
 * :mod:`builder.compiler.prompts` / :mod:`builder.compiler.prose` - Jinja prompt templates and LLM-drafted node prose.

@@ -13,11 +13,20 @@ provider and platform limits.
 
 The trace and observer redactors mask configured secret values and recognized key/token shapes with `***` before
 writing or sending their records. This is credential masking, not general personal-data removal. Prompts can include
-brief/API text, repair context and test evidence. Review ordinary exception logs, result artifacts and conversation
-downloads separately: not every output path uses the trace redactor.
+brief/API text, repair context and test evidence. The result file (`results/<slot>-<run>.build.json`), the stdout JSON
+line and the CLI's log output are masked the same way (F11); conversation downloads made with other tools are not.
 
-Keep Langfuse off if prompt/reply content must not be sent there, or set `OBSERVABILITY_LOG_PROMPTS=false` to send
-lengths instead. **That setting affects Langfuse only; the local `.llm.jsonl` still retains prompt and reply text.**
+Two independent switches decide where prompt and reply texts end up:
+
+| Setting | Governs | Default | Effect when changed |
+| --- | --- | --- | --- |
+| `LLM_LOG_CONTENT` | the local `traces/*.llm.jsonl` | `full` | `metadata`: the file keeps ids, models, tokens, timings, errors and the **length** of each text (`system_chars`, `user_chars`, `output_chars`), but `system` / `user` / `output` are `null` |
+| `OBSERVABILITY_LOG_PROMPTS` | Langfuse only | `true` | `false`: Langfuse gets lengths instead of prompt / reply texts |
+
+The default is `full` locally because the owner wants to read what the models answered. Set `LLM_LOG_CONTENT=metadata`
+before a run whose prompts must not be written to disk (for example before sharing the `traces/` folder); set
+`OBSERVABILITY_LOG_PROMPTS=false` as well if Langfuse is on. Neither setting touches the run trace (`.log` /
+`.jsonl`), which never contains prompt text. Keep Langfuse off (no keys) if nothing may leave the machine.
 
 ## The local LLM log
 
@@ -29,12 +38,15 @@ available after a process crash; unfinished attempts and storage failures are no
  "span": "extract_policy", "purpose": "extract policy IR", "provider": "openai", "model": "gpt-5.6-terra",
  "key_label": "openai#1(…ab12)", "attempt": 1, "ok": true, "error_kind": null, "error": null,
  "latency_s": 4.21, "input_tokens": 5120, "output_tokens": 830,
+ "content": "full", "system_chars": 1800, "user_chars": 14200, "output_chars": 2650,
  "system": "...", "user": "...", "output": "{\"rules\": [...]}"}
 ```
 
-A failed attempt has `ok: false`, an `error_kind` (`auth`, `rate_limit`, `overloaded`, `parse` ...) and, for an
-unparseable structured reply, the raw reply in `output`. `user` is exactly what the provider received, repair note
-included. Read it with `builder.observability.read_llm_log(path)` or any JSONL tool, e.g.
+A failed attempt has `ok: false`, an `error_kind` (`auth`, `model_unavailable`, `rate_limit`, `overloaded`,
+`parse` ...) and, for an unparseable structured reply, the raw reply in `output`. `user` is exactly what the provider
+received, repair note included. Every record also carries `content` (`full` or `metadata`) and the lengths
+`system_chars`, `user_chars`, `output_chars`; with `LLM_LOG_CONTENT=metadata` the three texts are `null`. The error
+text is kept in both modes (it is also on the run trace's `MODEL` line). Read the log with `builder.observability.read_llm_log(path)` or any JSONL tool, e.g.
 `Get-Content traces\brief-a-*.llm.jsonl | ConvertFrom-Json | Select seq, span, provider, ok, latency_s`.
 
 ## Langfuse

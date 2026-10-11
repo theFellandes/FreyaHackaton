@@ -349,3 +349,97 @@ def test_the_final_status_names_a_deployment_without_a_verified_export() -> None
     assert decide_status({"deploy": live}) == "deployed"  # no information about the export: not a failure
     assert decide_status({"deploy": {**live, "published": False}, "exported": None}) == "deployed_unpublished"
     assert "deployed_unexported" not in SUCCESS_STATUSES
+
+
+# ------------------------------------------------------------------------------------------------ P-10 untested re-deploys
+
+
+def with_clock(rig: Rig) -> dict[str, float]:
+    """Give the rig a budget on a hand-moved clock; ``now["t"]`` seconds have passed."""
+    now = {"t": 0.0}
+    rig.ctx.budget = Budget(1680, clock=lambda: now["t"])
+    return now
+
+
+async def test_a_repair_round_that_could_not_be_tested_is_not_deployed(rig: Rig) -> None:
+    """The last tested version stays live, stays reported and stays exported - no untested replacement is published."""
+    now = with_clock(rig)
+    await rig.deploy("tested version")
+    tested_export = rig.export_path.read_text(encoding="utf-8")
+    first = {k: rig.state[k] for k in ("deploy", "exported", "workflow_path")}
+    rig.state["selftest_repairs"] = 1  # the decide node asked for a repair round ...
+    now["t"] = 1680 - 250  # ... but only 250 s are left: a deploy (90 s) plus a smoke test (90 s) and the reserve do not fit
+    writes_before = rig.platform.count("PUT", r"/api/v2/workflow/.+") + rig.platform.count("POST", "/api/v2/workflow")
+
+    update = await rig.deploy("repaired but untestable version")
+
+    assert update["redeploy_skipped"] is True and update.get("failed", "") == ""
+    assert any("not deployed" in note and "earlier" in note for note in update["notes"])
+    assert (
+        rig.platform.count("PUT", r"/api/v2/workflow/.+") + rig.platform.count("POST", "/api/v2/workflow")
+        == writes_before
+    )  # nothing was sent
+    assert {k: rig.state[k] for k in ("deploy", "exported", "workflow_path")} == first
+    assert rig.export_path.read_text(encoding="utf-8") == tested_export  # the export still describes the live version
+    assert routing.after_deploy({**rig.state, **update}) == routing.FINALIZE  # no self-test on the old version again
+    final = rig.final()
+    assert final["status"] == "deployed" and final["version"] == first["deploy"]["version"]
+    assert final["redeploy_skipped"] is True and "untested_redeploy" not in final
+
+
+async def test_a_repair_round_with_time_for_a_test_is_deployed(rig: Rig) -> None:
+    now = with_clock(rig)
+    await rig.deploy("tested version")
+    rig.state["selftest_repairs"] = 1
+    now["t"] = 1680 - 400  # deploy + smoke + reserve (300 s) fit
+
+    update = await rig.deploy("repaired version")
+
+    assert "redeploy_skipped" not in update and update["deploy"]["version"] == 2
+    assert routing.after_deploy({**rig.state, **update}) == routing.SELF_TEST
+
+
+async def test_the_first_deploy_is_never_skipped_for_lack_of_time(rig: Rig) -> None:
+    now = with_clock(rig)
+    now["t"] = 1680 - 100
+    update = await rig.deploy("the only version there is")
+    assert "redeploy_skipped" not in update and update["deploy"]["version"] == 1
+
+
+# ------------------------------------------------------------------------------------------------ AUD-05 / AUD-56
+
+
+async def test_the_deploy_records_the_inputs_fingerprint_with_the_slot(rig: Rig, tmp_path: Path) -> None:
+    rig.state["inputs"] = {"briefs": [], "tool_api": "", "slot": "s", "inputs_sha": "f" * 64}
+    await rig.deploy("one")
+    entry = json.loads((tmp_path / "state.json").read_text())["s"]
+    assert entry["inputs_sha"] == "f" * 64 and entry["workspace_id"] == "ws_1"
+
+
+CAPACITY_BODY = '{"error":"Workflow limit reached: this workspace already has 200 of 200 workflows"}'
+
+
+@pytest.mark.parametrize("status", [400, 409, 422])
+async def test_a_workspace_limit_on_create_ends_the_run_without_a_repair(rig: Rig, status: int) -> None:
+    rig.platform.fail("POST", "/api/v2/workflow", http_error("POST", "/api/v2/workflow", status, CAPACITY_BODY))
+    update = await rig.deploy("one")
+    assert update.get("failed") == "deploy"
+    assert (update.get("remote_validation") or {}).get("kind") != "invalid"
+    assert not update.get("compile_feedback")
+    assert routing.after_deploy(rig.state) == routing.FINALIZE
+    assert any("workflow limit" in error for error in rig.state["errors"])
+
+
+async def test_a_content_error_that_mentions_a_maximum_is_still_repaired(rig: Rig) -> None:
+    body = '{"errors":[{"path":"nodes.n.tools[0].timeout_ms","message":"exceeds maximum 30000"}]}'
+    rig.platform.fail("POST", "/api/v2/workflow", http_error("POST", "/api/v2/workflow", 400, body))
+    update = await rig.deploy("one")
+    assert update["remote_validation"]["kind"] == "invalid" and update["compile_feedback"]
+
+
+async def test_limit_wording_on_an_update_is_still_a_content_rejection(rig: Rig) -> None:
+    await rig.deploy("one")
+    route = "/api/v2/workflow/wf_1"
+    rig.platform.fail("PUT", route, http_error("PUT", route, 400, CAPACITY_BODY))
+    update = await rig.deploy("two")
+    assert update["remote_validation"]["kind"] == "invalid"

@@ -1,0 +1,95 @@
+2026-10-11T00:03:31.781Z | START  | run b886be1ae67f started | slot=brief-a | builder 0.1.0, python 3.14.6
+2026-10-11T00:03:31.781Z | CONFIG | effective configuration | freya_api_url=https://staging-app.freyavoice.ai freya_api_key=set freya_bank_team_key=set freya_workspace_id=auto llm_providers=[anthropic, openai, claude_code] builder_track=auto agent_profile=staged self_test=auto build_time_budget_s=1680 build_slot=auto dry_run=False langfuse=disabled llm_log_content=full langfuse_log_prompts=True
+2026-10-11T00:03:31.782Z | OBS    | langfuse disabled (no keys)
+2026-10-11T00:03:31.786Z | CONFIG | LLM key changer | order=[anthropic, openai, claude_code] key_health_file=C:\Users\Felladien\Documents\Projects\Python\FreyaHackaton\data\key_health.json
+2026-10-11T00:03:31.816Z | STAGE  | load_inputs | start | budget_left_s=1680
+2026-10-11T00:03:31.828Z | DECIDE | agentic track skipped: no usable credential: no live ANTHROPIC_API_KEY, no CLAUDE_CODE_OAUTH_TOKEN and no Claude Code login that worked before (a credentials file alone is no proof: an expired login answers 'Not logged in') | requested=auto
+2026-10-11T00:03:31.828Z | DECIDE | track compiled (requested auto; agentic fallback off) | profile=staged dry_run=False
+2026-10-11T00:03:31.828Z | INPUT  | 1 brief file(s), tool API with 7 tool(s) | briefs=[brief-a.md] chars=10174 brief_sha=97a030a681d1 tools=[add_note, close_call, create_promise, get_account, schedule_callback, transfer_to_agent, verify_identity]
+2026-10-11T00:03:31.828Z | STAGE  | load_inputs | end 0.0s | budget_left_s=1680
+2026-10-11T00:03:31.830Z | STAGE  | guard_inputs | start | budget_left_s=1680
+2026-10-11T00:03:31.841Z | GUARD  | inputs | ok | 0 violations | blocked=False violations=[]
+2026-10-11T00:03:31.841Z | STAGE  | guard_inputs | end 0.0s | budget_left_s=1679.9
+2026-10-11T00:03:31.843Z | STAGE  | understand_brief | start | budget_left_s=1679.9
+2026-10-11T00:03:31.844Z | LEDGER | reading 1 file(s) in 3 passage(s) | files=[brief-a.md] passages=3
+2026-10-11T00:03:55.222Z | MODEL  | openai/gpt-5.6-terra | key=openai#1(…yRAA) | ok 21.8s in=6399 out=3728 attempt=1 | rule ledger: brief-a.md passage 2/3
+2026-10-11T00:03:55.230Z | LEDGER | passage 2/3 (brief-a.md): 55 rules, 1 ambiguities
+2026-10-11T00:03:55.230Z | RATE   | waited 21.8 s for openai#1(…yRAA) | purpose=rule ledger: brief-a.md passage 3/3 provider=openai waited_s=21.8
+2026-10-11T00:03:55.291Z | MODEL  | openai/gpt-5.6-terra | key=openai#1(…yRAA) | ok 23.4s in=6400 out=3593 attempt=1 | rule ledger: brief-a.md passage 1/3
+2026-10-11T00:03:55.296Z | LEDGER | passage 1/3 (brief-a.md): 51 rules, 2 ambiguities
+2026-10-11T00:04:07.229Z | MODEL  | openai/gpt-5.6-terra | key=openai#1(…yRAA) | ok 12.0s in=5939 out=2131 attempt=1 | rule ledger: brief-a.md passage 3/3
+2026-10-11T00:04:07.236Z | LEDGER | passage 3/3 (brief-a.md): 33 rules, 0 ambiguities
+2026-10-11T00:04:14.384Z | MODEL  | openai/gpt-5.6-terra | key=openai#1(…yRAA) | ok 7.1s in=1626 out=656 attempt=1 | rule ledger: completeness check 1/1
+2026-10-11T00:04:14.398Z | LEDGER | completeness check added 2 rule(s) | rule_ids=[A-M1, A-M2]
+2026-10-11T00:04:14.399Z | LEDGER | ledger ready: 141 rules (141 active), 3 ambiguities, 0 superseded | rules=141 active=141 ambiguities=3
+2026-10-11T00:04:14.399Z | AMBIG  | [A-3c, A-3e, A-3f] When the customer asks a question after the first identity ask, does answering it itself count as the permitted second ask? -> chosen: The agent answers first, and the following identity ask is the second ask. (because: The text states, "Answer a question from the customer first" and "The ask that follows is the second ask.")
+2026-10-11T00:04:14.399Z | AMBIG  | [A-11d] What should the agent do after the service rejects a value it cannot read as a date? -> chosen: Ask for the date again without counting it as a wrong answer. (because: The passage says only, "The service rejects anything it cannot read as a date," and does not say that an unreadable value is a wrong answer; treating it as one would add a consequence not stated.)
+2026-10-11T00:04:14.399Z | AMBIG  | [A-19, A-20a] What should happen when a customer names a weekend day or holiday that is not after the deadline but whose next business day is after the deadline? -> chosen: Do not offer a next business day that is after the deadline; offer no promise date later than the deadline. (because: Rule 19 states that a promise date "must be today or later, a business day, and not after the deadline," while rule 20 says to offer "the next business day" for a non-business named day that is not after the deadline. The conservative reading preserves the express prohibition on recording a date after the deadline.)
+2026-10-11T00:04:14.423Z | GUARD  | ledger | ok | 0 violations | blocked=False violations=[]
+2026-10-11T00:04:14.423Z | DECIDE | rule ledger: 141 rules (141 active), 3 ambiguities, 0 supersessions
+2026-10-11T00:04:14.423Z | STAGE  | understand_brief | end 42.6s | budget_left_s=1637.4
+2026-10-11T00:04:14.426Z | STAGE  | extract_policy | start | budget_left_s=1637.4
+2026-10-11T00:04:47.433Z | MODEL  | openai/gpt-5.6-terra | key=openai#1(…yRAA) | ok 33.0s in=26157 out=6082 attempt=1 | extract policy IR from the rule ledger
+2026-10-11T00:04:47.501Z | GROUNDING | warning: phrases.goodbye_sentence: sentence not found in the briefs: 'Thank you and goodbye.'
+2026-10-11T00:04:47.501Z | GROUNDING | warning: phrases.extra.floor_offer: sentence not found in the briefs: 'I can offer {floor_label} of {floor_amount}. The rest stays overdue.'
+2026-10-11T00:04:47.501Z | GROUNDING | warning: phrases.extra.below_floor: sentence not found in the briefs: 'That amount cannot be recorded. I can offer {floor_amount}.'
+2026-10-11T00:04:47.501Z | GROUNDING | warning: phrases.extra.sympathy: sentence not found in the briefs: 'I am sorry to hear that.'
+2026-10-11T00:04:47.501Z | GROUNDING | warning: phrases.extra.support_offer: sentence not found in the briefs: 'Would you like me to connect you with the customer support team?'
+2026-10-11T00:04:47.501Z | GROUNDING | warning: phrases.extra.callback_question: sentence not found in the briefs: 'When can {title} {last_name} be reached?'
+2026-10-11T00:04:47.501Z | GROUNDING | warning: identity.questions[0].ask: sentence not found in the briefs: 'What is your date of birth?'
+2026-10-11T00:04:47.502Z | EXTRACT | policy IR extracted: 2 band(s), 14 intent(s), 17 outcome row(s), 11 residual rule(s) | cited_rules=141
+2026-10-11T00:04:47.502Z | STAGE  | extract_policy | end 33.1s | budget_left_s=1604.3
+2026-10-11T00:04:47.503Z | STAGE  | validate_policy | start | budget_left_s=1604.3
+2026-10-11T00:04:47.508Z | VALIDATE | policy IR: 0 error(s), 0 warning(s) | codes=[]
+2026-10-11T00:04:47.558Z | VALIDATE | 7 fixed sentence(s) not found in the briefs | sentences=[phrases.goodbye_sentence: sentence not found in the briefs: 'Thank you and goodbye.', phrases.extra.floor_offer: sen...
+2026-10-11T00:04:47.571Z | VALIDATE | offline invariants: 15 passed, 0 failed, 2 unchecked | failing=[]
+2026-10-11T00:04:47.571Z | STAGE  | validate_policy | end 0.1s | budget_left_s=1604.2
+2026-10-11T00:04:47.573Z | STAGE  | guard_policy | start | budget_left_s=1604.2
+2026-10-11T00:04:47.588Z | GUARD  | policy | ok | 0 violations | blocked=False violations=[]
+2026-10-11T00:04:47.589Z | STAGE  | guard_policy | end 0.0s | budget_left_s=1604.2
+2026-10-11T00:04:47.590Z | STAGE  | draft_prose | start | budget_left_s=1604.2
+2026-10-11T00:05:10.150Z | MODEL  | openai/gpt-5.6-luna | key=openai#1(…yRAA) | ok 22.6s in=8216 out=2653 attempt=1 | draft node prose (staged profile)
+2026-10-11T00:05:10.156Z | PROSE  | drafted prose for 4 node(s) | nodes={"opening": 1047, "third_party": 976, "identity": 1401, "negotiate": 2831}
+2026-10-11T00:05:10.174Z | GUARD  | prose | ok | 0 violations | blocked=False violations=[]
+2026-10-11T00:05:10.174Z | STAGE  | draft_prose | end 22.6s | budget_left_s=1581.6
+2026-10-11T00:05:10.176Z | STAGE  | compile_workflow | start | budget_left_s=1581.6
+2026-10-11T00:05:10.223Z | DECIDE | compiled staged workflow: 36 nodes; rule coverage: 141 of 141 active rules enforced (100%); 0 superseded; uncovered: none | notes=[]
+2026-10-11T00:05:10.224Z | STAGE  | compile_workflow | end 0.0s | budget_left_s=1581.6
+2026-10-11T00:05:10.225Z | STAGE  | static_checks | start | budget_left_s=1581.6
+2026-10-11T00:05:10.237Z | LINT   | static checks: 0 errors, 1 warnings (ok) | errors=[] warnings=[L018 warning nodes.negotiate.task_message: 8467 characters (> 6000); long prompts dilute the rules]
+2026-10-11T00:05:10.237Z | TEST   | PASS static_checks | 0 errors, 1 warnings
+2026-10-11T00:05:10.237Z | STAGE  | static_checks | end 0.0s | budget_left_s=1581.5
+2026-10-11T00:05:10.239Z | STAGE  | guard_workflow | start | budget_left_s=1581.5
+2026-10-11T00:05:10.256Z | GUARD  | workflow | ok | 0 violations | blocked=False violations=[]
+2026-10-11T00:05:10.257Z | STAGE  | guard_workflow | end 0.0s | budget_left_s=1581.5
+2026-10-11T00:05:10.258Z | STAGE  | remote_validate | start | budget_left_s=1581.5
+2026-10-11T00:05:10.613Z | REQUEST | Freya wrapper attempt completed | service=freya scope=wrapper operation=validate request_id=6f631d24b6624b3db5dd5bf0bc0d2ead attempt=1 max_attempts=3 ok=True duration_ms=350.387 method=POST path=/api/v2/workflow retryable=False retry_scheduled=False retry_delay_ms=0
+2026-10-11T00:05:10.614Z | FREYA  | validate | ok=True name=brief-a node_count=36 tool_count=7
+2026-10-11T00:05:10.614Z | TEST   | PASS remote_validate | the platform accepted the workflow (dry run)
+2026-10-11T00:05:10.614Z | STAGE  | remote_validate | end 0.4s | budget_left_s=1581.2
+2026-10-11T00:05:10.615Z | STAGE  | deploy | start | budget_left_s=1581.2
+2026-10-11T00:05:11.072Z | REQUEST | Freya wrapper attempt completed | service=freya scope=wrapper operation=update request_id=192e663fcfa047e693d1956fb7a58099 attempt=1 max_attempts=5 ok=True duration_ms=449.027 method=PUT path=/api/v2/workflow/58bd49f0-7417-413e-9f8b-19de1836e563 retryable=False retry_scheduled=False retry_delay_ms=0 workflow_id=58bd49f0-7417-413e-9f8b-19de1836e563
+2026-10-11T00:05:11.240Z | REQUEST | Freya wrapper attempt completed | service=freya scope=wrapper operation=workspace request_id=e4718a2b836f4f7fbb47cd9d896fc07e attempt=1 max_attempts=3 ok=True duration_ms=167.209 retryable=False retry_scheduled=False retry_delay_ms=0
+2026-10-11T00:05:11.506Z | REQUEST | Freya wrapper attempt completed | service=freya scope=wrapper operation=get_workflow request_id=f8a1a38fe8104001bc3f81ff66ae6dd6 attempt=1 max_attempts=3 ok=True duration_ms=265.963 method=GET path=/api/v2/workflow/58bd49f0-7417-413e-9f8b-19de1836e563 retryable=False retry_scheduled=False retry_delay_ms=0 workflow_id=58bd49f0-7417-413e-9f8b-19de1836e563
+2026-10-11T00:05:11.506Z | REQUEST | Freya wrapper attempt completed | service=freya scope=wrapper operation=workspace request_id=265245996f584fbe90f991f625ae2697 attempt=1 max_attempts=3 ok=True duration_ms=0.001 retryable=False retry_scheduled=False retry_delay_ms=0
+2026-10-11T00:05:11.748Z | REQUEST | Freya wrapper attempt completed | service=freya scope=wrapper operation=versions request_id=a4badd0988064eb0b3fbf4b51e53777c attempt=1 max_attempts=3 ok=True duration_ms=241.892 method=GET path=/api/v2/versions/workflow/58bd49f0-7417-413e-9f8b-19de1836e563 retryable=False retry_scheduled=False retry_delay_ms=0 workflow_id=58bd49f0-7417-413e-9f8b-19de1836e563
+2026-10-11T00:05:12.194Z | REQUEST | Freya wrapper attempt completed | service=freya scope=wrapper operation=publish request_id=fef8e186314b465a821657304259af64 attempt=1 max_attempts=5 ok=True duration_ms=445.117 method=POST path=/api/v2/versions/workflow/58bd49f0-7417-413e-9f8b-19de1836e563/publish retryable=False retry_scheduled=False retry_delay_ms=0 workflow_id=58bd49f0-7417-413e-9f8b-19de1836e563
+2026-10-11T00:05:12.194Z | REQUEST | Freya wrapper attempt completed | service=freya scope=wrapper operation=workspace request_id=bd8580af4ef74839bae06424c413bad4 attempt=1 max_attempts=3 ok=True duration_ms=0.001 retryable=False retry_scheduled=False retry_delay_ms=0
+2026-10-11T00:05:13.451Z | REQUEST | Freya wrapper attempt completed | service=freya scope=wrapper operation=versions request_id=b3122b7e33da48c9ac5c9868e0b39de4 attempt=1 max_attempts=3 ok=True duration_ms=1256.59 method=GET path=/api/v2/versions/workflow/58bd49f0-7417-413e-9f8b-19de1836e563 retryable=False retry_scheduled=False retry_delay_ms=0 workflow_id=58bd49f0-7417-413e-9f8b-19de1836e563
+2026-10-11T00:05:13.451Z | FREYA  | publish | ok=True workflow_id=58bd49f0-7417-413e-9f8b-19de1836e563 version=2 version_id=2699fb7a-7d2c-450b-95cb-8a7aa0127e45 confirmed=True
+2026-10-11T00:05:13.453Z | FREYA  | save | ok=True state_file=C:\Users\Felladien\Documents\Projects\Python\FreyaHackaton\.freya-agents.json workflow_id=58bd49f0-7417-413e-9f8b-19de1836e563 agent_id=826cdf9b-cbb4-46ec-99a7-c53613ff4438 version=2 created=False node_count=36 tool_count=7 slot=brief-a published=True
+2026-10-11T00:05:13.454Z | REQUEST | Freya wrapper attempt completed | service=freya scope=wrapper operation=workspace request_id=b35fa589cb0a4933a775d0f1419d083b attempt=1 max_attempts=3 ok=True duration_ms=0.001 retryable=False retry_scheduled=False retry_delay_ms=0
+2026-10-11T00:05:13.647Z | REQUEST | Freya wrapper attempt completed | service=freya scope=wrapper operation=get_workflow request_id=f604dbb9f108404183fb0d9ae44ed00e attempt=1 max_attempts=3 ok=True duration_ms=192.011 method=GET path=/api/v2/workflow/58bd49f0-7417-413e-9f8b-19de1836e563 retryable=False retry_scheduled=False retry_delay_ms=0 workflow_id=58bd49f0-7417-413e-9f8b-19de1836e563
+2026-10-11T00:05:14.048Z | REQUEST | Freya wrapper attempt completed | service=freya scope=wrapper operation=export request_id=58edca01bfd6414fadd9191e0c07268f attempt=1 max_attempts=3 ok=True duration_ms=397.293 method=GET path=/api/v2/workflow/58bd49f0-7417-413e-9f8b-19de1836e563 retryable=False retry_scheduled=False retry_delay_ms=0 workflow_id=58bd49f0-7417-413e-9f8b-19de1836e563
+2026-10-11T00:05:14.049Z | FREYA  | export | ok=True workflow_id=58bd49f0-7417-413e-9f8b-19de1836e563 path=C:\Users\Felladien\Documents\Projects\Python\FreyaHackaton\out\brief-a.exported.json.part
+2026-10-11T00:05:14.052Z | STAGE  | deploy | end 3.4s | budget_left_s=1577.7
+2026-10-11T00:05:14.053Z | STAGE  | self_test | start | budget_left_s=1577.7
+2026-10-11T00:05:14.053Z | TEST   | START smoke
+2026-10-11T00:05:15.479Z | REQUEST | Freya wrapper attempt completed | service=freya scope=wrapper operation=chat request_id=86bb6c38a9ae45349d9997266fe01c9e attempt=1 max_attempts=1 ok=True duration_ms=1424.38 method=POST path=/api/v2/chat/message retryable=False retry_scheduled=False retry_delay_ms=0 workflow_id=58bd49f0-7417-413e-9f8b-19de1836e563 call_id=dae60da2-3d48-4b3b-b448-b28072aafc1f
+2026-10-11T00:05:15.479Z | FREYA  | chat | ok=True workflow_id=58bd49f0-7417-413e-9f8b-19de1836e563 call_id=dae60da2-3d48-4b3b-b448-b28072aafc1f message=Hello? response=I am a digital assistant calling from Freya Bank, and we record this call. Am I speaking with Mr Morgan? ended_by_agent=False
+2026-10-11T00:05:17.730Z | REQUEST | Freya wrapper attempt completed | service=freya scope=wrapper operation=chat request_id=81045b92ee3c4de4b497e96413b79ebf attempt=1 max_attempts=1 ok=True duration_ms=2249.3 method=POST path=/api/v2/chat/message retryable=False retry_scheduled=False retry_delay_ms=0 workflow_id=58bd49f0-7417-413e-9f8b-19de1836e563 call_id=dae60da2-3d48-4b3b-b448-b28072aafc1f
+2026-10-11T00:05:17.730Z | FREYA  | chat | ok=True workflow_id=58bd49f0-7417-413e-9f8b-19de1836e563 call_id=dae60da2-3d48-4b3b-b448-b28072aafc1f message=Sorry, who is this and what is this about? response=I am Freya Bank's digital assistant. Am I speaking with Mr Morgan? ended_by_agent=False
+2026-10-11T00:05:17.869Z | REQUEST | Freya wrapper attempt completed | service=freya scope=wrapper operation=chat_end request_id=f3fc24c987944a30b18616d89852b82d attempt=1 max_attempts=1 ok=True duration_ms=136.27 method=POST path=/api/v2/chat/end retryable=False retry_scheduled=False retry_delay_ms=0 call_id=dae60da2-3d48-4b3b-b448-b28072aafc1f
+2026-10-11T00:05:17.869Z | FREYA  | chat_end | ok=True call_id=dae60da2-3d48-4b3b-b448-b28072aafc1f
+2026-10-11T00:05:17.870Z | TEST   | PASS smoke | 2 turn(s) answered; replies non-empty; forbidden words checked: 4; opening elements checked: 2
+2026-10-11T00:05:17.870Z | TEST   | START walkthrough

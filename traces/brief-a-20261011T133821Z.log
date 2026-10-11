@@ -1,0 +1,147 @@
+2026-10-11T13:38:22.123Z | START  | run 8621b5094744 started | slot=brief-a | builder 0.1.0, python 3.13.16 | commit 6d75847+dirty
+2026-10-11T13:38:22.124Z | CONFIG | effective configuration | freya_api_url=https://staging-app.freyavoice.ai freya_api_key=set freya_bank_team_key=set freya_workspace_id=auto llm_providers=[anthropic, openai, claude_code] builder_track=compiled agent_profile=staged self_test=smoke build_time_budget_s=1680 build_slot=auto dry_run=False langfuse=disabled llm_log_content=full langfuse_log_prompts=True
+2026-10-11T13:38:22.127Z | OBS    | langfuse disabled (no keys)
+2026-10-11T13:38:22.129Z | CONFIG | LLM key changer | order=[anthropic, openai, claude_code] key_health_file=.\data\key_health.json
+2026-10-11T13:38:22.140Z | STAGE  | load_inputs | start | budget_left_s=1680
+2026-10-11T13:38:22.141Z | DECIDE | track compiled (requested compiled; agentic fallback off) | profile=staged dry_run=False
+2026-10-11T13:38:22.141Z | INPUT  | 1 brief file(s), tool API with 7 tool(s) | briefs=[brief-a.md] chars=10174 brief_sha=97a030a681d1 tools=[add_note, close_call, create_promise, get_account, schedule_callback, transfer_to_agent, verify_identity]
+2026-10-11T13:38:22.141Z | STAGE  | load_inputs | end 0.0s | budget_left_s=1680
+2026-10-11T13:38:22.142Z | STAGE  | guard_inputs | start | budget_left_s=1680
+2026-10-11T13:38:22.149Z | GUARD  | inputs | ok | 0 violations | blocked=False violations=[]
+2026-10-11T13:38:22.149Z | STAGE  | guard_inputs | end 0.0s | budget_left_s=1680
+2026-10-11T13:38:22.150Z | STAGE  | understand_brief | start | budget_left_s=1680
+2026-10-11T13:38:22.151Z | LEDGER | reading 1 file(s) in 3 passage(s) | files=[brief-a.md] passages=3
+2026-10-11T13:38:45.723Z | MODEL  | openai/gpt-5.6-terra | key=openai#1(…yRAA) | ok 23.6s in=6400 out=3570 attempt=1 | rule ledger: brief-a.md passage 1/3
+2026-10-11T13:38:45.733Z | LEDGER | passage 1/3 (brief-a.md): 51 rules, 1 ambiguities
+2026-10-11T13:38:45.734Z | RATE   | waited 22.1 s for openai#1(…yRAA) | purpose=rule ledger: brief-a.md passage 3/3 provider=openai waited_s=22.1
+2026-10-11T13:38:46.289Z | MODEL  | openai/gpt-5.6-terra | key=openai#1(…yRAA) | ok 22.7s in=6399 out=3925 attempt=1 | rule ledger: brief-a.md passage 2/3
+2026-10-11T13:38:46.298Z | LEDGER | passage 2/3 (brief-a.md): 59 rules, 1 ambiguities
+2026-10-11T13:39:01.778Z | MODEL  | openai/gpt-5.6-terra | key=openai#1(…yRAA) | ok 16.0s in=5939 out=2595 attempt=1 | rule ledger: brief-a.md passage 3/3
+2026-10-11T13:39:01.787Z | LEDGER | passage 3/3 (brief-a.md): 32 rules, 2 ambiguities
+2026-10-11T13:39:07.549Z | MODEL  | openai/gpt-5.6-terra | key=openai#1(…yRAA) | ok 5.7s in=1575 out=515 attempt=1 | rule ledger: completeness check 1/1
+2026-10-11T13:39:07.574Z | LEDGER | completeness check added 2 rule(s) | rule_ids=[A-M1, A-M2]
+2026-10-11T13:39:07.575Z | LEDGER | ledger ready: 144 rules (144 active), 4 ambiguities, 0 superseded | rules=144 active=144 ambiguities=4
+2026-10-11T13:39:07.575Z | AMBIG  | [A-5b, A-5c] Does the instruction to say nothing beyond the opening sentence prevent asking when the customer can be reached? -> chosen: Ask when the customer can be reached, and otherwise say nothing beyond the opening sentence. (because: The same rule explicitly says: "Ask when the customer can be reached.")
+2026-10-11T13:39:07.576Z | AMBIG  | [A-30c, A-30d, A-30e] Must Attempt 1 state both the applicable amount and the proposed date, or only the date specified in the Attempt 1 bullet? -> chosen: State both the applicable amount and the applicable proposed date. (because: The text says "Attempt 1 is for the full past-due amount, or for the floor" and separately says "Attempt 1: propose the last business day of this week.")
+2026-10-11T13:39:07.576Z | AMBIG  | [A-42a, A-42b, A-42c] What customer response constitutes insisting after a request for a human? -> chosen: Treat an explicit continued request for a human after the one help question as insisting. (because: The rule says "If they insist" after requiring the agent to "ask once whether you can help first"; it does not define a broader trigger.)
+2026-10-11T13:39:07.576Z | AMBIG  | [A-42a, A-42b, A-42c, A-45a, A-45b, A-45c] How should a customer who both requests a human and says twice that they do not want to talk be handled? -> chosen: Apply rule 42 when the customer insists on a human, including before verification; otherwise apply rule 45 after two statements that they do not want to talk. (because: Rule 45 states "Rule 42 applies before and after verification," which expressly preserves rule 42 across both stages, while rule 45 separately specifies the twice-not-wanting-to-talk closure.)
+2026-10-11T13:39:07.615Z | GUARD  | ledger | ok | 0 violations | blocked=False violations=[]
+2026-10-11T13:39:07.615Z | DECIDE | rule ledger: 144 rules (144 active), 4 ambiguities, 0 supersessions
+2026-10-11T13:39:07.616Z | STAGE  | understand_brief | end 45.5s | budget_left_s=1634.5
+2026-10-11T13:39:07.617Z | STAGE  | extract_policy | start | budget_left_s=1634.5
+2026-10-11T13:39:45.991Z | MODEL  | openai/gpt-5.6-terra | key=openai#1(…yRAA) | ok 38.3s in=27157 out=7329 attempt=1 | extract policy IR from the rule ledger
+2026-10-11T13:39:46.018Z | EXTRACT | safe fix: 1 uncovered ledger rule(s) added as residual rules: A-1b
+2026-10-11T13:39:46.092Z | GROUNDING | warning: phrases.goodbye_sentence: sentence not found in the briefs: 'Thank you and goodbye.'
+2026-10-11T13:39:46.092Z | GROUNDING | warning: phrases.extra.below_floor: sentence not found in the briefs: 'That amount cannot be recorded. I can offer the {floor_label} of {floor_amount}.'
+2026-10-11T13:39:46.092Z | GROUNDING | warning: identity.questions[0].ask: sentence not found in the briefs: 'What is your date of birth?'
+2026-10-11T13:39:46.094Z | EXTRACT | policy IR extracted: 2 band(s), 16 intent(s), 18 outcome row(s), 35 residual rule(s) | cited_rules=144
+2026-10-11T13:39:46.094Z | STAGE  | extract_policy | end 38.5s | budget_left_s=1596
+2026-10-11T13:39:46.096Z | STAGE  | validate_policy | start | budget_left_s=1596
+2026-10-11T13:39:46.105Z | VALIDATE | policy IR: 0 error(s), 0 warning(s) | codes=[]
+2026-10-11T13:39:46.169Z | VALIDATE | 3 fixed sentence(s) not found in the briefs | sentences=[phrases.goodbye_sentence: sentence not found in the briefs: 'Thank you and goodbye.', phrases.extra.below_floor: sen...
+2026-10-11T13:39:46.187Z | VALIDATE | offline invariants: 15 passed, 0 failed, 2 unchecked | failing=[]
+2026-10-11T13:39:46.188Z | STAGE  | validate_policy | end 0.1s | budget_left_s=1595.9
+2026-10-11T13:39:46.190Z | STAGE  | guard_policy | start | budget_left_s=1595.9
+2026-10-11T13:39:46.230Z | GUARD  | policy | ok | 0 violations | blocked=False violations=[]
+2026-10-11T13:39:46.231Z | STAGE  | guard_policy | end 0.0s | budget_left_s=1595.9
+2026-10-11T13:39:46.232Z | STAGE  | draft_prose | start | budget_left_s=1595.9
+2026-10-11T13:40:11.279Z | MODEL  | openai/gpt-5.6-luna | key=openai#1(…yRAA) | ok 25.0s in=8239 out=2895 attempt=1 | draft node prose (staged profile)
+2026-10-11T13:40:11.290Z | PROSE  | drafted prose for 4 node(s) | nodes={"opening": 915, "third_party": 1116, "identity": 1314, "negotiate": 2387}
+2026-10-11T13:40:11.363Z | GUARD  | prose | ok | 0 violations | blocked=False violations=[]
+2026-10-11T13:40:11.363Z | STAGE  | draft_prose | end 25.1s | budget_left_s=1570.8
+2026-10-11T13:40:11.365Z | STAGE  | compile_workflow | start | budget_left_s=1570.8
+2026-10-11T13:40:11.502Z | DECIDE | compiled staged workflow: 51 nodes; rule coverage: 144 of 144 active rules mapped to existing workflow locations (100%; a declaration, not behavioural evidence); 0 superseded; 0 dangling location(s); uncovered: none | notes=[]
+2026-10-11T13:40:11.504Z | STAGE  | compile_workflow | end 0.1s | budget_left_s=1570.6
+2026-10-11T13:40:11.505Z | STAGE  | static_checks | start | budget_left_s=1570.6
+2026-10-11T13:40:11.531Z | LINT   | static checks: 0 errors, 1 warnings (ok) | errors=[] warnings=[L018 warning nodes.negotiate.task_message: 10565 characters (> 6000); long prompts dilute the rules]
+2026-10-11T13:40:11.531Z | TEST   | PASS static_checks | 0 errors, 1 warnings
+2026-10-11T13:40:11.531Z | STAGE  | static_checks | end 0.0s | budget_left_s=1570.6
+2026-10-11T13:40:11.532Z | STAGE  | guard_workflow | start | budget_left_s=1570.6
+2026-10-11T13:40:11.569Z | GUARD  | workflow | ok | 0 violations | blocked=False violations=[]
+2026-10-11T13:40:11.570Z | STAGE  | guard_workflow | end 0.0s | budget_left_s=1570.6
+2026-10-11T13:40:11.572Z | STAGE  | remote_validate | start | budget_left_s=1570.6
+2026-10-11T13:40:12.739Z | REQUEST | Freya wrapper attempt completed | service=freya scope=wrapper operation=validate request_id=7a1fb9f7a11f468cbaa20d20f824fc29 attempt=1 max_attempts=3 ok=True duration_ms=1154.64 method=POST path=/api/v2/workflow retryable=False retry_scheduled=False retry_delay_ms=0
+2026-10-11T13:40:12.739Z | FREYA  | validate | ok=True name=brief-a node_count=51 tool_count=7
+2026-10-11T13:40:12.740Z | TEST   | PASS remote_validate | the platform accepted the workflow (dry run)
+2026-10-11T13:40:12.740Z | STAGE  | remote_validate | end 1.2s | budget_left_s=1569.4
+2026-10-11T13:40:12.742Z | STAGE  | deploy | start | budget_left_s=1569.4
+2026-10-11T13:40:13.144Z | REQUEST | Freya wrapper attempt completed | service=freya scope=wrapper operation=workspace request_id=aee13eb7a57e45899161893556cc477f attempt=1 max_attempts=3 ok=True duration_ms=388.928 retryable=False retry_scheduled=False retry_delay_ms=0
+2026-10-11T13:40:14.066Z | REQUEST | Freya wrapper attempt completed | service=freya scope=wrapper operation=update request_id=18d23b6168c24d128015307085c8345e attempt=1 max_attempts=5 ok=True duration_ms=918.629 method=PUT path=/api/v2/workflow/58bd49f0-7417-413e-9f8b-19de1836e563 retryable=False retry_scheduled=False retry_delay_ms=0 workflow_id=58bd49f0-7417-413e-9f8b-19de1836e563
+2026-10-11T13:40:14.067Z | REQUEST | Freya wrapper attempt completed | service=freya scope=wrapper operation=workspace request_id=7a84bc7592b94f108baa01f910d136e3 attempt=1 max_attempts=3 ok=True duration_ms=0.002 retryable=False retry_scheduled=False retry_delay_ms=0
+2026-10-11T13:40:14.249Z | REQUEST | Freya wrapper attempt completed | service=freya scope=wrapper operation=get_workflow request_id=6875166fbc7c4d71b2ac590213f169fb attempt=1 max_attempts=3 ok=True duration_ms=181.848 method=GET path=/api/v2/workflow/58bd49f0-7417-413e-9f8b-19de1836e563 retryable=False retry_scheduled=False retry_delay_ms=0 workflow_id=58bd49f0-7417-413e-9f8b-19de1836e563
+2026-10-11T13:40:14.249Z | REQUEST | Freya wrapper attempt completed | service=freya scope=wrapper operation=workspace request_id=a6a432468bcc4560835287a1cf36e195 attempt=1 max_attempts=3 ok=True duration_ms=0.001 retryable=False retry_scheduled=False retry_delay_ms=0
+2026-10-11T13:40:14.565Z | REQUEST | Freya wrapper attempt completed | service=freya scope=wrapper operation=versions request_id=077d239f9e9e4ca6a855d47d857a0fb8 attempt=1 max_attempts=3 ok=True duration_ms=315.985 method=GET path=/api/v2/versions/workflow/58bd49f0-7417-413e-9f8b-19de1836e563 retryable=False retry_scheduled=False retry_delay_ms=0 workflow_id=58bd49f0-7417-413e-9f8b-19de1836e563
+2026-10-11T13:40:16.220Z | REQUEST | Freya wrapper attempt completed | service=freya scope=wrapper operation=publish request_id=0324d7744607476584164da4bf62a035 attempt=1 max_attempts=5 ok=True duration_ms=1654.24 method=POST path=/api/v2/versions/workflow/58bd49f0-7417-413e-9f8b-19de1836e563/publish retryable=False retry_scheduled=False retry_delay_ms=0 workflow_id=58bd49f0-7417-413e-9f8b-19de1836e563
+2026-10-11T13:40:16.221Z | REQUEST | Freya wrapper attempt completed | service=freya scope=wrapper operation=workspace request_id=f4d7d66813f6473b8e2934295125ee49 attempt=1 max_attempts=3 ok=True duration_ms=0.001 retryable=False retry_scheduled=False retry_delay_ms=0
+2026-10-11T13:40:16.398Z | REQUEST | Freya wrapper attempt completed | service=freya scope=wrapper operation=versions request_id=afe39d648cac4dde8a2a76759ed39cd4 attempt=1 max_attempts=3 ok=True duration_ms=177.63 method=GET path=/api/v2/versions/workflow/58bd49f0-7417-413e-9f8b-19de1836e563 retryable=False retry_scheduled=False retry_delay_ms=0 workflow_id=58bd49f0-7417-413e-9f8b-19de1836e563
+2026-10-11T13:40:16.399Z | FREYA  | publish | ok=True workflow_id=58bd49f0-7417-413e-9f8b-19de1836e563 version=4 version_id=7c1bb1db-c174-4f91-9d89-6fc43520be6a confirmed=True
+2026-10-11T13:40:16.401Z | FREYA  | save | ok=True state_file=.\.freya-agents.json workflow_id=58bd49f0-7417-413e-9f8b-19de1836e563 agent_id=826cdf9b-cbb4-46ec-99a7-c53613ff4438 version=4 created=False node_count=51 tool_count=7 slot=brief-a published=True
+2026-10-11T13:40:16.402Z | REQUEST | Freya wrapper attempt completed | service=freya scope=wrapper operation=workspace request_id=9d7aa54722a4433b8f6cf95365b8e455 attempt=1 max_attempts=3 ok=True duration_ms=0.002 retryable=False retry_scheduled=False retry_delay_ms=0
+2026-10-11T13:40:16.897Z | REQUEST | Freya wrapper attempt completed | service=freya scope=wrapper operation=get_workflow request_id=d5ae25a1ae724dd3a2e43414f47488b2 attempt=1 max_attempts=3 ok=True duration_ms=493.861 method=GET path=/api/v2/workflow/58bd49f0-7417-413e-9f8b-19de1836e563 retryable=False retry_scheduled=False retry_delay_ms=0 workflow_id=58bd49f0-7417-413e-9f8b-19de1836e563
+2026-10-11T13:40:17.486Z | REQUEST | Freya wrapper attempt completed | service=freya scope=wrapper operation=export request_id=f7128ed68dc64a72b1b71010f364e9ca attempt=1 max_attempts=3 ok=True duration_ms=582.729 method=GET path=/api/v2/workflow/58bd49f0-7417-413e-9f8b-19de1836e563 retryable=False retry_scheduled=False retry_delay_ms=0 workflow_id=58bd49f0-7417-413e-9f8b-19de1836e563
+2026-10-11T13:40:17.486Z | FREYA  | export | ok=True workflow_id=58bd49f0-7417-413e-9f8b-19de1836e563 path=.\out\brief-a.exported.json.part
+2026-10-11T13:40:17.490Z | STAGE  | deploy | end 4.7s | budget_left_s=1564.6
+2026-10-11T13:40:17.492Z | STAGE  | self_test | start | budget_left_s=1564.6
+2026-10-11T13:40:17.492Z | TEST   | START smoke
+2026-10-11T13:40:19.499Z | REQUEST | Freya wrapper attempt completed | service=freya scope=wrapper operation=chat request_id=fa82dcea64fd4064abb9a721934b1b71 attempt=1 max_attempts=1 ok=True duration_ms=2004.92 method=POST path=/api/v2/chat/message retryable=False retry_scheduled=False retry_delay_ms=0 workflow_id=58bd49f0-7417-413e-9f8b-19de1836e563 call_id=98346f58-6654-4128-b917-102cc7c8c548
+2026-10-11T13:40:19.499Z | FREYA  | chat | ok=True workflow_id=58bd49f0-7417-413e-9f8b-19de1836e563 call_id=98346f58-6654-4128-b917-102cc7c8c548 message=Hello? response=I am a digital assistant calling from Freya Bank, and we record this call. Am I speaking with Mr Morgan? ended_by_agent=False
+2026-10-11T13:40:33.826Z | REQUEST | Freya wrapper attempt completed | service=freya scope=wrapper operation=chat request_id=d2afeeb1da6c48adaf95223fb33329dc attempt=1 max_attempts=1 ok=True duration_ms=14325.2 method=POST path=/api/v2/chat/message retryable=False retry_scheduled=False retry_delay_ms=0 workflow_id=58bd49f0-7417-413e-9f8b-19de1836e563 call_id=98346f58-6654-4128-b917-102cc7c8c548
+2026-10-11T13:40:33.827Z | FREYA  | chat | ok=True workflow_id=58bd49f0-7417-413e-9f8b-19de1836e563 call_id=98346f58-6654-4128-b917-102cc7c8c548 message=Sorry, who is this and what is this about? response=I am Freya Bank's digital assistant. Am I speaking with Mr Morgan? ended_by_agent=False
+2026-10-11T13:40:33.978Z | REQUEST | Freya wrapper attempt completed | service=freya scope=wrapper operation=chat_end request_id=aea9940ba69b4a14a59b4f214410137f attempt=1 max_attempts=1 ok=True duration_ms=148.934 method=POST path=/api/v2/chat/end retryable=False retry_scheduled=False retry_delay_ms=0 call_id=98346f58-6654-4128-b917-102cc7c8c548
+2026-10-11T13:40:33.978Z | FREYA  | chat_end | ok=True call_id=98346f58-6654-4128-b917-102cc7c8c548
+2026-10-11T13:40:33.979Z | TEST   | PASS smoke | 2 turn(s) answered; replies non-empty; forbidden words checked: 4; opening elements checked: 2
+2026-10-11T13:40:33.979Z | STAGE  | self_test | end 16.5s | budget_left_s=1548.2
+2026-10-11T13:40:33.980Z | STAGE  | decide | start | budget_left_s=1548.2
+2026-10-11T13:40:33.980Z | DECIDE | self-test verdict round 0: all self-tests passed; finishing | issues=0 budget_left_s=1548 round_cost_s=830
+2026-10-11T13:40:33.980Z | STAGE  | decide | end 0.0s | budget_left_s=1548.2
+2026-10-11T13:40:33.981Z | STAGE  | finalize | start | budget_left_s=1548.2
+2026-10-11T13:40:33.987Z | FINAL  | run 8621b5094744 finished
+====================================================================================================
+BUILD SUMMARY
+run id       : 8621b5094744
+slot         : brief-a
+track        : compiled
+status       : deployed
+started      : 2026-10-11T13:38:21.969Z
+ended        : 2026-10-11T13:40:33.987Z
+duration     : 132.0 s (2 min 12 s)
+model calls  : 6 (6 ok, 0 failed)
+  - openai/gpt-5.6-luna: calls=1 (1 ok, 0 failed), tokens in=8239 out=2895
+  - openai/gpt-5.6-terra: calls=5 (5 ok, 0 failed), tokens in=47470 out=17934
+Freya        :
+  - steps (nodes): 51
+  - tools: 7
+  - workflow id: 58bd49f0-7417-413e-9f8b-19de1836e563
+  - published version: 4
+  - agent id: 826cdf9b-cbb4-46ec-99a7-c53613ff4438
+  - slot: brief-a
+  - published: True
+  - exported: .\out\brief-a.exported.json
+tests        : 3 (3 passed, 0 failed)
+  - PASS static_checks: 0 errors, 1 warnings
+  - PASS remote_validate: the platform accepted the workflow
+  - PASS smoke: 2 turn(s) answered; replies non-empty; forbidden words checked: 4; opening elements checked: 2
+stages       :
+  - load_inputs: end 0.0s
+  - guard_inputs: end 0.0s
+  - understand_brief: end 45.5s
+  - extract_policy: end 38.5s
+  - validate_policy: end 0.1s
+  - guard_policy: end 0.0s
+  - draft_prose: end 25.1s
+  - compile_workflow: end 0.1s
+  - static_checks: end 0.0s
+  - guard_workflow: end 0.0s
+  - remote_validate: end 1.2s
+  - deploy: end 4.7s
+  - self_test: end 16.5s
+  - decide: end 0.0s
+errors       : 0
+profile      : staged
+coverage     : 144 of 144 active rules mapped to existing workflow locations (100%; a declaration, not behavioural evidence); 0 superseded; 0 dangling location(s); uncovered: none
+notes        : [decide: all self-tests passed]
+errors_list  : []
+export_ok    : True
+====================================================================================================
+2026-10-11T13:40:33.990Z | STAGE  | finalize | end 0.0s | budget_left_s=1548.1
+2026-10-11T13:40:33.991Z | END    | run 8621b5094744 closed after 132.0 s | duration_s=132.013

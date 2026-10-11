@@ -178,3 +178,55 @@ def test_the_snapshot_reports_a_workflow_created_before_the_save_was_cut_off(tmp
     assert snapshot["workflow_id"] == "wf_1" and snapshot["agent_id"] == "ag_1"
     assert snapshot["complete"] is False and snapshot["published"] is False and snapshot["created"] is True
     assert platform.count("GET", r"/api/v2/versions/workflow/[^/]+") == 0  # no request followed the cancel
+
+
+# ------------------------------------------------------------------------------------------------ deadlines (P-04)
+
+
+def test_a_token_reports_the_time_left_before_its_deadline() -> None:
+    now = {"t": 100.0}
+    token = CancelToken(deadline=130.0, clock=lambda: now["t"])
+    assert token.remaining() == 30.0
+    now["t"] = 129.5
+    assert token.remaining() == 0.5
+    now["t"] = 140.0
+    assert token.remaining() == 0.0  # never negative
+    assert CancelToken().remaining() is None  # no deadline: unlimited
+
+
+def test_time_left_follows_the_nearest_of_the_token_and_an_explicit_deadline() -> None:
+    from builder.freya.background import bound_deadline, time_left
+
+    assert time_left() is None  # nothing bound
+    now = {"t": 1000.0}
+    token = CancelToken(deadline=1100.0, clock=lambda: now["t"])
+    with bound_token(token):
+        assert time_left() == 100.0
+        with bound_deadline(1050.0, clock=lambda: now["t"]):
+            assert time_left() == 50.0  # the explicit deadline is nearer
+        with bound_deadline(1500.0, clock=lambda: now["t"]):
+            assert time_left() == 100.0  # the token's deadline is nearer
+    with bound_deadline(1010.0, clock=lambda: now["t"]):
+        assert time_left() == 10.0
+    assert time_left() is None  # everything is unbound again
+
+
+def test_a_cancelled_token_leaves_no_time() -> None:
+    from builder.freya.background import time_left
+
+    token = CancelToken(deadline=time.monotonic() + 500)
+    token.cancel("the guard fired")
+    with bound_token(token):
+        assert time_left() == 0.0
+
+
+def test_a_nested_deadline_never_extends_an_outer_one() -> None:
+    from builder.freya.background import bound_deadline, time_left
+
+    now = {"t": 0.0}
+
+    def clock() -> float:
+        return now["t"]
+
+    with bound_deadline(10.0, clock=clock), bound_deadline(500.0, clock=clock):
+        assert time_left() == 10.0

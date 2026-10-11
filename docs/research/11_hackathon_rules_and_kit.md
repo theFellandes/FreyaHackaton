@@ -31,7 +31,9 @@ version history), but the kit docs are the reference for workflow JSON and the b
 - Run command used by organizers (submission form field `run_command`):
   `python3 builder/build.py {brief_path} {tool_api_path}`.
 - Limits: ≤ 30 min per brief including self-tests; one simulation at a time per workspace (a 10-case run takes 3–11 min);
-  phone agent model fixed (`AGENT_LLM` = `experimental-5` in `freya.py`, do not change); builder may use any model.
+  phone agent model fixed (`AGENT_LLM` = `experimental-5` in `freya.py`, do not change); builder may use any model;
+  200 workflows per workspace (update in place). FAQ: the practice bank serves only PUB-01..PUB-13; a hidden-brief agent
+  can be checked with `POST /api/v2/chat/message`.
 - Rules: no manual step, no hand edits after the run; the agent may call only the bank tool API; after hidden briefs open
   you may fix bugs but may not write anything from a hidden brief into the builder (no rule, value or name); do not
   probe or load-test the platform; one Freya key per team; synthetic data only.
@@ -60,14 +62,15 @@ Hints in `run_cases.py` about hidden identity questions: `postcode`, `birth_year
 | When | What |
 |---|---|
 | Sat 10 Oct 10:00 | Kit and keys; build against the 13 practice cases |
-| Sun 11 Oct 17:00 | Hidden briefs open — run the builder once per brief, fix crashes only |
-| Sun 11 Oct 20:00 | Submission closes (form: team, repo, commit, run_command, workflows, traces) |
+| Sun 11 Oct 17:00 | Two hidden briefs arrive by email, each one Markdown file with its own tool API file and no practice cases. Run the builder on each (more than one run is allowed; submit one agent per brief with the trace of the run that made it; never edit an agent after its run); only generic bug fixes after this point |
+| Sun 11 Oct 20:00 | Submission closes: email the form (team, repo, commit, run_command, workflows, traces) to the address in the kit email; the exports (`freya.export_workflow`) and traces must be committed |
 
 ## 5. Trace requirements
 
 One trace per hidden brief, committed (keys removed): start and end time; every model call (model + one-line purpose);
 what was created on Freya (workflow id, agent id, number of steps and tools); any self-test and its result. Optional
-coding-agent session logs. Top-10 builders are re-run by organizers and compared with the trace.
+coding-agent session logs. Plain text. Top-10 builders are cloned at the submitted commit and rebuilt by the organizers; an
+entry that scores clearly lower on rebuild is removed.
 
 ## 6. Practice set (public-test-set.json)
 

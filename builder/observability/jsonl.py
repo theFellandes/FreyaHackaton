@@ -5,11 +5,16 @@ as sent to the provider) and the **full** reply (the text, or the JSON of a stru
 counts, latency, attempt number and error. This is the "check out what the LLM said" log; it needs no account and
 no network. Secret values and key-shaped tokens are masked in every string before anything is written.
 
+Which texts are kept is the ``content`` mode (``LLM_LOG_CONTENT``): ``"full"`` (default) writes the texts above;
+``"metadata"`` writes ``null`` for ``system`` / ``user`` / ``output`` and keeps everything else, including the length
+of each text (``*_chars``). It is independent of ``OBSERVABILITY_LOG_PROMPTS``, which only governs Langfuse.
+
 Record shape (``type`` is always ``"generation"``)::
 
     {"type": "generation", "seq": 3, "ts": "...Z", "run_id": "...", "slot": "...", "span": "extract_policy",
      "purpose": "...", "provider": "openai", "model": "...", "key_label": "openai#1(…ab12)", "attempt": 1,
      "ok": true, "error_kind": null, "error": null, "latency_s": 4.21, "input_tokens": 1200, "output_tokens": 310,
+     "content": "full", "system_chars": 800, "user_chars": 5000, "output_chars": 1200,
      "system": "...", "user": "...", "output": "..."}
 
 Read it back with :func:`read_llm_log`. The file is opened lazily on the first record, appended to and flushed after
@@ -26,16 +31,19 @@ import threading
 from collections.abc import Callable, Iterable, Mapping
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal, get_args
 
 from builder.observability.base import Redactor, to_text
 
 logger = logging.getLogger(__name__)
 
-__all__ = ["LLM_LOG_SUFFIX", "JsonlObserver", "llm_log_path_for", "read_llm_log"]
+__all__ = ["LLM_LOG_SUFFIX", "JsonlObserver", "LogContent", "llm_log_path_for", "read_llm_log"]
 
 #: Extension of the LLM log; it sits next to the run's ``.log`` / ``.jsonl`` trace and shares their stem.
 LLM_LOG_SUFFIX = ".llm.jsonl"
+
+#: What a record keeps of the prompt and the reply: their texts (``full``) or only their lengths (``metadata``).
+LogContent = Literal["full", "metadata"]
 
 
 def llm_log_path_for(trace: Any) -> Path | None:
@@ -68,6 +76,10 @@ class JsonlObserver:
         redact: Extra redaction function, usually ``TraceWriter.redact`` (it knows the configured secrets).
         secrets: Additional secret values to mask.
         clock: Aware-UTC ``datetime`` source (injectable for tests).
+        content: ``"full"`` (default) keeps the prompt and reply texts; ``"metadata"`` keeps only their lengths.
+
+    Raises:
+        ValueError: ``content`` is neither ``"full"`` nor ``"metadata"`` (a typo must not silently log everything).
     """
 
     def __init__(
@@ -77,7 +89,11 @@ class JsonlObserver:
         redact: Callable[[str], str] | None = None,
         secrets: Iterable[str] = (),
         clock: Callable[[], datetime] | None = None,
+        content: LogContent = "full",
     ) -> None:
+        if content not in get_args(LogContent):
+            raise ValueError(f"content must be one of {', '.join(get_args(LogContent))}, got {content!r}")
+        self.content: LogContent = content
         self.path: Path | None = Path(path) if path is not None else None
         self.records: list[dict[str, Any]] = []
         self._redactor = Redactor(redact, secrets)
@@ -139,6 +155,12 @@ class JsonlObserver:
             latency = float(latency_s or 0.0)
             if not math.isfinite(latency):
                 latency = 0.0
+            system_text, user_text, output_text = (
+                clean(to_text(system)),
+                clean(to_text(user)),
+                clean(to_text(output)),
+            )
+            full = self.content == "full"
             with self._lock:
                 self._seq += 1
                 record: dict[str, Any] = {
@@ -161,9 +183,13 @@ class JsonlObserver:
                     "latency_s": round(latency, 3),
                     "input_tokens": input_tokens,
                     "output_tokens": output_tokens,
-                    "system": clean(to_text(system)),
-                    "user": clean(to_text(user)),
-                    "output": clean(to_text(output)),
+                    "content": self.content,
+                    "system_chars": len(system_text),
+                    "user_chars": len(user_text),
+                    "output_chars": len(output_text),
+                    "system": system_text if full else None,
+                    "user": user_text if full else None,
+                    "output": output_text if full else None,
                 }
                 self._write(record)
         except Exception:

@@ -23,26 +23,32 @@ from __future__ import annotations
 from typing import Any
 
 from builder.compiler import codegen, naming
-from builder.compiler.context import LeanExits, outcome_text
+from builder.compiler.context import LeanExits
 from builder.compiler.errors import CompileError
 from builder.compiler.nodes import (
     bool_true,
     code_node,
     counter_above,
     end_call_node,
+    equals,
     or_group,
     tool_transition,
     transition,
 )
-from builder.compiler.profiles.staged import ProfileBuilder
+from builder.compiler.profiles.staged import NEGOTIATION_STAGES, ProfileBuilder
 from builder.compiler.prompts import render
 from builder.compiler.prose import NodeProse
+from builder.compiler.roles import close_roles, customer_binding, queue_field
 from builder.compiler.toolset import build_tools
 from builder.compiler.workflow_model import Workflow
 from builder.ingest.tool_api import ToolApi
 from builder.policy.ir import OutcomeRef, PolicyIR, RuleLedger
 
 __all__ = ["build_lean", "build_lean_with_notes"]
+
+#: Ledger scope -> the lean node whose task carries it (see ``ProfileBuilder.finalize_texts``).
+LEAN_STAGE_NODES = {"global": "system_prompt", "opening": "call", "third_party": "call", "identity": "call",
+                    **{scope: "negotiate" for scope in NEGOTIATION_STAGES}}
 
 
 class _Lean(ProfileBuilder):
@@ -51,10 +57,22 @@ class _Lean(ProfileBuilder):
     def __init__(self, ir: PolicyIR, api: ToolApi, ledger: RuleLedger, prose: NodeProse) -> None:
         super().__init__(ir, api, ledger, prose)
         self.style = LeanExits()
+        self.fields = self.style
 
     def close_phrase(self, situation: str, ref: OutcomeRef | None) -> str:
         """``call close_call with outcome "x" and reason "y"``."""
         return self.style.end(situation, ref)
+
+    def name_contract_fields(self) -> None:
+        """Let the prompts use the contract's own field names for the outcome, the reason and the queue of the tools."""
+        api = self.api
+        if "close_call" not in api.tools:
+            return  # build_tools reports the missing tool
+        customer = customer_binding(api, self.ir.call_variable_names())
+        roles = close_roles(api.tools["close_call"], customer.field)
+        transfer = api.tools.get("transfer_to_agent")
+        queue = queue_field(transfer, customer.field) if transfer is not None else None
+        self.style = self.fields = LeanExits(roles.outcome, roles.reason or "reason", queue or "queue")
 
     def _row_ref(self, situation: str) -> OutcomeRef | None:
         row = next((r for r in naming.closing_rows(self.ir) if r.situation == situation), None)
@@ -65,18 +83,21 @@ class _Lean(ProfileBuilder):
         ir = self.ir
         order = ir.closing.resolved_precedence()
         rows = sorted(naming.closing_rows(ir), key=lambda r: order.index(r.situation) if r.situation in order else len(order))
+        goodbye = self.freya(ir.phrases.goodbye_sentence).strip()
+        said = f'after you said goodbye ("{goodbye}")' if goodbye else "after you said goodbye"
         lines = [
-            "Every call ends with exactly one close_call, as the LAST tool call, after you said goodbye. Choose the "
+            f"Every call ends with exactly one close_call, as the LAST tool call, {said}. Choose the "
             "outcome and the reason from this table; when several rows fit, the first one in the list wins:"
         ]
         for row in rows:
             when = row.when if row.when and not row.when.startswith("(derived") else row.situation.replace("_", " ").replace(":", " to ")
             qualifier = {True: " (identity verified)", False: " (identity not verified)", None: ""}[row.requires_verified]
-            lines.append(f"- {when.rstrip('.')}{qualifier}: {outcome_text(row.ref())}")
+            lines.append(f"- {when.rstrip('.')}{qualifier}: {self.fields.text(row.ref())}")
         tap = ir.closing.transfer_after_promise_outcome
         if tap is not None:
-            reason = f' and reason "{tap.reason}"' if tap.reason else " and the reason of that transfer"
-            lines.append(f'If a transfer follows a recorded promise, close with outcome "{tap.outcome}"{reason}.')
+            reason = (f' and {self.fields.reason_field} "{tap.reason}"' if tap.reason
+                      else f" and the {self.fields.reason_field} of that transfer")
+            lines.append(f'If a transfer follows a recorded promise, close with {self.fields.outcome_field} "{tap.outcome}"{reason}.')
         elif ir.closing.promise_wins:
             lines.append("A recorded promise decides the outcome, whatever else happened.")
         mp = ir.multi_product
@@ -85,7 +106,7 @@ class _Lean(ProfileBuilder):
             lines.append(
                 "With several products and no recorded promise: close with the reason of the first product (in the "
                 f"listed order) whose note is not{paid or ' a payment claim'}"
-                + (f"; if every note is{paid}, use {outcome_text(mp.all_paid_outcome)}" if mp.all_paid_outcome else "")
+                + (f"; if every note is{paid}, use {self.fields.text(mp.all_paid_outcome)}" if mp.all_paid_outcome else "")
                 + "."
             )
         lines.append("After close_call succeeded, say nothing more.")
@@ -100,12 +121,14 @@ class _Lean(ProfileBuilder):
         api = self.api
         if not ir.identity.questions:
             raise CompileError("the policy has no identity question; the agent cannot verify the customer")
+        self.name_contract_fields()
         style = self.style
         failed_phrase = self.close_phrase("recording_failed", ir.recording.failure_outcome)
         identity_failed = self.close_phrase("identity_failed", ir.identity.on_failed)
         self.tools = build_tools(ir, api, promise_failed_phrase=failed_phrase, lean=True,
                                  identity_failed_phrase=identity_failed,
                                  identity_done_phrase=f"call {naming.transition_tool('load_account')}")
+        self.notes.extend(self.tools.notes)
         shape = self.tools.shape
         assert shape is not None
         callback = ir.third_party.callback
@@ -127,6 +150,7 @@ class _Lean(ProfileBuilder):
             not_booked_action=self.close_phrase("callback_not_booked", callback.failure if callback else None),
             booked_line=("When it is booked, thank them, say goodbye and "
                          + self.close_phrase("callback_booked", callback.success if callback else None) + "."),
+            handover_action="go on with the security questions (see IDENTITY below)",
             node="call",
             extra=self.extra("third_party"),
         )
@@ -146,6 +170,9 @@ class _Lean(ProfileBuilder):
         if shape.all_verified:
             routes.append(transition("load_account", "All security answers verified",
                                      or_group(*bool_true(f"verify_identity_response.data.{shape.all_verified}"))))
+        elif self.tools.identity_tracked:  # AUD-23: the post-hook counted every question verified
+            routes.append(transition("load_account", "All security answers verified",
+                                     or_group(equals("identity_all_verified", "yes"))))
         else:
             routes.append(tool_transition("load_account", "Every security answer was verified; nothing more to say."))
         routes.append(transition("hangup", "The call is closed", or_group(counter_above("close_call_success_count", 0))))
@@ -175,7 +202,9 @@ class _Lean(ProfileBuilder):
         )
         negotiate_text = render("lean", stage="negotiate", opening_text="", third_party_text="", identity_text="",
                                 negotiate_text=negotiate_task, closing_text=closing, extra=self.extra("negotiate"))
-        negotiate_tools = [t for t in (self.tools.promise, self.tools.note, self.tools.transfer, self.tools.close) if t]
+        books = any(naming.intent_exit(ir, i).callback for i in self.stage_intents("negotiate"))  # AUD-08
+        negotiate_tools = [t for t in (self.tools.promise, self.tools.note, self.tools.callback if books else None,
+                                       self.tools.transfer, self.tools.close) if t]
         self.nodes["negotiate"] = {
             "name": "negotiate",
             "node_type": "conversation",
@@ -191,9 +220,10 @@ class _Lean(ProfileBuilder):
         }
         self.nodes["hangup"] = end_call_node("hangup", "call_closed")
         self.residual_to_rule_map()
+        system_prompt = self.finalize_texts(self.system_prompt(), LEAN_STAGE_NODES)
         self.finish()
         return Workflow.from_json(
-            {"initial_node": "setup", "system_prompt": self.system_prompt(), "nodes": self.nodes, "global_nodes": {}})
+            {"initial_node": "setup", "system_prompt": system_prompt, "nodes": self.nodes, "global_nodes": {}})
 
 
 def build_lean_with_notes(

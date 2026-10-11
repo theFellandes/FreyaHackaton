@@ -61,6 +61,7 @@ def test_the_submission_artifacts_are_not_ignored(path: str) -> None:
         ".env",
         "env.sh",
         ".cache/anything.json",
+        "results/test-runs/20261010175827Z/tmp/x/big.md",  # pytest temp copies of an archived test run (AUD-59)
     ],
 )
 def test_private_and_local_files_are_ignored(path: str) -> None:

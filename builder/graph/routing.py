@@ -86,10 +86,14 @@ def fallback_target(state: State) -> str:
     return AGENTIC_BUILD
 
 
-def _can_repair_policy(state: State) -> bool:
+def can_repair_policy(state: State) -> bool:
+    """True while a policy repair round is left and affordable (``guard_policy`` asks it too)."""
     return int(state.get("policy_repairs", 0)) < _limit(state, "max_policy_repairs") and affordable(
         state, "repair"
     )
+
+
+_can_repair_policy = can_repair_policy
 
 
 def _can_repair_compile(state: State) -> bool:
@@ -201,8 +205,8 @@ def after_remote_validate(state: State) -> str:
 
 
 def after_deploy(state: State) -> str:
-    """Deployed -> self-test; a content rejection on save -> repair; any other failure ends the run."""
-    if state.get("failed"):
+    """Deployed -> self-test; a content rejection on save -> repair; any other failure (or a skipped re-deploy) ends the run."""
+    if state.get("failed") or state.get("redeploy_skipped"):
         return FINALIZE
     verdict = state.get("remote_validation") or {}
     if verdict.get("kind") == "invalid" and not verdict.get("ok"):

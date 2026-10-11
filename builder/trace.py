@@ -22,6 +22,9 @@ Guarantees:
 * **Secrets never reach the files.** Every configured secret substring is replaced by ``***`` in messages and in all
   (nested) data, and well-known key shapes (``sk-ant-...``, ``sk-...``, ``fak_...``, ``Bearer ...``) are masked as a
   second line of defence. Pass :func:`builder.settings.secret_values` as ``secrets``.
+* **No local folder layout.** Paths inside the repository are written relative to it (``./out/x.json``), so a
+  committed trace does not carry the builder machine's user name (audit AUD-57). The START record names the git commit,
+  the number of uncommitted files and the command-line arguments, so a re-run can be matched to the code.
 * **Thread and asyncio safe.** Writes are serialised by a lock and flushed immediately, so a crash loses nothing.
 * **Never crashes the build.** After construction, I/O errors and unserialisable data are logged and swallowed.
 
@@ -32,11 +35,14 @@ anywhere a real trace file is not wanted.
 from __future__ import annotations
 
 import dataclasses
+import functools
 import json
 import logging
 import math
 import platform
 import re
+import subprocess
+import sys
 import threading
 import time
 from collections.abc import Callable, Iterable, Mapping
@@ -107,11 +113,23 @@ _WS_RE = re.compile(r"\s+")
 
 
 class _Redactor:
-    """Replaces secret substrings (configured values and generic key shapes) with :data:`REDACTED`."""
+    """Replaces secret substrings (configured values and generic key shapes) with :data:`REDACTED`.
 
-    def __init__(self, secrets: Iterable[str] = ()) -> None:
+    With ``repo_root`` it also writes paths inside that folder relative to it (``C:\\...\\repo\\out\\x`` ->
+    ``.\\out\\x``), in its native, POSIX and JSON-escaped spellings, case-insensitively (Windows drive letters).
+    """
+
+    def __init__(self, secrets: Iterable[str] = (), *, repo_root: Path | None = None) -> None:
         self._secrets: list[str] = []
         self.add(secrets)
+        self._root_re: re.Pattern[str] | None = None
+        if repo_root is not None:
+            native = str(repo_root)
+            spellings = {native, repo_root.as_posix(), native.replace("\\", "\\\\")}
+            spellings = {s.rstrip("\\/") for s in spellings if len(s.rstrip("\\/")) > 3}
+            if spellings:
+                alternatives = "|".join(re.escape(s) for s in sorted(spellings, key=len, reverse=True))
+                self._root_re = re.compile(f"(?:{alternatives})(?=[\\\\/]|$|[\"'\\s,;)\\]}}])", re.IGNORECASE)
 
     def add(self, secrets: Iterable[str]) -> None:
         """Register more secrets; longest first so that a secret containing another is replaced whole."""
@@ -122,14 +140,42 @@ class _Redactor:
         # Rebind instead of sorting in place, so a concurrent text() call always iterates a complete list.
         self._secrets = sorted(merged, key=len, reverse=True)
 
-    def text(self, value: str) -> str:
-        """Return ``value`` with every secret and key-shaped token masked."""
+    def text(self, value: str, *, shorten_paths: bool = True) -> str:
+        """Return ``value`` with every secret and key-shaped token masked (and repository paths shortened)."""
         for secret in self._secrets:
             if secret in value:
                 value = value.replace(secret, REDACTED)
         for pattern, replacement in _KEY_PATTERNS:
             value = pattern.sub(replacement, value)
+        if shorten_paths and self._root_re is not None:
+            value = self._root_re.sub(".", value)
         return value
+
+
+@functools.lru_cache(maxsize=1)
+def _git_state() -> dict[str, Any]:
+    """The checkout's commit and the number of uncommitted / untracked files (read-only git; ``None`` when unknown).
+
+    ``--no-optional-locks`` keeps ``git status`` from refreshing the index, so nothing in ``.git`` is written.
+    """
+    state: dict[str, Any] = {"git_commit": None, "git_dirty": None}
+    try:
+        head = subprocess.run(
+            ["git", "-C", str(paths.REPO_ROOT), "rev-parse", "HEAD"], capture_output=True, text=True, timeout=5
+        )
+        if head.returncode == 0 and head.stdout.strip():
+            state["git_commit"] = head.stdout.strip()
+        status = subprocess.run(
+            ["git", "--no-optional-locks", "-C", str(paths.REPO_ROOT), "status", "--porcelain"],
+            capture_output=True,
+            text=True,
+            timeout=5,
+        )
+        if status.returncode == 0:
+            state["git_dirty"] = sum(1 for line in status.stdout.splitlines() if line.strip())
+    except Exception:  # no git, no checkout, a timeout: the trace never depends on it
+        logger.debug("could not read the git state", exc_info=True)
+    return state
 
 
 def _one_line(text: object, limit: int | None = None) -> str:
@@ -198,7 +244,7 @@ class TraceWriter:
         self._clock: Callable[[], datetime] = clock or (lambda: datetime.now(UTC))
         self._monotonic = monotonic
         self._echo = echo
-        self._redactor = _Redactor(secrets)
+        self._redactor = _Redactor(secrets, repo_root=paths.REPO_ROOT)
         self._lock = threading.RLock()
         self._closed = False
         self._seq = 0
@@ -217,8 +263,14 @@ class TraceWriter:
         self._record_start()
 
     def _record_start(self) -> None:
-        """Write the START line: run id, slot, start time and the software versions used."""
+        """Write the START line: run id, slot, start time, the software versions, the git commit and the arguments."""
         versions = f"builder {__version__}, python {platform.python_version()}"
+        git = _git_state()
+        commit = git.get("git_commit")
+        dirty = git.get("git_dirty")
+        where = ""
+        if commit:
+            where = f" | commit {str(commit)[:7]}" + ("+dirty" if dirty else "")
         self._emit(
             "start",
             f"run {self.run_id} started (slot {self.slot})",
@@ -227,8 +279,11 @@ class TraceWriter:
                 "builder_version": __version__,
                 "python": platform.python_version(),
                 "platform": platform.platform(terse=True),
+                "git_commit": commit,
+                "git_dirty": dirty,
+                "argv": [str(arg) for arg in sys.argv[1:]],
             },
-            text=f"run {self.run_id} started | slot={self.slot} | {versions}",
+            text=f"run {self.run_id} started | slot={self.slot} | {versions}{where}",
         )
 
     # --- file handling (overridden by NullTrace) ----------------------------------------------------------------------
@@ -285,6 +340,10 @@ class TraceWriter:
     def redact(self, text: str) -> str:
         """Return ``text`` with every known secret masked (the same redaction the trace files get)."""
         return self._redactor.text(text)
+
+    def redact_secrets(self, text: str) -> str:
+        """Return ``text`` with every known secret masked, paths left as they are (for the result file)."""
+        return self._redactor.text(text, shorten_paths=False)
 
     def event(self, kind: str, message: str, /, **data: Any) -> dict[str, Any]:
         """Record a generic event.

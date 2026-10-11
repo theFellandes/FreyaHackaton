@@ -265,7 +265,8 @@
         "n": 12,
         "custom_rule_text": ""
       },
-      "persuasion_attempts": 1
+      "persuasion_attempts": 1,
+      "product_types": []
     },
     {
       "rule_ids": [
@@ -281,7 +282,8 @@
         "n": 7,
         "custom_rule_text": ""
       },
-      "persuasion_attempts": 2
+      "persuasion_attempts": 2,
+      "product_types": []
     }
   ],
   "promise_dates": {
@@ -322,6 +324,7 @@
       "personal_loan": "instalment_amount",
       "car_loan": "instalment_amount"
     },
+    "floor_rule_by_type": {},
     "floor_offer_times": 1,
     "floor_note": "The rest stays overdue.",
     "accept_between_floor_and_full": true,

@@ -1,0 +1,183 @@
+[
+ {
+  "id": "PUB-11",
+  "brief": "B",
+  "family": "Multi-product",
+  "level": "hard",
+  "title": "Disputes one product, promises two",
+  "variables": {
+   "first_name": "Sofia",
+   "last_name": "Almeida",
+   "title": "Ms",
+   "now": "2026-10-14T11:00"
+  },
+  "products": [
+   {
+    "type": "credit_card",
+    "card_last4": "2288",
+    "past_due": 220.0,
+    "days_late": 9,
+    "minimum_payment": 66.0
+   },
+   {
+    "type": "personal_loan",
+    "past_due": 640.0,
+    "days_late": 9,
+    "instalment_amount": 213.0
+   },
+   {
+    "type": "car_loan",
+    "past_due": 75.0,
+    "days_late": 3,
+    "instalment_amount": 25.0
+   }
+  ],
+  "identity": {
+   "date_of_birth": "1987-06-03",
+   "phone_last4": "2288"
+  },
+  "script": "Confirms identity and answers the security questions correctly. Cannot pay everything today. Says the personal loan is not hers: she never took a personal loan with Freya Bank. Agrees to pay the credit card and the car loan in full this Friday. Confirms once at the read-back.",
+  "expected": {
+   "outcome": "promise",
+   "reason": null,
+   "promises": [
+    {
+     "product_id": "p1",
+     "amount": 220,
+     "date": "2026-10-16"
+    },
+    {
+     "product_id": "p3",
+     "amount": 75,
+     "date": "2026-10-16"
+    }
+   ],
+   "notes": [
+    {
+     "product_id": "p2",
+     "reason": "dispute"
+    }
+   ],
+   "callbacks": [],
+   "transfers": []
+  },
+  "checks": [
+   "the dispute does not end the call",
+   "one read-back and one confirmation for both promises",
+   "one dispute note for the personal loan"
+  ]
+ },
+ {
+  "id": "PUB-12",
+  "brief": "B",
+  "family": "Multi-product",
+  "level": "hard",
+  "title": "Paid one, wants a new plan for the others",
+  "variables": {
+   "first_name": "Marcus",
+   "last_name": "Bell",
+   "title": "Mr",
+   "now": "2026-10-14T11:00"
+  },
+  "products": [
+   {
+    "type": "credit_card",
+    "card_last4": "9015",
+    "past_due": 510.0,
+    "days_late": 16,
+    "minimum_payment": 153.0
+   },
+   {
+    "type": "personal_loan",
+    "past_due": 1320.0,
+    "days_late": 16,
+    "instalment_amount": 440.0
+   },
+   {
+    "type": "car_loan",
+    "past_due": 140.0,
+    "days_late": 7,
+    "instalment_amount": 46.0
+   }
+  ],
+  "identity": {
+   "date_of_birth": "1983-10-19",
+   "phone_last4": "4410"
+  },
+  "script": "Confirms identity and answers the security questions correctly the first time. Says he already paid the credit card in the app this morning. For the personal loan and the car loan, asks for a new payment plan with lower instalments.",
+  "expected": {
+   "outcome": "transferred",
+   "reason": "restructuring",
+   "promises": [],
+   "notes": [],
+   "callbacks": [],
+   "transfers": [
+    {
+     "queue": "restructuring"
+    }
+   ]
+  },
+  "checks": [
+   "no notes are added",
+   "transfer_to_agent called with queue restructuring",
+   "the agent does not describe a plan of its own"
+  ]
+ },
+ {
+  "id": "PUB-13",
+  "brief": "B",
+  "family": "Multi-product",
+  "level": "hard",
+  "title": "Next Friday for one, refuses the other",
+  "variables": {
+   "first_name": "Elena",
+   "last_name": "Rossi",
+   "title": "Ms",
+   "now": "2026-10-14T11:00"
+  },
+  "products": [
+   {
+    "type": "credit_card",
+    "card_last4": "6604",
+    "past_due": 300.0,
+    "days_late": 4,
+    "minimum_payment": 90.0
+   },
+   {
+    "type": "personal_loan",
+    "past_due": 900.0,
+    "days_late": 20,
+    "instalment_amount": 300.0
+   }
+  ],
+  "identity": {
+   "date_of_birth": "1991-01-08",
+   "phone_last4": "6604"
+  },
+  "script": "Confirms identity and answers the security questions correctly. Cannot pay both today. Will pay the credit card in full next Friday. Flatly refuses to pay anything on the personal loan, whatever is offered. Confirms the read-back.",
+  "expected": {
+   "outcome": "promise",
+   "reason": null,
+   "promises": [
+    {
+     "product_id": "p1",
+     "amount": 300,
+     "date": "2026-10-23"
+    }
+   ],
+   "notes": [
+    {
+     "product_id": "p2",
+     "reason": "refused"
+    }
+   ],
+   "callbacks": [],
+   "transfers": []
+  },
+  "checks": [
+   "two persuasion attempts on the personal loan (late band)",
+   "one 'refused' note for the personal loan",
+   "promise for 300 on Friday 23 October"
+  ]
+ }
+]

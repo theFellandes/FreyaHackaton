@@ -5,9 +5,13 @@ timeline: what the customer said, what the agent said, node entries, tool calls 
 decisions and engine errors. This is the fastest way to see *why* the judge or the ledger failed a case.
 
 A results file holds every repetition (`all_rows`), the last one again as `rows` and the verdict per case as `final`.
-The hidden benchmark counts a case only when it passes in *every* repetition, so the cases worth reading are those
-that failed in some repetition - not only in the last one. The triage therefore walks all repetitions and fetches the
-call of each failing attempt, labelled with its repetition number.
+The hidden benchmark counts a case only when it passes in *every* repetition, so the cases worth reading are those the
+strict `final` verdict loses (fewer passes than repetitions, whatever its `pass` flag says) - not only the ones that
+failed in the last repetition. The triage therefore picks the lost cases from `final`, walks `all_rows` and fetches
+the call of each failing attempt of those cases, labelled with its repetition number.
+
+The Freya key is read the way the builder reads it: from the environment or the repository's `.env` (the kit client
+only looks at the environment, and only once, when it is imported), so no `export` is needed.
 
     python evals/triage.py results/ref_a_v1.json              # every failing attempt of every failing case
     python evals/triage.py results/ref_a_v1.json --all        # every case, every repetition
@@ -22,6 +26,7 @@ import json
 import pathlib
 import sys
 from collections.abc import Iterator
+from types import ModuleType
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
@@ -96,14 +101,48 @@ def numbered_repetitions(data: dict) -> tuple[int, list[tuple[int, list[dict]]]]
     return runs, [(runs, data.get("rows") or [])]
 
 
+def is_lost(entry: dict) -> bool:
+    """Whether a `final` entry lost its case under the benchmark rule: every repetition has to pass.
+
+    The pass counts decide when they are there (`passes` below `runs`); the entry's own `pass` flag is only used for
+    an entry without counts, because a run tool with a lenient threshold sets it true for 2 of 3.
+    """
+    passes, runs = entry.get("passes"), entry.get("runs")
+    if isinstance(passes, int) and isinstance(runs, int) and runs > 0:
+        return passes < runs
+    return not entry.get("pass")
+
+
+def lost_cases(data: dict) -> list[str]:
+    """Ids of the cases to triage, in file order: lost in the strict `final` verdict, else failing in some row.
+
+    A case `final` calls passed is left out even if a row of it says otherwise (the verdict is the authority). A case
+    `final` does not list at all (a hand-made or old file) is judged by its rows.
+    """
+    entries = [e for e in data.get("final") or [] if isinstance(e, dict)]
+    verdicts = {e.get("id"): e for e in entries}
+    lost: list[str] = []
+    for entry in entries:
+        if is_lost(entry) and entry.get("id") not in lost:
+            lost.append(entry.get("id"))
+    _, numbered = numbered_repetitions(data)
+    for _, rows in numbered:
+        for row in rows:
+            case_id = row.get("id")
+            if case_id not in verdicts and not row.get("pass") and case_id not in lost:
+                lost.append(case_id)
+    return lost
+
+
 def select_attempts(
     data: dict, *, show_all: bool = False, only: set[str] | None = None, rep: int | None = None
 ) -> Iterator[tuple[int, int, dict]]:
     """Yield `(rep_number, rep_count, row)` for the attempts to triage, grouped by case, repetitions in order.
 
-    By default only failing attempts are yielded. `only` (case ids) and `show_all` also yield the passing attempts
-    of the chosen cases, which is what you want when comparing a failing repetition with a passing one. `rep` (1-based)
-    restricts the walk to one repetition.
+    By default the cases lost in the strict `final` verdict (see :func:`lost_cases`) are walked and only their failing
+    attempts are yielded. `only` (case ids) and `show_all` also yield the passing attempts of the chosen cases, which
+    is what you want when comparing a failing repetition with a passing one. `rep` (1-based) restricts the walk to
+    one repetition.
     """
     count, numbered = numbered_repetitions(data)
     order: list[str] = []
@@ -111,8 +150,11 @@ def select_attempts(
         for row in rows:
             if row.get("id") not in order:
                 order.append(row.get("id"))
+    lost = set(lost_cases(data))
     for case_id in order:
         if only and case_id not in only:
+            continue
+        if not (only or show_all) and case_id not in lost:
             continue
         for number, rows in numbered:
             if rep is not None and number != rep:
@@ -123,12 +165,37 @@ def select_attempts(
 
 
 def summarize_final(data: dict) -> list[str]:
-    """One line per case whose verdict over all repetitions is a failure (empty when `final` is missing)."""
+    """One line per case whose verdict over all repetitions is a loss (empty when `final` is missing)."""
     return [
         f"{f['id']} passed {f.get('passes')}/{f.get('runs')} repetitions"
         for f in data.get("final") or []
-        if not f.get("pass")
+        if isinstance(f, dict) and is_lost(f)
     ]
+
+
+def unexplained_losses(data: dict) -> list[str]:
+    """Lost cases without any failing attempt in the file (an old file keeps only the last repetition's rows)."""
+    _, numbered = numbered_repetitions(data)
+    failing = {row.get("id") for _, rows in numbered for row in rows if not row.get("pass")}
+    return [case_id for case_id in lost_cases(data) if case_id not in failing]
+
+
+def load_kit_client() -> ModuleType:
+    """Import the kit's `freya` client with the builder configuration (environment, else the repository `.env`).
+
+    The kit reads `FREYA_API_KEY` and the URL when it is imported, so the values must be in `os.environ` first. A
+    `.env` that cannot be read (an invalid value) only costs the file: the environment is used as it is, and the
+    message names the error type, never the content.
+    """
+    try:
+        from builder.settings import apply_kit_env, get_settings
+
+        apply_kit_env(get_settings())
+    except Exception as exc:  # dev tool: carry on with whatever the environment holds
+        print(f"note: could not read the builder settings ({type(exc).__name__}); using the environment only")
+    import freya  # the kit client
+
+    return freya
 
 
 def parse_rep(value: str, parser: argparse.ArgumentParser) -> int | str:
@@ -157,7 +224,7 @@ def main(argv: list[str] | None = None) -> None:
     ap.add_argument("--vars", action="store_true", help="print the variable table of route events")
     a = ap.parse_args(argv)
     rep = parse_rep(a.rep, ap) if a.rep else None
-    import freya  # kit client; needs FREYA_API_KEY in the environment
+    freya = load_kit_client()  # FREYA_API_KEY from the environment or .env
 
     data = json.loads(pathlib.Path(a.results).read_text(encoding="utf-8"))
     if rep == "last":
@@ -186,6 +253,9 @@ def main(argv: list[str] | None = None) -> None:
             continue
         for line in render_call(call, a.vars):
             print("  " + line)
+    if rep is None and not only and not a.all:
+        for case_id in unexplained_losses(data):
+            print(f"{case_id}: lost in the final verdict, but no failing repetition is stored in this file")
     if not shown:
         print(
             "no failing attempts to show"

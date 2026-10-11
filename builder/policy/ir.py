@@ -51,6 +51,7 @@ __all__ = [
     "DeadlineKind",
     "DeadlineRule",
     "Disclosure",
+    "FloorRule",
     "HintRule",
     "Identity",
     "IdentityQuestion",
@@ -75,6 +76,7 @@ __all__ = [
     "ThirdParty",
     "ToolAction",
     "fill_template",
+    "normalise_language",
     "template_fields",
 ]
 
@@ -160,7 +162,7 @@ def template_fields(text: str) -> list[str]:
 
     Double-brace ``{{name}}`` tokens are Freya runtime variables, not IR placeholders, and are not reported.
 
-    >>> template_fields("Am I speaking with {title} {last_name}?")
+    >>> template_fields("Is this {title} {last_name} on the line?")
     ['title', 'last_name']
     >>> template_fields("keep {{runtime_var}} out")
     []
@@ -486,10 +488,15 @@ def normalise_team_phrase(text: str) -> str:
     return cleaned.strip().rstrip(_TRAILING_PUNCTUATION).strip()
 
 
-def looks_like_sentence(text: str) -> bool:
-    """True when ``text`` reads as a whole sentence ("This is ...", "We are ...", two sentences) rather than a noun phrase."""
+def looks_like_sentence(text: str, *, opener_only: bool = False) -> bool:
+    """True when ``text`` reads as a whole sentence rather than a noun phrase.
+
+    A sentence opener ("This is ...", "We are ...", "I am ...") counts; unless ``opener_only`` so does a full stop
+    followed by more text ("... Inc. Collections" is therefore only a *suspect* - the validator reports it, but nothing
+    rewrites a phrase on that evidence).
+    """
     flat = " ".join((text or "").split())
-    return bool(_SENTENCE_OPENER.match(flat) or re.search(r"[.!?]\s+\S", flat))
+    return bool(_SENTENCE_OPENER.match(flat) or (not opener_only and re.search(r"[.!?]\s+\S", flat)))
 
 
 def normalise_product_name(text: str) -> str:
@@ -615,13 +622,22 @@ class DeadlineRule(_IRModel):
 
 
 class Band(_Traced):
-    """A lateness band: inclusive ``days_late`` range, its deadline rule and number of persuasion attempts."""
+    """A lateness band: inclusive ``days_late`` range, its deadline rule and number of persuasion attempts.
+
+    ``product_types`` restricts the row to some product types (documents that give a different table per product, audit
+    AUD-39); empty = every type. A typed row wins over an untyped one for its types.
+    """
 
     name: str
     days_late_min: int
     days_late_max: int
     deadline: DeadlineRule
     persuasion_attempts: int
+    product_types: list[str] = Field(
+        default_factory=list,
+        description="get_account product types this row applies to, only when the documents give different rows per "
+        "product type; empty = every type.",
+    )
 
     @model_validator(mode="after")
     def _range_ordered(self) -> Band:
@@ -632,6 +648,10 @@ class Band(_Traced):
     def contains(self, days_late: int) -> bool:
         """True when ``days_late`` falls inside this band (bounds included)."""
         return self.days_late_min <= days_late <= self.days_late_max
+
+    def applies_to(self, product_type: str | None) -> bool:
+        """True when the row is in force for ``product_type`` (an untyped row is in force for every type)."""
+        return not self.product_types or product_type is None or product_type in self.product_types
 
 
 class PromiseDateRules(_Traced):
@@ -647,15 +667,48 @@ class PromiseDateRules(_Traced):
     refuse_deadline_is_refusal: bool = True
 
 
+class FloorRule(_IRModel):
+    """A minimum acceptable amount the documents state as a computation rather than (only) a product field (AUD-10).
+
+    The candidates are the product's floor field (``floor_field_by_type``, when it names one), ``percent_of_amount`` %
+    of the past-due amount (rounded to the cent by ``rounding``) and the ``fixed`` amount; ``combine`` picks the larger
+    (``max``, "whichever is higher") or the smaller (``min``) of the candidates present. ``label`` is how the agent names
+    the floor ("minimum payment"); empty = the field's name, else "minimum amount".
+    """
+
+    percent_of_amount: float | None = Field(default=None, description="Percent of the past-due amount, e.g. 25.")
+    fixed: float | None = Field(default=None, description="A fixed minimum amount.")
+    combine: Literal["max", "min"] = "max"
+    rounding: Literal["nearest", "down", "up"] = "nearest"
+    label: str = ""
+
+    def problem(self) -> str:
+        """Why the rule cannot be computed (``""`` = it can); the validator reports it (``FLOOR_RULE_INVALID``)."""
+        if self.percent_of_amount is None and self.fixed is None:
+            return "it needs percent_of_amount or fixed"
+        if self.percent_of_amount is not None and not 0 < self.percent_of_amount <= 100:
+            return f"percent_of_amount must be a percentage in (0, 100], got {self.percent_of_amount}"
+        if self.fixed is not None and self.fixed < 0:
+            return "a fixed floor cannot be negative"
+        return ""
+
+
 class AmountRules(_Traced):
     """Which amounts the agent proposes and accepts.
 
-    ``floor_field_by_type`` maps a product type to the ``get_account`` field holding its minimum acceptable amount.
+    ``floor_field_by_type`` maps a product type to the ``get_account`` field holding its minimum acceptable amount;
+    ``floor_rule_by_type`` holds a floor the documents state as a computation (a percentage of the past-due amount, a
+    fixed amount, or the larger of those and the field), see :class:`FloorRule`.
     """
 
     ask_full_first: bool = True
     never_ask_open_amount: bool = True
     floor_field_by_type: dict[str, str]
+    floor_rule_by_type: dict[str, FloorRule] = Field(
+        default_factory=dict,
+        description="Product type -> a floor stated as a computation (percent of the past-due amount and/or a fixed "
+        "amount, combined with the floor field by max or min). Empty when every floor is a plain product field.",
+    )
     floor_offer_times: int = 1
     floor_note: str = ""
     accept_between_floor_and_full: bool = True
@@ -664,6 +717,10 @@ class AmountRules(_Traced):
     def floor_field(self, product_type: str) -> str | None:
         """Name of the floor field for a product type, or ``None`` when the brief defines no floor for it."""
         return self.floor_field_by_type.get(product_type)
+
+    def has_floor(self, product_type: str) -> bool:
+        """True when the documents define a floor for ``product_type`` (a field, a computed rule or both)."""
+        return product_type in self.floor_field_by_type or product_type in self.floor_rule_by_type
 
 
 class PersuasionStep(_IRModel):
@@ -753,10 +810,23 @@ class IntentRule(_Traced):
         return verified if self.scope == "after_verification" else not verified
 
     def transfer_queue(self, tool: str = "transfer_to_agent") -> str | None:
-        """The queue of the first transfer action, or ``None`` when the intent does not transfer."""
+        """The queue of the first transfer action, or ``None`` when the intent does not transfer.
+
+        The parameter is ``queue`` in the kit; a tool API may call it ``team`` / ``destination`` / ... (the IR then uses
+        the API's own name), so the single param named like a queue, else the only param, is the queue.
+        """
         for action in self.actions:
-            if action.tool == tool and "queue" in action.params:
-                return action.params["queue"]
+            if action.tool != tool or not action.params:
+                continue
+            params = {k: v for k, v in action.params.items() if isinstance(v, str) and "customer" not in k.lower()}
+            if "queue" in params:
+                return params["queue"]
+            named = [k for k in params
+                     if any(word in k.lower() for word in ("queue", "team", "department", "destination", "target"))]
+            if len(named) == 1:
+                return params[named[0]]
+            if len(params) == 1:
+                return next(iter(params.values()))
         return None
 
 
@@ -889,11 +959,36 @@ class ResidualRule(_IRModel):
 # --------------------------------------------------------------------------------------------------------------------
 
 
+#: Language names (English and native, lower case, accents kept) -> ISO 639-1 code, for an extraction that wrote a name.
+_LANGUAGE_CODES: dict[str, str] = {
+    "english": "en", "turkish": "tr", "türkçe": "tr", "turkce": "tr", "german": "de", "deutsch": "de",
+    "french": "fr", "français": "fr", "francais": "fr", "spanish": "es", "español": "es", "espanol": "es",
+    "italian": "it", "italiano": "it", "portuguese": "pt", "português": "pt", "dutch": "nl", "nederlands": "nl",
+    "polish": "pl", "polski": "pl", "russian": "ru", "arabic": "ar",
+}
+
+
+def normalise_language(value: Any) -> str:
+    """The IR's ``language`` as a lower-case ISO 639-1 code: ``TR`` / ``tr-TR`` / ``Turkish`` -> ``tr``; empty -> ``en``."""
+    text = str(value or "").strip().lower()
+    if not text:
+        return "en"
+    if text in _LANGUAGE_CODES:
+        return _LANGUAGE_CODES[text]
+    head = re.split(r"[-_\s]", text, maxsplit=1)[0]
+    if re.fullmatch(r"[a-z]{2,3}", head):
+        return head
+    return text
+
+
 class PolicyIR(_Traced):
     """The complete structured policy of one brief (or of a brief plus its amendments)."""
 
     bank_name: str
-    language: str = "en"
+    language: str = Field(
+        default="en",
+        description="ISO 639-1 code (lower case) of the language the agent speaks with the customers: en, tr, de ...",
+    )
     currency_word: str = Field(
         default="",
         description="Word spoken after amounts; empty when the brief names no currency (never invent one).",
@@ -920,22 +1015,39 @@ class PolicyIR(_Traced):
     residual_rules: list[ResidualRule] = Field(default_factory=list)
     notes: list[str] = Field(default_factory=list)
 
+    @field_validator("language", mode="before")
+    @classmethod
+    def _language_is_an_iso_code(cls, value: Any) -> str:
+        return normalise_language(value)
+
     # ---- lookups -------------------------------------------------------------------------------------------------
 
-    def band_for(self, days_late: int) -> Band | None:
-        """The band containing ``days_late``, or ``None`` when no band covers it."""
-        return next((band for band in self.bands if band.contains(days_late)), None)
+    def _band_pools(self, product_type: str | None) -> tuple[list[Band], list[Band]]:
+        """``(rows typed for product_type, untyped rows)``; without a type every row counts as untyped."""
+        if product_type is None:
+            return [], list(self.bands)
+        typed = [band for band in self.bands if band.product_types and product_type in band.product_types]
+        return typed, [band for band in self.bands if not band.product_types]
 
-    def nearest_band(self, days_late: int) -> Band | None:
+    def band_for(self, days_late: int, product_type: str | None = None) -> Band | None:
+        """The band containing ``days_late`` (a row typed for ``product_type`` first), or ``None`` when none covers it."""
+        for pool in self._band_pools(product_type):
+            found = next((band for band in pool if band.contains(days_late)), None)
+            if found is not None:
+                return found
+        return None
+
+    def nearest_band(self, days_late: int, product_type: str | None = None) -> Band | None:
         """The band containing ``days_late``, else the band whose range is closest to it (``None`` without bands)."""
-        exact = self.band_for(days_late)
+        exact = self.band_for(days_late, product_type)
         if exact is not None or not self.bands:
             return exact
 
         def distance(band: Band) -> int:
             return band.days_late_min - days_late if days_late < band.days_late_min else days_late - band.days_late_max
 
-        return min(self.bands, key=distance)
+        typed, untyped = self._band_pools(product_type)
+        return min(typed + untyped or self.bands, key=distance)
 
     def intent(self, key: str, verified: bool | None = None) -> IntentRule | None:
         """The intent rule for ``key`` (optionally the one in force at a verification state)."""

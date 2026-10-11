@@ -1,0 +1,45 @@
+{
+ "simulation_id": "61e8802a-ea88-4659-b931-0287d591628c",
+ "rows": [
+  {
+   "call_id": "76ff83c5-394c-4469-a79a-26d88e445a4e",
+   "error": "could not match (name='', customer=False, keys=['id', 'externalCallId', 'sipCallId', 'workspaceId', 'isArchived', 'isImported', 'phoneNumberId', 'phoneNumber', 'assistantId', 'assistantName', 'assistantEntityType', 'assistantWorkflowId'])"
+  },
+  {
+   "call_id": "fc4c38a8-9fb6-4e4e-af37-ba7c1ad999d2",
+   "error": "could not match (name='', customer=False, keys=['id', 'externalCallId', 'sipCallId', 'workspaceId', 'isArchived', 'isImported', 'phoneNumberId', 'phoneNumber', 'assistantId', 'assistantName', 'assistantEntityType', 'assistantWorkflowId'])"
+  },
+  {
+   "call_id": "082022b4-85c7-4726-a7f8-ff4461d3e3d6",
+   "error": "could not match (name='', customer=False, keys=['id', 'externalCallId', 'sipCallId', 'workspaceId', 'isArchived', 'isImported', 'phoneNumberId', 'phoneNumber', 'assistantId', 'assistantName', 'assistantEntityType', 'assistantWorkflowId'])"
+  },
+  {
+   "call_id": "d7730e23-a420-4724-be7f-aa2ea83b9272",
+   "error": "could not match (name='', customer=False, keys=['id', 'externalCallId', 'sipCallId', 'workspaceId', 'isArchived', 'isImported', 'phoneNumberId', 'phoneNumber', 'assistantId', 'assistantName', 'assistantEntityType', 'assistantWorkflowId'])"
+  },
+  {
+   "call_id": "56d85661-65e7-40aa-962c-aeaf83832022",
+   "error": "could not match (name='', customer=False, keys=['id', 'externalCallId', 'sipCallId', 'workspaceId', 'isArchived', 'isImported', 'phoneNumberId', 'phoneNumber', 'assistantId', 'assistantName', 'assistantEntityType', 'assistantWorkflowId'])"
+  },
+  {
+   "call_id": "077c2f3c-3766-49f3-8ece-306b395c6dc7",
+   "error": "could not match (name='', customer=False, keys=['id', 'externalCallId', 'sipCallId', 'workspaceId', 'isArchived', 'isImported', 'phoneNumberId', 'phoneNumber', 'assistantId', 'assistantName', 'assistantEntityType', 'assistantWorkflowId'])"
+  },
+  {
+   "call_id": "2b808ba9-57d8-42e2-a143-fd631eae562b",
+   "error": "could not match (name='', customer=False, keys=['id', 'externalCallId', 'sipCallId', 'workspaceId', 'isArchived', 'isImported', 'phoneNumberId', 'phoneNumber', 'assistantId', 'assistantName', 'assistantEntityType', 'assistantWorkflowId'])"
+  },
+  {
+   "call_id": "7d044aee-b7d4-4747-aded-f837d835c47a",
+   "error": "could not match (name='', customer=False, keys=['id', 'externalCallId', 'sipCallId', 'workspaceId', 'isArchived', 'isImported', 'phoneNumberId', 'phoneNumber', 'assistantId', 'assistantName', 'assistantEntityType', 'assistantWorkflowId'])"
+  },
+  {
+   "call_id": "b70316e9-981b-428f-af47-c131f05ab2a0",
+   "error": "could not match (name='', customer=False, keys=['id', 'externalCallId', 'sipCallId', 'workspaceId', 'isArchived', 'isImported', 'phoneNumberId', 'phoneNumber', 'assistantId', 'assistantName', 'assistantEntityType', 'assistantWorkflowId'])"
+  },
+  {
+   "call_id": "8bffe112-a75b-426b-a5e3-0d70da4b4c8f",
+   "error": "could not match (name='', customer=False, keys=['id', 'externalCallId', 'sipCallId', 'workspaceId', 'isArchived', 'isImported', 'phoneNumberId', 'phoneNumber', 'assistantId', 'assistantName', 'assistantEntityType', 'assistantWorkflowId'])"
+  }
+ ]
+}

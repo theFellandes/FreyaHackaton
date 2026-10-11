@@ -8,7 +8,9 @@ has to decide *what kind* of failure it was and *what to do next*:
 * a rate-limited key will work again in a few seconds -> cool it down and rotate;
 * an overloaded / flaky provider is retried on the same key with exponential backoff;
 * a request the provider rejects (unknown model, context too long) will not succeed with another key of the
-  same provider -> move on to the next provider in the chain.
+  same provider -> move on to the next provider in the chain;
+* a key that is valid but not allowed to use one particular model (a per-model 403) is *not* a dead key -> keep the
+  key, remember the model as off limits for it and try another key / the provider's other model tier.
 
 This module holds that knowledge in one place:
 
@@ -69,6 +71,8 @@ class ErrorKind(StrEnum):
     """No credits / billing problem / ``insufficient_quota`` / HTTP 402. The key is useless until topped up."""
     AUTH = "auth"
     """HTTP 401/403, invalid or revoked key, missing permission, Claude Code not logged in."""
+    MODEL_UNAVAILABLE = "model_unavailable"
+    """HTTP 403 saying that this key / project has no access to one named model. The key itself works."""
     RATE_LIMIT = "rate_limit"
     """HTTP 429 that is *not* a quota problem. The key works again after a cooldown."""
     OVERLOADED = "overloaded"
@@ -98,6 +102,8 @@ class Action(StrEnum):
     """Try the next usable key of the same provider."""
     NEXT_PROVIDER = "next_provider"
     """Give up on this provider for the current call and move to the next one in the chain."""
+    NEXT_MODEL = "next_model"
+    """Same provider, key stays alive: another key for this model, else the other model tier (role) of the provider."""
 
 
 class KeyEffect(StrEnum):
@@ -145,6 +151,7 @@ _TRANSIENT = ErrorPolicy(
 POLICY: dict[ErrorKind, ErrorPolicy] = {
     ErrorKind.QUOTA: ErrorPolicy(action=Action.ROTATE_KEY, key_effect=KeyEffect.DEAD),
     ErrorKind.AUTH: ErrorPolicy(action=Action.ROTATE_KEY, key_effect=KeyEffect.DEAD),
+    ErrorKind.MODEL_UNAVAILABLE: ErrorPolicy(action=Action.NEXT_MODEL),
     ErrorKind.RATE_LIMIT: ErrorPolicy(action=Action.ROTATE_KEY, key_effect=KeyEffect.COOL),
     ErrorKind.OVERLOADED: _TRANSIENT,
     ErrorKind.SERVER: _TRANSIENT,
@@ -270,6 +277,16 @@ _CONTEXT_PATTERNS: tuple[str, ...] = (
     "too many input tokens",
     "request too large",
 )
+
+_MODEL_ACCESS_RE = re.compile(
+    r"(?:\bnot\b|\bno\b|n't|\bdenied\b|\bwithout\b)[^.;\n]{0,60}?\baccess to (?:the )?models?\b"
+    r"\s*:?\s*[`'\"]?[a-z0-9][\w.:/\-]*"
+)
+"""A permission message that *names* the model ("... does not have access to model `gpt-x`"), lower-cased text.
+
+Naming the model is what separates a per-model restriction from a revoked key: a bare "no access" stays an AUTH
+failure, because it does not say that the key would work with another model.
+"""
 
 _STATUS_KINDS: dict[int, ErrorKind] = {
     400: ErrorKind.BAD_REQUEST,
@@ -540,6 +557,8 @@ def _classify_structured(exc: BaseException) -> ErrorKind | None:
     if _contains_any(text, _CONTEXT_PATTERNS):
         return ErrorKind.CONTEXT
     status = _status_code(exc)
+    if status in (None, 403) and _is_model_access_denied(exc, text, status):
+        return ErrorKind.MODEL_UNAVAILABLE
     if status is not None:
         return _kind_for_status(status)
     for error_type in _error_types(exc):
@@ -549,6 +568,17 @@ def _classify_structured(exc: BaseException) -> ErrorKind | None:
     if sdk_kind is not None:
         return sdk_kind
     return _class_name_kind(exc)
+
+
+def _is_model_access_denied(exc: BaseException, text: str, status: int | None) -> bool:
+    """A permission failure about one model: HTTP 403 with ``model_not_found``, or a message naming the model.
+
+    Without any status only the message form counts (a bare ``model_not_found`` code without a 403 is the 404-style
+    "unknown model", a plain BAD_REQUEST).
+    """
+    if status == 403 and "model_not_found" in _error_types(exc):
+        return True
+    return _MODEL_ACCESS_RE.search(text) is not None
 
 
 def _classify_by_message(exc: BaseException) -> ErrorKind | None:

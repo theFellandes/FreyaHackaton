@@ -1,0 +1,19 @@
+2026-10-10T23:44:55.312Z | START  | run c9e740dd44fe started | slot=inputs | builder 0.1.0, python 3.13.16
+2026-10-10T23:44:55.312Z | ERROR  | invalid configuration (environment / .env): max_policy_repairs: Input should be a valid integer, unable to parse string as an integer
+2026-10-10T23:44:55.315Z | FINAL  | run c9e740dd44fe finished
+====================================================================================================
+BUILD SUMMARY
+run id       : c9e740dd44fe
+slot         : inputs
+track        : -
+status       : failed
+started      : 2026-10-10T23:44:55.227Z
+ended        : 2026-10-10T23:44:55.315Z
+duration     : 0.1 s (0 min 00 s)
+model calls  : 0 (0 ok, 0 failed)
+Freya        :
+  - slot: inputs
+tests        : 0 (0 passed, 0 failed)
+errors       : 1
+====================================================================================================
+2026-10-10T23:44:55.315Z | END    | run c9e740dd44fe closed after 0.1 s | duration_s=0.088

@@ -1,0 +1,129 @@
+2026-10-10T21:45:38.686Z | START  | run 92547d9ada53 started | slot=docs-ab | builder 0.1.0, python 3.13.16
+2026-10-10T21:45:38.686Z | CONFIG | effective configuration | freya_api_url=https://staging-app.freyavoice.ai freya_api_key=set freya_bank_team_key=set freya_workspace_id=auto llm_providers=[anthropic, openai, claude_code] builder_track=compiled agent_profile=staged self_test=auto build_time_budget_s=1680 build_slot=auto dry_run=True langfuse=disabled
+2026-10-10T21:45:38.689Z | OBS    | langfuse disabled (no keys)
+2026-10-10T21:45:38.696Z | CONFIG | offline run: model calls are answered from tests/fixtures/policy
+2026-10-10T21:45:38.706Z | STAGE  | load_inputs | start | budget_left_s=1680
+2026-10-10T21:45:38.707Z | DECIDE | track compiled (requested compiled; agentic fallback off) | profile=staged dry_run=True
+2026-10-10T21:45:38.707Z | INPUT  | 2 brief file(s), tool API with 7 tool(s) | briefs=[brief-a.md, brief-b.md] chars=12567 brief_sha=73c673e809cb tools=[add_note, close_call, create_promise, get_account, schedule_callback, transfer_to_agent, verify_identity]
+2026-10-10T21:45:38.707Z | STAGE  | load_inputs | end 0.0s | budget_left_s=1680
+2026-10-10T21:45:38.708Z | STAGE  | guard_inputs | start | budget_left_s=1680
+2026-10-10T21:45:38.717Z | GUARD  | inputs | ok | 0 violations | blocked=False violations=[]
+2026-10-10T21:45:38.717Z | STAGE  | guard_inputs | end 0.0s | budget_left_s=1680
+2026-10-10T21:45:38.718Z | STAGE  | understand_brief | start | budget_left_s=1680
+2026-10-10T21:45:38.718Z | LEDGER | reading 2 file(s) in 4 passage(s) | files=[brief-a.md, brief-b.md] passages=4
+2026-10-10T21:45:38.722Z | MODEL  | fixture/fixture | key=fixture#0 | ok 0.0s in=6751 out=0 | rule ledger: brief-a.md passage 1/4
+2026-10-10T21:45:38.733Z | LEDGER | passage 1/4 (brief-a.md): 39 rules, 22 ambiguities
+2026-10-10T21:45:38.733Z | MODEL  | fixture/fixture | key=fixture#0 | ok 0.0s in=6745 out=0 | rule ledger: brief-a.md passage 2/4
+2026-10-10T21:45:38.742Z | LEDGER | passage 2/4 (brief-a.md): 42 rules, 0 ambiguities
+2026-10-10T21:45:38.742Z | MODEL  | fixture/fixture | key=fixture#0 | ok 0.0s in=6241 out=0 | rule ledger: brief-a.md passage 3/4
+2026-10-10T21:45:38.749Z | LEDGER | passage 3/4 (brief-a.md): 22 rules, 0 ambiguities
+2026-10-10T21:45:38.750Z | MODEL  | fixture/fixture | key=fixture#0 | ok 0.0s in=6330 out=0 | rule ledger: brief-b.md passage 4/4
+2026-10-10T21:45:38.757Z | LEDGER | passage 4/4 (brief-b.md): 23 rules, 0 ambiguities
+2026-10-10T21:45:38.782Z | MODEL  | fixture/fixture | key=fixture#0 | ok 0.0s in=880 out=0 | rule ledger: completeness check 1/1
+2026-10-10T21:45:38.783Z | LEDGER | completeness check: 5 uncovered passage(s), no missing rule
+2026-10-10T21:45:38.785Z | MODEL  | fixture/fixture | key=fixture#0 | ok 0.0s in=8449 out=0 | rule ledger: link amendments and cross-document ambiguities
+2026-10-10T21:45:38.790Z | LEDGER | ledger ready: 124 rules (119 active), 22 ambiguities, 5 superseded | rules=124 active=119 ambiguities=22
+2026-10-10T21:45:38.790Z | AMBIG  | [A-5a, A-6a, A-8] A relative answers and later says the number is not the customer's (or the reverse). -> chosen: wrong_number only on an explicit statement that the number does not belong to the customer; 'not here / not available' is the callback path; after a booked callback the close is callback. (because: Rule 8's trigger is an explicit statement; a booked callback is already in the ledger.)
+2026-10-10T21:45:38.790Z | AMBIG  | [A-22, A-19] 'This <weekday>' already past, a bare weekday, or a weekday equal to today. -> chosen: Weeks run Monday to Sunday. A past 'this <weekday>' is before today: say so and ask for a day from today on (a date proposal, not a refusal). A bare weekday is its next occurrence after today. The read-back states weekday and date. (because: Rule 22 defines only 'this' and 'next'; rule 19 forbids past dates; the read-back is the safety net.)
+2026-10-10T21:45:38.790Z | AMBIG  | [A-21, A-29, A-30b] Is 'not today, maybe later' or 'when I get paid' a vague period or a flat refusal? -> chosen: Any time reference (a period, an event, 'later') is a vague period: ask once for the exact day, then propose the deadline. A 'no' with no time reference and no amount is a flat refusal. (because: Rule 29: a proposed date is never a refusal; rule 30 defines a flat refusal as a no with no date and no amount.)
+2026-10-10T21:45:38.790Z | AMBIG  | [A-36b, A-41b, A-OUT-T] Restructuring requested after a promise was recorded. -> chosen: Transfer to the restructuring queue; the recorded promise stays; close transferred / restructuring. Asking to change the recorded promise itself is rule 36 (mobile app). (because: Rule 41 is unconditional and the closing note says a transfer after a recorded promise closes transferred.)
+2026-10-10T21:45:38.791Z | AMBIG  | [A-15a, A-15c] Does 'why do you need that?' before a security answer count as declining? -> chosen: Explain once that the questions protect the account and re-ask; close declined only on a second refusal or when the customer again refuses to answer until told the purpose. (because: The rule says 'instead of answering'; a clarifying question followed by an answer is not a refusal.)
+2026-10-10T21:45:38.791Z | AMBIG  | [B-CLOSING-d, A-OUT-T, B-10d] Brief B says promise wins 'except rule 10' (restructuring); Brief A says any transfer after a recorded promise closes transferred. A support or human transfer after a recorded promise? -> chosen: Any transfer after a recorded promise closes transferred with that transfer's reason. (because: B-10's last sentence covers all transfers; Brief B does not replace A's transfer rule.)
+2026-10-10T21:45:38.791Z | AMBIG  | [A-32d, A-41a] Hardship and a request for lower instalments in the same call. -> chosen: Hardship first: sympathy, offer support; accept → support transfer; decline → no_promise / hardship. (because: Rule 32 comes before rule 41.)
+2026-10-10T21:45:38.791Z | AMBIG  | [A-26a, A-30c, A-26d] Does the floor offer use a persuasion attempt, and on which date is it offered? -> chosen: 'Too much' to the first ask makes attempt 1 the floor on the attempt-1 date with the rest-stays-overdue sentence; a refused floor is a flat refusal → next attempt (late band: floor on the deadline) or stop. (because: Rule 30 makes attempt 1 the floor once the full amount was called too much; rule 26 allows attempt 2 to name the floor again on the deadline.)
+2026-10-10T21:45:38.791Z | AMBIG  | [A-JOB-a, A-BANDS] days_late outside every band (0, or more than 45). -> chosen: Use the nearest band and never fail. (because: The brief scopes calls to 1-45 days late; the agent still has to behave.)
+2026-10-10T21:45:38.791Z | AMBIG  | [A-30d, A-19] Attempt-1 date on a weekend call, or after a short deadline. -> chosen: When this week's last business day is before today, use next week's; cap any proposal at the deadline. (because: Rule 19 forbids past dates and dates after the deadline.)
+2026-10-10T21:45:38.791Z | AMBIG  | [A-6a, A-7a, A-7b] Callback 'today' on a non-business day; a vague time such as 'in the morning'. -> chosen: 'Today' is allowed on any day (literal reading); 'later than now' is strict; a vague time is followed by a request for a specific time (not counted as an outside-window offer). (because: Literal reading of rule 6; rule 7 is the only no-callback path.)
+2026-10-10T21:45:38.791Z | AMBIG  | [A-25, A-26a, A-27a, A-27b] Amount above the full amount, a floor above the past-due amount, or a missing floor field. -> chosen: Above the full amount → offer the full amount; effective floor = min(floor, past due); no floor field → no floor offer. (because: Rule 27 bounds the range at the full amount; rule 33 forbids invented terms.)
+2026-10-10T21:45:38.791Z | AMBIG  | [A-17c, A-44] No currency is named in the brief or the tool API. -> chosen: Say amounts with two decimals and no currency word. (because: Rule 44: never invent facts.)
+2026-10-10T21:45:38.791Z | AMBIG  | [A-3b, A-45b] 'I don't want to talk' before the right party is confirmed. -> chosen: Before right-party confirmation it is an unclear answer (second ask, then not_reached / unclear); after confirmation and before verification it is not_verified / declined. (because: Rule 45 speaks of 'the same customer'; before confirmation the person is not known to be the customer.)
+2026-10-10T21:45:38.791Z | AMBIG  | [A-10, A-7b] A third party will not say when the customer can be reached, or insists on paying. -> chosen: No disclosure and no payment; without a time no callback is booked → not_reached / no_callback. (because: Rule 10 forbids any account talk; nothing can be scheduled.)
+2026-10-10T21:45:38.791Z | AMBIG  | [A-32c, A-32e] A hardship customer declines support but names a date or an amount. -> chosen: Record the promise under the date and amount rules (no persuasion) and close promise; a later accepted support transfer closes transferred / support. (because: Rule 32's last sentence and the transfer-after-promise note.)
+2026-10-10T21:45:38.791Z | AMBIG  | [B-8b, B-1] Notes for a customer with a single product under Brief B. -> chosen: Notes apply whenever Brief B is in force, one product included. (because: B-1 allows one to three products and B-8 applies also when no product gets a promise.)
+2026-10-10T21:45:38.791Z | AMBIG  | [B-8b, B-9, B-10d] When to call add_note, given that a transfer request can come after a dispute or refusal. -> chosen: Defer every add_note until the outcome is final (after the last product, with no transfer). (because: Deferral satisfies B-8/B-9 in the ledger and is the only way to satisfy B-10's no-notes rule.)
+2026-10-10T21:45:38.792Z | AMBIG  | [B-6, A-20, A-23a] One shared date that is a weekend or holiday, or after every deadline. -> chosen: Shift first (rule 20), then clamp each product to its own deadline and name every clamped product in the read-back. (because: Deadlines are business days, so shift-then-clamp never yields a non-business day.)
+2026-10-10T21:45:38.792Z | AMBIG  | [A-46a, A-OUTCOMES] The call ends with no situation from the outcome table (e.g. the customer hangs up). -> chosen: Verified customer → no_promise / refused; customer on the line but not verified → not_verified / declined; otherwise not_reached / unclear. (because: Every call needs exactly one close_call; these rows say the least about the customer.)
+2026-10-10T21:45:38.792Z | AMBIG  | [A-32c, B-8b, B-CLOSING-c] Hardship (customer-level) in a multi-product call when the support offer is declined. -> chosen: Make no persuasion attempt on any product; note hardship on every product without a promise and close (no_promise / hardship through the notes rule). (because: Rule 32 forbids persuasion for the customer; B-8 requires a note for each unpromised product.)
+2026-10-10T21:45:38.792Z | AMBIG  | [A-28, B-4a] Wording of the first ask under Brief B for a customer with one product. -> chosen: Several products: ask whether they can pay all of them today; one product: Brief A's 'Can you make this payment today?'. (because: B-4 generalises A-28; with one product the two coincide.)
+2026-10-10T21:45:38.792Z | DECIDE | supersession: B-0 replaces A-JOB-a: B-0 amends
+2026-10-10T21:45:38.792Z | DECIDE | supersession: B-8b replaces A-NONOTE: B-8b amends
+2026-10-10T21:45:38.792Z | DECIDE | supersession: B-9 replaces A-39b, A-40b: B-9 amends
+2026-10-10T21:45:38.792Z | DECIDE | supersession: B-11 replaces A-37c: B-11 amends
+2026-10-10T21:45:38.810Z | GUARD  | ledger | ok | 0 violations | blocked=False violations=[]
+2026-10-10T21:45:38.810Z | DECIDE | rule ledger: 124 rules (119 active), 22 ambiguities, 4 supersessions
+2026-10-10T21:45:38.810Z | STAGE  | understand_brief | end 0.1s | budget_left_s=1679.9
+2026-10-10T21:45:38.811Z | STAGE  | extract_policy | start | budget_left_s=1679.9
+2026-10-10T21:45:38.826Z | MODEL  | fixture/fixture | key=fixture#0 | ok 0.0s in=23596 out=0 | extract policy IR from the rule ledger
+2026-10-10T21:45:38.924Z | GROUNDING | warning: phrases.identity_failed_sentence: sentence not found in the briefs: "I'm sorry, I could not verify your identity. Please use the mobile app or visit a branch."
+2026-10-10T21:45:38.924Z | GROUNDING | warning: phrases.goodbye_sentence: sentence not found in the briefs: 'Thank you for your time. Goodbye.'
+2026-10-10T21:45:38.924Z | GROUNDING | warning: phrases.extra.below_floor: sentence not found in the briefs: 'That amount cannot be recorded.'
+2026-10-10T21:45:38.924Z | GROUNDING | warning: phrases.extra.record_failed: sentence not found in the briefs: "I'm sorry, I could not record your promise."
+2026-10-10T21:45:38.924Z | GROUNDING | warning: recording.failure_sentence: sentence not found in the briefs: "I'm sorry, I could not record your promise."
+2026-10-10T21:45:38.924Z | GROUNDING | warning: identity.questions[0].ask: sentence not found in the briefs: 'Could you please tell me your date of birth?'
+2026-10-10T21:45:38.925Z | EXTRACT | policy IR extracted: 2 band(s), 22 intent(s), 18 outcome row(s), 1 residual rule(s) | cited_rules=119
+2026-10-10T21:45:38.925Z | STAGE  | extract_policy | end 0.1s | budget_left_s=1679.8
+2026-10-10T21:45:38.926Z | STAGE  | validate_policy | start | budget_left_s=1679.8
+2026-10-10T21:45:38.930Z | VALIDATE | policy IR: 0 error(s), 0 warning(s) | codes=[]
+2026-10-10T21:45:39.013Z | VALIDATE | 6 fixed sentence(s) not found in the briefs | sentences=[phrases.identity_failed_sentence: sentence not found in the briefs: "I'm sorry, I could not verify your identity. Pl...
+2026-10-10T21:45:39.024Z | VALIDATE | offline invariants: 17 passed, 0 failed, 1 unchecked | failing=[]
+2026-10-10T21:45:39.024Z | STAGE  | validate_policy | end 0.1s | budget_left_s=1679.7
+2026-10-10T21:45:39.025Z | STAGE  | guard_policy | start | budget_left_s=1679.7
+2026-10-10T21:45:39.038Z | GUARD  | policy | ok | 0 violations | blocked=False violations=[]
+2026-10-10T21:45:39.038Z | STAGE  | guard_policy | end 0.0s | budget_left_s=1679.6
+2026-10-10T21:45:39.039Z | STAGE  | draft_prose | start | budget_left_s=1679.6
+2026-10-10T21:45:39.042Z | MODEL  | fixture/fixture | key=fixture#0 | ok 0.0s in=8679 out=0 | draft node prose (staged profile)
+2026-10-10T21:45:39.047Z | PROSE  | drafted prose for 0 node(s) | nodes={}
+2026-10-10T21:45:39.059Z | GUARD  | prose | ok | 0 violations | blocked=False violations=[]
+2026-10-10T21:45:39.059Z | STAGE  | draft_prose | end 0.0s | budget_left_s=1679.6
+2026-10-10T21:45:39.060Z | STAGE  | compile_workflow | start | budget_left_s=1679.6
+2026-10-10T21:45:39.141Z | DECIDE | compiled staged workflow: 33 nodes; rule coverage: 119 of 119 active rules enforced (100%); 5 superseded; uncovered: none | notes=[]
+2026-10-10T21:45:39.141Z | STAGE  | compile_workflow | end 0.1s | budget_left_s=1679.5
+2026-10-10T21:45:39.142Z | STAGE  | static_checks | start | budget_left_s=1679.5
+2026-10-10T21:45:39.151Z | LINT   | static checks: 0 errors, 1 warnings (ok) | errors=[] warnings=[L018 warning nodes.negotiate.task_message: 8057 characters (> 6000); long prompts dilute the rules]
+2026-10-10T21:45:39.151Z | TEST   | PASS static_checks | 0 errors, 1 warnings
+2026-10-10T21:45:39.151Z | STAGE  | static_checks | end 0.0s | budget_left_s=1679.5
+2026-10-10T21:45:39.152Z | STAGE  | guard_workflow | start | budget_left_s=1679.5
+2026-10-10T21:45:39.165Z | GUARD  | workflow | ok | 0 violations | blocked=False violations=[]
+2026-10-10T21:45:39.165Z | STAGE  | guard_workflow | end 0.0s | budget_left_s=1679.5
+2026-10-10T21:45:39.166Z | STAGE  | finalize | start | budget_left_s=1679.5
+2026-10-10T21:45:39.173Z | FINAL  | run 92547d9ada53 finished
+====================================================================================================
+BUILD SUMMARY
+run id       : 92547d9ada53
+slot         : docs-ab
+track        : compiled
+status       : dry_run
+started      : 2026-10-10T21:45:38.608Z
+ended        : 2026-10-10T21:45:39.173Z
+duration     : 0.6 s (0 min 01 s)
+model calls  : 8 (8 ok, 0 failed)
+  - fixture/fixture: calls=8 (8 ok, 0 failed), tokens in=67671 out=0
+Freya        :
+  - slot: docs-ab
+  - exported: C:\Users\Felladien\Documents\Projects\Python\FreyaHackaton\out\docs-ab.workflow.json
+tests        : 1 (1 passed, 0 failed)
+  - PASS static_checks: 0 errors, 1 warnings
+stages       :
+  - load_inputs: end 0.0s
+  - guard_inputs: end 0.0s
+  - understand_brief: end 0.1s
+  - extract_policy: end 0.1s
+  - validate_policy: end 0.1s
+  - guard_policy: end 0.0s
+  - draft_prose: end 0.0s
+  - compile_workflow: end 0.1s
+  - static_checks: end 0.0s
+  - guard_workflow: end 0.0s
+errors       : 0
+workflow_id  : null
+agent_id     : null
+version      : null
+node_count   : null
+tool_count   : null
+profile      : staged
+coverage     : 119 of 119 active rules enforced (100%); 5 superseded; uncovered: none
+notes        : []
+errors_list  : []
+====================================================================================================
+2026-10-10T21:45:39.174Z | STAGE  | finalize | end 0.0s | budget_left_s=1679.5
+2026-10-10T21:45:39.175Z | END    | run 92547d9ada53 closed after 0.6 s | duration_s=0.566

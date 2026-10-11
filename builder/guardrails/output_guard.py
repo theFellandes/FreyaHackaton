@@ -180,6 +180,107 @@ def _extract_dates(text: str) -> tuple[set[tuple[int | None, int, int]], str]:
     return found, work
 
 
+# --- spellings read on the SOURCE side only (audit AUD-14) ------------------------------------------------------------
+# Raw bank material writes dates in many ways. A correct IR date that the corpus cannot read was blocked as "invented"
+# (an ISO holiday list against "Christmas Day" or "Wed 25 and Thu 26 November"), and the only repair that cleared the
+# block deleted the true holiday. These readings widen what the documents are understood to state; the IR side is read
+# with :func:`_extract_dates` alone, so they can remove false blocks but never add one.
+
+_WEEKDAY = r"(?:mon|tues?|wed(?:nes)?|thu(?:rs?)?|fri|sat(?:ur)?|sun)(?:day)?\.?"
+_LIST_SEP = r"\s*(?:,|and|&|or)\s*"
+_DATE_DASH_NUMERIC = re.compile(r"(?<![\d./-])(\d{1,2})-(\d{1,2})-(\d{4})(?![\d-])")
+_DATE_YEAR_FIRST = re.compile(r"(?<![\d./-])(\d{4})[/.](\d{1,2})[/.](\d{1,2})(?![\d])")
+_DATE_DAY_DASH_MONTH = re.compile(rf"(?<![\d-])(\d{{1,2}})-{_MONTH}\b(?:-(\d{{4}}))?", re.IGNORECASE)
+_DATE_MONTH_DASH_DAY = re.compile(rf"\b{_MONTH}-(\d{{1,2}})(?![\d])(?:-(\d{{4}}))?", re.IGNORECASE)
+_DATE_DAY_LIST = re.compile(
+    rf"((?:{_WEEKDAY}\s+)?\d{{1,2}}{_ORD}(?:{_LIST_SEP}(?:{_WEEKDAY}\s+)?\d{{1,2}}{_ORD})+)\s+(?:of\s+)?{_MONTH}\b"
+    rf"\.?(?:,?\s*(\d{{4}}))?",
+    re.IGNORECASE,
+)
+_DATE_WEEKDAY_DAY = re.compile(rf"\b{_WEEKDAY}\s+(\d{{1,2}}){_ORD}\s+(?:of\s+)?{_MONTH}\b\.?(?:,?\s*(\d{{4}}))?", re.IGNORECASE)
+_DATE_MONTH_LIST = re.compile(
+    rf"\b{_MONTH}\.?\s+(\d{{1,2}}{_ORD}(?:{_LIST_SEP}\d{{1,2}}{_ORD})+)\b(?:,?\s*(\d{{4}}))?", re.IGNORECASE
+)
+_UNIT_ORDINALS = {
+    "first": 1, "second": 2, "third": 3, "fourth": 4, "fifth": 5, "sixth": 6, "seventh": 7, "eighth": 8, "ninth": 9,
+}  # fmt: skip
+_ORDINAL_DAYS: dict[str, int] = {
+    **_UNIT_ORDINALS,
+    "tenth": 10, "eleventh": 11, "twelfth": 12, "thirteenth": 13, "fourteenth": 14, "fifteenth": 15,
+    "sixteenth": 16, "seventeenth": 17, "eighteenth": 18, "nineteenth": 19, "twentieth": 20, "thirtieth": 30,
+    **{f"twenty-{word}": 20 + value for word, value in _UNIT_ORDINALS.items()},
+    **{f"twenty {word}": 20 + value for word, value in _UNIT_ORDINALS.items()},
+    "thirty-first": 31, "thirty first": 31,
+}  # fmt: skip
+_ORDINAL_WORD = "(" + "|".join(re.escape(word) for word in sorted(_ORDINAL_DAYS, key=len, reverse=True)) + ")"
+_DATE_ORDINAL_OF = re.compile(rf"\b{_ORDINAL_WORD}\s+(?:day\s+)?of\s+{_MONTH}\b", re.IGNORECASE)
+_DATE_MONTH_ORDINAL = re.compile(rf"\b{_MONTH}\s+(?:the\s+)?{_ORDINAL_WORD}\b", re.IGNORECASE)
+#: Holidays on the same day every year, by their common English names (generic calendar vocabulary).
+_FIXED_HOLIDAYS = (
+    (re.compile(r"\bchristmas\s+eve\b", re.IGNORECASE), 12, 24),
+    (re.compile(r"\bchristmas(?!\s+eve)\b(?:\s+day\b)?", re.IGNORECASE), 12, 25),
+    (re.compile(r"\bboxing\s+day\b", re.IGNORECASE), 12, 26),
+    (re.compile(r"\bnew\s+year['\u2019]?s?\s+eve\b", re.IGNORECASE), 12, 31),
+    (re.compile(r"\bnew\s+year['\u2019]?s?\s+day\b", re.IGNORECASE), 1, 1),
+)
+#: ``1 500`` / ``1 500,00`` (space, no-break space or narrow no-break space as the thousands separator).
+_SPACED_THOUSANDS = re.compile(r"(?<![\d.,])\d{1,3}(?:[ \u00a0\u202f]\d{3})+(?:[.,]\d+)?(?![\d])")
+
+
+def _is_verb_may(month: str) -> bool:
+    return month == "may"  # lower case "may" is the verb ("Attempt 2 may name ...")
+
+
+def _source_dates(text: str) -> set[tuple[int | None, int, int]]:
+    """The dates a SOURCE text states: :func:`_extract_dates` plus the spellings above (never used on the IR side)."""
+    found, _ = _extract_dates(text)
+    text = text or ""
+
+    def add(year: int | None, month: int, day: int) -> None:
+        if _valid_date(month, day):
+            found.add((year, month, day))
+
+    for match in _DATE_DASH_NUMERIC.finditer(text):
+        first, second, year = int(match.group(1)), int(match.group(2)), int(match.group(3))
+        add(year, second, first)  # day-first
+        add(year, first, second)  # month-first
+    for match in _DATE_YEAR_FIRST.finditer(text):
+        add(int(match.group(1)), int(match.group(2)), int(match.group(3)))
+    for match in _DATE_DAY_DASH_MONTH.finditer(text):
+        if not _is_verb_may(match.group(2)):
+            add(int(match.group(3)) if match.group(3) else None, _MONTHS[match.group(2).lower()], int(match.group(1)))
+    for match in _DATE_MONTH_DASH_DAY.finditer(text):
+        if not _is_verb_may(match.group(1)):
+            add(int(match.group(3)) if match.group(3) else None, _MONTHS[match.group(1).lower()], int(match.group(2)))
+    for match in _DATE_DAY_LIST.finditer(text):
+        if _is_verb_may(match.group(2)):
+            continue
+        month = _MONTHS[match.group(2).lower()]
+        year = int(match.group(3)) if match.group(3) else None
+        for day in re.findall(r"(?<![A-Za-z])\d{1,2}", match.group(1)):
+            add(year, month, int(day))
+    for match in _DATE_WEEKDAY_DAY.finditer(text):
+        if not _is_verb_may(match.group(2)):
+            add(int(match.group(3)) if match.group(3) else None, _MONTHS[match.group(2).lower()], int(match.group(1)))
+    for match in _DATE_MONTH_LIST.finditer(text):
+        if _is_verb_may(match.group(1)):
+            continue
+        month = _MONTHS[match.group(1).lower()]
+        year = int(match.group(3)) if match.group(3) else None
+        for day in re.findall(r"\d{1,2}", match.group(2)):
+            add(year, month, int(day))
+    for match in _DATE_ORDINAL_OF.finditer(text):
+        if not _is_verb_may(match.group(2)):
+            add(None, _MONTHS[match.group(2).lower()], _ORDINAL_DAYS[" ".join(match.group(1).lower().split())])
+    for match in _DATE_MONTH_ORDINAL.finditer(text):
+        if not _is_verb_may(match.group(1)):
+            add(None, _MONTHS[match.group(1).lower()], _ORDINAL_DAYS[" ".join(match.group(2).lower().split())])
+    for pattern, month, day in _FIXED_HOLIDAYS:
+        if pattern.search(text):
+            add(None, month, day)
+    return found
+
+
 def _decimals(token: str) -> set[Decimal]:
     """Every reading of a numeric token: ``1,000.50`` and ``1.000,50`` are 1000.50; ``1.005`` is 1.005 and 1005."""
     out: set[Decimal] = set()
@@ -262,11 +363,12 @@ class _Corpus:
             self.add(text)
 
     def add(self, text: str) -> None:
-        dates, _ = _extract_dates(text)
-        self.dates |= dates
+        self.dates |= _source_dates(text)
         values = _without_numbering(text)
         for token in _NUMBER_TOKEN.findall(values):
             self.numbers |= _decimals(token)
+        for token in _SPACED_THOUSANDS.findall(values):
+            self.numbers |= _decimals(re.sub(r"[ \u00a0\u202f]", "", token))
         self.numbers |= _number_words(values)
         self.numbers |= _week_numbers(values)
 
@@ -372,6 +474,26 @@ def _truncate(text: str, width: int = 80) -> str:
     return text if len(text) <= width else text[: width - 3] + "..."
 
 
+#: Markers that address a model by their form (role tags, chat-template tokens, ``BEGIN SYSTEM``, "reveal the system
+#: prompt"): they block in a derived artifact even when an input document contains them. The others ("disregard the
+#: previous instructions on X") are ordinary memo English when a document says them.
+_STRUCTURAL_MARKERS = frozenset({"role_tag", "chat_template_token", "begin_block", "reveal_prompt"})
+
+
+def document_markers(bundle: BriefBundle) -> frozenset[str]:
+    """The wording markers (not the structural ones) that the input documents themselves contain (audit AUD-14).
+
+    A derived text (rule statement, policy IR) that repeats such a marker restates the bank's own wording - an amending
+    memo saying "please disregard the previous instructions on callback hours" - instead of adding text addressed to
+    the model, so it warns instead of ending the build blocked.
+    """
+    try:
+        found = {hit.name for hit in find_injections(bundle.combined_text(), strong_only=True)}
+    except Exception:  # a guard never raises; without the set every marker keeps blocking
+        return frozenset()
+    return frozenset(found - _STRUCTURAL_MARKERS)
+
+
 def _scan_text_safety(
     text: str,
     location: str,
@@ -380,6 +502,7 @@ def _scan_text_safety(
     label: str,
     warn_only: bool = False,
     source_text: str = "",
+    documented: frozenset[str] = frozenset(),
 ) -> None:
     """Injection markers and key-like tokens (always block) in ``text``.
 
@@ -387,12 +510,13 @@ def _scan_text_safety(
     ``warn_only``. A marker worded like an amending memo ("disregard the earlier brief on X", see
     :class:`~builder.guardrails.patterns.InjectionPattern`) only warns: a rule statement that keeps the memo's verb is
     bank policy, and a block would end the build. A marker the ``source_text`` (the rule's own verbatim quote) contains
-    too is the document's wording restated, not an addition of the model, and also only warns.
+    too is the document's wording restated, not an addition of the model, and also only warns; so does a wording
+    marker in ``documented`` (:func:`document_markers`: the input documents say it themselves).
     """
     quoted = {hit.name for hit in find_injections(source_text, strong_only=True)} if source_text else set()
     for hit in find_injections(text, strong_only=True)[:3]:
         message = f"{label} contains text addressed to a model ({hit.name}): {hit.excerpt!r}."
-        if warn_only or not hit.blocks_derived or hit.name in quoted:
+        if warn_only or not hit.blocks_derived or hit.name in quoted or hit.name in documented:
             report.warn("injection", message, location)
         else:
             report.block("injection", message, location)
@@ -422,11 +546,27 @@ def check_ledger(ledger: RuleLedger, bundle: BriefBundle) -> GuardReport:
     for rule_id in ledger.duplicate_ids():
         report.block("ledger_ids", f"Rule id {rule_id!r} is used more than once.", f"ledger.{rule_id}")
     by_id = {rule.id: rule for rule in ledger.rules}
-    for check in ground_ledger(ledger, bundle).checks:
+    checks = ground_ledger(ledger, bundle).checks
+    missing = [check.rule_id for check in checks if check.status == "missing"]
+    unreliable = len(missing) > _unreliable_share() * len(ledger.rules)
+    if unreliable:
+        # The ledger keeps the quotes as written in this case (grounding is unreliable for the input); blocking each
+        # of them ended the build with no repair. The IR is extracted from the full documents and check_policy still
+        # grounds every literal it states.
+        report.warn(
+            "grounding_unreliable",
+            f"{len(missing)} of {len(ledger.rules)} quotes are not found verbatim in the briefs; quote grounding is "
+            f"unreliable for this input (e.g. {', '.join(missing[:5])}).",
+            "ledger",
+        )
+    documented = document_markers(bundle)
+    for check in checks:
         rule = by_id.get(check.rule_id)
         quote = _truncate(rule.quote if rule else "")
         if check.status == "empty":
             report.block("ungrounded", "The rule has an empty quote.", f"ledger.{check.rule_id}")
+        elif check.status == "missing" and unreliable:
+            continue
         elif check.status == "missing":
             report.block(
                 "ungrounded",
@@ -452,6 +592,7 @@ def check_ledger(ledger: RuleLedger, bundle: BriefBundle) -> GuardReport:
             report,
             label="The rule statement",
             source_text=rule.quote,
+            documented=documented,
         )
         _scan_text_safety(
             rule.quote, f"ledger.{rule.id}.quote", report, label="The rule quote", warn_only=True
@@ -469,13 +610,25 @@ def check_ledger(ledger: RuleLedger, bundle: BriefBundle) -> GuardReport:
 # ------------------------------------------------------------------------------------------------------------------------
 
 
+def _unreliable_share() -> float:
+    """The share of unfound quotes above which the ledger keeps them as written (one value for both places)."""
+    try:
+        from builder.understand.ledger import (
+            _MAX_UNGROUNDED_SHARE,  # lazy: keeps this package import-cycle free
+        )
+
+        return float(_MAX_UNGROUNDED_SHARE)
+    except Exception:
+        return 0.4
+
+
 def check_policy(ir: PolicyIR, bundle: BriefBundle, tool_api: ToolApi) -> GuardReport:
     """The policy IR against the briefs and the tool API (see the module docstring)."""
     report = GuardReport(stage="policy")
     corpus = _Corpus([*(document.text for document in bundle.documents), tool_api.describe()])
     data = ir.to_json_dict()
     _check_ir_literals(data, corpus, report)
-    _check_ir_text_safety(data, report)
+    _check_ir_text_safety(data, report, document_markers(bundle))
     _check_ir_against_tool_api(ir, tool_api, report)
     return report
 
@@ -542,10 +695,12 @@ def _check_numeric_field(
         report.block("ungrounded_number", message, path)
 
 
-def _check_ir_text_safety(data: dict[str, Any], report: GuardReport) -> None:
+def _check_ir_text_safety(
+    data: dict[str, Any], report: GuardReport, documented: frozenset[str] = frozenset()
+) -> None:
     for path, _key, value in _walk_scalars(data, frozenset({"rule_ids", "rule_id"})):
         if isinstance(value, str) and value:
-            _scan_text_safety(value, path, report, label="The policy text")
+            _scan_text_safety(value, path, report, label="The policy text", documented=documented)
 
 
 def _expected(tool_api: ToolApi, tool: str, name: str, where: str = "request") -> list[str] | None:
@@ -575,14 +730,17 @@ def _check_member(
 
 
 def _check_ir_against_tool_api(ir: PolicyIR, tool_api: ToolApi, report: GuardReport) -> None:
-    outcomes = _expected(tool_api, "close_call", "outcome")
-    reasons = _expected(tool_api, "close_call", "reason")
+    # AUD-20: read each vocabulary from the field that holds its role (the compiler's view), not the kit's field name
+    from builder.understand.validate import tool_vocabulary
+
+    vocab = tool_vocabulary(tool_api)
+    outcomes, reasons = vocab.outcomes, vocab.reasons
     for path, ref in ir.outcome_refs():
         _check_member(report, ref.outcome, outcomes, "Outcome", f"{path}.outcome")
         _check_member(report, ref.reason, reasons, "Reason", f"{path}.reason")
     _check_member(report, ir.multi_product.notes_outcome, outcomes, "Outcome", "multi_product.notes_outcome")
 
-    id_fields = _expected(tool_api, VERIFY_TOOL, "field")
+    id_fields = _expected(tool_api, VERIFY_TOOL, vocab.name_of("selector", "field"))
     for index, question in enumerate(ir.identity.questions):
         _check_member(
             report, question.field, id_fields, "Identity field", f"identity.questions[{index}].field"
@@ -592,7 +750,8 @@ def _check_ir_against_tool_api(ir: PolicyIR, tool_api: ToolApi, report: GuardRep
         _check_member(report, hint.value, hints, "Hint", f"identity.hints[{index}].value")
 
     note_tool = ir.multi_product.note_tool
-    note_reasons = _expected(tool_api, note_tool, "reason")
+    note_reasons = _expected(tool_api, note_tool, vocab.name_of("note_reason", "reason") if note_tool == "add_note"
+                             else "reason")
     for index, reason in enumerate(ir.multi_product.note_reasons):
         _check_member(report, reason, note_reasons, "Note reason", f"multi_product.note_reasons[{index}]")
     _check_member(
@@ -612,7 +771,7 @@ def _check_ir_against_tool_api(ir: PolicyIR, tool_api: ToolApi, report: GuardRep
             )
 
     fields = _product_fields(tool_api)
-    product_types = next((spec.enum for spec in fields if spec.name == "type" and spec.enum), None)
+    product_types = vocab.product_types
     names = {spec.name for spec in fields}
     for product_type in ir.disclosure.product_naming:
         _check_member(

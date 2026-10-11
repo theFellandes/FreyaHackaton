@@ -1,0 +1,64 @@
+{
+  "checked_at_utc": "2026-10-11T14:58:18.3812468Z",
+  "status": "preparation_incomplete",
+  "ready_to_submit": false,
+  "official_source": "https://www.freyavoice.ai/hackathon#submit",
+  "release_utc": "2026-10-11T17:00:00Z",
+  "deadline_utc": "2026-10-11T20:00:00Z",
+  "final_cases": 1,
+  "final_language": "Turkish",
+  "practice_kit_present": true,
+  "final_kit_present": false,
+  "mock_deployed": false,
+  "selected_final_run": false,
+  "final_export_present": false,
+  "final_submission_json_present": false,
+  "artifact_commit_present": false,
+  "email_sent": false,
+  "blockers": [
+    {
+      "id": "cloudflare_access",
+      "detail": "No configured Cloudflare token/account ID or usual Wrangler authentication found; browser access unverified."
+    },
+    {
+      "id": "member_email",
+      "detail": "Official members field needs entrant email."
+    },
+    {
+      "id": "builder_interface",
+      "detail": "Existing CLI accepts brief paths/OpenAPI, not final folder plus mock URL."
+    },
+    {
+      "id": "tool_endpoint_auth",
+      "detail": "Current compiler uses OpenAPI server origin; team key is not automatically injected into agent tools."
+    },
+    {
+      "id": "released_contract",
+      "detail": "Final service contract, fixtures and mixed-format documents available only after release."
+    }
+  ],
+  "historical_files": "Old draft/readiness are for two briefs and cannot represent this final.",
+  "notes": [
+    "No bank contract invented; no final builder run, workflow edit, deployment, commit or email claimed."
+  ],
+  "release_followup": {
+    "intended_time": "2026-10-11T17:00:00Z",
+    "id": "prepare-freya-final-at-20-00-istanbul",
+    "status": "ACTIVE",
+    "one_run": true
+  },
+  "runtime": {
+    "path": "submission/runtime/Scripts/python.exe",
+    "python": "3.12.14",
+    "dependencies_installed": true,
+    "existing_root_venv": "missing base interpreter; preserved",
+    "pip_check_passed": true,
+    "builder_help_passed": true
+  },
+  "email_delivery": {
+    "recipient_confirmed": false,
+    "candidate_recipient": "yavuz@freyavoice.ai",
+    "mode": "user_sends",
+    "template": "submission/EMAIL_DRAFT.md"
+  }
+}

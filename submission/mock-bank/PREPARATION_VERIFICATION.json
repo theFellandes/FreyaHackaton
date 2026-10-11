@@ -1,0 +1,45 @@
+{
+  "verified_at_utc": "2026-10-11T15:00:54.3200003Z",
+  "status": "preparation_only",
+  "bank_ready": false,
+  "dependencies": {
+    "wrangler": "4.149.0",
+    "store": ".pnpm-store",
+    "native_build_allowlist": [
+      "esbuild@0.28.2",
+      "workerd@1.20261006.1"
+    ],
+    "installed": true,
+    "node": "24.19.0",
+    "pnpm": "11.25.0"
+  },
+  "preparation_tests": {
+    "command": "node --test",
+    "covers": [
+      "bootstrap refuses readiness",
+      "advertised deploy command blocked",
+      "runtime metadata cannot override not-ready state",
+      "evidence and live version/hash agreement",
+      "changed source rejection",
+      "repository path containment",
+      "storage verification required"
+    ],
+    "passed": 9,
+    "failed": 0
+  },
+  "cloudflare_api_token_present": false,
+  "cloudflare_account_id_present": false,
+  "deployed": false,
+  "authenticated": false,
+  "hidden_contract_implemented": false,
+  "deployment_receipt_exists": false,
+  "file_sha256": {
+    "package.json": "b0c2c60252a58ec206a3db127f85d09b340c30f724edf1088a338a3c2a2ce844",
+    "pnpm-lock.yaml": "d2066b66419be711b4dd248aed77971d43bab1a39f294699cdc2863746a62be8",
+    "pnpm-workspace.yaml": "3bffb2264e3d124bec20901b7ebf81bc09751394b13243c7ef7ac16cdadf8e2b",
+    "wrangler.jsonc": "cd4ae5a1f5deb15947a100ffd3f37db019a716b1848340aa27f75e108996adfe",
+    "src/index.mjs": "d2fa4effe7e7a01a28ee7ec4755f2b8996cd8fb930d4bd18617c3869aea11a79",
+    "src/readiness-metadata.mjs": "1158421007b83f35464041d5594a84700f86a115d5f408905248771089c4aa97",
+    "tools/verify-ready.mjs": "7fce6471fc91bf2c533709965ea48cfa55bf6b36d4eff0c24273d1f3eb1cf670"
+  }
+}

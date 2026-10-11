@@ -1,0 +1,14 @@
+{
+  "team": "YOUR_TEAM_NAME",
+  "repo": "https://github.com/YOU/YOUR_REPOSITORY",
+  "commit": "FINAL_COMMIT_SHA",
+  "run_command": "python3 builder/build.py {brief_path} {tool_api_path}",
+  "workflows": {
+    "hidden-1": "out/hidden-1.exported.json",
+    "hidden-2": "out/hidden-2.exported.json"
+  },
+  "traces": {
+    "hidden-1": "traces/ACTUAL_HIDDEN_1_RUN.log",
+    "hidden-2": "traces/ACTUAL_HIDDEN_2_RUN.log"
+  }
+}

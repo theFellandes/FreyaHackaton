@@ -123,7 +123,7 @@
   "third_party": {
    "name": "third_party",
    "node_type": "conversation",
-   "task_message": "Someone other than {{title}} {{last_name}} is on the line.\n- Do not say why you are calling. Say nothing beyond your opening sentence: no product, amount, debt or payment, even if they ask or offer to pay. A relative may not answer security questions and may not be told anything about the account.\n- Ask when {{first_name}} {{last_name}} can be reached.\n- {{callback_facts}}\n- As soon as they give a day and a time inside the allowed callback times, call schedule_callback with the date (YYYY-MM-DD) and time (HH:MM) right away - do not ask them to confirm first. Use the next-business-day date when they say \"tomorrow\" and tomorrow is that day.\n- If the day or the time is outside the allowed times: ask once for another time inside them. If that is also outside, do not book anything: thank them, say goodbye, call transition_to_end_no_callback.\n- Call schedule_callback before you tell them anything is booked; the system then confirms the booking and says goodbye.\n- If they say the number does not belong to {{first_name}} {{last_name}}: apologise, say goodbye, call transition_to_end_wrong_number.\n- If they say {{first_name}} {{last_name}} has died: say exactly \"I am sorry for your loss.\", ask nothing else, say goodbye, call transition_to_end_deceased.",
+   "task_message": "Someone other than {{title}} {{last_name}} is on the line.\n- Do not say why you are calling. Say nothing beyond your opening sentence: no product, amount, debt or payment, even if they ask or offer to pay. A relative may not answer security questions and may not be told anything about the account.\n- Ask when {{first_name}} {{last_name}} can be reached.\n- If they say they will fetch {{title}} {{last_name}} or put them on the phone: say you will wait, and nothing else. When someone new speaks, ask exactly: \"Am I speaking with {{title}} {{last_name}}?\" Only an explicit confirmation such as \"yes\", \"that's me\" or \"speaking\" from that person counts; then call transition_to_identity (no text needed). A relative who offers to answer or to pay for them is not the customer coming to the phone.\n- {{callback_facts}}\n- As soon as they give a day and a time inside the allowed callback times, call schedule_callback with the date (YYYY-MM-DD) and time (HH:MM) right away - do not ask them to confirm first. Use the next-business-day date when they say \"tomorrow\" and tomorrow is that day.\n- If the day or the time is outside the allowed times: ask once for another time inside them. If that is also outside, do not book anything: thank them, say goodbye, call transition_to_end_no_callback.\n- Call schedule_callback before you tell them anything is booked; the system then confirms the booking and says goodbye.\n- If they say the number does not belong to {{first_name}} {{last_name}}: apologise, say goodbye, call transition_to_end_wrong_number.\n- If they say {{first_name}} {{last_name}} has died: say exactly \"I am sorry for your loss.\", ask nothing else, say goodbye, call transition_to_end_deceased.",
    "tools": [
     {
      "type": "function",
@@ -202,6 +202,40 @@
      }
     },
     {
+     "target_node": "rescue_third_party",
+     "description": "A move was sent together with other tool calls and did not happen",
+     "condition": {
+      "logic": "or",
+      "conditions": [
+       {
+        "variable": "transition_to_end_callback_response",
+        "operator": "contains",
+        "operand": "Transitioning"
+       },
+       {
+        "variable": "transition_to_end_no_callback_response",
+        "operator": "contains",
+        "operand": "Transitioning"
+       },
+       {
+        "variable": "transition_to_end_wrong_number_response",
+        "operator": "contains",
+        "operand": "Transitioning"
+       },
+       {
+        "variable": "transition_to_end_deceased_response",
+        "operator": "contains",
+        "operand": "Transitioning"
+       },
+       {
+        "variable": "transition_to_identity_response",
+        "operator": "contains",
+        "operand": "Transitioning"
+       }
+      ]
+     }
+    },
+    {
      "target_node": "end_auto_tp",
      "description": "The conversation is over",
      "condition": {
@@ -244,6 +278,15 @@
       "operator": "matches_intent",
       "description": "The customer has died; you said you are sorry for their loss and goodbye."
      }
+    },
+    {
+     "target_node": "identity",
+     "description": "The customer themself came to the phone and explicitly confirmed it is them (not a relative speaking for them).",
+     "is_tool_call": true,
+     "condition": {
+      "operator": "matches_intent",
+      "description": "The customer themself came to the phone and explicitly confirmed it is them (not a relative speaking for them)."
+     }
     }
    ]
   },
@@ -255,7 +298,7 @@
     "prompt": "Ask for the customer's date of birth. Say nothing about the account."
    },
    "on_enter_first_entry_only": true,
-   "task_message": "Verify the customer's identity before anything else. Ask two security questions, one at a time: first the date of birth, then the last four digits of the phone number on file.\n- After each answer call verify_identity with that one answer: field date_of_birth with the date as YYYY-MM-DD (convert any spoken form; a date said only as numbers is day, then month, then year), or field phone_last4 with exactly four digits.\n- Only a COMPLETE answer can be checked: a date of birth needs day, month and year; phone_last4 needs exactly four digits. If the customer gives only part (for example \"44\" or \"the thirtieth of January\"), do not call verify_identity: ask only for the missing part (for example \"And the remaining two digits?\" or \"And the year?\") and combine both parts.\n- Whenever the customer's message contains a complete answer (even mixed with a question, a complaint or other words), call verify_identity FIRST, before you say anything. Then do exactly what the what_to_do_next line in the result says.\n- Do not say anything about the account or why you are calling during this step.\n- If the customer does not want to answer, or asks what the call is about instead of answering: explain once that the questions protect their account and ask again. A second refusal or a second such question: thank them, say goodbye, call transition_to_end_declined.\n- If the customer asks for a human: ask once whether you can help first; if they insist, say you will transfer them, say goodbye, call transition_to_handoff_human.\n- If the person says they are not {{title}} {{last_name}} (for example a relative): say nothing about the account and call transition_to_third_party. If they say this number does not belong to the customer: apologise, say goodbye, call transition_to_end_wrong_number.",
+   "task_message": "Verify the customer's identity before anything else. Ask two security questions, one at a time: first the date of birth, then the last four digits of the phone number on file.\n- After each answer call verify_identity with that one answer: field date_of_birth with the date as YYYY-MM-DD (convert any spoken form; a date said only as numbers is day, then month, then year), or field phone_last4 with exactly four digits.\n- A COMPLETE answer is checked at once: a date of birth needs day, month and year; phone_last4 needs exactly four digits. A date or a year said in words is complete when every part is there: a year said in words, such as \"nineteen eighty\", is a whole year, not part of one. As soon as the customer's message holds a complete answer, call verify_identity with it: never hold it back and never ask the customer to repeat or confirm a part they already said.\n- If the customer gives only part (for example \"44\" or \"the thirtieth of January\"), do not call verify_identity yet: ask only for the missing part (for example \"And the remaining two digits?\" or \"And the year?\") and combine both parts, then check the whole answer.\n- A complete answer that comes with a complaint, a question or other words is checked FIRST: call verify_identity before you say anything, then do exactly what the what_to_do_next line in the result says, and only then answer the complaint or the question.\n- Do not say anything about the account or why you are calling during this step.\n- If the customer does not want to answer, or asks what the call is about instead of answering: explain once that the questions protect their account and ask again. A second refusal or a second such question: thank them, say goodbye, call transition_to_end_declined.\n- If the customer asks for a human: ask once whether you can help first; if they insist, say you will transfer them, say goodbye, call transition_to_handoff_human.\n- If the person says they are not {{title}} {{last_name}} (for example a relative): say nothing about the account and call transition_to_third_party. If they say this number does not belong to the customer: apologise, say goodbye, call transition_to_end_wrong_number.",
    "tools": [
     {
      "type": "function",
@@ -352,6 +395,35 @@
         "variable": "verify_identity_response.data.wrong_answers_left",
         "operator": "equals",
         "operand": "0"
+       }
+      ]
+     }
+    },
+    {
+     "target_node": "rescue_identity",
+     "description": "A move was sent together with other tool calls and did not happen",
+     "condition": {
+      "logic": "or",
+      "conditions": [
+       {
+        "variable": "transition_to_end_declined_response",
+        "operator": "contains",
+        "operand": "Transitioning"
+       },
+       {
+        "variable": "transition_to_handoff_human_response",
+        "operator": "contains",
+        "operand": "Transitioning"
+       },
+       {
+        "variable": "transition_to_third_party_response",
+        "operator": "contains",
+        "operand": "Transitioning"
+       },
+       {
+        "variable": "transition_to_end_wrong_number_response",
+        "operator": "contains",
+        "operand": "Transitioning"
        }
       ]
      }
@@ -635,7 +707,7 @@
     "text": "{{debt_statement}}"
    },
    "on_enter_first_entry_only": true,
-   "task_message": "The customer is verified. Facts computed by the system - use them exactly and never calculate dates or amounts yourself:\n{{account_facts}}\n\nDATE TABLE - turn whatever the customer says into a date with this table. \"This <weekday>\" is the one marked [this week]; \"next <weekday>\" is the one marked [next week]:\n{{date_table}}\n\nGETTING THE PROMISE\n1. You already stated the debt and asked \"Can you make this payment today?\". Ask for the full past-due amount first. Never ask how much they can pay: you propose every amount.\n2. A date or an amount the customer proposes is never a refusal; handle it with rules 3 and 4.\n3. Dates. A promise date must be one of the product's allowed promise dates (today or later, a business day, not after its deadline).\n   - A weekend day or bank holiday that is not after the deadline: offer the next business day instead (the DATE TABLE names it). This is NOT the after-deadline case.\n   - A vague period (\"next week\", \"end of the month\", \"when my salary comes\"): ask once for the exact day. If they still give none, propose the deadline.\n   - A date after the deadline: say the latest date you can record is the deadline (say the date) and offer it for the SAME amount (the full past-due amount unless a lower amount was already agreed). Moving the date is not a persuasion attempt and must not lower the amount. If they refuse the deadline, that is a flat refusal (rule 5).\n4. Amounts. If they say the full amount is too much: offer the floor once, using the product's floor-offer sentence word for word (it says that the rest stays overdue). If they refuse the floor: flat refusal (rule 5). An amount they propose from the floor up to the full amount (both included) is accepted. Below the floor: say it cannot be recorded and offer the floor once; if they do not accept it: flat refusal.\n5. A flat refusal or a non-answer uses one persuasion attempt (\"no\" to paying today with no date and no amount is a flat refusal). Make the product's attempts exactly as scripted in LATE PRODUCTS, in order, one per refusal - never more attempts than the product allows, never fewer. When the attempts are used up, stop: do not repeat an offer they refused. Thank them, say goodbye, call transition_to_end_refused.\n6. Illness, a death in the family or job loss: say one short sentence of sympathy and make NO persuasion attempt. Offer ONCE to connect them with the customer support team; never repeat that offer and make no other offer of any kind (no transfer to another team, no plan, no discount) unless the customer explicitly asks for a new payment plan or lower instalments. If they accept: say you will transfer them, say goodbye, call transition_to_handoff_support. If they decline (or answer anything other than yes): thank them, say goodbye, call transition_to_end_hardship - do not ask again. (If they still name a date or an amount themselves, record the promise normally.) Once hardship was mentioned, this rule comes before rules 5 and 14: never transfer to restructuring and never persuade in this call. A request for a discount or a waiver is never a request for a new payment plan: just say you cannot offer a discount.\n7. Never offer a discount, a waiver, an instalment plan or any term not listed here.\n\nCONFIRMING AND RECORDING\n8. Read back the product, the amount and the date, then ask exactly \"Do you confirm?\". Call create_promise only after a clear yes. If they change the date or the amount, check it with rules 3 and 4 and read back again.\n9. Before you read back, check the date is in the product's allowed promise dates and the amount is between its floor and full amount. create_promise takes product_id from LATE PRODUCTS (p1, ...), the amount as a number and the date as YYYY-MM-DD. Say the promise is recorded only after the result says it is recorded, then say exactly: \"You will receive a text message confirming this promise.\" If it fails, call it once more with the same values; if it fails again, say you could not record it, thank them, say goodbye, call transition_to_end_service_error.\n10. One promise per product. A recorded promise cannot be changed or cancelled in this call; if asked, say they can change it in the mobile app.\n11. After the text-message sentence: thank the customer, say goodbye and call transition_to_end_promise in the same message.\n\nOTHER THINGS CUSTOMERS SAY\n12. \"I already paid\": say that payments can take one business day to appear, take no promise, thank them, say goodbye, call transition_to_end_paid.\n13. \"This debt is not mine\", \"I never had this product\", or the product was closed or paid off in the past: do not argue and take no promise. Thank them, say goodbye, call transition_to_end_dispute.\n14. A new payment plan or lower instalments: do not describe any plan. Say you will transfer them to the team that handles this, say goodbye, call transition_to_handoff_restructuring.\n15. A human: ask once whether you can help first. If they insist, say you will transfer them, say goodbye, call transition_to_handoff_human.\n16. If they say twice that they do not want to talk: thank them, say goodbye, call transition_to_end_refused.\n\nSay amounts with two decimals and the word dollars (for example 420.00 dollars) and dates as weekday plus day and month (for example Friday 16 October).",
+   "task_message": "The customer is verified. Facts computed by the system - use them exactly and never calculate dates or amounts yourself:\n{{account_facts}}\n\nDATE TABLE - turn whatever the customer says into a date with this table. \"This <weekday>\" is the one marked [this week]; \"next <weekday>\" is the one marked [next week]:\n{{date_table}}\n\nGETTING THE PROMISE\n1. You already stated the debt and asked \"Can you make this payment today?\". Ask for the full past-due amount first. Never ask how much they can pay: you propose every amount.\n2. A date or an amount the customer proposes is never a refusal; handle it with rules 3 and 4.\n3. Dates. A promise date must be one of the product's allowed promise dates (today or later, a business day, not after its deadline).\n   - A weekend day or bank holiday that is not after the deadline: offer the next business day instead (the DATE TABLE names it). This is NOT the after-deadline case.\n   - A vague period (\"next week\", \"end of the month\", \"when my salary comes\"): ask once for the exact day. If they still give none, propose the deadline.\n   - A date after the deadline: say the latest date you can record is the deadline (say the date) and offer it for the SAME amount (the full past-due amount unless a lower amount was already agreed). Moving the date is not a persuasion attempt and must not lower the amount. If they refuse the deadline, that is a flat refusal (rule 5).\n4. Amounts. If they say the full amount is too much: offer the floor once, using the product's floor-offer sentence word for word (it says that the rest stays overdue). If they refuse the floor: flat refusal (rule 5). An amount they propose from the floor up to the full amount (both included) is accepted. Below the floor: say it cannot be recorded and offer the floor once; if they do not accept it: flat refusal.\n5. A flat refusal or a non-answer uses one persuasion attempt (\"no\" to paying today with no date and no amount is a flat refusal). Make the product's attempts exactly as scripted in LATE PRODUCTS, in order, one per refusal - never more attempts than the product allows, never fewer. When the attempts are used up, stop: do not repeat an offer they refused. Thank them, say goodbye, call transition_to_end_refused.\n6. Illness, a death in the family or job loss: say one short sentence of sympathy and make NO persuasion attempt. Offer ONCE to connect them with the customer support team; never repeat that offer and make no other offer of any kind (no transfer to another team, no plan, no discount) unless the customer explicitly asks for a new payment plan or lower instalments. If they accept (yes, or any clear agreement): say you will transfer them, say goodbye, call transition_to_handoff_support. If they clearly decline (for example \"no\" or \"not interested\"): thank them, say goodbye, call transition_to_end_hardship - do not ask again. If they ask a question about the offer (for example what it would help with), ask for time, make small talk or say something cut off, it is neither a yes nor a no: answer briefly from the facts you have (if you do not know, say so; if they ask for time, say they may take it), keep the offer open and wait; do not ask it again: this is not a refusal and not a second offer, so do not transfer or end the call because of it. If the next reply is still neither a clear yes nor a clear no, take it as a decline. (If they still name a date or an amount themselves, record the promise normally.) Once hardship was mentioned, this rule comes before rules 5 and 14: never transfer to restructuring and never persuade in this call. A request for a discount or a waiver is never a request for a new payment plan: just say you cannot offer a discount.\n7. Never offer a discount, a waiver, an instalment plan or any term not listed here.\n\nCONFIRMING AND RECORDING\n8. Read back the product, the amount and the date, then ask exactly \"Do you confirm?\". Call create_promise only after a clear yes. If they change the date or the amount, check it with rules 3 and 4 and read back again.\n9. Before you read back, check the date is in the product's allowed promise dates and the amount is between its floor and full amount. create_promise takes product_id from LATE PRODUCTS (p1, ...), the amount as a number and the date as YYYY-MM-DD. Say the promise is recorded only after the result says it is recorded, then say exactly: \"You will receive a text message confirming this promise.\" If it fails, call it once more with the same values; if it fails again, say you could not record it, thank them, say goodbye, call transition_to_end_service_error.\n10. One promise per product. A recorded promise cannot be changed or cancelled in this call; if asked, say they can change it in the mobile app.\n11. After the text-message sentence: thank the customer, say goodbye and call transition_to_end_promise in the same message.\n\nOTHER THINGS CUSTOMERS SAY\n12. \"I already paid\": say that payments can take one business day to appear, take no promise, thank them, say goodbye, call transition_to_end_paid.\n13. \"This debt is not mine\", \"I never had this product\", or the product was closed or paid off in the past: do not argue and take no promise. Thank them, say goodbye, call transition_to_end_dispute.\n14. A new payment plan or lower instalments: do not describe any plan. Say you will transfer them to the team that handles this, say goodbye, call transition_to_guard_restructuring.\n15. A human: ask once whether you can help first. If they insist, say you will transfer them, say goodbye, call transition_to_handoff_human.\n16. If they say twice that they do not want to talk: thank them, say goodbye, call transition_to_end_refused.\n\nSay amounts with two decimals and the word dollars (for example 420.00 dollars) and dates as weekday plus day and month (for example Friday 16 October).",
    "tools": [
     {
      "type": "function",
@@ -699,8 +771,8 @@
        }
       }
      },
-     "pre_process_code": "\ntry:\n    b = config.get('body')\n    if isinstance(b, dict):\n        a = b.get('amount')\n        if isinstance(a, str):\n            a = a.replace(',', '').replace('$', '').replace('dollars', '').strip()\n        try:\n            b['amount'] = round(float(a), 2)\n        except Exception:\n            pass\n        pid = str(b.get('product_id') or '').strip().lower()\n        if pid and not pid.startswith('p') and pid.isdigit():\n            pid = 'p' + pid\n        if pid:\n            b['product_id'] = pid\n        dt = str(b.get('date') or '').strip()[:10]\n        b['date'] = dt\n        reason = ''\n        known = [x for x in str(vars.get('product_ids') or '').split(',') if x]\n        if known and pid not in known:\n            reason = 'unknown product_id ' + pid + '; use one of ' + ','.join(known)\n        allowed = [x for x in str(vars.get('allowed_' + pid) or '').split(',') if x]\n        if not reason and allowed and dt not in allowed:\n            reason = 'the date ' + dt + ' is not an allowed promise date for ' + pid + ' (latest allowed: ' + allowed[-1] + ')'\n        try:\n            amt = float(b.get('amount'))\n            fl = float(vars.get(pid + '_floor') or 0)\n            full = float(vars.get(pid + '_past_due') or 0)\n            if not reason and full > 0 and (amt < fl - 0.001 or amt > full + 0.001):\n                reason = 'the amount ' + ('%.2f' % amt) + ' is outside ' + ('%.2f' % fl) + ' to ' + ('%.2f' % full)\n        except Exception:\n            pass\n        if reason:\n            vars['promise_guard'] = 'blocked: ' + reason\n            vars['promise_guard_blocks'] = str(int(float(vars.get('promise_guard_blocks') or 0)) + 1)\n            pname = str(vars.get(pid + '_name') or 'this product')\n            if allowed and dt not in allowed and dt > allowed[-1]:\n                say = 'I am sorry, the latest date I can record for your ' + pname + ' is ' + str(vars.get(pid + '_deadline_spoken') or allowed[-1]) + '. Could you pay ' + ('%.2f' % float(b.get('amount') or 0)) + ' dollars on that day?'\n            elif allowed and dt not in allowed:\n                nxt = [x for x in allowed if x > dt]\n                say = 'I am sorry, I cannot record that day for your ' + pname + '. ' + ('The next day I can record is ' + nxt[0] + '. Would that work for you?' if nxt else 'Could you tell me another day?')\n            elif 'amount' in reason:\n                say = 'I am sorry, for your ' + pname + ' I can record an amount from ' + str(vars.get(pid + '_floor')) + ' to ' + str(vars.get(pid + '_past_due')) + ' dollars. Which amount can you pay?'\n            else:\n                say = 'I am sorry, I could not record that. Let me check the details again.'\n            vars['promise_guard_say'] = say\n            config['url'] = ''\n        else:\n            vars['promise_guard'] = 'ok'\nexcept Exception:\n    pass\n",
-     "post_process_code": "\ntry:\n    if isinstance(result, dict):\n        result.pop('header', None)\n        d = result.get('data')\n        if isinstance(d, dict):\n            if str(d.get('ok')).lower() == 'true':\n                d['what_to_do_next'] = 'The promise IS recorded. If this was the only product, say nothing: the system confirms it. Otherwise tell the customer it is recorded, say exactly: You will receive a text message confirming this promise. Then continue with the next product.'\n            else:\n                d['what_to_do_next'] = 'The promise was NOT recorded. Never say it is recorded. If this is the first failure for this product, call create_promise once more with exactly the same values now. If it already failed once before, tell the customer you could not record it, thank them, say goodbye and call transition_to_end_service_error.'\n        elif 'url' in str(result.get('message') or result.get('error') or '').lower():\n            result['what_to_do_next'] = 'The promise was NOT recorded: the date or amount is not allowed for this product. Do not say it is recorded. Offer an allowed date (for a date after the deadline, offer the deadline for the same amount) or an amount from the floor to the full amount, read back and ask again.'\n        elif result.get('status') != 'success':\n            result['what_to_do_next'] = 'The promise was NOT recorded (service error). If this is the first failure, call create_promise once more with the same values; if it already failed before, tell the customer you could not record it, say goodbye and call transition_to_end_service_error.'\nexcept Exception:\n    pass\n"
+     "pre_process_code": "\ntry:\n    vars['promise_pending_product'] = ''\n    b = config.get('body')\n    if isinstance(b, dict):\n        a = b.get('amount')\n        if isinstance(a, str):\n            a = a.replace(',', '').replace('$', '').replace('dollars', '').strip()\n        try:\n            b['amount'] = round(float(a), 2)\n        except Exception:\n            pass\n        pid = str(b.get('product_id') or '').strip().lower()\n        if pid and not pid.startswith('p') and pid.isdigit():\n            pid = 'p' + pid\n        if pid:\n            b['product_id'] = pid\n        dt = str(b.get('date') or '').strip()[:10]\n        b['date'] = dt\n        reason = ''\n        known = [x for x in str(vars.get('product_ids') or '').split(',') if x]\n        if known and pid not in known:\n            reason = 'unknown product_id ' + pid + '; use one of ' + ','.join(known)\n        # One promise per product (F17): only the bank's acknowledgment (PROMISE_POST) adds a product to promised_products.\n        if not reason and pid in [x for x in str(vars.get('promised_products') or '').split(',') if x]:\n            reason = 'a promise for ' + pid + ' is already recorded and cannot be changed or recorded again'\n        allowed = [x for x in str(vars.get('allowed_' + pid) or '').split(',') if x]\n        if not reason and allowed and dt not in allowed:\n            reason = 'the date ' + dt + ' is not an allowed promise date for ' + pid + ' (latest allowed: ' + allowed[-1] + ')'\n        try:\n            amt = float(b.get('amount'))\n            fl = float(vars.get(pid + '_floor') or 0)\n            full = float(vars.get(pid + '_past_due') or 0)\n            if not reason and full > 0 and (amt < fl - 0.001 or amt > full + 0.001):\n                reason = 'the amount ' + ('%.2f' % amt) + ' is outside ' + ('%.2f' % fl) + ' to ' + ('%.2f' % full)\n        except Exception:\n            pass\n        if reason:\n            vars['promise_guard'] = 'blocked: ' + reason\n            vars['promise_guard_blocks'] = str(int(float(vars.get('promise_guard_blocks') or 0)) + 1)\n            pname = str(vars.get(pid + '_name') or 'this product')\n            if 'already recorded' in reason:\n                say = 'I am sorry, the payment promise for your ' + pname + ' is already recorded and cannot be changed or recorded again in this call. You can change it in the mobile app.'\n            elif allowed and dt not in allowed and dt > allowed[-1]:\n                say = 'I am sorry, the latest date I can record for your ' + pname + ' is ' + str(vars.get(pid + '_deadline_spoken') or allowed[-1]) + '. Could you pay ' + ('%.2f' % float(b.get('amount') or 0)) + ' dollars on that day?'\n            elif allowed and dt not in allowed:\n                nxt = [x for x in allowed if x > dt]\n                say = 'I am sorry, I cannot record that day for your ' + pname + '. ' + ('The next day I can record is ' + nxt[0] + '. Would that work for you?' if nxt else 'Could you tell me another day?')\n            elif 'amount' in reason:\n                say = 'I am sorry, for your ' + pname + ' I can record an amount from ' + str(vars.get(pid + '_floor')) + ' to ' + str(vars.get(pid + '_past_due')) + ' dollars. Which amount can you pay?'\n            else:\n                say = 'I am sorry, I could not record that. Let me check the details again.'\n            vars['promise_guard_say'] = say\n            config['url'] = ''\n        else:\n            vars['promise_guard'] = 'ok'\n            vars['promise_pending_product'] = pid\nexcept Exception:\n    pass\n",
+     "post_process_code": "\ntry:\n    if isinstance(result, dict):\n        result.pop('header', None)\n        d = result.get('data')\n        # Acknowledged = the transport succeeded AND the bank's own flag is true (F17); anything else adds nothing.\n        pending = str(vars.get('promise_pending_product') or '').strip()\n        if pending and str(result.get('status') or '').lower() == 'success' and isinstance(d, dict) and str(d.get('ok')).lower() == 'true':\n            done = [x for x in str(vars.get('promised_products') or '').split(',') if x]\n            if pending not in done:\n                done.append(pending)\n            vars['promised_products'] = ','.join(done)\n        vars['promise_pending_product'] = ''\n        if isinstance(d, dict):\n            if str(d.get('ok')).lower() == 'true':\n                d['what_to_do_next'] = 'The promise IS recorded. If this was the only product, say nothing: the system confirms it. Otherwise tell the customer it is recorded, say exactly: You will receive a text message confirming this promise. Then continue with the next product.'\n            else:\n                d['what_to_do_next'] = 'The promise was NOT recorded. Never say it is recorded. If this is the first failure for this product, call create_promise once more with exactly the same values now. If it already failed once before, tell the customer you could not record it, thank them, say goodbye and call transition_to_end_service_error.'\n        elif 'url' in str(result.get('message') or result.get('error') or '').lower():\n            result['what_to_do_next'] = 'The promise was NOT recorded: the date or amount is not allowed for this product. Do not say it is recorded. Offer an allowed date (for a date after the deadline, offer the deadline for the same amount) or an amount from the floor to the full amount, read back and ask again.'\n        elif result.get('status') != 'success':\n            result['what_to_do_next'] = 'The promise was NOT recorded (service error). If this is the first failure, call create_promise once more with the same values; if it already failed before, tell the customer you could not record it, say goodbye and call transition_to_end_service_error.'\nexcept Exception:\n    pass\n"
     }
    ],
    "max_node_turns": 40,
@@ -716,10 +788,19 @@
       "dispute",
       "hardship",
       "refused",
-      "restructuring",
       "human"
      ],
-     "description": "What best describes the customer's position on paying so far: paid (says they already paid), dispute (says the debt is not theirs or the product was closed), hardship (illness, a death in the family or job loss), refused (will not pay), restructuring (wants a new plan or lower instalments), human (insists on a person), none (none of these yet)."
+     "description": "What best describes the customer's position on paying so far: paid (says they already paid), dispute (says the debt is not theirs or the product was closed), hardship (illness, a death in the family or job loss), refused (will not pay), human (insists on a person), none (none of these yet). Once hardship applies it stays the answer, whatever else they ask for later. A request for a discount or a waiver is NOT a request for a new payment plan."
+    },
+    {
+     "name": "hardship_seen",
+     "type": "string",
+     "min_confidence": 0.6,
+     "enum_values": [
+      "yes",
+      "no"
+     ],
+     "description": "yes if at ANY point in this call the customer said something that fits: illness, a death in the family or job loss. It stays yes for the rest of the call, whatever they say later (a later request for a discount or a waiver does not change it). Otherwise no."
     }
    ],
    "transitions": [
@@ -757,6 +838,60 @@
           "operand": "1"
          }
         ]
+       }
+      ]
+     }
+    },
+    {
+     "target_node": "rescue_negotiate",
+     "description": "A move was sent together with other tool calls and did not happen",
+     "condition": {
+      "logic": "or",
+      "conditions": [
+       {
+        "variable": "transition_to_end_promise_response",
+        "operator": "contains",
+        "operand": "Transitioning"
+       },
+       {
+        "variable": "transition_to_end_paid_response",
+        "operator": "contains",
+        "operand": "Transitioning"
+       },
+       {
+        "variable": "transition_to_end_dispute_response",
+        "operator": "contains",
+        "operand": "Transitioning"
+       },
+       {
+        "variable": "transition_to_end_hardship_response",
+        "operator": "contains",
+        "operand": "Transitioning"
+       },
+       {
+        "variable": "transition_to_end_refused_response",
+        "operator": "contains",
+        "operand": "Transitioning"
+       },
+       {
+        "variable": "transition_to_end_service_error_response",
+        "operator": "contains",
+        "operand": "Transitioning"
+       },
+       {
+        "variable": "transition_to_handoff_support_response",
+        "operator": "contains",
+        "operand": "Transitioning"
+       },
+       {
+        "variable": "transition_to_guard_restructuring_response",
+        "operator": "contains",
+        "operand": "Transitioning"
+       },
+       {
+        "variable": "transition_to_handoff_human_response",
+        "operator": "contains",
+        "operand": "Transitioning"
        }
       ]
      }
@@ -833,7 +968,7 @@
      }
     },
     {
-     "target_node": "handoff_restructuring",
+     "target_node": "guard_restructuring",
      "description": "The customer wants a new payment plan or lower instalments; you said you will transfer them.",
      "is_tool_call": true,
      "condition": {
@@ -1592,6 +1727,81 @@
     }
    ]
   },
+  "guard_restructuring": {
+   "name": "guard_restructuring",
+   "node_type": "code",
+   "passthrough": true,
+   "passthrough_default_transition": "handoff_restructuring",
+   "on_enter": {
+    "type": "silent"
+   },
+   "disable_inactivity_monitor": true,
+   "pre_actions": [
+    {
+     "type": "function",
+     "function": {
+      "name": "code_exec",
+      "handler": "__function__:code_exec",
+      "parameters": {
+       "type": "object",
+       "properties": {
+        "code": {
+         "type": "string",
+         "default": "\ntry:\n    seen = str(vars.get('hardship_seen') or '').strip().lower()\n    sit = str(vars.get('call_situation') or '').strip().lower()\n    vars['restructuring_blocked'] = 'yes' if (seen == 'yes' or sit == 'hardship') else 'no'\nexcept Exception:\n    vars['restructuring_blocked'] = 'no'\n"
+        },
+        "timeout_ms": {
+         "type": "number",
+         "default": 10000
+        }
+       }
+      }
+     }
+    }
+   ],
+   "transitions": [
+    {
+     "target_node": "guard_restructuring_say",
+     "description": "The customer already expressed hardship, which comes before restructuring",
+     "condition": {
+      "logic": "or",
+      "conditions": [
+       {
+        "variable": "restructuring_blocked",
+        "operator": "equals",
+        "operand": "yes"
+       }
+      ]
+     }
+    },
+    {
+     "target_node": "handoff_restructuring",
+     "description": "always",
+     "condition": {
+      "operator": "always"
+     }
+    }
+   ]
+  },
+  "guard_restructuring_say": {
+   "name": "guard_restructuring_say",
+   "node_type": "conversation",
+   "on_enter": {
+    "type": "tts",
+    "text": "I am sorry, I cannot arrange that."
+   },
+   "task_message": "Say nothing more now. No tool call is allowed in this turn.",
+   "passthrough": true,
+   "passthrough_default_transition": "negotiate",
+   "transitions": [
+    {
+     "target_node": "negotiate",
+     "description": "always",
+     "condition": {
+      "operator": "always"
+     }
+    }
+   ]
+  },
   "end_auto": {
    "name": "end_auto",
    "node_type": "code",
@@ -1812,6 +2022,606 @@
      }
     }
    }
+  },
+  "rescue_identity": {
+   "name": "rescue_identity",
+   "node_type": "code",
+   "passthrough": true,
+   "passthrough_default_transition": "identity",
+   "on_enter": {
+    "type": "silent"
+   },
+   "disable_inactivity_monitor": true,
+   "pre_actions": [
+    {
+     "type": "function",
+     "function": {
+      "name": "code_exec",
+      "handler": "__function__:code_exec",
+      "parameters": {
+       "type": "object",
+       "properties": {
+        "code": {
+         "type": "string",
+         "default": "try:\n    picked = ''\n    if 'Transitioning' in str(vars.get('transition_to_end_declined_response') or ''):\n        picked = picked or 'end_declined'\n        vars['transition_to_end_declined_response'] = 'handled'\n    if 'Transitioning' in str(vars.get('transition_to_handoff_human_response') or ''):\n        picked = picked or 'handoff_human'\n        vars['transition_to_handoff_human_response'] = 'handled'\n    if 'Transitioning' in str(vars.get('transition_to_third_party_response') or ''):\n        picked = picked or 'third_party'\n        vars['transition_to_third_party_response'] = 'handled'\n    if 'Transitioning' in str(vars.get('transition_to_end_wrong_number_response') or ''):\n        picked = picked or 'end_wrong_number'\n        vars['transition_to_end_wrong_number_response'] = 'handled'\n    vars['rescue_target'] = picked\n    vars['rescue_ending'] = 'yes' if picked in ['end_declined', 'handoff_human', 'end_wrong_number'] else 'no'\nexcept Exception as e:\n    vars['rescue_target'] = ''\n    vars['rescue_ending'] = 'no'\n"
+        },
+        "timeout_ms": {
+         "type": "number",
+         "default": 10000
+        }
+       }
+      }
+     }
+    }
+   ],
+   "transitions": [
+    {
+     "target_node": "third_party",
+     "description": "Recover the dropped move to third_party",
+     "condition": {
+      "logic": "or",
+      "conditions": [
+       {
+        "variable": "rescue_target",
+        "operator": "equals",
+        "operand": "third_party"
+       }
+      ]
+     }
+    },
+    {
+     "target_node": "rescue_identity_bye",
+     "description": "The dropped move ends the call",
+     "condition": {
+      "logic": "or",
+      "conditions": [
+       {
+        "variable": "rescue_ending",
+        "operator": "equals",
+        "operand": "yes"
+       }
+      ]
+     }
+    },
+    {
+     "target_node": "identity",
+     "description": "always",
+     "condition": {
+      "operator": "always"
+     }
+    }
+   ]
+  },
+  "rescue_identity_bye": {
+   "name": "rescue_identity_bye",
+   "node_type": "conversation",
+   "on_enter": {
+    "type": "tts",
+    "text": "Thank you for your time. Goodbye."
+   },
+   "task_message": "You said goodbye. Say nothing more. No tool call is allowed in this turn.",
+   "passthrough": true,
+   "passthrough_default_transition": "rescue_identity_go",
+   "transitions": [
+    {
+     "target_node": "rescue_identity_go",
+     "description": "always",
+     "condition": {
+      "operator": "always"
+     }
+    }
+   ]
+  },
+  "rescue_identity_go": {
+   "name": "rescue_identity_go",
+   "node_type": "code",
+   "passthrough": true,
+   "passthrough_default_transition": "identity",
+   "on_enter": {
+    "type": "silent"
+   },
+   "disable_inactivity_monitor": true,
+   "pre_actions": [
+    {
+     "type": "function",
+     "function": {
+      "name": "code_exec",
+      "handler": "__function__:code_exec",
+      "parameters": {
+       "type": "object",
+       "properties": {
+        "code": {
+         "type": "string",
+         "default": "vars['rescue_state'] = 'ending'\n"
+        },
+        "timeout_ms": {
+         "type": "number",
+         "default": 10000
+        }
+       }
+      }
+     }
+    }
+   ],
+   "transitions": [
+    {
+     "target_node": "end_declined",
+     "description": "Recover the dropped move to end_declined",
+     "condition": {
+      "logic": "or",
+      "conditions": [
+       {
+        "variable": "rescue_target",
+        "operator": "equals",
+        "operand": "end_declined"
+       }
+      ]
+     }
+    },
+    {
+     "target_node": "handoff_human",
+     "description": "Recover the dropped move to handoff_human",
+     "condition": {
+      "logic": "or",
+      "conditions": [
+       {
+        "variable": "rescue_target",
+        "operator": "equals",
+        "operand": "handoff_human"
+       }
+      ]
+     }
+    },
+    {
+     "target_node": "end_wrong_number",
+     "description": "Recover the dropped move to end_wrong_number",
+     "condition": {
+      "logic": "or",
+      "conditions": [
+       {
+        "variable": "rescue_target",
+        "operator": "equals",
+        "operand": "end_wrong_number"
+       }
+      ]
+     }
+    },
+    {
+     "target_node": "identity",
+     "description": "always",
+     "condition": {
+      "operator": "always"
+     }
+    }
+   ]
+  },
+  "rescue_third_party": {
+   "name": "rescue_third_party",
+   "node_type": "code",
+   "passthrough": true,
+   "passthrough_default_transition": "third_party",
+   "on_enter": {
+    "type": "silent"
+   },
+   "disable_inactivity_monitor": true,
+   "pre_actions": [
+    {
+     "type": "function",
+     "function": {
+      "name": "code_exec",
+      "handler": "__function__:code_exec",
+      "parameters": {
+       "type": "object",
+       "properties": {
+        "code": {
+         "type": "string",
+         "default": "try:\n    picked = ''\n    if 'Transitioning' in str(vars.get('transition_to_end_callback_response') or ''):\n        picked = picked or 'end_callback'\n        vars['transition_to_end_callback_response'] = 'handled'\n    if 'Transitioning' in str(vars.get('transition_to_end_no_callback_response') or ''):\n        picked = picked or 'end_no_callback'\n        vars['transition_to_end_no_callback_response'] = 'handled'\n    if 'Transitioning' in str(vars.get('transition_to_end_wrong_number_response') or ''):\n        picked = picked or 'end_wrong_number'\n        vars['transition_to_end_wrong_number_response'] = 'handled'\n    if 'Transitioning' in str(vars.get('transition_to_end_deceased_response') or ''):\n        picked = picked or 'end_deceased'\n        vars['transition_to_end_deceased_response'] = 'handled'\n    if 'Transitioning' in str(vars.get('transition_to_identity_response') or ''):\n        picked = picked or 'identity'\n        vars['transition_to_identity_response'] = 'handled'\n    vars['rescue_target'] = picked\n    vars['rescue_ending'] = 'yes' if picked in ['end_callback', 'end_no_callback', 'end_wrong_number', 'end_deceased'] else 'no'\nexcept Exception as e:\n    vars['rescue_target'] = ''\n    vars['rescue_ending'] = 'no'\n"
+        },
+        "timeout_ms": {
+         "type": "number",
+         "default": 10000
+        }
+       }
+      }
+     }
+    }
+   ],
+   "transitions": [
+    {
+     "target_node": "identity",
+     "description": "Recover the dropped move to identity",
+     "condition": {
+      "logic": "or",
+      "conditions": [
+       {
+        "variable": "rescue_target",
+        "operator": "equals",
+        "operand": "identity"
+       }
+      ]
+     }
+    },
+    {
+     "target_node": "rescue_third_party_bye",
+     "description": "The dropped move ends the call",
+     "condition": {
+      "logic": "or",
+      "conditions": [
+       {
+        "variable": "rescue_ending",
+        "operator": "equals",
+        "operand": "yes"
+       }
+      ]
+     }
+    },
+    {
+     "target_node": "third_party",
+     "description": "always",
+     "condition": {
+      "operator": "always"
+     }
+    }
+   ]
+  },
+  "rescue_third_party_bye": {
+   "name": "rescue_third_party_bye",
+   "node_type": "conversation",
+   "on_enter": {
+    "type": "tts",
+    "text": "Thank you for your time. Goodbye."
+   },
+   "task_message": "You said goodbye. Say nothing more. No tool call is allowed in this turn.",
+   "passthrough": true,
+   "passthrough_default_transition": "rescue_third_party_go",
+   "transitions": [
+    {
+     "target_node": "rescue_third_party_go",
+     "description": "always",
+     "condition": {
+      "operator": "always"
+     }
+    }
+   ]
+  },
+  "rescue_third_party_go": {
+   "name": "rescue_third_party_go",
+   "node_type": "code",
+   "passthrough": true,
+   "passthrough_default_transition": "third_party",
+   "on_enter": {
+    "type": "silent"
+   },
+   "disable_inactivity_monitor": true,
+   "pre_actions": [
+    {
+     "type": "function",
+     "function": {
+      "name": "code_exec",
+      "handler": "__function__:code_exec",
+      "parameters": {
+       "type": "object",
+       "properties": {
+        "code": {
+         "type": "string",
+         "default": "vars['rescue_state'] = 'ending'\n"
+        },
+        "timeout_ms": {
+         "type": "number",
+         "default": 10000
+        }
+       }
+      }
+     }
+    }
+   ],
+   "transitions": [
+    {
+     "target_node": "end_callback",
+     "description": "Recover the dropped move to end_callback",
+     "condition": {
+      "logic": "or",
+      "conditions": [
+       {
+        "variable": "rescue_target",
+        "operator": "equals",
+        "operand": "end_callback"
+       }
+      ]
+     }
+    },
+    {
+     "target_node": "end_no_callback",
+     "description": "Recover the dropped move to end_no_callback",
+     "condition": {
+      "logic": "or",
+      "conditions": [
+       {
+        "variable": "rescue_target",
+        "operator": "equals",
+        "operand": "end_no_callback"
+       }
+      ]
+     }
+    },
+    {
+     "target_node": "end_wrong_number",
+     "description": "Recover the dropped move to end_wrong_number",
+     "condition": {
+      "logic": "or",
+      "conditions": [
+       {
+        "variable": "rescue_target",
+        "operator": "equals",
+        "operand": "end_wrong_number"
+       }
+      ]
+     }
+    },
+    {
+     "target_node": "end_deceased",
+     "description": "Recover the dropped move to end_deceased",
+     "condition": {
+      "logic": "or",
+      "conditions": [
+       {
+        "variable": "rescue_target",
+        "operator": "equals",
+        "operand": "end_deceased"
+       }
+      ]
+     }
+    },
+    {
+     "target_node": "third_party",
+     "description": "always",
+     "condition": {
+      "operator": "always"
+     }
+    }
+   ]
+  },
+  "rescue_negotiate": {
+   "name": "rescue_negotiate",
+   "node_type": "code",
+   "passthrough": true,
+   "passthrough_default_transition": "negotiate",
+   "on_enter": {
+    "type": "silent"
+   },
+   "disable_inactivity_monitor": true,
+   "pre_actions": [
+    {
+     "type": "function",
+     "function": {
+      "name": "code_exec",
+      "handler": "__function__:code_exec",
+      "parameters": {
+       "type": "object",
+       "properties": {
+        "code": {
+         "type": "string",
+         "default": "try:\n    picked = ''\n    if 'Transitioning' in str(vars.get('transition_to_end_promise_response') or ''):\n        picked = picked or 'end_promise'\n        vars['transition_to_end_promise_response'] = 'handled'\n    if 'Transitioning' in str(vars.get('transition_to_end_paid_response') or ''):\n        picked = picked or 'end_paid'\n        vars['transition_to_end_paid_response'] = 'handled'\n    if 'Transitioning' in str(vars.get('transition_to_end_dispute_response') or ''):\n        picked = picked or 'end_dispute'\n        vars['transition_to_end_dispute_response'] = 'handled'\n    if 'Transitioning' in str(vars.get('transition_to_end_hardship_response') or ''):\n        picked = picked or 'end_hardship'\n        vars['transition_to_end_hardship_response'] = 'handled'\n    if 'Transitioning' in str(vars.get('transition_to_end_refused_response') or ''):\n        picked = picked or 'end_refused'\n        vars['transition_to_end_refused_response'] = 'handled'\n    if 'Transitioning' in str(vars.get('transition_to_end_service_error_response') or ''):\n        picked = picked or 'end_service_error'\n        vars['transition_to_end_service_error_response'] = 'handled'\n    if 'Transitioning' in str(vars.get('transition_to_handoff_support_response') or ''):\n        picked = picked or 'handoff_support'\n        vars['transition_to_handoff_support_response'] = 'handled'\n    if 'Transitioning' in str(vars.get('transition_to_guard_restructuring_response') or ''):\n        picked = picked or 'guard_restructuring'\n        vars['transition_to_guard_restructuring_response'] = 'handled'\n    if 'Transitioning' in str(vars.get('transition_to_handoff_human_response') or ''):\n        picked = picked or 'handoff_human'\n        vars['transition_to_handoff_human_response'] = 'handled'\n    vars['rescue_target'] = picked\n    vars['rescue_ending'] = 'yes' if picked in ['end_promise', 'end_paid', 'end_dispute', 'end_hardship', 'end_refused', 'end_service_error', 'handoff_support', 'handoff_human'] else 'no'\nexcept Exception as e:\n    vars['rescue_target'] = ''\n    vars['rescue_ending'] = 'no'\n"
+        },
+        "timeout_ms": {
+         "type": "number",
+         "default": 10000
+        }
+       }
+      }
+     }
+    }
+   ],
+   "transitions": [
+    {
+     "target_node": "guard_restructuring",
+     "description": "Recover the dropped move to guard_restructuring",
+     "condition": {
+      "logic": "or",
+      "conditions": [
+       {
+        "variable": "rescue_target",
+        "operator": "equals",
+        "operand": "guard_restructuring"
+       }
+      ]
+     }
+    },
+    {
+     "target_node": "rescue_negotiate_bye",
+     "description": "The dropped move ends the call",
+     "condition": {
+      "logic": "or",
+      "conditions": [
+       {
+        "variable": "rescue_ending",
+        "operator": "equals",
+        "operand": "yes"
+       }
+      ]
+     }
+    },
+    {
+     "target_node": "negotiate",
+     "description": "always",
+     "condition": {
+      "operator": "always"
+     }
+    }
+   ]
+  },
+  "rescue_negotiate_bye": {
+   "name": "rescue_negotiate_bye",
+   "node_type": "conversation",
+   "on_enter": {
+    "type": "tts",
+    "text": "Thank you for your time. Goodbye."
+   },
+   "task_message": "You said goodbye. Say nothing more. No tool call is allowed in this turn.",
+   "passthrough": true,
+   "passthrough_default_transition": "rescue_negotiate_go",
+   "transitions": [
+    {
+     "target_node": "rescue_negotiate_go",
+     "description": "always",
+     "condition": {
+      "operator": "always"
+     }
+    }
+   ]
+  },
+  "rescue_negotiate_go": {
+   "name": "rescue_negotiate_go",
+   "node_type": "code",
+   "passthrough": true,
+   "passthrough_default_transition": "negotiate",
+   "on_enter": {
+    "type": "silent"
+   },
+   "disable_inactivity_monitor": true,
+   "pre_actions": [
+    {
+     "type": "function",
+     "function": {
+      "name": "code_exec",
+      "handler": "__function__:code_exec",
+      "parameters": {
+       "type": "object",
+       "properties": {
+        "code": {
+         "type": "string",
+         "default": "vars['rescue_state'] = 'ending'\n"
+        },
+        "timeout_ms": {
+         "type": "number",
+         "default": 10000
+        }
+       }
+      }
+     }
+    }
+   ],
+   "transitions": [
+    {
+     "target_node": "end_promise",
+     "description": "Recover the dropped move to end_promise",
+     "condition": {
+      "logic": "or",
+      "conditions": [
+       {
+        "variable": "rescue_target",
+        "operator": "equals",
+        "operand": "end_promise"
+       }
+      ]
+     }
+    },
+    {
+     "target_node": "end_paid",
+     "description": "Recover the dropped move to end_paid",
+     "condition": {
+      "logic": "or",
+      "conditions": [
+       {
+        "variable": "rescue_target",
+        "operator": "equals",
+        "operand": "end_paid"
+       }
+      ]
+     }
+    },
+    {
+     "target_node": "end_dispute",
+     "description": "Recover the dropped move to end_dispute",
+     "condition": {
+      "logic": "or",
+      "conditions": [
+       {
+        "variable": "rescue_target",
+        "operator": "equals",
+        "operand": "end_dispute"
+       }
+      ]
+     }
+    },
+    {
+     "target_node": "end_hardship",
+     "description": "Recover the dropped move to end_hardship",
+     "condition": {
+      "logic": "or",
+      "conditions": [
+       {
+        "variable": "rescue_target",
+        "operator": "equals",
+        "operand": "end_hardship"
+       }
+      ]
+     }
+    },
+    {
+     "target_node": "end_refused",
+     "description": "Recover the dropped move to end_refused",
+     "condition": {
+      "logic": "or",
+      "conditions": [
+       {
+        "variable": "rescue_target",
+        "operator": "equals",
+        "operand": "end_refused"
+       }
+      ]
+     }
+    },
+    {
+     "target_node": "end_service_error",
+     "description": "Recover the dropped move to end_service_error",
+     "condition": {
+      "logic": "or",
+      "conditions": [
+       {
+        "variable": "rescue_target",
+        "operator": "equals",
+        "operand": "end_service_error"
+       }
+      ]
+     }
+    },
+    {
+     "target_node": "handoff_support",
+     "description": "Recover the dropped move to handoff_support",
+     "condition": {
+      "logic": "or",
+      "conditions": [
+       {
+        "variable": "rescue_target",
+        "operator": "equals",
+        "operand": "handoff_support"
+       }
+      ]
+     }
+    },
+    {
+     "target_node": "handoff_human",
+     "description": "Recover the dropped move to handoff_human",
+     "condition": {
+      "logic": "or",
+      "conditions": [
+       {
+        "variable": "rescue_target",
+        "operator": "equals",
+        "operand": "handoff_human"
+       }
+      ]
+     }
+    },
+    {
+     "target_node": "negotiate",
+     "description": "always",
+     "condition": {
+      "operator": "always"
+     }
+    }
+   ]
   }
  },
  "global_nodes": {}

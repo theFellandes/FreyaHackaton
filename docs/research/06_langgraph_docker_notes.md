@@ -1,5 +1,7 @@
 # 06 — Builder implementation stack: LangGraph 1.x + LangChain 1.x + Docker (uv) + user conventions
 
+> Status: pre-kit research note (10 October 2026), kept for background. Where it disagrees with the kit ([research/11](11_hackathon_rules_and_kit.md), `docs/api.md`, `docs/workflow-format.md`) or with the code, those win.
+
 Research date: 2026-10-10. Scope: the BUILDER program (Python, LangGraph, Docker) that reads a collections brief and creates/updates the Freya phone agent, then evaluates and refines it.
 
 Legend: **VERIFIED** = read in source/spec/PyPI today; **DOCS** = stated in official docs page fetched today; **INFERRED** = my reasoning, not stated anywhere; **USER-CONV** = taken from the user's LanggraphPlayground repo.

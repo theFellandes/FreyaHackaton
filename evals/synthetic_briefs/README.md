@@ -34,6 +34,18 @@ python builder/build.py evals/synthetic_briefs/v02_raw/Mail_thread_collections_o
 Do not pass the directory `v02_raw/` (it would also load `expected_notes.md` as a brief). Inspect
 `out/<slot>.ir.json`, `out/<slot>.ledger.json`, `out/<slot>.workflow.json` and the trace.
 
+## What the IR of these packs must look like (format contracts)
+
+Both packs exposed defects that the validator now catches (regression targets for a live run):
+
+* persuasion attempt 1 (and 3 of the red band) proposes the next business day after today: the step's `date` is
+  `next_business_day_after_today`, never `customer`;
+* `disclosure.team_phrase` is the words that complete "I am calling from ___" (no leading "I am calling from", no full stop),
+  `product_naming` holds bare names (`card ending {card_last4}`, no amount or days);
+* the days field is `days_overdue` and the amount field `past_due` (`disclosure.days_field` / `amount_field`, or readable from
+  `state_fields`), whatever order the model lists `state_fields` in;
+* the refusal-to-talk intent has a before-verification half with an outcome and an after-verification half with the note.
+
 ## Expected values of `v01_clean`
 
 Bank "Meridian Savings Bank"; holidays 2026-10-19, 2026-11-03, 2026-11-27, 2026-12-24, 2026-12-31; bands green 1-10 /

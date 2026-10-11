@@ -1,5 +1,14 @@
 # FOLDER_STRUCTURE: repository layout of the Freya builder
 
+> **Status: historical planning document (Oct 10); the as-built system is described in [HOW_IT_WORKS.md](HOW_IT_WORKS.md).**
+> Open defects are in [FIXING_ISSUES.md](FIXING_ISSUES.md), measured results in
+> [results/BASELINE.md](../results/BASELINE.md), the submission procedure in [SUBMISSION.md](SUBMISSION.md). Where this
+> document and the code disagree, the code wins. Differences that matter most: the defaults are `BUILDER_TRACK=compiled`
+> and `SELF_TEST=smoke` (not `auto`); lint rules run L001 to L029; the platform export is written to
+> `out/<slot>.exported.json` (`out/<slot>.workflow.json` is the definition that was sent) and is copied to
+> `submission/hidden-N.workflow.json` for the form; the planned `tests/compliance/` folder does not exist (the check is
+> `tests/unit/test_compliance.py`).
+
 Status: plan for the repository after phase P0 (kit copied to the root). Single source of truth: decisions brief v2
 (brief §4 graph node names, brief §5 repo layout, ADR-01..ADR-16). This document expands brief §5 to file level. It
 renames nothing. Everything it adds beyond brief §5 is marked **(added)** and listed in
@@ -178,7 +187,7 @@ builder/
 ├── policy/              pure, no I/O: ir.py (PolicyIR), intents.py (catalog), calendar.py, money.py, outcomes.py (compute_outcome)
 ├── compiler/            pure: workflow_model.py, tools.py, hooks.py, codegen.py, nodes.py, toolset.py, prompts.py, prose.py,
 │                        compile.py, naming.py, pycode.py, errors.py, context.py; profiles/staged.py, profiles/lean.py
-├── checks/              lint.py (rules L001–L027, incl. reachability and variable rules), code_sandbox.py, coverage.py
+├── checks/              lint.py (rules L001–L029, incl. reachability and variable rules), code_sandbox.py, coverage.py
 ├── freya/               client.py (validate, save, get, export, chat, call), diff.py (stripped-field check), kit.py (loads the
 │                        root freya.py), practice.py (kit practice harness), ratelimit.py (polite client)
 ├── llm/                 key changer (ADR-14): gateway.py (LLMGateway), providers.py (anthropic, openai, claude_code),
@@ -741,9 +750,9 @@ DRY_RUN=
 | `FREYA_WORKSPACE_ID` | first workspace of the key | `freya.workspace_id()` |
 | `ANTHROPIC_API_KEY`, `OPENAI_API_KEY` | none; empty values are skipped; several keys per provider allowed (`<P>_API_KEY_n`, `<P>_API_KEYS`) | Q-5 |
 | `LLM_PROVIDERS` | `anthropic,openai,claude_code` | key changer order (ADR-14); models per provider in §12.1 of ARCHITECTURE |
-| `BUILDER_TRACK` | `auto` | `compiled`, `agentic`, `auto` |
+| `BUILDER_TRACK` | `compiled` (as built; the plan said `auto`) | `compiled`, `agentic`, `auto` |
 | `BUILD_TIME_BUDGET_S` | `1680` | 28 min, under the 30 min limit |
-| `SELF_TEST` | `auto` | `auto`, `none`, `smoke`, `practice` |
+| `SELF_TEST` | `smoke` (as built; the plan said `auto`) | `auto`, `none`, `smoke`, `walkthrough`, `practice` |
 | `BUILD_SLOT` | derived (§3.3) | P7 sets `hidden-1` / `hidden-2` |
 | `DRY_RUN` | `false` | no Freya writes; compile + local checks + trace only |
 
@@ -1007,7 +1016,7 @@ Kit documents (copied in P0; kit, unmodified):
 
 | File | Content |
 |---|---|
-| [KIT_README.md](KIT_README.md) | kit README (relocated): ten-minute start, kit contents, scoring, the final, rules, troubleshooting |
+| [KIT_README.md](../KIT_README.md) | kit README (relocated): ten-minute start, kit contents, scoring, the final, rules, troubleshooting |
 | [api.md](api.md) | REST calls: workflow create/dryRun/update/publish/get, workspaces, personas, simulations, chat, iterations, calls |
 | [workflow-format.md](workflow-format.md) | workflow JSON: top-level keys, node types and fields, prompts, variables, transitions, extraction, end-call, limits |
 | [tools-and-code.md](tools-and-code.md) | api_call tools, parameter defaults, pre_actions vs tools, response_mapping, counters, hooks, code nodes, lifecycle tools |

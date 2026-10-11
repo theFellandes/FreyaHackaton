@@ -174,6 +174,40 @@ CLASSIFICATION_TABLE: list[tuple[str, BaseException, ErrorKind]] = [
         FakeAPIStatusError("no access", 403, anthropic_body("permission_error", "no access to model")),
         ErrorKind.AUTH,
     ),
+    # --- a model the key may not use is not a dead key (REPO-14) ---
+    (
+        "openai 403 project has no access to the model (code model_not_found)",
+        FakeAPIStatusError(
+            "Project `proj_x` does not have access to model `gpt-5.6-terra`",
+            403,
+            openai_body(
+                "Project `proj_x` does not have access to model `gpt-5.6-terra`",
+                "invalid_request_error",
+                "model_not_found",
+            ),
+        ),
+        ErrorKind.MODEL_UNAVAILABLE,
+    ),
+    (
+        "403 that only names the model in its text",
+        FakeAPIStatusError("Your organization does not have access to model claude-x-1.", 403),
+        ErrorKind.MODEL_UNAVAILABLE,
+    ),
+    (
+        "403 model_not_found code without any status text",
+        FakeAPIStatusError(
+            "Forbidden", 403, openai_body("Forbidden", "invalid_request_error", "model_not_found")
+        ),
+        ErrorKind.MODEL_UNAVAILABLE,
+    ),
+    ("a plain 403 forbidden stays a dead-key problem", FakeAPIStatusError("Forbidden", 403), ErrorKind.AUTH),
+    (
+        "model_not_found on a 404 stays a bad request",
+        FakeAPIStatusError(
+            "no model", 404, openai_body("no model", "invalid_request_error", "model_not_found")
+        ),
+        ErrorKind.BAD_REQUEST,
+    ),
     (
         "openai 401 incorrect key",
         FakeAPIStatusError(
@@ -393,6 +427,24 @@ def test_real_openai_sdk_errors() -> None:
     assert classify_error(not_found) is ErrorKind.BAD_REQUEST
 
 
+def test_real_openai_per_model_403_is_not_a_dead_key() -> None:
+    """REPO-14: ``PermissionDeniedError`` for one model must not be filed with the revoked-key 403."""
+    openai = pytest.importorskip("openai")
+    message = "Project `proj_x` does not have access to model `gpt-5.6-terra`"
+    per_model = openai.PermissionDeniedError(
+        message,
+        response=_response(403),
+        body=openai_body(message, "invalid_request_error", "model_not_found"),
+    )
+    revoked = openai.PermissionDeniedError(
+        "You are not allowed to perform this action",
+        response=_response(403),
+        body=openai_body("You are not allowed to perform this action", "invalid_request_error", None),
+    )
+    assert classify_error(per_model) is ErrorKind.MODEL_UNAVAILABLE
+    assert classify_error(revoked) is ErrorKind.AUTH
+
+
 def test_langchain_wrapped_anthropic_errors() -> None:
     ensure_uuid_utils()  # a blocked native uuid_utils must not stop LangChain from importing
     chat_models = pytest.importorskip("langchain_anthropic.chat_models")
@@ -475,6 +527,13 @@ def test_transient_kinds_retry_same_key_with_backoff(kind: ErrorKind) -> None:
     assert policy.exhausted_action is Action.ROTATE_KEY
     assert policy.key_effect is KeyEffect.NONE
     assert policy.provider_failure
+
+
+def test_an_unavailable_model_keeps_the_key_alive_and_tries_another_model() -> None:
+    policy = POLICY[ErrorKind.MODEL_UNAVAILABLE]
+    assert policy.action is Action.NEXT_MODEL
+    assert policy.key_effect is KeyEffect.NONE  # the key works: only this model is off limits to it
+    assert not policy.provider_failure  # and the provider is healthy
 
 
 @pytest.mark.parametrize("kind", [ErrorKind.BAD_REQUEST, ErrorKind.CONTEXT])

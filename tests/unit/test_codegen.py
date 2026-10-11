@@ -531,12 +531,12 @@ def test_decide_never_raises_on_garbage() -> None:
     assert state["decide_state"] == "ok" or state["decide_state"].startswith("error")
 
 
-def test_decide_notes_fall_back_to_the_tool_arguments() -> None:
+def test_decide_does_not_treat_latest_arguments_as_an_acknowledged_note() -> None:
     code = codegen.decide_outcome_snippet(IR_AB)
     state = run_snippet(code, {**OK, "chosen_end": "flat_refusal", "add_note_success_count": 1,
                                "add_note_args.reason": "dispute", "add_note_args.product_id": "p1",
                                "product_ids": "p1"})
-    assert (state["final_outcome"], state["final_reason"]) == ("no_promise", "dispute")
+    assert (state["final_outcome"], state["final_reason"]) == ("no_promise", "refused")
 
 
 # --------------------------------------------------------------------------------------------------------------------

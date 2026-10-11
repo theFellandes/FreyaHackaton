@@ -7,7 +7,9 @@ The platform knows rules no offline lint can: it is the authority on whether a d
 * ``invalid`` - the platform rejected the content; its messages become ``compile_feedback`` and the run goes to
   ``repair_compile`` (or the agentic fallback);
 * ``infra`` - authentication, network or server trouble: not a defect of the workflow, so the run still tries to deploy
-  (the save call reports the same trouble clearly if it persists);
+  (the save call reports the same trouble clearly if it persists). A transient gateway failure that outlived the
+  client's retries (HTTP 429/502/503/504, a timeout - staging has answered the dry run with 504 after a minute) is
+  noted as ``remote validation skipped: platform 504``: the platform validates the definition again on save;
 * ``skipped`` - no Freya client (dry run).
 """
 
@@ -46,10 +48,18 @@ async def _body(state: BuilderState, ctx: BuilderContext) -> dict[str, Any]:
             "compile_feedback": "\n".join(short(p, 300) for p in problems[:10]),
         }
     except FreyaError as exc:
-        ctx.trace.error("the platform validation call failed; will still try to deploy", error=short(exc))
+        if exc.write_retryable:  # gateway trouble, not the workflow: the save validates the definition again
+            reason = (
+                f"platform {exc.status}" if exc.status is not None else "platform network error or timeout"
+            )
+            note = f"{NAME}: remote validation skipped: {reason} (the platform validates again on save)"
+            ctx.trace.error(f"remote validation skipped: {reason}; deploying anyway", error=short(exc))
+        else:
+            note = f"{NAME}: platform validation unavailable ({short(exc, 120)})"
+            ctx.trace.error("the platform validation call failed; will still try to deploy", error=short(exc))
         return {
             "remote_validation": {"ok": False, "kind": "infra", "problems": [short(exc)]},
-            "notes": [f"{NAME}: platform validation unavailable ({short(exc, 120)})"],
+            "notes": [note],
         }
     ctx.trace.test("remote_validate", True, "the platform accepted the workflow (dry run)")
     return {"remote_validation": {"ok": True, "kind": "ok", "problems": []}}

@@ -1,4 +1,4 @@
-<# Task of the identity node. Inputs: n_questions, one_at_a_time, questions (list of dicts ask/field/how), verify_tool, max_wrong, complete, partial, hints (list), explanation, counting, declined_action, exits (list), rules, extra #>
+<# Task of the identity node. Inputs: n_questions, one_at_a_time, questions (list of dicts ask/field/how), verify_tool, max_wrong, complete, partial, spoken, hints (list), explanation, decline_max, decline_nth, counting, declined_action, exits (list), rules, extra #>
 Verify the customer's identity before anything else. Ask <<n_questions>> security question<% if n_questions != "one" %>s<% endif %><% if one_at_a_time %>, one at a time<% endif %>, in this order:
 <% for q in questions %>
 <<loop.index>>. <<q.ask>>
@@ -7,14 +7,19 @@ Verify the customer's identity before anything else. Ask <<n_questions>> securit
 <% for q in questions %>
   - field <<q.field>>: <<q.how>>
 <% endfor %>
-- Only a COMPLETE answer can be checked: <<complete>>. If the customer gives only part (<<partial>>), do not call <<verify_tool>>: ask only for the missing part and combine both parts.
-- Whenever the customer's message contains a complete answer (even mixed with a question, a complaint or other words), call <<verify_tool>> FIRST, before you say anything. Then do exactly what the what_to_do_next line in the result says.
-- Do not say anything about the account or why you are calling during this step.
+- A COMPLETE answer is checked at once: <<complete>><% if spoken %> (<<spoken>>)<% endif %>. As soon as the customer's message holds a complete answer, call <<verify_tool>> with it: never hold it back and never ask the customer to repeat or confirm a part they already said.
+- If the customer gives only part (<<partial>>), do not call <<verify_tool>> yet: ask only for the missing part and combine both parts, then check the whole answer.
+- A complete answer that comes with a complaint, a question or other words is checked FIRST: call <<verify_tool>> before you say anything, then do exactly what the what_to_do_next line in the result says, and only then answer the complaint or the question. This holds also when the message is cut off or trails off after the answer (for example a whole date followed by an unfinished complaint): it is an answer, not a cut-off message; never reply to it only with "I understand, go on."
+- Do not say anything about the account or why you are calling during this step. Ask each question plainly, without saying why you ask it: explain why only when the customer refuses or asks.
 - A wrong answer may be asked again. <<max_wrong>> wrong answers in total end the check, whichever question they were on; <<counting>>
 <% for hint in hints %>
 - <<hint>>
 <% endfor %>
-- If the customer does not want to answer, or asks what the call is about instead of answering: explain once that "<<explanation>>" and ask again. A second refusal or a second such question: thank them, say goodbye and <<declined_action>>.
+<% if decline_max > 1 %>
+- If the customer does not want to answer, or asks what the call is about instead of answering: explain <% if decline_max == 2 %>once <% endif %>that "<<explanation>>" and ask the same question again. The <<decline_nth>> refusal or such question in a row, with no answer in between: thank them, say goodbye and <<declined_action>>. Any answer to a security question, right or wrong, starts this count again; a short question back that the customer follows with an answer (for example "why do you need that?", then the answer) is not a refusal.
+<% else %>
+- If the customer refuses to answer: thank them, say goodbye and <<declined_action>>. A question back (for example "why do you need that?") is not a refusal: explain that "<<explanation>>" and ask the same question again.
+<% endif %>
 <% for bullet in exits %>
 - <<bullet>>
 <% endfor %>

@@ -1,5 +1,7 @@
 # 01 — Freya agent / workflow configuration reference (create + update programmatically)
 
+> Status: pre-kit research note (10 October 2026), kept for background. Where it disagrees with the kit ([research/11](11_hackathon_rules_and_kit.md), `docs/api.md`, `docs/workflow-format.md`) or with the code, those win.
+
 Sources (all read-only):
 - `docs/openapi_staging.json` (the spec served by https://staging-app.freyavoice.ai/api/openapi.json, 96 paths). It is identical to `openapi_prod.json` for every path in this document except that staging adds `config.backgroundSoundVolume` (number|null, 0..2) to agent configs. **Use the staging spec**, because our key only works on staging.
 - `docs/llms-full.txt` guides. They are marketing-level and contain **no** workflow node schema. They do give the embed SDK `customerVariables` semantics.

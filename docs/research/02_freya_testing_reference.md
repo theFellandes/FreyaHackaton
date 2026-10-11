@@ -1,5 +1,7 @@
 # 02 — Freya testing & evaluation reference (Chat API, Personas, Simulations, Unit tests, Versions)
 
+> Status: pre-kit research note (10 October 2026), kept for background. Where it disagrees with the kit ([research/11](11_hackathon_rules_and_kit.md), `docs/api.md`, `docs/workflow-format.md`) or with the code, those win.
+
 Scope: everything needed to evaluate a Freya agent programmatically for the bank-collections hackathon builder.
 Sources, in order of authority:
 1. `docs/openapi_staging.json` (OpenAPI 3.1, 96 paths). This is the spec for the host our key works on. It matches `openapi_prod.json` for every testing endpoint except trivial `include=` preview additions on `GET /simulations/{id}`.

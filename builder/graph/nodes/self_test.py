@@ -8,7 +8,8 @@ hackathon asks for. Each test is announced to the trace before it starts (``trac
 the wall-clock guard cuts off during a test still lists that test, marked ``aborted``.
 
 A repair round re-deploys the workflow; if no test could run on the new version (not enough time left) the node says
-so (``untested_redeploy``) instead of leaving the earlier round's results to stand in for it.
+so (``untested_redeploy``) instead of leaving the earlier round's results to stand in for it. ``tested_version`` names
+the version a test really ran against, so the closing summary can still say which version that was.
 """
 
 from __future__ import annotations
@@ -33,7 +34,13 @@ async def _run_one(name: str, state: BuilderState, ctx: BuilderContext) -> dict[
     ir, ledger = (get_ir(state) if state.get("track") != "agentic" else None), get_ledger(state)
     if name == "smoke":
         return await run_smoke(
-            ctx.freya, deploy["workflow_id"], ir, ctx.trace, ctx.clock(), cancel=ctx.cancel
+            ctx.freya,
+            deploy["workflow_id"],
+            ir,
+            ctx.trace,
+            ctx.clock(),
+            cancel=ctx.cancel,
+            budget=ctx.budget,  # a repeat after a transient platform error must fit the budget
         )
     if name == "walkthrough":
         workflow = workflow_of(state) or {}
@@ -99,7 +106,10 @@ async def _body(state: BuilderState, ctx: BuilderContext) -> dict[str, Any]:
             ctx.trace.decision(f"the re-deployed version (round {round_no}) was not self-tested")
             update["untested_redeploy"] = True
         return update
-    return {"self_tests": results}
+    done: dict[str, Any] = {"self_tests": results}
+    if any(not (r.get("details") or {}).get("skipped") for r in results):
+        done["tested_version"] = deploy.get("version")  # a test really ran against this version
+    return done
 
 
 async def run(state: BuilderState, runtime: Runtime[BuilderContext]) -> dict[str, Any]:

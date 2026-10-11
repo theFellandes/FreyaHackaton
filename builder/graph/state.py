@@ -12,7 +12,9 @@ Identity and inputs
     ``limits`` (caps copied from the settings so the routing functions stay pure).
 Understanding
     ``bundle`` (loaded briefs), ``tool_api`` (parsed contracts), ``ledger`` (rule ledger), ``ir`` (policy IR),
-    ``policy_issues`` (validator / guard / self-test findings for the repair step), ``policy_repairs``, ``prose``.
+    ``policy_issues`` (validator / guard / self-test findings for the repair step), ``policy_unresolved`` (the issues
+    the last policy gate let the run go on with: validator errors and warnings, guard findings - reported by
+    ``finalize``), ``policy_repairs``, ``prose``.
 Compiling
     ``profile``, ``compiled`` (``{"workflow", "rule_map", "profile", "notes"}``), ``coverage``, ``lint``,
     ``compile_repairs``, ``compile_repair_log``, ``compile_feedback``.
@@ -20,7 +22,9 @@ Platform
     ``remote_validation``, ``deploy`` (``DeployInfo`` dump), ``workflow_path`` (local file), ``exported``
     (the platform's export of the deployed version, or ``None`` when that export failed or did not match),
     ``self_tests``, ``selftest_repairs``, ``repair_requested``, ``untested_redeploy`` (a repair round re-deployed the
-    workflow but no self-test ran on the new version).
+    workflow but no self-test ran on the new version), ``tested_version`` (the version number the last self-test that
+    really ran was run against), ``redeploy_skipped`` (a repair round was not deployed because a deploy plus a smoke
+    test no longer fitted into the budget: the tested version stays live, reported and exported).
 Control
     ``track`` (``compiled`` or ``agentic``), ``agentic_attempts``, ``failed`` (name of the node that could not do its
     work, empty otherwise), ``blocked`` (a guard stopped the build), ``status``, ``budget_remaining_s`` (recorded by
@@ -62,6 +66,7 @@ class BuilderState(TypedDict, total=False):
     ledger: dict[str, Any]
     ir: dict[str, Any]
     policy_issues: list[dict[str, Any]]
+    policy_unresolved: list[dict[str, Any]]
     policy_repairs: int
     prose: dict[str, Any]
 
@@ -80,6 +85,8 @@ class BuilderState(TypedDict, total=False):
     workflow_path: str
     exported: str | None
     untested_redeploy: bool
+    tested_version: int | None
+    redeploy_skipped: bool
     self_tests: Annotated[list[dict[str, Any]], add]
     selftest_repairs: int
     repair_requested: bool

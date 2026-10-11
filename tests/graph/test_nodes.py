@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import asyncio
+import json
 from pathlib import Path
 from types import SimpleNamespace
 from typing import Any
@@ -196,7 +197,8 @@ def test_lint_call_variables_always_include_the_platform_ones(ir_a: Any) -> None
 
 
 @pytest.fixture
-def ctx(make_settings: Any, null_trace: NullTrace) -> BuilderContext:
+def ctx(make_settings: Any, null_trace: NullTrace, tmp_dirs: SimpleNamespace) -> BuilderContext:
+    """A context whose result files go to the temporary directories (never to the repository's results/, AUD-59)."""
     from builder.budget import Budget
 
     return BuilderContext(
@@ -326,3 +328,50 @@ async def test_the_self_test_node_flags_a_redeploy_that_could_not_be_tested(
     assert update["self_tests"] == [] and update["untested_redeploy"] is True
     first = await self_test._body({**state, "selftest_repairs": 0}, ctx)  # type: ignore[arg-type]
     assert "untested_redeploy" not in first  # the first round has no earlier tested version to compare with
+
+
+async def test_the_self_test_node_remembers_which_version_it_tested(
+    make_settings: Any, null_trace: NullTrace
+) -> None:
+    """``tested_version`` lets the closing summary name the last version a test really ran on."""
+    from builder.budget import Budget
+    from builder.graph.nodes import self_test
+    from builder.testing import FakeFreya
+
+    freya = FakeFreya(null_trace)
+    info = freya.save("s", {"nodes": {"a": {}}})
+    ctx = BuilderContext(
+        settings=make_settings(self_test="smoke"), llm=None, freya=freya, trace=null_trace, budget=Budget(1680)
+    )
+    state = {
+        "slot": "s",
+        "selftest_repairs": 0,
+        "deploy": {"workflow_id": info.workflow_id, "agent_id": info.agent_id, "version": 5},
+    }
+    update = await self_test._body(state, ctx)  # type: ignore[arg-type]
+    assert update["tested_version"] == 5 and update["self_tests"][0]["name"] == "smoke"
+    skipped = await self_test._body(  # type: ignore[arg-type]
+        {**state, "selftest_repairs": 1}, BuilderContext(
+            settings=make_settings(self_test="auto"), llm=None, freya=freya, trace=null_trace, budget=Budget(100)
+        )
+    )
+    assert "tested_version" not in skipped  # nothing ran: the version is not "tested"
+
+
+def test_the_summary_names_the_last_tested_version_after_an_untested_redeploy(
+    ctx: BuilderContext, tmp_dirs: SimpleNamespace
+) -> None:
+    from builder.graph.nodes.finalize import finalize_run
+
+    live = {"workflow_id": "wf", "agent_id": "ag", "version": 2, "published": True}
+    state = {
+        "slot": "s",
+        "deploy": live,
+        "exported": "out/s.exported.json",
+        "untested_redeploy": True,
+        "tested_version": 1,
+    }
+    final = finalize_run(state, ctx)
+    assert final["untested_redeploy"] is True and final["tested_version"] == 1 and final["version"] == 2
+    written = json.loads((tmp_dirs.results / "s-test-run.build.json").read_text(encoding="utf-8"))
+    assert written["status"] == "deployed" and written["tested_version"] == 1  # in the temporary results/ only (AUD-59)

@@ -174,7 +174,7 @@ def test_guard_blocks_what_the_rules_forbid(body: dict[str, Any], needle: str) -
     (126, False), ("126.00", False), (125.995, False),  # 125.995 is 126.00
     ("125.994", True), (125.99, True),
     (420, False), ("420.004", False), ("420.005", True),  # 420.005 is 420.01
-    ("1,250", True), ("lots", False),  # an unreadable amount is not this hook's business: the service answers
+    ("1,250", True), ("lots", True), (None, True),  # AUD-24: an amount that is not a number never reaches the bank
 ])
 def test_guard_compares_in_whole_cents_with_the_same_amount_contract(amount: Any, blocked: bool) -> None:
     out = _guard({"product_id": "p1", "amount": amount, "date": "2026-10-14"})
@@ -194,9 +194,11 @@ def test_guard_without_partial_amounts_accepts_only_the_floor_or_the_full_amount
         assert (out["config"]["url"] == "") is blocked, amount
 
 
-def test_guard_never_blocks_when_the_facts_are_missing() -> None:
+def test_guard_blocks_when_no_account_facts_are_loaded() -> None:
+    # AUD-24: without account facts (get_account failed or listed nothing) nothing can be checked, so nothing is sent
     out = _guard({"product_id": "p1", "amount": 5, "date": "2030-01-01"}, facts={})
-    assert out["vars"]["promise_guard"] == "ok" and out["config"]["url"] != ""
+    assert out["vars"]["promise_guard"] == "blocked: no account facts are loaded" and out["config"]["url"] == ""
+    assert "cannot open your account details" in out["vars"]["promise_guard_say"]
     broken = run_hook(hooks.pre_hook_promise_guard("product_id", "amount", "date"), config={"body": "text"})
     assert broken["config"] == {"body": "text"}
 
@@ -271,7 +273,7 @@ def test_the_prompts_carry_the_lessons(api: ToolApi) -> None:
     assert 'reply only with a short acknowledgement such as "I understand, go on."' in workflow["system_prompt"]
     assert "act on it right away" in workflow["system_prompt"]
     identity = nodes["identity"]["task_message"]
-    assert "Only a COMPLETE answer can be checked" in identity
+    assert "A COMPLETE answer is checked at once" in identity
     assert "date_of_birth: a date needs day, month and year; phone_last4: exactly 4 digits" in identity
     assert "ask only for the missing part and combine both parts" in identity
     assert "Never send a partial answer" in json.dumps(nodes["identity"]["tools"][0])
@@ -350,9 +352,10 @@ def test_the_date_table_marks_every_day_after_the_deadline_for_one_product() -> 
     table = _table(_facts(IR_A, "PUB-01"))  # early band: the deadline is Monday 2 November
     assert table["2026-11-02"].endswith("[in 3 weeks] business day")
     assert table["2026-11-03"].endswith("business day | AFTER THE DEADLINE - not allowed: offer the deadline instead")
+    # AUD-17: a day after the deadline keeps no "offer <a later day> instead" clause - the guard blocks that day too
     assert table["2026-11-07"].endswith(
-        "-> if the customer names this day, offer Monday 9 November 2026 (2026-11-09) instead"
-        " | AFTER THE DEADLINE - not allowed: offer the deadline instead")
+        "weekend, not a business day | AFTER THE DEADLINE - not allowed: offer the deadline instead")
+    assert " -> " not in table["2026-11-07"] and " -> " in table["2026-10-31"]
     assert "deadline" not in table["2026-10-30"].lower()
 
 
@@ -459,8 +462,8 @@ def _say(body: dict[str, Any], *, facts: dict[str, Any] | None = None, **options
          "I am sorry, I cannot record that day for your car loan. Could you tell me another day?"),
         # an amount outside floor..full
         ({"product_id": "p1", "amount": 5, "date": "2026-10-15"}, {"currency": "dollars"},
-         "I am sorry, for your credit card ending 1111 I can record an amount from 126.00 to 420.00 dollars. "
-         "Which amount can you pay?"),
+         "I am sorry, I cannot record 5.00 dollars for your credit card ending 1111. The lowest amount I can record "
+         "is 126.00 dollars. Could you pay 126.00 dollars?"),
         ({"product_id": "p1", "amount": 200, "date": "2026-10-15"}, {"currency": "euros", "accept_between": False},
          "I am sorry, for your credit card ending 1111 I can record only 126.00 or 420.00 euros. "
          "Which one do you prefer?"),
@@ -532,8 +535,8 @@ def test_the_compiled_guard_speaks_the_correction_with_the_real_facts(api: ToolA
     expected = {
         ("p2", 900, "2026-10-30"): ("I am sorry, the latest date I can record for your personal loan is Friday 23 October. "
                                     "Could you pay 900.00 on that day?"),
-        ("p1", 5, "2026-10-16"): ("I am sorry, for your credit card ending 6604 I can record an amount from 90.00 to "
-                                  "300.00. Which amount can you pay?"),
+        ("p1", 5, "2026-10-16"): ("I am sorry, I cannot record 5.00 for your credit card ending 6604. The lowest "
+                                  "amount I can record is 90.00. Could you pay 90.00?"),
         ("p1", 200, "2026-10-17"): ("I am sorry, I cannot record that day for your credit card ending 6604. The next day "
                                     "I can record is Monday 19 October. Would that work for you?"),
         ("p1", 200, "2026-10-26"): ("I am sorry, I cannot record that day for your credit card ending 6604. The next day "
@@ -590,3 +593,44 @@ def test_a_differently_worded_recording_notice_never_reaches_the_opening_as_reco
     assert opening == ("Hello, this is the bank. Please note that we record this call. "
                        "Am I speaking with {{title}} {{last_name}}?")
     assert "recorded" not in opening
+
+
+# ---- C-14: a complete identity answer is always checked at once --------------------------------------------------------------
+
+
+def _identity_text(ir: PolicyIR, ledger: RuleLedger, api: ToolApi, profile: str) -> str:
+    workflow = compile_workflow(ir, api, ledger, profile=profile).workflow
+    node = workflow["nodes"]["identity" if profile == "staged" else "call"]
+    return node["task_message"]
+
+
+@pytest.mark.parametrize("profile", ["staged", "lean"])
+def test_a_complete_identity_answer_is_checked_at_once_and_never_held_back(api: ToolApi, profile: str) -> None:
+    text = _identity_text(IR_A, LEDGER_A, api, profile)
+    assert "Only a COMPLETE answer can be checked" not in text  # the wording that made a model withhold a complete date
+    assert "A COMPLETE answer is checked at once" in text
+    assert "never hold it back" in text
+    assert "never ask the customer to repeat or confirm a part they already said" in text
+    # partial answers keep their handling
+    assert "If the customer gives only part" in text
+    assert "ask only for the missing part and combine both parts" in text
+    # a date said in words is whole when every part is there
+    assert "a year said in words" in text and "is a whole year" in text
+
+
+@pytest.mark.parametrize("profile", ["staged", "lean"])
+def test_a_complete_answer_mixed_with_complaints_or_questions_is_checked_first(api: ToolApi, profile: str) -> None:
+    text = _identity_text(IR_A, LEDGER_A, api, profile)
+    assert "comes with a complaint, a question or other words is checked FIRST" in text
+    assert "call verify_identity before you say anything" in text
+    assert "only then answer the complaint or the question" in text
+
+
+def test_the_spoken_year_hint_is_only_written_for_date_and_year_questions(api: ToolApi) -> None:
+    ir = IR_A.model_copy(deep=True)
+    for question in ir.identity.questions:
+        question.answer_format = "digits"
+        question.digits = 4
+    text = _identity_text(ir, LEDGER_A, api, "staged")
+    assert "a year said in words" not in text
+    assert "A COMPLETE answer is checked at once" in text

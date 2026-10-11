@@ -14,18 +14,24 @@ the compiled ``decide`` node and the prompts always agree.
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
+from builder.policy.intents import canonical_intent_key
 from builder.policy.ir import IntentRule, OutcomeRef, OutcomeRow, PolicyIR
 from builder.policy.outcomes import TRANSFER_PREFIX, Situation, transfer_situation
 
 __all__ = [
+    "CALLBACK_TOOL",
+    "CALL_LEVEL_INTENTS",
     "IntentExit",
+    "books_callback",
     "closing_rows",
     "end_node",
     "handoff_node",
     "intent_exit",
+    "is_call_level",
     "negotiation_situations",
+    "note_reason_of",
     "slug",
     "stop_situation",
     "transfer_queues",
@@ -33,6 +39,11 @@ __all__ = [
 ]
 
 TRANSFER_TOOL = "transfer_to_agent"
+CALLBACK_TOOL = "schedule_callback"
+
+#: Catalog intents about the call as a whole, not about one product: in a several-product call they close the call
+#: (after noting every product still open) instead of "note this product and continue with the others" (audit AUD-11).
+CALL_LEVEL_INTENTS = frozenset({"refuse_to_talk"})
 
 
 def slug(text: str) -> str:
@@ -62,6 +73,10 @@ class IntentExit:
 
     ``kind``: ``end`` (move to ``end_<situation>``), ``handoff`` (transfer to ``queue``, then decide), ``note`` (the
     multi-product notes tool with ``reason``; the call continues) or ``info`` (guidance only, no exit).
+    ``reason`` on an ``end`` exit: the note reason written for every product without a promise before the call ends (a
+    call-level intent in a several-product call, or a note action in a single-product one).
+    ``callback`` on an ``end`` exit: the intent books a callback first (its ``schedule_callback`` action); the exit is
+    the "no time could be agreed" branch, a booked callback ends the call on the tool's acknowledgement (AUD-08).
     ``declined``: the ``end``/``note`` branch that applies when the customer declines the intent's ``offer``.
     """
 
@@ -71,6 +86,7 @@ class IntentExit:
     outcome: OutcomeRef | None = None
     reason: str = ""
     declined: IntentExit | None = None
+    callback: bool = False
 
 
 def transfer_queues(ir: PolicyIR) -> list[str]:
@@ -113,14 +129,66 @@ def _situation_for(ir: PolicyIR, intent: IntentRule, ref: OutcomeRef) -> str:
     return intent.key
 
 
+def books_callback(intent: IntentRule) -> bool:
+    """True when ``intent`` has a ``schedule_callback`` action (and does not transfer the call)."""
+    return intent.transfer_queue(TRANSFER_TOOL) is None and any(a.tool == CALLBACK_TOOL for a in intent.actions)
+
+
+def is_call_level(intent: IntentRule) -> bool:
+    """True for an intent about the call as a whole (see :data:`CALL_LEVEL_INTENTS`)."""
+    return canonical_intent_key(intent.key) in CALL_LEVEL_INTENTS
+
+
+def note_reason_of(ir: PolicyIR, intent: IntentRule) -> str:
+    """The note reason of ``intent``: its ``note_reason``, else the reason parameter of a notes-tool action (AUD-08).
+
+    The extraction sometimes writes "add a note with reason X" as an action of the intent instead of ``note_reason``;
+    both mean the same, and the action form was silently dropped. The reason parameter is the action's only parameter
+    whose value is not a placeholder, preferring a key named like a reason.
+    """
+    if intent.note_reason:
+        return intent.note_reason
+    tool = ir.multi_product.note_tool or "add_note"
+    for action in intent.actions:
+        if action.tool != tool:
+            continue
+        values = [(k, v) for k, v in action.params.items() if v and "{" not in v]
+        named = [v for k, v in values if "reason" in k.lower()]
+        if named:
+            return named[0]
+        if len(values) == 1:
+            return values[0][1]
+    return ""
+
+
+def _row_exit(ir: PolicyIR, intent: IntentRule, reason: str = "") -> IntentExit | None:
+    """An ``end`` exit for an intent with no outcome of its own whose key names an outcome-table row (AUD-11).
+
+    The table already says how the call closes in that situation, so the intent must lead there (the ``decide`` node
+    then picks the verified or unverified row). The persuasion stop situation is excluded: it is reached through the
+    persuasion rule, never as an intent exit. ``outcome`` is the row's outcome when every row of the key that fits the
+    intent's scope agrees, else ``None`` (a lean prompt then lets the model pick the row).
+    """
+    if intent.key == stop_situation(ir) or intent.key.startswith(TRANSFER_PREFIX):
+        return None
+    verified = {"before_verification": False, "after_verification": True}.get(intent.scope)
+    rows = [row for row in ir.closing.rows if row.situation == intent.key
+            and (verified is None or row.requires_verified in (None, verified))]
+    if not rows:
+        return None
+    refs = {(row.outcome, row.reason) for row in rows}
+    return IntentExit("end", situation=intent.key, outcome=rows[0].ref() if len(refs) == 1 else None, reason=reason)
+
+
 def intent_exit(ir: PolicyIR, intent: IntentRule) -> IntentExit:
     """Classify an intent by what it does at the end (see :class:`IntentExit`)."""
     multi = ir.multi_product.enabled
     queue = intent.transfer_queue(TRANSFER_TOOL)
+    note = note_reason_of(ir, intent)
     declined: IntentExit | None = None
     if intent.declined_outcome is not None:
-        if multi and intent.note_reason:
-            declined = IntentExit("note", reason=intent.note_reason, outcome=intent.declined_outcome)
+        if multi and note:
+            declined = IntentExit("note", reason=note, outcome=intent.declined_outcome)
         else:
             declined = IntentExit(
                 "end", situation=_situation_for(ir, intent, intent.declined_outcome), outcome=intent.declined_outcome
@@ -128,12 +196,27 @@ def intent_exit(ir: PolicyIR, intent: IntentRule) -> IntentExit:
     if queue:
         return IntentExit("handoff", situation=transfer_situation(queue), queue=queue, outcome=intent.outcome,
                           declined=declined)
-    if multi and intent.note_reason:
-        return IntentExit("note", reason=intent.note_reason, outcome=intent.outcome)
+    if multi and note:
+        if is_call_level(intent):
+            if intent.outcome is not None:
+                return IntentExit("end", situation=_situation_for(ir, intent, intent.outcome), outcome=intent.outcome,
+                                  reason=note)
+            row_exit = _row_exit(ir, intent, note)
+            if row_exit is not None:
+                return row_exit
+        return IntentExit("note", reason=note, outcome=intent.outcome)
+    callback = books_callback(intent)
     if intent.outcome is not None:
-        return IntentExit("end", situation=_situation_for(ir, intent, intent.outcome), outcome=intent.outcome)
+        return IntentExit("end", situation=_situation_for(ir, intent, intent.outcome), outcome=intent.outcome,
+                          reason=note, callback=callback)
     if declined is not None:
         return IntentExit("info", declined=declined)
+    found = _row_exit(ir, intent, note)
+    if found is not None:
+        return replace(found, callback=callback)
+    if callback:  # "call me back later" with no outcome of its own: the callback situations of the outcome table
+        success = ir.third_party.callback.success if ir.third_party.callback else None
+        return IntentExit("end", situation=str(Situation.CALLBACK_BOOKED), outcome=success, callback=True)
     return IntentExit("info")
 
 

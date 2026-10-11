@@ -10,8 +10,13 @@ goes through one object, `LLMGateway`. The gateway rotates:
    credits or an invalid key is marked **dead**. A rate-limited key **cools down**. In both cases the next key
    is tried straight away.
 2. **providers in a chain**: by default `anthropic → openai → claude_code`. The gateway moves on when a
-   provider has no usable key left, when its circuit breaker is open, or when the provider rejects the
-   request itself (unknown model, prompt too long, output that can't be parsed even after a repair).
+   provider has no usable key left, when its circuit breaker is open *and another provider can answer*, or
+   when the provider rejects the request itself (unknown model, prompt too long, output that can't be parsed
+   even after a repair).
+3. **models within a key**: a key that is valid but may not use one particular model (a per-model 403,
+   *"Project ... does not have access to model ..."*) is **not** dead. The gateway remembers that the model is off
+   limits for that key (for this run only), tries another key for the model first, then the provider's other
+   model tier (STRONG ↔ FAST), then the next provider.
 
 The design follows the user's earlier projects: an adapter registry, an API key resolver and a circuit breaker
 (Mitrailleuse), plus an LLM fallback chain with error classification, retry, rotation, and cost and latency
@@ -177,7 +182,9 @@ environment:
 | `OPENAI_STRONG_MODEL` / `OPENAI_FAST_MODEL` | `gpt-5.6-terra` / `gpt-5.6-luna` |
 | `CLAUDE_CODE_STRONG_MODEL` / `CLAUDE_CODE_FAST_MODEL` | `claude-sonnet-5-5` / `claude-haiku-5-5` |
 
-The defaults are the **cheaper tiers on purpose**, to save tokens during development and in the hackathon run.
+The defaults are mid and small tiers (not the top tier of each vendor) on purpose, to save tokens and time.
+Only one provider has been used for a live build so far (audit AUD-40): for the hidden briefs, set `LLM_PROVIDERS` in
+`.env` to the chain that ran the accepted build, so the run does not start on an untested provider.
 If a build needs a stronger model (for example for a very long brief), override a variable, such as
 `ANTHROPIC_STRONG_MODEL=claude-opus-5-5` or `OPENAI_STRONG_MODEL=gpt-5.6-sol`. Nothing else changes: the
 role (`STRONG` / `FAST`) a graph node asks for stays the same.
@@ -220,14 +227,15 @@ Built-in constants live in `gateway.py`:
 ```text
 repeat (bounded):
     for provider in LLM_PROVIDERS order (skip providers already finished for this call):
-        while the provider's circuit allows a call and its KeyPool returns a usable key:
+        while the provider's circuit allows a call (or no other provider could answer) and a (key, model)
+        pair is usable (the requested model on any key that may use it; else the other tier's model):
             attempt with that key, up to 1 + LLM_RETRIES_PER_KEY times for transient errors
             (or once more with a repair message for PARSE):
                 timeout = min(LLM_TIMEOUT_S, time left before the deadline - 5 s)
                 run the adapter  → trace.model_call(...)        # one MODEL line per attempt
                 success → mark key ok, close the circuit, return LLMCallResult
                 failure → classify_error → POLICY:
-                          RETRY_SAME (backoff 1, 2, 4 s + jitter) | ROTATE_KEY | NEXT_PROVIDER
+                          RETRY_SAME (backoff 1, 2, 4 s + jitter) | ROTATE_KEY | NEXT_MODEL | NEXT_PROVIDER
     nothing answered:
         if only cooling keys remain and the soonest cooldown ≤ LLM_MAX_COOLDOWN_WAIT_S → sleep, repeat
         elif keys were skipped only because a *previous run* marked them dead → revive them once, repeat
@@ -297,6 +305,7 @@ class. Pass 2 uses message patterns. So a typed inner SDK error beats a vague wr
 |---|---|---|---|---|
 | `QUOTA` | HTTP 402; Anthropic *"Your credit balance is too low to access the Anthropic API"* (a 400!); OpenAI 429 with `code: insufficient_quota` / *"You exceeded your current quota"*; `billing_error`; *"You have reached your specified API usage limits"*; Claude Code *"usage limit reached"* | **DEAD** (persisted) | `ROTATE_KEY` | no |
 | `AUTH` | 401 / 403, *"invalid x-api-key"*, *"Incorrect API key provided"*, `permission_error`, *"Please run /login"*, Claude Code *"Not logged in"*, Claude Code CLI not installed | **DEAD** (persisted) | `ROTATE_KEY` | no |
+| `MODEL_UNAVAILABLE` | 403 that names one model the key may not use: *"Project ... does not have access to model ..."*, or a 403 with `code: model_not_found`. A bare 403 stays `AUTH` | none (the model is remembered as off limits for that key, for this run) | `NEXT_MODEL` | no |
 | `RATE_LIMIT` | 429 that is not a quota problem (`rate_limit_error`, `rate_limit_exceeded`, *"Rate limit reached for … tokens per min"*) | **COOLING** for `retry-after` / `retry-after-ms` seconds, else `LLM_RATE_LIMIT_COOLDOWN_S` | `ROTATE_KEY` | no |
 | `OVERLOADED` | 529, 503, `overloaded_error` | none | `RETRY_SAME` with backoff, `LLM_RETRIES_PER_KEY` times, then `ROTATE_KEY` | yes |
 | `SERVER` | other 5xx, `api_error`, `server_error` | none | same as OVERLOADED | yes |
@@ -311,6 +320,12 @@ Why each row:
 
 - **QUOTA / AUTH**: another attempt with the same key can't succeed, and a different key might. Marking the key
   dead and persisting that saves a failed call in every later build (§10).
+- **MODEL_UNAVAILABLE**: the key works, only this model is off limits to it. Killing the key would lock out
+  every other model for `LLM_DEAD_KEY_TTL_S` (6 h by default) and in the next run too. Instead another key is
+  tried for the model first; only when none can serve it does the provider's other tier answer (a FAST call may
+  use the STRONG model and the other way round), unless a key that could serve the model is merely cooling: then
+  the gateway waits for it. With no model left the call moves to the next provider. Nothing is written to the
+  health file. The text must name the model: a 403 that just says *"no access"* cannot be told from a revoked key.
 - **RATE_LIMIT**: the key is fine; it just needs a pause. Rotating keeps the build moving.
 - **Transient errors**: they usually clear within seconds, so retry the same key. If the provider is truly down,
   the circuit breaker cuts the retries short.
@@ -345,9 +360,15 @@ key's failure count.
 **Circuit breaker, one per provider and shared by all calls.** Three consecutive provider-level failures
 (OVERLOADED, SERVER, TIMEOUT, CONNECTION, UNKNOWN) open the circuit for 120 s. While it is open the provider is
 skipped. After 120 s it is HALF_OPEN and one trial is allowed: success closes the circuit, failure re-opens it.
-Key-level failures (QUOTA, AUTH, RATE_LIMIT) and request-level failures (BAD_REQUEST, CONTEXT, PARSE) do not
-count, because they say nothing about the provider's health. When the circuit opens in the middle of the retries
-on one key, the gateway moves to the next provider at once instead of trying the provider's other keys.
+Key-level failures (QUOTA, AUTH, RATE_LIMIT, MODEL_UNAVAILABLE) and request-level failures (BAD_REQUEST, CONTEXT,
+PARSE) do not count, because they say nothing about the provider's health. When the circuit opens in the middle of
+the retries on one key, the gateway moves to the next provider at once instead of trying the provider's other keys.
+
+**The breaker only ever hands a call over to somebody else.** When no other provider could answer the call (a
+single-provider setup such as only `OPENAI_API_KEY`, or every other provider dead, cooling or already tried), an
+open circuit is ignored: the provider is tried with its normal retry budget and backoff, inside the call's
+deadline. One transient burst therefore costs the retries of that call, not the next 120 s of model access. A
+success closes the circuit; a failure keeps it open.
 
 ---
 
@@ -459,10 +480,10 @@ wait, revival) are written as `LLM` events. Example from the scenario in §5:
 A rate-limited key, followed by a cooldown wait because nothing else could answer:
 
 ```text
-... | MODEL  | anthropic/claude-sonnet-5-5 | key=anthropic#1(…f3a2) | FAIL rate_limit 0.3s attempt=1 | draft node prose | error: RateLimitError: Error code: 429 - ...
+... | MODEL  | anthropic/claude-haiku-5-5 | key=anthropic#1(…f3a2) | FAIL rate_limit 0.3s attempt=1 | draft node prose | error: RateLimitError: Error code: 429 - ...
 ... | LLM    | anthropic#1(…f3a2) cooling for 20s (rate_limit) | provider=anthropic
 ... | LLM    | all usable keys are cooling; waiting 20.1s | purpose=draft node prose
-... | MODEL  | anthropic/claude-sonnet-5-5 | key=anthropic#1(…f3a2) | ok 18.2s in=8120 out=1544 attempt=2 | draft node prose
+... | MODEL  | anthropic/claude-haiku-5-5 | key=anthropic#1(…f3a2) | ok 18.2s in=8120 out=1544 attempt=2 | draft node prose
 ```
 
 The run summary at the end of the trace counts model calls by `provider/model`, which the hackathon requires.
@@ -501,7 +522,7 @@ except AllProvidersFailed as exc:               # every provider / key failed (o
 Diagnostics, which the build never calls:
 
 ```python
-llm.describe()                 # order, models per role, key states (masked), circuit states
+llm.describe()                 # order, models per role, key states (masked), circuit states, models a key may not use
 llm.available_providers()      # providers with a live key and a closed circuit
 await llm.probe()              # one tiny FAST call per provider → {provider: {ok, model, key, latency_s, ...}}
 llm.secret_values()            # every credential, for TraceWriter.add_secrets(...)
@@ -590,7 +611,8 @@ What the tests cover:
   - all Anthropic keys dead goes to OpenAI;
   - rate limit rotates without waiting, or waits and reuses the key when nothing else is left;
   - transient retry with backoff;
-  - the circuit opens and later half-opens;
+  - the circuit opens and later half-opens, and an open circuit never refuses the only provider;
+  - a per-model 403 keeps the key alive and falls back to another key, the other model tier or the next provider;
   - BAD_REQUEST and CONTEXT go to the next provider;
   - PARSE gets one repair retry, then the next provider;
   - the deadline caps timeouts and stops new attempts;
@@ -615,6 +637,7 @@ What the tests cover:
 | Every provider fails right away with `auth` / `no keys configured` | No API key is set and the Claude login is dead | Put `OPENAI_API_KEY` (or `ANTHROPIC_API_KEY`) in `.env`. `build_gateway(settings, None).describe()` lists every provider's keys (masked) and their states. |
 | Many `FAIL parse` lines | The schema is too large or ambiguous for one shot, or the output hit `max_tokens` (the error then says *"reply truncated at max_tokens"*) | Raise `max_tokens` for that call, or split the schema. The repair retry quotes the exact validation errors. |
 | `FAIL bad_request` on every call to one provider | Wrong model id (`ANTHROPIC_STRONG_MODEL`, …) or a parameter the model rejects | Fix the model name. The gateway already falls through to the next provider for each call. |
+| `FAIL model_unavailable`, then answers from the other model tier | The key's project has no access to the configured model (a per-model 403) | Request access, or set `OPENAI_STRONG_MODEL` / `ANTHROPIC_STRONG_MODEL` (…`_FAST_MODEL`) to a model the key may use. `llm.describe()` lists `unavailable_models` per key; the key itself stays alive. |
 | Calls stop with `deadline reached` | The build budget is nearly used up | Expected: the graph finalises with what it has. Raise `--budget-s` / `BUILD_TIME_BUDGET_S` if you have the time. |
 | A secret appears in a log | It should not: errors are scrubbed and `TraceWriter` redacts `secret_values` | Report it. Add the value pattern to `scrub_secrets` and a test in `test_llm_errors.py`. |
 | Long pauses with `all usable keys are cooling; waiting …` | Every key of every provider is rate limited | Add keys (`*_API_KEYS`) or another provider. Lower `LLM_MAX_COOLDOWN_WAIT_S` to fail faster. |

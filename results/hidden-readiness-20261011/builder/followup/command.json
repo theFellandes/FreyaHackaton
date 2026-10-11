@@ -1,0 +1,22 @@
+[
+  "C:\\Users\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\.venv-playground\\Scripts\\python.exe",
+  "-m",
+  "pytest",
+  "tests/unit/test_validate_policy.py",
+  "-m",
+  "not live",
+  "-o",
+  "addopts=",
+  "-p",
+  "no:langsmith",
+  "-q",
+  "--tb=short",
+  "-r",
+  "a",
+  "--basetemp",
+  "C:\\Users\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\.cache\\hidden-readiness-20261011\\builder\\followup\\pytest-temp",
+  "-o",
+  "cache_dir=C:\\Users\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\.cache\\hidden-readiness-20261011\\builder\\followup\\pytest-cache",
+  "--junitxml",
+  "C:\\Users\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\results\\hidden-readiness-20261011\\builder\\followup\\pytest-junit.xml"
+]

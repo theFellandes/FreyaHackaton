@@ -1,5 +1,7 @@
 # 07 / Gap 1: creating, updating and publishing a workflow agent (the `deploy_to_freya` sequence)
 
+> Status: pre-kit research note (10 October 2026), kept for background. Where it disagrees with the kit ([research/11](11_hackathon_rules_and_kit.md), `docs/api.md`, `docs/workflow-format.md`) or with the code, those win.
+
 Status: **partly resolved.** GET-only evidence settles the routes, the auth model, what "sync" means and the save/publish semantics. Three questions still need a write call to answer: (1) the exact publish call, (2) whether POST /branches accepts the full graph, and (3) how to create a brand-new workflow. Section 5 gives a tiered experiment for those, ordered from the safest probe up.
 
 Tags: **[SPEC]** = openapi_staging.json / openapi_prod.json (identical path sets, 96 paths). **[OLD-SPEC]** = docs/openapi.json (58 paths, older v2). **[LIVE]** = GET on staging today (2026-10-10). **[UI]** = dashboard i18n strings (research/tools/i18n.json, from webapp/js/0awkrbce61are.js). **[INFERRED]** = my conclusion, not stated anywhere.
