@@ -1,0 +1,82 @@
+flowchart TD
+    __start__(["START"])
+    __end__(["END"])
+    __start__ --> load_inputs
+    load_inputs --> guard_inputs
+    load_inputs -.-> finalize
+    guard_inputs -->|"service contract"| service_workflow
+    guard_inputs -->|"collections"| understand_brief
+    guard_inputs -.->|"track agentic"| agentic_build
+    guard_inputs -.-> finalize
+    service_workflow -.->|"repair plan"| service_workflow
+    service_workflow -->|"plan compiled"| static_checks
+    service_workflow -.->|"blocked or attempts exhausted"| finalize
+    understand_brief --> extract_policy
+    understand_brief -.-> agentic_build
+    understand_brief -.-> finalize
+    extract_policy --> validate_policy
+    extract_policy -.-> agentic_build
+    extract_policy -.-> finalize
+    validate_policy -.->|"errors"| repair_policy
+    validate_policy -->|"no errors"| guard_policy
+    validate_policy -.-> agentic_build
+    validate_policy -.-> finalize
+    repair_policy -.->|"re-validate"| validate_policy
+    guard_policy -.->|"blocked"| repair_policy
+    guard_policy -->|"ok"| draft_prose
+    guard_policy -.-> agentic_build
+    guard_policy -.-> finalize
+    draft_prose --> compile_workflow
+    draft_prose -.-> agentic_build
+    draft_prose -.-> finalize
+    compile_workflow -->|"ok"| static_checks
+    compile_workflow -.->|"compile error"| repair_compile
+    compile_workflow -.-> agentic_build
+    compile_workflow -.-> finalize
+    static_checks -.->|"service lint errors"| service_workflow
+    static_checks -.->|"lint errors"| repair_compile
+    static_checks -->|"lint clean"| guard_workflow
+    static_checks -.-> agentic_build
+    static_checks -.-> finalize
+    repair_compile -.->|"recompile"| compile_workflow
+    repair_compile -.-> agentic_build
+    repair_compile -.-> finalize
+    guard_workflow -.->|"service blocked"| service_workflow
+    guard_workflow -.->|"blocked"| repair_compile
+    guard_workflow -->|"ok"| remote_validate
+    guard_workflow -.-> agentic_build
+    guard_workflow -->|"dry run"| finalize
+    remote_validate -.->|"service rejected"| service_workflow
+    remote_validate -.->|"rejected"| repair_compile
+    remote_validate -->|"accepted"| deploy
+    remote_validate -.-> agentic_build
+    remote_validate -.-> finalize
+    deploy -.->|"service content rejected"| service_workflow
+    deploy -.->|"content rejected"| repair_compile
+    deploy -->|"deployed"| self_test
+    deploy -.-> agentic_build
+    deploy -.-> finalize
+    self_test -->|"results"| decide
+    self_test -.-> finalize
+    decide -.->|"failing service audit"| service_workflow
+    decide -.->|"failing audit"| repair_policy
+    decide -->|"done"| finalize
+    agentic_build -.->|"workflow written"| static_checks
+    agentic_build -.->|"retry"| agentic_build
+    agentic_build -.-> finalize
+    finalize --> __end__
+    linkStyle 2,6,9,11,12,14,15,18,19,23,24,26,27,30,31,35,36,38,39,43,48,49,53,54,56,62 stroke:#b4b8c0,stroke-width:1px
+    classDef llm fill:#e8f1ff,stroke:#2f6fdb,color:#10264d
+    class understand_brief,extract_policy,draft_prose llm
+    classDef check fill:#fff4d6,stroke:#b7791f,color:#4a3200
+    class guard_inputs,validate_policy,guard_policy,static_checks,guard_workflow check
+    classDef repair fill:#fde8e8,stroke:#c53030,color:#4a1010
+    class repair_policy,repair_compile repair
+    classDef build fill:#e6f6ec,stroke:#2f855a,color:#12351f
+    class service_workflow,compile_workflow build
+    classDef platform fill:#efe8ff,stroke:#6b46c1,color:#2a1a52
+    class remote_validate,deploy,self_test,decide platform
+    classDef fallback fill:#fff,stroke:#6b7280,stroke-dasharray:4 3,color:#1f2937
+    class agentic_build fallback
+    classDef plain fill:#f1f2f4,stroke:#6b7280,color:#1f2937
+    class __start__,load_inputs,finalize,__end__ plain

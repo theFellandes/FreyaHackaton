@@ -10,6 +10,7 @@ from typing import Any
 
 import pytest
 
+from builder.compiler.tools import model_tool
 from builder.ingest.brief_loader import load_brief
 from builder.ingest.tool_api import parse_tool_api, with_base_url
 from builder.trace import NullTrace
@@ -106,3 +107,65 @@ def test_complete_collection_capabilities_keep_existing_canonicalization_in_opti
     strict = asyncio.run(canonical_tool_api(parse_tool_api(document), document))
     assert api.model_dump() == strict.model_dump()
     assert set(REQUIRED_ROLES) <= set(api.tools) and llm.calls == []
+
+
+def test_operation_server_overrides_path_server_then_document_server() -> None:
+    document = inventory_document()
+    item = document["paths"]["/inventory"]
+    item["servers"] = [{"url": "https://shared.example/shared/{version}",
+                        "variables": {"version": {"default": "v2"}}}]
+    item["get"]["servers"] = [{"url": "https://read.example/queries"}]
+    api = parse_tool_api(document, every_operation=True)
+    assert api.tools["inventory_read"].url == "https://read.example/queries/inventory"
+    assert api.tools["inventory_reserve"].url == "https://shared.example/shared/v2/inventory"
+    origin_only = with_base_url(api, "https://mock.example")
+    assert origin_only.tools["inventory_read"].url == "https://mock.example/queries/inventory"
+    assert origin_only.tools["inventory_reserve"].url == "https://mock.example/shared/v2/inventory"
+    prefix_override = with_base_url(api, "https://mock.example/test")
+    assert {contract.url for contract in prefix_override.tools.values()} == {"https://mock.example/test/inventory"}
+
+
+def test_relative_operation_server_is_preserved_on_a_mock_origin() -> None:
+    document = inventory_document()
+    document["paths"]["/inventory"]["post"]["servers"] = [{"url": "/reservations"}]
+    api = with_base_url(parse_tool_api(document, every_operation=True), "https://mock.example")
+    assert api.tools["inventory_reserve"].url == "https://mock.example/reservations/inventory"
+    assert api.tools["inventory_read"].url == "https://mock.example/api/inventory"
+
+
+def test_contract_grounding_uses_the_resolved_server_of_each_operation() -> None:
+    document = inventory_document()
+    item = document["paths"]["/inventory"]
+    item["servers"] = [{"url": "https://shared.example/shared"}]
+    item["get"]["servers"] = [{"url": "https://read.example/queries"}]
+    text = ("Default base https://inventory.example/api\n"
+            "GET https://read.example/queries/inventory returns available.\n"
+            "POST https://shared.example/shared/inventory requires sku and quantity; returns available.\n")
+    assert check_derived_document(document, text, require_collection_roles=False) == []
+    item["get"]["servers"] = [{"url": "https://read.example/changed"}]
+    assert check_derived_document(document, text, require_collection_roles=False)
+
+
+def test_non_json_media_type_is_retained_with_its_request_schema() -> None:
+    document = inventory_document()
+    content = document["paths"]["/inventory"]["post"]["requestBody"]["content"]
+    content["application/x-www-form-urlencoded"] = content.pop("application/json")
+    api = parse_tool_api(document, every_operation=True)
+    reserve = api.tools["inventory_reserve"]
+    assert reserve.request_content_type == "application/x-www-form-urlencoded"
+    assert reserve.required_fields == ["sku", "quantity"]
+    tool = model_tool(reserve, description="Reserve stock.", customer_field="")
+    assert tool["function"]["parameters"]["properties"]["headers"]["properties"]["Content-Type"]["default"] \
+        == "application/x-www-form-urlencoded"
+    assert api.tools["inventory_read"].request_content_type == "application/json"
+
+
+def test_derivation_prompt_preserves_source_date_format_and_media_type(tmp_path: Path) -> None:
+    source = tmp_path / "inventory-contract.md"
+    source.write_text(inventory_contract(), encoding="utf-8")
+    llm = FakeLLM(DerivedOpenApi(document=inventory_document()))
+    asyncio.run(derive_tool_api([load_brief(source)], llm=llm, require_collection_roles=False))
+    prompt = llm.calls[0]["system"]
+    assert "ONLY when the contract specifies ISO / RFC3339 full-date" in prompt
+    assert 'leaving "format" absent' in prompt
+    assert "Never replace a specified media type with JSON" in prompt

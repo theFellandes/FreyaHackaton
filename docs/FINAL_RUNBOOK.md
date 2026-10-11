@@ -7,7 +7,7 @@ The kit opens at **20:00 Istanbul (17:00 UTC)**. Submit before **23:00 Istanbul 
 The release follow-up is paused at the user's request, so follow the procedure manually.
 
 The interface is `python3 builder/build.py {case_folder} {mock_url}`. On this Windows machine, use
-`submission/runtime/Scripts/python.exe` explicitly and the capture commands in
+`.venv-playground/Scripts/python.exe` explicitly and the capture commands in
 [submission/tools/README.md](../submission/tools/README.md).
 
 See [final audit](../submission/FINAL_AUDIT.md) for verification results and remaining blockers, and

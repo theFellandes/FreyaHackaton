@@ -123,6 +123,7 @@ class ToolContract(BaseModel):
     response_description: str = ""
     errors: dict[str, str] = Field(default_factory=dict)
     headers: dict[str, str] = Field(default_factory=dict)
+    request_content_type: str = "application/json"
     notes: list[str] = Field(default_factory=list)
 
     @property
@@ -423,11 +424,15 @@ def with_base_url(api: ToolApi, base_url: str) -> ToolApi:
     """
     base = base_url.strip().rstrip("/")
     # a bare origin keeps the contract's server path prefix, from an absolute (https://bank/v1) or relative (/v1) URL
-    server = base if urlsplit(base).path.strip("/") else base + urlsplit(api.base_url).path.rstrip("/")
+    explicit_prefix = bool(urlsplit(base).path.strip("/"))
+    server = base if explicit_prefix else base + urlsplit(api.base_url).path.rstrip("/")
     tools = {}
     for name, contract in api.tools.items():
-        path = contract.path or urlsplit(contract.url).path
-        url = f"{server}{path}" if path.startswith("/") else f"{server}/{path}"
+        # A bare origin preserves the URL actually resolved for this operation, including its own server override.
+        # An explicit mock prefix keeps the legacy behavior: replace every server with that prefix.
+        path = (contract.path or urlsplit(contract.url).path) if explicit_prefix else urlsplit(contract.url).path
+        url_base = server if explicit_prefix else base
+        url = f"{url_base}{path}" if path.startswith("/") else f"{url_base}/{path}"
         tools[name] = contract.model_copy(update={"url": url})
     return api.model_copy(update={"base_url": server, "tools": tools})
 
@@ -474,6 +479,10 @@ def _contract_for(
             logger.warning("path %s has several operations (%s); using %s", path, ", ".join(methods), methods[0])
         method = methods[0]
     operation: Mapping[str, Any] = item[method]
+    if isinstance(operation.get("servers"), list):
+        base_url = _base_url(operation)
+    elif isinstance(item.get("servers"), list):
+        base_url = _base_url(item)
     name = _tool_name(path, operation)
     if name is None:
         logger.warning("path %s yields no tool name; skipped", path)
@@ -481,6 +490,9 @@ def _contract_for(
     parameters = [*(item.get("parameters") or []), *(operation.get("parameters") or [])]
     request_fields = _request_fields(operation, parameters, resolver)
     headers, notes = _header_parameters(name, parameters, resolver)
+    request_content_type = _request_content_type(operation, resolver)
+    if request_content_type != "application/json":
+        headers.setdefault("Content-Type", request_content_type)
     security = operation.get("security", resolver.security)
     if isinstance(security, list) and any(isinstance(req, Mapping) and req for req in security):
         schemes = sorted({str(key) for req in security if isinstance(req, Mapping) for key in req})
@@ -499,6 +511,7 @@ def _contract_for(
         response_description=response_description,
         errors=errors,
         headers=headers,
+        request_content_type=request_content_type,
         notes=notes,
     )
 
@@ -525,12 +538,26 @@ def _json_schema_of(content: Any, resolver: _Resolver) -> Any:
     """The schema of the JSON media type of a ``content`` map (``application/json`` preferred)."""
     if not isinstance(content, Mapping) or not content:
         return None
-    media_type = next((key for key in content if str(key).split(";")[0].strip() == "application/json"), None)
-    media_type = (
-        media_type or next((key for key in content if "json" in str(key)), None) or next(iter(content))
-    )
+    media_type = _preferred_media_type(content)
     media, _ = resolver.resolve(content[media_type])
     return media.get("schema")
+
+
+def _preferred_media_type(content: Mapping[str, Any]) -> str:
+    return str(next((key for key in content if str(key).split(";")[0].strip() == "application/json"), None)
+               or next((key for key in content if "json" in str(key)), None) or next(iter(content)))
+
+
+def _request_content_type(operation: Mapping[str, Any], resolver: _Resolver) -> str:
+    """The actual media type of the request schema selected for this operation."""
+    body, _ = resolver.resolve(operation.get("requestBody") or {})
+    content = body.get("content")
+    if isinstance(content, Mapping) and content:
+        return _preferred_media_type(content)
+    consumes = operation.get("consumes") or resolver.consumes
+    if isinstance(consumes, list) and consumes:
+        return str(consumes[0])
+    return "application/json"
 
 
 def _request_fields(
@@ -597,6 +624,7 @@ class _Resolver:
     def __init__(self, document: Mapping[str, Any]) -> None:
         self._document = document
         self.security: Any = document.get("security")  # the document-wide security requirement, if any
+        self.consumes: Any = document.get("consumes")  # Swagger request media type when the operation inherits it
 
     def resolve(self, node: Any, seen: frozenset[str] = frozenset()) -> tuple[dict[str, Any], frozenset[str]]:
         """Return ``node`` with ``$ref``/``allOf``/unions resolved at the top level, and the refs followed so far.

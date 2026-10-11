@@ -25,6 +25,7 @@ EXPECTED_NODES = {
     "guard_policy",
     "draft_prose",
     "compile_workflow",
+    "service_workflow",
     "static_checks",
     "repair_compile",
     "guard_workflow",

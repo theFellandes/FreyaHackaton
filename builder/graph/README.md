@@ -25,8 +25,11 @@ flowchart TD
     exits[/"any step that fails or is blocked"/]
     __start__ --> load_inputs
     load_inputs --> guard_inputs
-    guard_inputs -->|"ok"| understand_brief
+    guard_inputs -->|"service contract"| service_workflow
+    guard_inputs -->|"collections"| understand_brief
     guard_inputs -.->|"track agentic"| agentic_build
+    service_workflow -.->|"repair plan"| service_workflow
+    service_workflow -->|"plan compiled"| static_checks
     understand_brief --> extract_policy
     extract_policy --> validate_policy
     validate_policy -.->|"errors"| repair_policy
@@ -37,24 +40,29 @@ flowchart TD
     draft_prose --> compile_workflow
     compile_workflow -->|"ok"| static_checks
     compile_workflow -.->|"compile error"| repair_compile
+    static_checks -.->|"service lint errors"| service_workflow
     static_checks -.->|"lint errors"| repair_compile
     static_checks -->|"lint clean"| guard_workflow
     repair_compile -.->|"recompile"| compile_workflow
+    guard_workflow -.->|"service blocked"| service_workflow
     guard_workflow -.->|"blocked"| repair_compile
     guard_workflow -->|"ok"| remote_validate
     guard_workflow -->|"dry run"| finalize
+    remote_validate -.->|"service rejected"| service_workflow
     remote_validate -.->|"rejected"| repair_compile
     remote_validate -->|"accepted"| deploy
+    deploy -.->|"service content rejected"| service_workflow
     deploy -.->|"content rejected"| repair_compile
     deploy -->|"deployed"| self_test
     self_test -->|"results"| decide
+    decide -.->|"failing service audit"| service_workflow
     decide -.->|"failing audit"| repair_policy
     decide -->|"done"| finalize
     agentic_build -.->|"workflow written"| static_checks
     agentic_build -.->|"retry"| agentic_build
     finalize --> __end__
     exits -.->|"finalize"| finalize
-    exits -.->|"compiled track: fallback"| agentic_build
+    exits -.->|"collections track: fallback"| agentic_build
     classDef llm fill:#e8f1ff,stroke:#2f6fdb,color:#10264d
     class understand_brief,extract_policy,draft_prose llm
     classDef check fill:#fff4d6,stroke:#b7791f,color:#4a3200
@@ -62,7 +70,7 @@ flowchart TD
     classDef repair fill:#fde8e8,stroke:#c53030,color:#4a1010
     class repair_policy,repair_compile repair
     classDef build fill:#e6f6ec,stroke:#2f855a,color:#12351f
-    class compile_workflow build
+    class service_workflow,compile_workflow build
     classDef platform fill:#efe8ff,stroke:#6b46c1,color:#2a1a52
     class remote_validate,deploy,self_test,decide platform
     classDef fallback fill:#fff,stroke:#6b7280,stroke-dasharray:4 3,color:#1f2937

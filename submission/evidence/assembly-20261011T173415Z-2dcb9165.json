@@ -1,0 +1,97 @@
+{
+  "assembled_at_utc": "2026-10-11T17:34:15.390778+00:00",
+  "source_url": "https://drive.google.com/drive/folders/1r9KOek3SXiE0mu1wBofezD0bjiAJhcYQ",
+  "case_folder": "C:\\Users\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\submission\\case",
+  "archives": [
+    {
+      "path": "submission/incoming/20261011T173415Z-2dcb9165/sources-20261011T173314Z-1-001.zip",
+      "sha256": "8e00d7f14c91f2a142f7e5469f6b000b5c5967de0fff65126b3bcc70cd47b62e"
+    },
+    {
+      "path": "submission/incoming/20261011T173415Z-2dcb9165/cloudflare-mock-20261011T172618Z-1-001.zip",
+      "sha256": "98ec26057f473712116498fbbbbeb818c945cc10c6aa8d67b065f36af80d90ac"
+    },
+    {
+      "path": "submission/incoming/20261011T173415Z-2dcb9165/test-environment-20261011T172504Z-1-001.zip",
+      "sha256": "f83761dd1776a165c25e85fbfe98f6aca9fcc11a1dba4a4bebb0959d4317eafb"
+    }
+  ],
+  "installed_files": [
+    {
+      "path": "submission/case/sources/documents/2026-09-10-ivr-prompt-sheet.md",
+      "sha256": "dfb0d352d57dc22466c0b11ee557b4af1ba0f266be48b455aabae140a64dd463",
+      "source": "submission/incoming/20261011T173415Z-2dcb9165/archive-0/sources/documents/2026-09-10-ivr-prompt-sheet.md"
+    },
+    {
+      "path": "submission/case/sources/emails/2026-10-09-decisions-recap.txt",
+      "sha256": "709f18f3d73c4e9398a3ed9dc7249a54b7ca48dcdde8ce7aa7ebbbcdef1b0732",
+      "source": "submission/incoming/20261011T173415Z-2dcb9165/archive-0/sources/emails/2026-10-09-decisions-recap.txt"
+    },
+    {
+      "path": "submission/case/sources/documents/2025-08-14-cards-faq.md",
+      "sha256": "bb26e035f72da6d5add21d62271dc798106c1a859deb00fa9a9878dc8f6d8f26",
+      "source": "submission/incoming/20261011T173415Z-2dcb9165/archive-0/sources/documents/2025-08-14-cards-faq.md"
+    },
+    {
+      "path": "submission/case/sources/meetings/2026-10-07-analysis-session-transcript.txt",
+      "sha256": "6e75d0013cf6c653f4a25a6ce0c2f6e0a96b4472474e530d6ab4bebf8b21b20d",
+      "source": "submission/incoming/20261011T173415Z-2dcb9165/archive-0/sources/meetings/2026-10-07-analysis-session-transcript.txt"
+    },
+    {
+      "path": "submission/case/sources/documents/2026-10-01-service-contract.md",
+      "sha256": "692414a06036911509072d602b6c85bf38cbf2c791d26488d53d28be1cf35470",
+      "source": "submission/incoming/20261011T173415Z-2dcb9165/archive-0/sources/documents/2026-10-01-service-contract.md"
+    },
+    {
+      "path": "submission/case/sources/emails/attachments/2026-09-02-statement-debt-analysis.md",
+      "sha256": "16915b44652e16afeea64d5f3ecf6d09b9bcce54d7d39b132ff8237369c507a2",
+      "source": "submission/incoming/20261011T173415Z-2dcb9165/archive-0/sources/emails/attachments/2026-09-02-statement-debt-analysis.md"
+    },
+    {
+      "path": "submission/case/sources/emails/attachments/2026-10-08-statement-debt-analysis.md",
+      "sha256": "c33b5640a06f6be6e6d3cc7f86189ab75bf4ffb4e935874b3ee3b48b03ff1094",
+      "source": "submission/incoming/20261011T173415Z-2dcb9165/archive-0/sources/emails/attachments/2026-10-08-statement-debt-analysis.md"
+    },
+    {
+      "path": "submission/case/sources/emails/2026-09-24-kickoff-questions.txt",
+      "sha256": "d19e44e8098850f378fd6816892f7b9196ec6f469ccd6dc8dea76566b850be74",
+      "source": "submission/incoming/20261011T173415Z-2dcb9165/archive-0/sources/emails/2026-09-24-kickoff-questions.txt"
+    },
+    {
+      "path": "submission/case/cloudflare-mock/example/example-response.json",
+      "sha256": "0deeee4de065d3fdbd78818ba270547c5d9601ab8398b1e4d5596603196401a9",
+      "source": "submission/incoming/20261011T173415Z-2dcb9165/archive-1/cloudflare-mock/example/example-response.json"
+    },
+    {
+      "path": "submission/case/cloudflare-mock/example/wrangler.toml",
+      "sha256": "a7a80f867f971916c521ef2133d405ce8698423b4db19f93f734f03f987ea60b",
+      "source": "submission/incoming/20261011T173415Z-2dcb9165/archive-1/cloudflare-mock/example/wrangler.toml"
+    },
+    {
+      "path": "submission/case/cloudflare-mock/README.md",
+      "sha256": "6e50898b1bcc91ca76646b557786d722888bb8ae96aa719f20b659daa23abd6a",
+      "source": "submission/incoming/20261011T173415Z-2dcb9165/archive-1/cloudflare-mock/README.md"
+    },
+    {
+      "path": "submission/case/cloudflare-mock/example/worker.js",
+      "sha256": "0fb2a47300c8e131a47e6e265ff33350733e0bdb19c17097aab4168dc6901d24",
+      "source": "submission/incoming/20261011T173415Z-2dcb9165/archive-1/cloudflare-mock/example/worker.js"
+    },
+    {
+      "path": "submission/case/test-environment/test-customers.json",
+      "sha256": "009d3609d33a3b001ce04861822cd2592cb5482a7a5b0a5cb69442592889aa65",
+      "source": "submission/incoming/20261011T173415Z-2dcb9165/archive-2/test-environment/test-customers.json"
+    },
+    {
+      "path": "submission/case/README.md",
+      "sha256": "476f99af2e66739de8ed4a192b04c003cc6ab5d31a9bce6825af4d9608852cc6",
+      "source": "submission/incoming/20261011T173415Z-2dcb9165/files/0/README.md"
+    },
+    {
+      "path": "submission/case/example-scenarios.md",
+      "sha256": "c7534cb5d591d6399a72c3c717f35d75c81ff2d07c1587ba5ab90245d283d989",
+      "source": "submission/incoming/20261011T173415Z-2dcb9165/files/1/example-scenarios.md"
+    }
+  ],
+  "note": "Original files combined without byte edits; inventory completeness is checked separately."
+}

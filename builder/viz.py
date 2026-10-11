@@ -105,6 +105,7 @@ NODE_ROLES: dict[str, str] = {
     "guard_policy": "check",
     "draft_prose": "llm",
     "compile_workflow": "build",
+    "service_workflow": "build",
     "static_checks": "check",
     "repair_compile": "repair",
     "guard_workflow": "check",
@@ -119,7 +120,8 @@ NODE_ROLES: dict[str, str] = {
 #: Short edge labels, keyed by ``(source, target)``. Cosmetic: an edge missing here is still drawn, unlabelled. A test
 #: checks that every key is an edge of the real graph, so a renamed or removed edge cannot leave a stale label behind.
 EDGE_LABELS: dict[tuple[str, str], str] = {
-    ("guard_inputs", "understand_brief"): "ok",
+    ("guard_inputs", "understand_brief"): "collections",
+    ("guard_inputs", "service_workflow"): "service contract",
     ("guard_inputs", "agentic_build"): "track agentic",
     ("validate_policy", "repair_policy"): "errors",
     ("validate_policy", "guard_policy"): "no errors",
@@ -128,18 +130,26 @@ EDGE_LABELS: dict[tuple[str, str], str] = {
     ("guard_policy", "repair_policy"): "blocked",
     ("compile_workflow", "static_checks"): "ok",
     ("compile_workflow", "repair_compile"): "compile error",
+    ("service_workflow", "static_checks"): "plan compiled",
+    ("service_workflow", "service_workflow"): "repair plan",
+    ("service_workflow", "finalize"): "blocked or attempts exhausted",
     ("static_checks", "guard_workflow"): "lint clean",
     ("static_checks", "repair_compile"): "lint errors",
+    ("static_checks", "service_workflow"): "service lint errors",
     ("repair_compile", "compile_workflow"): "recompile",
     ("guard_workflow", "remote_validate"): "ok",
     ("guard_workflow", "repair_compile"): "blocked",
+    ("guard_workflow", "service_workflow"): "service blocked",
     ("guard_workflow", "finalize"): "dry run",
     ("remote_validate", "deploy"): "accepted",
     ("remote_validate", "repair_compile"): "rejected",
+    ("remote_validate", "service_workflow"): "service rejected",
     ("deploy", "self_test"): "deployed",
     ("deploy", "repair_compile"): "content rejected",
+    ("deploy", "service_workflow"): "service content rejected",
     ("self_test", "decide"): "results",
     ("decide", "repair_policy"): "failing audit",
+    ("decide", "service_workflow"): "failing service audit",
     ("decide", "finalize"): "done",
     ("agentic_build", "static_checks"): "workflow written",
     ("agentic_build", "agentic_build"): "retry",
@@ -244,7 +254,7 @@ def builder_mermaid(view: str = "compact", *, direction: str = "TD", graph: Any 
             pale.append(number)
     if view == "compact":
         lines.append('    exits -.->|"finalize"| finalize')
-        lines.append('    exits -.->|"compiled track: fallback"| agentic_build')
+        lines.append('    exits -.->|"collections track: fallback"| agentic_build')
     if pale:
         lines.append(f"    linkStyle {','.join(map(str, pale))} stroke:#b4b8c0,stroke-width:1px")
     members: dict[str, list[str]] = {role: [] for role, _style in _BUILDER_CLASSES}

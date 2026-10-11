@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const major = Number(process.versions.node.split(".")[0]);
 const result = {
-  phase: "preparation",
+  phase: "implementation_local_preflight",
   bank_ready: false,
   node_version: process.versions.node,
   node_supported: major >= 22,

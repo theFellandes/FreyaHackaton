@@ -30,6 +30,13 @@ NAME = "self_test"
 
 
 async def _run_one(name: str, state: BuilderState, ctx: BuilderContext) -> dict[str, Any]:
+    if state.get("service_mode"):
+        return {
+            "name": name,
+            "passed": False,
+            "summary": "Collection self-tests do not apply to this service API; source-customer service chats are required.",
+            "details": {"skipped": True, "reason": "service API has no collection fixtures or PolicyIR"},
+        }
     deploy = state.get("deploy") or {}
     ir, ledger = (get_ir(state) if state.get("track") != "agentic" else None), get_ledger(state)
     if name == "smoke":

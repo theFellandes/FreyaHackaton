@@ -1,10 +1,10 @@
-# Freya Collections Builder
+# Freya Phone Agent Builder
 
-A LangGraph **builder** for the Freya x YC "Build the Builder" hackathon. It reads a bank's collections brief (a clean
+A LangGraph **builder** for the Freya x YC "Build the Builder" hackathon. It reads a bank's brief (a clean
 specification, or raw material such as a mail, a policy extract and a memo) and the bank's tool API file. It then
 creates, tests, publishes and exports a Freya phone agent with no manual step. A model reads the documents into a typed
-policy; a deterministic compiler turns the policy into the workflow. Dates, amounts, routes and the closing outcome are
-code, not model judgement. See [How it works](docs/HOW_IT_WORKS.md).
+policy or source-grounded service plan; a deterministic compiler turns it into the workflow. Collections use code for
+dates and amounts; the generic service route follows the original API and policy. See [How it works](docs/HOW_IT_WORKS.md).
 
 ```
 brief(s) + tool API -> rule ledger -> policy IR -> compiled workflow -> checks + guards -> Freya (save, export) -> self-test -> trace
@@ -13,7 +13,7 @@ brief(s) + tool API -> rule ledger -> policy IR -> compiled workflow -> checks +
 ## Final case: start here
 
 **[submission/FINAL_RUNBOOK.md](submission/FINAL_RUNBOOK.md)** is the current procedure for the one-case Turkish final
-on Sunday 11 October 2026. The final ZIP opens at 17:00 UTC (20:00 Istanbul); submission closes at 20:00 UTC
+on Sunday 11 October 2026. The final case opened at 17:00 UTC (20:00 Istanbul); submission closes at 20:00 UTC
 (23:00 Istanbul). Read BRIEF.md, then README.md, implement and verify the bank mock on Cloudflare Workers, then run
 the builder. Submit one exported workflow and that run's complete trace using the eight-field final form.
 
@@ -23,12 +23,12 @@ The final builder interface, from the repository root after the mock is deployed
 python3 builder/build.py {case_folder} {mock_url}
 ```
 
-On this Windows machine, use `submission/runtime/Scripts/python.exe` explicitly. Capture the selected run with
+On this Windows machine, use `.venv-playground/Scripts/python.exe` for builder runs. Capture the selected run with
 `submission/tools/capture_run.py`; the exact PowerShell procedure is in
 [submission/tools/README.md](submission/tools/README.md). The old two-brief form and `builder.submission` helper
 are historical. The release follow-up is paused at the user's request; follow the runbook manually.
 
-## Status (11 October 2026)
+## Practice evidence (11 October 2026)
 
 Honest evidence only. A practice customer counts only if all 3 repetitions pass. The hidden briefs differ from the
 public ones, so none of this is a hidden-brief score.
@@ -60,15 +60,15 @@ Known limits: [Quality review](results/QUALITY_REVIEW.md), [Critical gaps](docs/
 
 ## Quick start
 
-**This machine.** `submission/runtime/Scripts/python.exe` is the supported Python 3.12 runtime with builder
-dependencies. The root `.venv` currently cannot start; use the explicit runtime for the final. The following commands
-are practice examples, using that runtime in PowerShell:
+**This machine.** `.venv-playground/Scripts/python.exe` is the existing healthy Python 3.12 environment.
+The root `.venv` cannot start, and the new submission/runtime tokenizer import is blocked by Windows application
+control. The following commands are practice examples in PowerShell:
 
 ```sh
-submission/runtime/Scripts/python.exe builder/build.py briefs/brief-a.md tools/openapi.json --dry-run --fake-llm tests/fixtures/policy   # offline, seconds
-submission/runtime/Scripts/python.exe builder/build.py briefs/brief-a.md tools/openapi.json --dry-run       # real model calls, no Freya call
-submission/runtime/Scripts/python.exe builder/build.py briefs/brief-a.md tools/openapi.json                 # build, deploy, export, self-test
-submission/runtime/Scripts/python.exe builder/build.py briefs/brief-a.md briefs/brief-b.md tools/openapi.json
+.venv-playground/Scripts/python.exe builder/build.py briefs/brief-a.md tools/openapi.json --dry-run --fake-llm tests/fixtures/policy   # offline, seconds
+.venv-playground/Scripts/python.exe builder/build.py briefs/brief-a.md tools/openapi.json --dry-run       # real model calls, no Freya call
+.venv-playground/Scripts/python.exe builder/build.py briefs/brief-a.md tools/openapi.json                 # build, deploy, export, self-test
+.venv-playground/Scripts/python.exe builder/build.py briefs/brief-a.md briefs/brief-b.md tools/openapi.json
 ```
 
 **A clean machine.** Python 3.11 to 3.13 and [uv](https://docs.astral.sh/uv/):

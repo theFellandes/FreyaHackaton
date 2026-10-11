@@ -133,6 +133,44 @@ def test_a_single_method_stated_for_every_request_is_expected() -> None:
     assert any("expected 'POST /kayit/not-ekle'" in problem for problem in problems), problems
 
 
+SERVICE_TABLE_CONTRACT = (
+    "Every service uses POST, JSON in and JSON out.\nBase address for all services:\n"
+    "```\nhttps://inventory.example/api/v2/\n```\n"
+    "The first is POST https://inventory.example/api/v2/inventory.read, and so on.\n"
+    "\n| # | Service | Called with | Gives back |\n|---|---|---|---|\n"
+    "| 1 | `inventory.read` | none | available stock |\n"
+    "| 2 | `inventory.reserve` | none | reservation result |\n"
+)
+
+
+def test_a_documented_base_and_exact_service_column_ground_single_segment_paths() -> None:
+    document = _minimal({"/inventory.read": "post", "/inventory.reserve": "post"},
+                        server="https://inventory.example/api/v2/")
+    assert path_problems(document, SERVICE_TABLE_CONTRACT) == []
+
+
+def test_global_post_still_rejects_a_wrong_method_for_a_service_table_entry() -> None:
+    document = _minimal({"/inventory.read": "post", "/inventory.reserve": "get"},
+                        server="https://inventory.example/api/v2/")
+    problems = path_problems(document, SERVICE_TABLE_CONTRACT)
+    assert any("expected 'POST /inventory.reserve'" in problem for problem in problems), problems
+
+
+@pytest.mark.parametrize("wrong", ["/inventory.change", "/read.inventory", "/inventory/read"])
+def test_service_table_does_not_allow_invented_or_recombined_names(wrong: str) -> None:
+    document = _minimal({wrong: "post"}, server="https://inventory.example/api/v2/")
+    assert path_problems(document, SERVICE_TABLE_CONTRACT)
+
+
+def test_bare_service_names_require_a_matching_declared_base_and_labelled_column() -> None:
+    document = _minimal({"/inventory.reserve": "post"}, server="https://inventory.example/api/v2/")
+    no_base = SERVICE_TABLE_CONTRACT.replace("https://inventory.example/api/v2/", "https://other.example/api/v2/")
+    wrong_column = SERVICE_TABLE_CONTRACT.replace("| Service |", "| Description |")
+    prose_only = "Base https://inventory.example/api/v2/\nEvery request is POST. The customer mentions inventory.reserve."
+    for text in (no_base, wrong_column, prose_only):
+        assert path_problems(document, text), text
+
+
 # --- full paths ----------------------------------------------------------------------------------------------------
 
 

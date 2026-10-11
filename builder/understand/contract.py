@@ -96,6 +96,9 @@ _URL_RE = re.compile(r"https?://[^\s|<>\"'`()\[\]]+")
 _HYPHENS = str.maketrans(dict.fromkeys(map(chr, (0x2010, 0x2011, 0x2012, 0x2013, 0x2014, 0x2015, 0x2212)), "-"))
 #: Non-blank lines looked at above and below a path whose own line names no method.
 _METHOD_LINES = 3
+_SERVICE_COLUMN_RE = re.compile(
+    r"^(?:service|servis|endpoint|operation)(?:\s+(?:name|id|adi|ad\u0131))?$", re.IGNORECASE,
+)
 
 
 @dataclass(frozen=True)
@@ -220,6 +223,8 @@ def _review_paths(paths: Mapping[str, Any], base_url: str, text: str) -> tuple[l
                             f"as {path[len(prefix):] or '/'}")
         matches = list(pattern.finditer(text))
         if not matches:
+            matches = _service_table_matches(path, base_url, text, lines)
+        if not matches:
             inside = _bare_pattern(path).search(text)
             if inside is not None:
                 left = inside.start()
@@ -252,6 +257,43 @@ def _review_paths(paths: Mapping[str, Any], base_url: str, text: str) -> tuple[l
     if server:
         problems.append(server)
     return problems, notes
+
+
+def _service_table_matches(path: str, base_url: str, text: str, lines: _Lines) -> list[re.Match[str]]:
+    """A complete single-segment service name in a labelled table may follow a separately stated base URL.
+
+    This recognizes ``base /api/`` plus ``Service | inventory.reserve`` without accepting arbitrary words or
+    constructing a path from unrelated segments. The derived server must be explicitly present in the contract.
+    """
+    _body, count = _path_body(path)
+    if count != 1 or not urlsplit(base_url).netloc:
+        return []
+    normalized_base = base_url.rstrip("/").casefold()
+    if not any(raw.rstrip(".,;:!?*_").rstrip("/").casefold() == normalized_base for raw in _URL_RE.findall(text)):
+        return []
+    name = path.strip("/").casefold()
+    pattern = re.compile(re.escape(path.strip("/")), re.IGNORECASE)
+    matches: list[re.Match[str]] = []
+    column: int | None = None
+    for line, offset in zip(lines.lines, lines.starts, strict=True):
+        if "|" not in line:
+            column = None
+            continue
+        cells = list(re.finditer(r"[^|]+", line))
+        header = next((index for index, cell in enumerate(cells)
+                       if _SERVICE_COLUMN_RE.fullmatch(cell.group().strip(" `*\t"))), None)
+        if header is not None:
+            column = header
+            continue
+        if column is None or column >= len(cells):
+            continue
+        cell = cells[column]
+        if cell.group().strip(" `*\t/").casefold() != name:
+            continue
+        match = pattern.search(text, offset + cell.start(), offset + cell.end())
+        if match is not None:
+            matches.append(match)
+    return matches
 
 
 def _server_problem(base_url: str, text: str, paths: Sequence[str]) -> str | None:
@@ -305,8 +347,15 @@ def review_derived_document(
         api = parse_tool_api(document, every_operation=True)
     except InputError as exc:
         return DocumentReview([*problems, f"it is not a valid OpenAPI document: {exc}"])
-    path_problems, notes = _review_paths(paths, api.base_url, text)
-    problems.extend(path_problems)
+    notes: list[str] = []
+    # Validate each operation against its resolved server: OpenAPI lets an operation or path item override the
+    # document server, so a shared base cannot be used to ground all endpoints.
+    for contract in api.tools.values():
+        base = contract.url[:-len(contract.path)] if contract.path and contract.url.endswith(contract.path) \
+            else api.base_url
+        path_problems, path_notes = _review_paths({contract.path: {contract.method.lower(): {}}}, base, text)
+        problems.extend(path_problems)
+        notes.extend(path_notes)
     roles: dict[str, list[str]] = {}
     for raw_path, item in paths.items():
         path = str(raw_path)

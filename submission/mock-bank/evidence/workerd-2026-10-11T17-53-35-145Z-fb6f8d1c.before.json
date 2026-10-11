@@ -1,0 +1,99 @@
+{
+  "report_schema_version": 1,
+  "phase": "before_restart",
+  "run_id": "2026-10-11T17-53-35-145Z-fb6f8d1c",
+  "base_url": "http://127.0.0.1:8787",
+  "customer_fixture_sha256": "009d3609d33a3b001ce04861822cd2592cb5482a7a5b0a5cb69442592889aa65",
+  "session_id": "workerd-2026-10-11T17-53-35-145Z-fb6f8d1c",
+  "started_at_utc": "2026-10-11T17:53:35.146Z",
+  "checks": [
+    {
+      "name": "health_sqlite_probe",
+      "passed": true,
+      "http": 200,
+      "health": {
+        "ready": true,
+        "bank_ready": true,
+        "storage_backend": "sqlite-durable-object",
+        "customer_count": 34,
+        "canonical_card_count": 65,
+        "cloudflare_version_id": "60f0c194-b070-438a-815d-3132a83fe0ef",
+        "bundle_sha256": null,
+        "contract_sha256": null,
+        "customer_fixture_sha256": null
+      }
+    },
+    {
+      "name": "fresh_session_empty",
+      "passed": true,
+      "operation_count": 0
+    },
+    {
+      "name": "cards_list_exact_fixture",
+      "passed": true,
+      "http": 200,
+      "response_sha256": "8b370da8e372f1e7fd55e0f5f5bd52333b6c8e85887d829457edb53e5bcc82a7"
+    },
+    {
+      "name": "week_change_exact_fixture_card_only",
+      "passed": true,
+      "http": 200,
+      "response_sha256": "c6166b0368790ce823ace8b00bb52a5efa6d679cc1b6e03cc4a01aa082df65b2"
+    },
+    {
+      "name": "records_and_change_acknowledgment",
+      "passed": true,
+      "operation_count": 2,
+      "acknowledgment_count": 1
+    },
+    {
+      "name": "same_customer_other_session_isolated",
+      "passed": true,
+      "operation_count": 0
+    },
+    {
+      "name": "other_customer_same_session_isolated",
+      "passed": true,
+      "operation_count": 0
+    }
+  ],
+  "record_ids_before_restart": [
+    "5bc06563-e7b3-4241-9f63-4550a8239fe7",
+    "ccdfe9a1-a76f-4fbb-9644-333863366e3a"
+  ],
+  "state_before_restart": {
+    "customerNo": "90000001",
+    "sessionId": "workerd-2026-10-11T17-53-35-145Z-fb6f8d1c",
+    "operationCount": 2,
+    "lastService": "statement.week.change",
+    "lastHttp": 200,
+    "lastSeenUtc": "2026-10-11T17:53:35.288Z",
+    "operations": [
+      {
+        "record_id": "5bc06563-e7b3-4241-9f63-4550a8239fe7",
+        "service": "cards.list",
+        "response_http": 200,
+        "created_at_utc": "2026-10-11T17:53:35.263Z"
+      },
+      {
+        "record_id": "ccdfe9a1-a76f-4fbb-9644-333863366e3a",
+        "service": "statement.week.change",
+        "response_http": 200,
+        "created_at_utc": "2026-10-11T17:53:35.288Z"
+      }
+    ],
+    "acknowledgments": [
+      {
+        "record_id": "ccdfe9a1-a76f-4fbb-9644-333863366e3a",
+        "kind": "statement_week_change",
+        "card_number": "540000******1234"
+      }
+    ]
+  },
+  "customer_isolation_verified": true,
+  "session_isolation_verified": true,
+  "persistence_verified": false,
+  "ready_for_restart": true,
+  "passed": true,
+  "completed_at_utc": "2026-10-11T17:53:35.367Z"
+}

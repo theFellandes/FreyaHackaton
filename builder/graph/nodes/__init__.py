@@ -26,6 +26,7 @@ from builder.graph.nodes import (
     repair_compile,
     repair_policy,
     self_test,
+    service_workflow,
     static_checks,
     understand_brief,
     validate_policy,
@@ -36,6 +37,7 @@ NodeFn = Callable[..., Awaitable[dict[str, Any]]]
 _MODULES = (
     load_inputs,
     guard_inputs,
+    service_workflow,
     understand_brief,
     extract_policy,
     validate_policy,

@@ -1,5 +1,5 @@
 {
-  "checked_at_utc": "2026-10-11T16:36:27.874113Z",
+  "checked_at_utc": "2026-10-11T18:21:03.660946Z",
   "status": "preparation_incomplete",
   "ready_to_submit": false,
   "official_source": "https://www.freyavoice.ai/hackathon#submit",
@@ -8,11 +8,10 @@
   "final_cases": 1,
   "final_language": "Turkish",
   "practice_kit_present": true,
-  "final_kit_present": false,
-  "release_inventory_checked_at_utc": "2026-10-11T17:21:22Z",
-  "partial_case_folder": "submission/case",
+  "final_kit_present": true,
+  "release_inventory_checked_at_utc": "2026-10-11T17:51:18.184183Z",
   "release_inventory_receipt": "submission/evidence/final-case-acquisition.json",
-  "mock_deployed": false,
+  "mock_deployed": true,
   "selected_final_run": false,
   "final_export_present": false,
   "final_submission_json_present": false,
@@ -20,31 +19,18 @@
   "email_sent": false,
   "blockers": [
     {
-      "id": "member_email",
-      "detail": "The working final form still needs the entrant email; user will send the email."
+      "id": "builder_live_verification",
+      "detail": "Generic request/source fixes pass; v4 compiles. Fix generic response dependencies and trusted variable interpolation, then capture real deployment and inspect actual Freya conversations."
     },
     {
-      "id": "adaptation_final_check",
-      "detail": "Affected lint and all 24 current contract tests pass. Exact HTTP method/full-path grounding remains unresolved; Claude adapter changes still need final checking and commit."
-    },
-    {
-      "id": "tool_endpoint_auth",
-      "detail": "Compiled tools include fixed contract headers. Dynamic credentials/security schemes are not automatically populated; validate against the final contract."
-    },
-    {
-      "id": "released_contract",
-      "detail": "The shared release folder currently contains only BRIEF.md and the flow PDF. The integration contract, test customers and remaining source pack are missing."
-    },
-    {
-      "id": "final_deployment_and_run",
-      "detail": "Implement and verify the actual mock, capture a successful final run, seal export/trace and commit the evidence."
+      "id": "selected_final_run",
+      "detail": "Select verified platform export and matching complete builder trace, seal, commit and push the packet."
     }
   ],
   "historical_files": "The former two-brief draft/readiness and docs are preserved under submission/history; draft.json now uses the eight-field one-case form.",
   "notes": [
     "No final case obtained before release; no final bank contract, workflow, trace or sent email invented.",
-    "Cloudflare skills installed globally and MCP registered/authenticated; Wrangler authenticated separately.",
-    "The user sends the email. The released BRIEF.md confirms yavuz@freyavoice.ai and requires JSON, workflow and trace attachments. Member email remains unresolved."
+    "Cloudflare skills installed globally and MCP registered/authenticated; Wrangler authenticated separately."
   ],
   "release_followup": {
     "intended_time": "2026-10-11T17:00:00Z",
@@ -54,17 +40,22 @@
     "reason": "Explicit user request in this chat: Keep it paused."
   },
   "runtime": {
-    "path": "submission/runtime/Scripts/python.exe",
+    "path": ".venv-playground/Scripts/python.exe",
     "python": "3.12.14",
     "dependencies_installed": true,
     "existing_root_venv": "missing base interpreter; preserved",
     "pip_check_passed": true,
-    "builder_help_passed": true
+    "builder_help_passed": true,
+    "note": "Healthy existing Python 3.12.14 runtime used for final builds; optional tokenizer in submission/runtime was blocked by Windows application control."
   },
   "email_delivery": {
     "recipient_confirmed": true,
     "confirmation_source": "submission/case/BRIEF.md",
-    "required_attachments": ["submission.json", "exported workflow", "builder run trace"],
+    "required_attachments": [
+      "submission.json",
+      "exported workflow",
+      "builder run trace"
+    ],
     "candidate_recipient": "yavuz@freyavoice.ai",
     "mode": "user_sends",
     "template": "submission/EMAIL_DRAFT.md"
@@ -76,7 +67,7 @@
     "codex_mcp_registered": true,
     "codex_mcp_authenticated": true,
     "paid_plan_enabled_by_this_audit": false,
-    "note": "Credentials were not printed or committed; no bank deployment was performed."
+    "note": "Wrangler OAuth authenticated; actual bank mock deployed with SQLite Durable Objects on Free. No paid upgrade performed."
   },
   "verification": {
     "submission_tool_tests_passed": 31,
@@ -86,12 +77,43 @@
     "known_secret_values_printed": false,
     "report": "submission/FINAL_AUDIT.md",
     "contract_tests_recheck_passed": 24,
-    "affected_lint_passed": true
+    "affected_lint_passed": true,
+    "service_tests_passed": 86,
+    "mock_contract_tests_passed": 31,
+    "fixture_http_comparisons": 1234,
+    "offline_suite": {
+      "passed": 3605,
+      "failed": 5,
+      "skipped": 3,
+      "xfailed": 4,
+      "duration_s": 296.26,
+      "failure_scope": "Visualization metadata and stale builder diagrams; all45 visualization tests passed after generic fix."
+    },
+    "dry_run_v4": {
+      "status": "dry_run",
+      "attempts": 2,
+      "static_checks_passed": true,
+      "semantic_review": "Found missing response-fetch branch, timestamp interpolation, and incomplete policy branches; generic fixes in progress."
+    }
   },
   "source_checkpoint": {
     "commit": "3cec449a841eba5a40205c77f2d69f512174d145",
-    "kind": "Existing pre-release checkpoint; current Claude changes remain uncommitted.",
+    "kind": "Preserved pre-release checkpoint; later user checkpoint2189cfe also retained. Reviewed final source checkpoint pending.",
     "audit_snapshot": "submission/evidence/pre-release-audit-source.json"
   },
-  "cost_constraint": "Use Cloudflare Free services; no paid upgrade authorized or performed."
+  "cost_constraint": "Use Cloudflare Free services; no paid upgrade authorized or performed.",
+  "case_folder": "submission/case",
+  "user_finalization": {
+    "contact_field": "User will complete contact details; do not ask again",
+    "email_delivery": "User sends submission; no email sent by Codex"
+  },
+  "mock": {
+    "base_url": "https://freya-hackathon-bank-oguzhan.freya-submission-bank-preparation.workers.dev",
+    "deployment_receipt": "submission/mock-bank/deployment-receipt.json",
+    "live_fixture_checks_passed": 668,
+    "persistence_verified": true,
+    "customer_isolation_verified": true,
+    "storage": "SQLite Durable Objects",
+    "paid_upgrade_performed": false
+  }
 }

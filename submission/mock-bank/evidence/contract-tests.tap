@@ -1,0 +1,196 @@
+TAP version 13
+# Subtest: all 617 fixture responses match through canonical and root HTTP routes
+ok 1 - all 617 fixture responses match through canonical and root HTTP routes
+  ---
+  duration_ms: 130.8727
+  type: 'test'
+  ...
+# Subtest: numeric customers and weeks, ignored headers/call and optional card-only customer work
+ok 2 - numeric customers and weeks, ignored headers/call and optional card-only customer work
+  ---
+  duration_ms: 0.5774
+  type: 'test'
+  ...
+# Subtest: unknown customers/cards and sparse weeks use contracted errors without data
+ok 3 - unknown customers/cards and sparse weeks use contracted errors without data
+  ---
+  duration_ms: 0.299
+  type: 'test'
+  ...
+# Subtest: missing required fields and malformed requests never fabricate success
+ok 4 - missing required fields and malformed requests never fabricate success
+  ---
+  duration_ms: 0.4357
+  type: 'test'
+  ...
+# Subtest: backend sends to any nonempty address and repeated side effects remain separate calls
+ok 5 - backend sends to any nonempty address and repeated side effects remain separate calls
+  ---
+  duration_ms: 0.3559
+  type: 'test'
+  ...
+# Subtest: change acknowledges both linked cards while preview and all fixture templates stay unchanged
+ok 6 - change acknowledges both linked cards while preview and all fixture templates stay unchanged
+  ---
+  duration_ms: 0.4312
+  type: 'test'
+  ...
+# Subtest: session/customer routing stays separate and metadata route reveals no request contents
+ok 7 - session/customer routing stays separate and metadata route reveals no request contents
+  ---
+  duration_ms: 0.5989
+  type: 'test'
+  ...
+# Subtest: health probes storage and metadata alone cannot make unavailable storage ready
+ok 8 - health probes storage and metadata alone cannot make unavailable storage ready
+  ---
+  duration_ms: 0.4819
+  type: 'test'
+  ...
+# Subtest: duplicate global canonical ownership fails fixture initialization
+ok 9 - duplicate global canonical ownership fails fixture initialization
+  ---
+  duration_ms: 0.4994
+  type: 'test'
+  ...
+# Subtest: SQL records exact responses and repeated sends as distinct acknowledged operations
+ok 10 - SQL records exact responses and repeated sends as distinct acknowledged operations
+  ---
+  duration_ms: 4.5334
+  type: 'test'
+  ...
+# Subtest: customer and session filters independently isolate records and acknowledgments
+ok 11 - customer and session filters independently isolate records and acknowledgments
+  ---
+  duration_ms: 0.9833
+  type: 'test'
+  ...
+# Subtest: acknowledgment write failure rolls back operation and session updates together
+ok 12 - acknowledgment write failure rolls back operation and session updates together
+  ---
+  duration_ms: 1.8296
+  type: 'test'
+  ...
+# Subtest: disk SQLite records survive database close and helper reconstruction
+ok 13 - disk SQLite records survive database close and helper reconstruction
+  ---
+  duration_ms: 28.6653
+  type: 'test'
+  ...
+# Subtest: all 617 released fixture leaves preserve exact status, body, fields, and delay
+ok 14 - all 617 released fixture leaves preserve exact status, body, fields, and delay
+  ---
+  duration_ms: 26.6216
+  type: 'test'
+  ...
+# Subtest: every returned response is deeply independent from fixtures and other lookups
+ok 15 - every returned response is deeply independent from fixtures and other lookups
+  ---
+  duration_ms: 0.4449
+  type: 'test'
+  ...
+# Subtest: explicit unique returned masks resolve to their original listed card keys
+ok 16 - explicit unique returned masks resolve to their original listed card keys
+  ---
+  duration_ms: 2.5052
+  type: 'test'
+  ...
+# Subtest: duplicate last-four digits never choose a card
+ok 17 - duplicate last-four digits never choose a card
+  ---
+  duration_ms: 0.2607
+  type: 'test'
+  ...
+# Subtest: a returned mask shared by two canonical cards is rejected
+ok 18 - a returned mask shared by two canonical cards is rejected
+  ---
+  duration_ms: 0.1577
+  type: 'test'
+  ...
+# Subtest: all sparse current-week holes stay missing, with no replacement success
+ok 19 - all sparse current-week holes stay missing, with no replacement success
+  ---
+  duration_ms: 4.1861
+  type: 'test'
+  ...
+# Subtest: unknown and incomplete lookup keys return descriptors without bank results
+ok 20 - unknown and incomplete lookup keys return descriptors without bank results
+  ---
+  duration_ms: 0.1903
+  type: 'test'
+  ...
+# Subtest: fixture failures, blank email, related cards, and latency remain deliberate
+ok 21 - fixture failures, blank email, related cards, and latency remain deliberate
+  ---
+  duration_ms: 0.2254
+  type: 'test'
+  ...
+# Subtest: malformed or duplicate customer indexes fail instead of shadowing fixtures
+ok 22 - malformed or duplicate customer indexes fail instead of shadowing fixtures
+  ---
+  duration_ms: 0.4487
+  type: 'test'
+  ...
+# Subtest: missing storage cannot be treated as a ready bank
+ok 23 - missing storage cannot be treated as a ready bank
+  ---
+  duration_ms: 18.8142
+  type: 'test'
+  ...
+# Subtest: unknown service requests fail without fabricating bank results
+ok 24 - unknown service requests fail without fabricating bank results
+  ---
+  duration_ms: 0.6621
+  type: 'test'
+  ...
+# Subtest: preparation cannot deploy through its advertised command
+ok 25 - preparation cannot deploy through its advertised command
+  ---
+  duration_ms: 60.2371
+  type: 'test'
+  ...
+# Subtest: receipt checker rejects absent or unready deployment evidence
+ok 26 - receipt checker rejects absent or unready deployment evidence
+  ---
+  duration_ms: 0.4765
+  type: 'test'
+  ...
+# Subtest: runtime metadata cannot make missing storage ready
+ok 27 - runtime metadata cannot make missing storage ready
+  ---
+  duration_ms: 0.5545
+  type: 'test'
+  ...
+# Subtest: receipt verifies immutable evidence and matching live metadata
+ok 28 - receipt verifies immutable evidence and matching live metadata
+  ---
+  duration_ms: 32.3379
+  type: 'test'
+  ...
+# Subtest: changed deployed source is rejected before any readiness request
+ok 29 - changed deployed source is rejected before any readiness request
+  ---
+  duration_ms: 10.812
+  type: 'test'
+  ...
+# Subtest: repository-escaping evidence and missing storage verification fail
+ok 30 - repository-escaping evidence and missing storage verification fail
+  ---
+  duration_ms: 10.2257
+  type: 'test'
+  ...
+# Subtest: ready flags alone cannot conceal a different deployed version
+ok 31 - ready flags alone cannot conceal a different deployed version
+  ---
+  duration_ms: 11.6713
+  type: 'test'
+  ...
+1..31
+# tests 31
+# suites 0
+# pass 31
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 239.7135

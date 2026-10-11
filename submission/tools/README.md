@@ -14,7 +14,7 @@ the actual case folder. Adapter outputs belong in the deployed bundle and source
 From the repository root, after setting these variables to the reviewed release/deployment values:
 
 ```powershell
-$Python = 'submission/runtime/Scripts/python.exe'
+$Python = '.venv-playground/Scripts/python.exe'
 # Set $CaseFolder, $MockUrl, $ProbeUrl, $DeploymentReceipt, and $ReadinessReport from the actual kit and deployment.
 & $Python -B submission/tools/capture_run.py --cwd $PWD.Path --case-folder $CaseFolder --mock-url $MockUrl --probe-url $ProbeUrl --deployment-receipt $DeploymentReceipt --readiness-report $ReadinessReport -- $Python builder/build.py $CaseFolder $MockUrl
 $BuilderExit = $LASTEXITCODE

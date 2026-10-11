@@ -1,2 +1,6 @@
-# Preserve submission evidence and source bytes in Git.
-* -text -filter
+# Preserve released originals and hashed deployment evidence byte for byte.
+case/** -text -filter -working-tree-encoding
+mock-bank/evidence/** -text -filter -working-tree-encoding
+mock-bank/deployment-receipt.json -text -filter -working-tree-encoding
+mock-bank/wrangler.deployment.jsonc -text -filter -working-tree-encoding
+mock-bank/src/** -text -filter -working-tree-encoding

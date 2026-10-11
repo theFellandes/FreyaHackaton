@@ -1,0 +1,139 @@
+flowchart TD
+    _start(["START"]):::plain
+    opening("opening")
+    callback_stop_third_party("callback_stop_third_party")
+    callback_fix_say_third_party("callback_fix_say_third_party")
+    third_party("third_party<br/><i>schedule_callback</i>")
+    callback_done("callback_done")
+    identity("identity<br/><i>verify_identity</i>")
+    identity_failed("identity_failed")
+    load_account{{"load_account<br/><i>get_account</i>"}}
+    account_unavailable("account_unavailable")
+    negotiate("negotiate<br/><i>create_promise, add_note</i>")
+    promise_done("promise_done")
+    promise_fix_say("promise_fix_say")
+    rescue_identity_bye("rescue_identity_bye")
+    rescue_third_party_bye("rescue_third_party_bye")
+    rescue_negotiate_bye("rescue_negotiate_bye")
+    handoff_general{{"handoff_general<br/><i>transfer_to_agent</i>"}}
+    handoff_restructuring{{"handoff_restructuring<br/><i>transfer_to_agent</i>"}}
+    handoff_support{{"handoff_support<br/><i>transfer_to_agent</i>"}}
+    guard_restructuring_say("guard_restructuring_say")
+    close{{"close<br/><i>close_call</i>"}}
+    hangup(["hangup"])
+    _start --> setup
+    setup -.->|"always"| opening
+    opening -->|"tool:transition_to_identity"| identity
+    opening -->|"tool:transition_to_third_party"| third_party
+    opening -->|"tool:transition_to_end_unclear_party"| end_unclear_party
+    opening -->|"tool:transition_to_end_deceased"| end_deceased
+    opening -->|"tool:transition_to_end_wrong_number"| end_wrong_number
+    opening -->|"tool:transition_to_handoff_general"| handoff_general
+    opening -->|"tool:transition_to_end_refuse_to_talk"| end_refuse_to_talk
+    opening -.->|"max turns"| end_unclear_party
+    callback_stop_third_party -.->|"always"| end_callback_not_booked
+    callback_fix_third_party -->|"callback_guard_stop = yes"| callback_stop_third_party
+    callback_fix_third_party -.->|"always"| callback_fix_say_third_party
+    callback_fix_say_third_party -.->|"always"| third_party
+    third_party -->|"callback_guard contains blocked"| callback_fix_third_party
+    third_party -->|"callback_acked = yes"| callback_done
+    third_party -->|"transition_to_end_callback_booked_response contains..."| rescue_third_party
+    third_party -->|"intent: The agent already said goodbye and the customer now..."| end_auto_third_party
+    third_party -->|"tool:transition_to_end_callback_booked"| end_callback_booked
+    third_party -->|"tool:transition_to_end_callback_not_booked"| end_callback_not_booked
+    third_party -->|"tool:transition_to_identity"| identity
+    third_party -->|"tool:transition_to_end_wrong_number"| end_wrong_number
+    third_party -->|"tool:transition_to_end_deceased"| end_deceased
+    third_party -.->|"max turns"| end_callback_not_booked
+    callback_done -.->|"always"| end_callback_booked
+    identity -->|"verify_identity_response.data.all_verified = true"| load_account
+    identity -->|"verify_identity_response.data.wrong_answers_left = 0"| identity_failed
+    identity -->|"transition_to_end_identity_declined_response contains..."| rescue_identity
+    identity -->|"tool:transition_to_end_identity_declined"| end_identity_declined
+    identity -->|"tool:transition_to_third_party"| third_party
+    identity -->|"tool:transition_to_handoff_general"| handoff_general
+    identity -->|"tool:transition_to_end_refuse_to_talk"| end_refuse_to_talk
+    identity -->|"tool:transition_to_end_wrong_number"| end_wrong_number
+    identity -.->|"max turns"| end_auto
+    identity_failed -.->|"always"| end_identity_failed
+    load_account -.->|"always"| account_facts
+    account_unavailable -.->|"always"| end_recording_failed
+    account_facts -->|"account_state = empty or account_state contains error"| account_unavailable
+    account_facts -.->|"always"| negotiate
+    negotiate -->|"promise_guard contains blocked"| promise_fix
+    negotiate -->|"promise_acked = yes and product_count = 1"| promise_done
+    negotiate -->|"transition_to_end_promise_recorded_response contains..."| rescue_negotiate
+    negotiate -->|"intent: The agent already said goodbye and the customer now..."| end_auto
+    negotiate -->|"tool:transition_to_end_promise_recorded"| end_promise_recorded
+    negotiate -->|"tool:transition_to_end_flat_refusal"| end_flat_refusal
+    negotiate -->|"tool:transition_to_end_recording_failed"| end_recording_failed
+    negotiate -->|"tool:transition_to_handoff_support"| handoff_support
+    negotiate -->|"tool:transition_to_guard_restructuring"| guard_restructuring
+    negotiate -->|"tool:transition_to_handoff_general"| handoff_general
+    negotiate -->|"tool:transition_to_end_refuse_to_talk"| end_refuse_to_talk
+    negotiate -.->|"max turns"| end_auto
+    promise_done -.->|"always"| end_promise_recorded
+    promise_fix -.->|"always"| promise_fix_say
+    promise_fix_say -.->|"always"| negotiate
+    rescue_identity_bye -.->|"always"| rescue_identity_go
+    rescue_identity_go -->|"rescue_target = end_identity_declined"| end_identity_declined
+    rescue_identity_go -->|"rescue_target = handoff_general"| handoff_general
+    rescue_identity_go -->|"rescue_target = end_refuse_to_talk"| end_refuse_to_talk
+    rescue_identity_go -->|"rescue_target = end_wrong_number"| end_wrong_number
+    rescue_identity_go -.->|"always"| identity
+    rescue_identity -->|"rescue_target = third_party"| third_party
+    rescue_identity -->|"rescue_ending = yes"| rescue_identity_bye
+    rescue_identity -.->|"always"| identity
+    rescue_third_party_bye -.->|"always"| rescue_third_party_go
+    rescue_third_party_go -->|"rescue_target = end_callback_booked"| end_callback_booked
+    rescue_third_party_go -->|"rescue_target = end_callback_not_booked"| end_callback_not_booked
+    rescue_third_party_go -->|"rescue_target = end_wrong_number"| end_wrong_number
+    rescue_third_party_go -->|"rescue_target = end_deceased"| end_deceased
+    rescue_third_party_go -.->|"always"| third_party
+    rescue_third_party -->|"rescue_target = identity"| identity
+    rescue_third_party -->|"rescue_ending = yes"| rescue_third_party_bye
+    rescue_third_party -.->|"always"| third_party
+    rescue_negotiate_bye -.->|"always"| rescue_negotiate_go
+    rescue_negotiate_go -->|"rescue_target = end_promise_recorded"| end_promise_recorded
+    rescue_negotiate_go -->|"rescue_target = end_flat_refusal"| end_flat_refusal
+    rescue_negotiate_go -->|"rescue_target = end_recording_failed"| end_recording_failed
+    rescue_negotiate_go -->|"rescue_target = handoff_support"| handoff_support
+    rescue_negotiate_go -->|"rescue_target = handoff_general"| handoff_general
+    rescue_negotiate_go -->|"rescue_target = end_refuse_to_talk"| end_refuse_to_talk
+    rescue_negotiate_go -.->|"always"| negotiate
+    rescue_negotiate -->|"rescue_target = guard_restructuring"| guard_restructuring
+    rescue_negotiate -->|"rescue_ending = yes"| rescue_negotiate_bye
+    rescue_negotiate -.->|"always"| negotiate
+    end_auto -.->|"always"| decide
+    end_auto_third_party -.->|"always"| decide
+    end_callback_booked -.->|"always"| decide
+    end_callback_not_booked -.->|"always"| decide
+    end_deceased -.->|"always"| decide
+    end_flat_refusal -.->|"always"| decide
+    end_identity_declined -.->|"always"| decide
+    end_identity_failed -.->|"always"| decide
+    end_promise_recorded -.->|"always"| decide
+    end_recording_failed -.->|"always"| decide
+    end_refuse_to_talk -.->|"always"| decide
+    end_unclear_party -.->|"always"| decide
+    end_wrong_number -.->|"always"| decide
+    handoff_general -.->|"always"| decide
+    handoff_restructuring -.->|"always"| decide
+    handoff_support -.->|"always"| decide
+    guard_restructuring -->|"restructuring_blocked = yes"| guard_restructuring_say
+    guard_restructuring -.->|"always"| handoff_restructuring
+    guard_restructuring_say -.->|"always"| negotiate
+    decide -.->|"always"| close
+    close -.->|"always"| hangup
+    linkStyle 2,3,4,5,6,7,8,18,19,20,21,22,28,29,30,31,32,43,44,45,46,47,48,49 stroke:#2f6fdb,color:#2f6fdb
+    classDef conv fill:#e8f1ff,stroke:#2f6fdb,color:#10264d
+    classDef say fill:#e8f1ff,stroke:#2f6fdb,stroke-dasharray:4 3,color:#10264d
+    classDef code fill:#fff4d6,stroke:#b7791f,color:#4a3200
+    classDef api fill:#e6f6ec,stroke:#2f855a,color:#12351f
+    classDef term fill:#fde8e8,stroke:#c53030,color:#4a1010
+    classDef plain fill:#f1f2f4,stroke:#6b7280,color:#1f2937
+    class setup,callback_fix_third_party,account_facts,promise_fix,rescue_identity_go,rescue_identity,rescue_third_party_go,rescue_third_party,rescue_negotiate_go,rescue_negotiate,end_auto,end_auto_third_party,end_callback_booked,end_callback_not_booked,end_deceased,end_flat_refusal,end_identity_declined,end_identity_failed,end_promise_recorded,end_recording_failed,end_refuse_to_talk,end_unclear_party,end_wrong_number,guard_restructuring,decide code
+    class opening,third_party,identity,negotiate conv
+    class callback_stop_third_party,callback_fix_say_third_party,callback_done,identity_failed,account_unavailable,promise_done,promise_fix_say,rescue_identity_bye,rescue_third_party_bye,rescue_negotiate_bye,guard_restructuring_say say
+    class load_account,handoff_general,handoff_restructuring,handoff_support,close api
+    class hangup term

@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "run_id": "2026-10-11T17-53-35-145Z-fb6f8d1c",
+  "base_url": "http://127.0.0.1:8787",
+  "customer_fixture_sha256": "009d3609d33a3b001ce04861822cd2592cb5482a7a5b0a5cb69442592889aa65",
+  "session_id": "workerd-2026-10-11T17-53-35-145Z-fb6f8d1c",
+  "other_session_id": "workerd-other-2026-10-11T17-53-35-145Z-fb6f8d1c",
+  "slow_session_id": "workerd-slow-2026-10-11T17-53-35-145Z-fb6f8d1c",
+  "readback_session_id": "workerd-readback-2026-10-11T17-53-35-145Z-fb6f8d1c",
+  "before_report": "evidence/workerd-2026-10-11T17-53-35-145Z-fb6f8d1c.before.json",
+  "after_report": "evidence/workerd-2026-10-11T17-53-35-145Z-fb6f8d1c.after.json"
+}

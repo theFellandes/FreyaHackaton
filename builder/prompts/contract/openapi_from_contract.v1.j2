@@ -11,7 +11,7 @@ You turn a bank's service contract (written for people, in any language) into an
 Write the document like this:
 - "openapi": "3.0.3"; "info": {"title", "version"} from the contract.
 - "servers": [{"url": "<the base URL the contract states>"}], with its path prefix (for example /api or /v1) kept; when it states none, [{"url": "/"}].
-- "paths": exactly the endpoints the contract defines - the same path strings, segment for segment in the contract's order (path parameters as {name}), written after the server's path prefix and never repeating it, and for each path the HTTP method the contract names next to it. One operation per endpoint. NEVER invent an endpoint, never merge, reorder or recombine paths, never drop one.
+- "paths": exactly the endpoints the contract defines - the same path strings, segment for segment in the contract's order (path parameters as {name}), written after the server's path prefix and never repeating it, and for each path the HTTP method the contract names next to it. A named service in a Service / Endpoint / Operation table follows the separately stated base URL exactly. One operation per endpoint. NEVER invent an endpoint, never merge, reorder or recombine paths, never drop one. When an operation uses a different stated server or prefix, declare its own "servers" instead of appending its path to an unrelated shared prefix.
 - For each operation:
   - "operationId": the contract's own name for the operation if it has one, else snake_case ASCII made from the method and path.
   - Optional "x-freya-role": when the operation actually performs one of these jobs, one of {{ roles | join(", ") }}, or "other":
@@ -22,13 +22,13 @@ Write the document like this:
     This may be any service workflow. No collections role is required. Leave the hint out or use "other" for unrelated services. A service that changes a setting is not a payment promise; a service response or return to a supervisor is not a call-closing endpoint. Preserve every actual service operation even when it has no collections role.
 {% endif %}
   - "summary" and "description": in English - translate the contract's meaning (when to call it, what it needs first, what it changes).
-  - Request: an "application/json" "requestBody" schema (type object, "properties", "required") for body fields; query and path inputs as "parameters". Header inputs only when the contract fixes their value.
+  - Request: a "requestBody" schema (type object, "properties", "required") under the exact media type(s) the contract states (for example application/json or application/x-www-form-urlencoded). Never replace a specified media type with JSON. Query and path inputs as "parameters". Header inputs only when the contract fixes their value.
   - Responses: "200" with an "application/json" schema of the success response and a one-sentence "description" of how to read it; every documented error status (4xx/5xx) with its description and, when the contract gives one, its error body schema.
 - Field rules (request and response, nested objects and arrays too):
   - Property NAMES are copied character for character from the contract: same language, spelling, case and underscores. Never translate, rename, shorten or add a field the contract does not have.
   - Enum VALUES are the contract's exact values (also untranslated).
   - Every property has a "type" and an English "description" that translates its meaning and states format and unit (for example "Promised amount in TRY, decimal", "Amount in kurus (minor units)", "Date as YYYY-MM-DD").
-  - Dates are "type": "string", "format": "date"; times say "HH:MM" in the description; money is "type": "number" unless the contract uses integer minor units.
+  - Dates are "type": "string". Use "format": "date" ONLY when the contract specifies ISO / RFC3339 full-date (YYYY-MM-DD). For every other stated date format, copy the exact format into the description and an appropriate "pattern", leaving "format" absent. Never normalize or translate date values. Preserve the stated time format in the description; money is "type": "number" unless the contract uses integer minor units.
   - A boolean result says in plain English what true means, as "True when ...": "True when the operation succeeded.", "True when this security answer is correct.", "True when all identity questions are verified.", "True when the promise was recorded.". A counter of attempts says whether it counts the wrong answers made or the wrong answers left.
   - Mark "required" exactly as the contract does.
 - "notes": short English notes on anything of the contract you could not express (empty list when none).

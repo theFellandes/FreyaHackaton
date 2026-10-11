@@ -29,6 +29,7 @@ REPAIR_POLICY = "repair_policy"
 GUARD_POLICY = "guard_policy"
 DRAFT_PROSE = "draft_prose"
 COMPILE_WORKFLOW = "compile_workflow"
+SERVICE_WORKFLOW = "service_workflow"
 STATIC_CHECKS = "static_checks"
 REPAIR_COMPILE = "repair_compile"
 GUARD_WORKFLOW = "guard_workflow"
@@ -77,7 +78,7 @@ def is_deployed(state: State) -> bool:
 
 def fallback_target(state: State) -> str:
     """Where a failed pipeline goes: ``agentic_build`` when allowed, attempts remain and time suffices, else ``finalize``."""
-    if is_deployed(state) or state.get("blocked") or not _limit(state, "allow_agentic"):
+    if state.get("service_mode") or is_deployed(state) or state.get("blocked") or not _limit(state, "allow_agentic"):
         return FINALIZE
     if int(state.get("agentic_attempts", 0)) >= MAX_AGENTIC_ATTEMPTS or not affordable(
         state, "agentic_build"
@@ -102,6 +103,11 @@ def _can_repair_compile(state: State) -> bool:
     )
 
 
+def _compile_repair_target(state: State) -> str:
+    """Replan service inputs; retain the existing deterministic collection repairs."""
+    return SERVICE_WORKFLOW if state.get("service_mode") else REPAIR_COMPILE
+
+
 # ---------------------------------------------------------------------------------------------------- the routers
 
 
@@ -114,6 +120,8 @@ def after_guard_inputs(state: State) -> str:
     """Blocked inputs end the run; the agentic track starts straight away; otherwise the brief is understood."""
     if state.get("blocked") or state.get("failed"):
         return FINALIZE
+    if state.get("service_mode"):
+        return SERVICE_WORKFLOW
     return AGENTIC_BUILD if state.get("track") == "agentic" else UNDERSTAND_BRIEF
 
 
@@ -158,7 +166,7 @@ def after_draft_prose(state: State) -> str:
 def after_compile_workflow(state: State) -> str:
     """A compile error is repaired (another profile, no prose) while rounds remain; otherwise the checks run."""
     if state.get("failed"):
-        return REPAIR_COMPILE if _can_repair_compile(state) else fallback_target(state)
+        return _compile_repair_target(state) if _can_repair_compile(state) else fallback_target(state)
     return STATIC_CHECKS
 
 
@@ -168,7 +176,7 @@ def after_static_checks(state: State) -> str:
         return fallback_target(state)
     if (state.get("lint") or {}).get("ok"):
         return GUARD_WORKFLOW
-    return REPAIR_COMPILE if _can_repair_compile(state) else fallback_target(state)
+    return _compile_repair_target(state) if _can_repair_compile(state) else fallback_target(state)
 
 
 def after_repair_compile(state: State) -> str:
@@ -181,7 +189,7 @@ def after_guard_workflow(state: State) -> str:
     if state.get("failed"):
         return fallback_target(state)
     if state.get("blocked"):
-        return REPAIR_COMPILE if _can_repair_compile(state) else FINALIZE
+        return _compile_repair_target(state) if _can_repair_compile(state) else FINALIZE
     if state.get("dry_run") or _limit(state, "dry_run"):
         return FINALIZE
     return REMOTE_VALIDATE
@@ -191,7 +199,7 @@ def _after_platform_rejection(state: State) -> str:
     """The platform rejected the content: repair the compile, else fall back (never replace a deployed agent)."""
     if is_deployed(state):
         return FINALIZE
-    return REPAIR_COMPILE if _can_repair_compile(state) else fallback_target(state)
+    return _compile_repair_target(state) if _can_repair_compile(state) else fallback_target(state)
 
 
 def after_remote_validate(state: State) -> str:
@@ -231,7 +239,7 @@ def after_decide(state: State) -> str:
         return FINALIZE
     if int(state.get("selftest_repairs", 0)) > int(_limit(state, "max_selftest_repairs")):
         return FINALIZE
-    return REPAIR_POLICY
+    return SERVICE_WORKFLOW if state.get("service_mode") else REPAIR_POLICY
 
 
 def after_agentic_build(state: State) -> str:
@@ -242,20 +250,21 @@ def after_agentic_build(state: State) -> str:
 #: Source node -> (router, every node the router can return); used by ``build_graph`` and the topology test.
 ROUTERS: dict[str, tuple[Any, tuple[str, ...]]] = {
     LOAD_INPUTS: (after_load_inputs, (GUARD_INPUTS, FINALIZE)),
-    GUARD_INPUTS: (after_guard_inputs, (UNDERSTAND_BRIEF, AGENTIC_BUILD, FINALIZE)),
+    GUARD_INPUTS: (after_guard_inputs, (UNDERSTAND_BRIEF, SERVICE_WORKFLOW, AGENTIC_BUILD, FINALIZE)),
     UNDERSTAND_BRIEF: (after_understand_brief, (EXTRACT_POLICY, AGENTIC_BUILD, FINALIZE)),
     EXTRACT_POLICY: (after_extract_policy, (VALIDATE_POLICY, AGENTIC_BUILD, FINALIZE)),
     VALIDATE_POLICY: (after_validate_policy, (REPAIR_POLICY, GUARD_POLICY, AGENTIC_BUILD, FINALIZE)),
     GUARD_POLICY: (after_guard_policy, (DRAFT_PROSE, REPAIR_POLICY, AGENTIC_BUILD, FINALIZE)),
     DRAFT_PROSE: (after_draft_prose, (COMPILE_WORKFLOW, AGENTIC_BUILD, FINALIZE)),
     COMPILE_WORKFLOW: (after_compile_workflow, (STATIC_CHECKS, REPAIR_COMPILE, AGENTIC_BUILD, FINALIZE)),
-    STATIC_CHECKS: (after_static_checks, (GUARD_WORKFLOW, REPAIR_COMPILE, AGENTIC_BUILD, FINALIZE)),
+    SERVICE_WORKFLOW: (after_compile_workflow, (STATIC_CHECKS, SERVICE_WORKFLOW, FINALIZE)),
+    STATIC_CHECKS: (after_static_checks, (GUARD_WORKFLOW, REPAIR_COMPILE, SERVICE_WORKFLOW, AGENTIC_BUILD, FINALIZE)),
     REPAIR_COMPILE: (after_repair_compile, (COMPILE_WORKFLOW, AGENTIC_BUILD, FINALIZE)),
-    GUARD_WORKFLOW: (after_guard_workflow, (REMOTE_VALIDATE, REPAIR_COMPILE, AGENTIC_BUILD, FINALIZE)),
-    REMOTE_VALIDATE: (after_remote_validate, (DEPLOY, REPAIR_COMPILE, AGENTIC_BUILD, FINALIZE)),
-    DEPLOY: (after_deploy, (SELF_TEST, REPAIR_COMPILE, AGENTIC_BUILD, FINALIZE)),
+    GUARD_WORKFLOW: (after_guard_workflow, (REMOTE_VALIDATE, REPAIR_COMPILE, SERVICE_WORKFLOW, AGENTIC_BUILD, FINALIZE)),
+    REMOTE_VALIDATE: (after_remote_validate, (DEPLOY, REPAIR_COMPILE, SERVICE_WORKFLOW, AGENTIC_BUILD, FINALIZE)),
+    DEPLOY: (after_deploy, (SELF_TEST, REPAIR_COMPILE, SERVICE_WORKFLOW, AGENTIC_BUILD, FINALIZE)),
     SELF_TEST: (after_self_test, (DECIDE, FINALIZE)),
-    DECIDE: (after_decide, (REPAIR_POLICY, FINALIZE)),
+    DECIDE: (after_decide, (REPAIR_POLICY, SERVICE_WORKFLOW, FINALIZE)),
     AGENTIC_BUILD: (after_agentic_build, (STATIC_CHECKS, AGENTIC_BUILD, FINALIZE)),
 }
 
@@ -280,6 +289,7 @@ __all__ = [
     "REPAIR_POLICY",
     "ROUTERS",
     "SELF_TEST",
+    "SERVICE_WORKFLOW",
     "STATIC_CHECKS",
     "STATIC_EDGES",
     "UNDERSTAND_BRIEF",

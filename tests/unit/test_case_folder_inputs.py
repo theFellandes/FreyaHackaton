@@ -178,6 +178,10 @@ def test_the_settings_reject_a_bad_tool_base_url(make_settings) -> None:  # type
         ("Örnek Konuşmalar.docx", "examples"),
         ("sample_conversations.txt", "examples"),
         ("transcript-2.md", "examples"),
+        ("example-scenarios.md", "examples"),
+        ("sample-analysis-conversation.md", "examples"),
+        ("analysis-session-transcript.txt", "policy"),
+        ("ivr-prompt-sheet.md", "policy"),
         ("akış-şeması.png", "skipped"),
         ("flow.JPG", "skipped"),
         ("diagram.svg", "skipped"),
@@ -206,6 +210,42 @@ def test_content_cues_classify_documents_with_neutral_names(tmp_path: Path) -> N
                                            ["C2", "C D", "1970-05-06"]]))
     assert [classify_document(path).role for path in (contract, dialogue, customers, rules, word)] == [
         "contract", "examples", "customers", "policy", "customers"]
+
+
+def test_source_folders_and_explicit_examples_win_over_incidental_content(
+    tmp_path: Path, settings: Settings,
+) -> None:
+    folder = tmp_path / "invented-case"
+    (folder / "sources" / "meetings").mkdir(parents=True)
+    (folder / "sources" / "documents").mkdir()
+    (folder / "sources" / "emails").mkdir()
+    (folder / "test-environment").mkdir()
+    (folder / "BRIEF.md").write_text("Use the approved inventory process.", encoding="utf-8")
+    (folder / "README.md").write_text("The call has sessionRef and now variables.", encoding="utf-8")
+    (folder / "sources" / "documents" / "service-contract.md").write_text(
+        "POST /inventory/list\nPOST /inventory/reserve\n", encoding="utf-8")
+    prompt = folder / "sources" / "documents" / "phone-menu-prompt-sheet.md"
+    prompt.write_text("Prompt | customer_id | name\nP1 | C1 | Greeting\nP2 | C2 | Farewell\n", encoding="utf-8")
+    meeting = folder / "sources" / "meetings" / "interview-transcript.txt"
+    meeting.write_text(DIALOGUE, encoding="utf-8")
+    mail = folder / "sources" / "emails" / "conversation-recap.txt"
+    mail.write_text(DIALOGUE, encoding="utf-8")
+    example = folder / "example-scenarios.md"
+    example.write_text("Example calls use POST /inventory/list then POST /inventory/reserve.\n" + DIALOGUE,
+                       encoding="utf-8")
+    customers = folder / "test-environment" / "test-customers.json"
+    customers.write_text('[{"customer_id":"C1","name":"Ada"},{"customer_id":"C2","name":"Ben"}]',
+                         encoding="utf-8")
+    bundle = classify_inputs([folder, MOCK], settings=settings)
+    assert bundle.customer_paths == [customers.resolve()]
+    assert bundle.example_paths == [example.resolve()]
+    assert names(bundle.contract_paths) == ["service-contract.md"]
+    assert prompt.resolve() in bundle.brief_paths and meeting.resolve() in bundle.brief_paths
+    assert mail.resolve() in bundle.brief_paths and bundle.brief_paths[-1] == example.resolve()
+    loaded = load_briefs(bundle.brief_paths, examples=bundle.example_paths)
+    labels = {doc.name: doc.label for doc in loaded.documents}
+    assert labels[meeting.name] == labels[prompt.name] == labels[mail.name] == ""
+    assert labels[example.name].startswith("example conversation")
 
 
 def test_fold_removes_accents_and_case() -> None:

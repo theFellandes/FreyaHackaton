@@ -57,12 +57,16 @@ _CONVERSATION_WORDS = ("konusma", "konusmalar", "konusmalari", "conversation", "
                        "dialogue", "dialogues", "diyalog", "diyaloglar", "gorusme", "gorusmeler", "gorusmesi",
                        "transcript", "transcripts", "transkript", "chat", "chats", "gesprach", "conversacion",
                        "conversaciones", "dialogo", "dialogos")
+_EXAMPLE_WORDS = ("example", "examples", "sample", "samples", "ornek", "ornekler", "ejemplo", "exemple")
+_SCENARIO_WORDS = ("scenario", "scenarios", "senaryo", "senaryolar")
+_SOURCE_FOLDERS = ("meeting", "meetings", "toplanti", "toplantilar", "email", "emails", "mail", "mails")
 _POLICY_WORDS = ("analiz", "analizi", "analysis", "analyse", "duyuru", "duyurular", "duyurusu", "announcement",
                  "announcements", "soru", "sorular", "cevap", "cevaplar", "sss", "faq", "faqs", "qa", "question",
                  "questions", "answer", "answers", "akis", "akisi", "flow", "politika", "politikasi", "policy",
                  "policies", "kural", "kurallar", "kurallari", "rule", "rules", "prosedur", "proseduru", "procedure",
                  "procedures", "yonerge", "talimat", "talimatlar", "guideline", "guidelines", "memo", "iletisim",
-                 "gereksinim", "requirements")
+                 "gereksinim", "requirements", "prompt", "prompts", "ivr", "meeting", "meetings", "toplanti",
+                 "toplantilar", "minutes", "session", "oturum")
 
 # --- content cues ----------------------------------------------------------------------------------------------------------
 _ENDPOINT_RE = re.compile(r"\b(GET|POST|PUT|PATCH|DELETE)\b[`*\s]+(?:https?://[^\s/`]+)?(/[\w{}:.\-/]*)")
@@ -124,7 +128,7 @@ def document_priority(path: Path) -> int:
     return 2
 
 
-def classify_by_name(path: Path) -> ClassifiedDocument | None:
+def classify_by_name(path: Path, *, root: Path | None = None) -> ClassifiedDocument | None:
     """The role the file name alone settles, or ``None`` when the name is neutral (or only says "customers")."""
     suffix = path.suffix.lower()
     if suffix in IMAGE_SUFFIXES:
@@ -136,25 +140,32 @@ def classify_by_name(path: Path) -> ClassifiedDocument | None:
         return ClassifiedDocument(path, "policy", "brief")
     if _has(tokens, _README_WORDS):
         return ClassifiedDocument(path, "policy", "readme")
-    if _has(tokens, _CONVERSATION_WORDS):
-        return ClassifiedDocument(path, "examples", "the name says example conversations")
+    parent_tokens = [token for part in path.relative_to(root).parts[:-1] for token in name_tokens(Path(part))] \
+        if root is not None else []
+    explicit_examples = _has(tokens, _EXAMPLE_WORDS) and _has(tokens, (*_CONVERSATION_WORDS, *_SCENARIO_WORDS))
+    if explicit_examples or _has(parent_tokens, _EXAMPLE_WORDS):
+        return ClassifiedDocument(path, "examples", "the file or folder explicitly says examples")
     if _has(tokens, _CONTRACT_WORDS):
         return ClassifiedDocument(path, "contract", "the name says service contract / API")
     if _has(tokens, _POLICY_WORDS):
         return ClassifiedDocument(path, "policy", "the name says policy material")
     if _has(tokens, _CUSTOMER_WORDS) and (suffix in _TABULAR_SUFFIXES or _has(tokens, _CUSTOMER_DATA_WORDS)):
         return ClassifiedDocument(path, "customers", "the name says test customers")
+    if _has(parent_tokens, _SOURCE_FOLDERS):
+        return ClassifiedDocument(path, "policy", "an authoritative source mail or meeting, not a sample call")
+    if _has(tokens, _CONVERSATION_WORDS):
+        return ClassifiedDocument(path, "examples", "the name says example conversations")
     return None
 
 
-def classify_document(path: Path, text: str | None = None) -> ClassifiedDocument:
+def classify_document(path: Path, text: str | None = None, *, root: Path | None = None) -> ClassifiedDocument:
     """Classify one file of a case folder (see the module docstring).
 
     Args:
         path: The file.
         text: Its converted text when the caller already has it; otherwise it is read when the name does not decide.
     """
-    by_name = classify_by_name(path)
+    by_name = classify_by_name(path, root=root)
     if by_name is not None:
         return by_name
     content = text if text is not None else _read_text(path)

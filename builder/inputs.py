@@ -180,7 +180,7 @@ def classify_inputs(
     for path, root in entries:
         if path in tool_apis:
             continue
-        found = classify_document(path) if root is not None else classify_by_name(path)
+        found = classify_document(path, root=root) if root is not None else classify_by_name(path)
         roles[path] = found.role if found is not None else "policy"
         if found is not None and found.role != "policy":
             logger.info("input %s: %s (%s)", path.name, found.role, found.reason)

@@ -15,6 +15,7 @@ from typing import Any
 from langgraph.runtime import Runtime
 
 from builder.checks.lint import lint_workflow
+from builder.compiler.profiles.service import service_lint_api
 from builder.graph.context import BuilderContext
 from builder.graph.nodes._common import (
     failure,
@@ -37,8 +38,13 @@ async def _body(state: BuilderState, ctx: BuilderContext) -> dict[str, Any]:
     if workflow is None:
         return failure(NAME, "there is no workflow to check")
     agentic = state.get("track") == "agentic"
+    api = get_tool_api(state)
+    variables = lint_call_variables(None if agentic else get_ir(state))
+    if state.get("service_mode"):
+        variables = tuple(var["name"] for var in (state.get("service_plan") or {}).get("call_variables", []))
+        api = service_lint_api(api)
     report = lint_workflow(
-        workflow, get_tool_api(state), lint_call_variables(None if agentic else get_ir(state))
+        workflow, api, variables
     )
     errors = [f for f in report.errors if not (agentic and f.rule in AGENTIC_SOFT_RULES)]
     warnings = [*report.warnings, *(f for f in report.errors if agentic and f.rule in AGENTIC_SOFT_RULES)]

@@ -1,0 +1,14 @@
+{
+  "assembled_at_utc": "2026-10-11T17:37:11.818372+00:00",
+  "source_url": "https://drive.google.com/drive/folders/1r9KOek3SXiE0mu1wBofezD0bjiAJhcYQ",
+  "case_folder": "C:\\Users\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\submission\\case",
+  "archives": [],
+  "installed_files": [
+    {
+      "path": "submission/case/BRIEF.md",
+      "sha256": "b81506df0cb43ab5ce023b3e3880d6f477021da81bc4ed3c8b5d0aab61e42da9",
+      "source": "submission/incoming/20261011T173711Z-870f7d42/files/0/BRIEF.md"
+    }
+  ],
+  "note": "Original files combined without byte edits; inventory completeness is checked separately."
+}
