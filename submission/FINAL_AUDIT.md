@@ -22,13 +22,15 @@ Use [FINAL_RUNBOOK.md](FINAL_RUNBOOK.md) as the procedure. The kit opens at **20
 ## Claude's final adaptation check
 
 No builder source or test was edited by this audit. Before using the adaptation, its owner should rerun the focused
-tests and lint after changes settle. Two findings require attention:
+tests and lint after changes settle. One finding still requires attention:
 
 - `builder/understand/contract.py` checks path segments separately. A nonexistent recombination of existing segments
   and a changed HTTP method both passed `check_derived_document` in the final audit recheck. Validate exact HTTP method/path pairs against the prose contract;
   add a generic regression and fix in the owner's active adaptation if still unresolved.
-- The latest observed lint had SIM108 at `builder/ingest/tool_api.py:425` after the relative-server fix. This is a
-  moving-source finding; rerun lint on the finished code.
+
+At the subsequent readiness recheck, all 24 current contract tests passed again and affected lint passed. The earlier
+SIM108 finding in `builder/ingest/tool_api.py` is resolved. Claude's three adapter source changes and three test changes
+remain uncommitted; this preparation checkpoint is not the final source/artifact commit.
 
 Compiled headers include fixed values declared by the contract. Required credentials without a fixed value and
 OpenAPI security schemes are omitted with notes. `FREYA_BANK_TEAM_KEY` is not automatically sent in compiled tools.

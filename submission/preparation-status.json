@@ -1,5 +1,5 @@
 {
-  "checked_at_utc": "2026-10-11T16:29:40.526058Z",
+  "checked_at_utc": "2026-10-11T16:36:27.874113Z",
   "status": "preparation_incomplete",
   "ready_to_submit": false,
   "official_source": "https://www.freyavoice.ai/hackathon#submit",
@@ -22,7 +22,7 @@
     },
     {
       "id": "adaptation_final_check",
-      "detail": "Claude is still editing generic adapter/tests. 213 focused offline tests passed on the loaded snapshot; exact method/path grounding and final lint need rechecking after changes settle."
+      "detail": "Affected lint and all 24 current contract tests pass. Exact HTTP method/full-path grounding remains unresolved; Claude adapter changes still need final checking and commit."
     },
     {
       "id": "tool_endpoint_auth",
@@ -80,7 +80,8 @@
     "adapter_source_moving": true,
     "known_secret_values_printed": false,
     "report": "submission/FINAL_AUDIT.md",
-    "contract_tests_recheck_passed": 24
+    "contract_tests_recheck_passed": 24,
+    "affected_lint_passed": true
   },
   "source_checkpoint": {
     "commit": "3cec449a841eba5a40205c77f2d69f512174d145",
