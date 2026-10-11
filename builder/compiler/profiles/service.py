@@ -14,6 +14,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from builder.compiler.errors import CompileError
 from builder.compiler.nodes import end_call_node, tool_transition
 from builder.compiler.pycode import assert_safe_code
+from builder.compiler.service_context import response_context_hook, response_context_prompt
 from builder.compiler.tools import model_tool
 from builder.compiler.workflow_model import Workflow
 from builder.ingest.brief_loader import BriefBundle
@@ -436,6 +437,7 @@ def compile_service_workflow(plan: ServicePlan, bundle: BriefBundle, api: ToolAp
     validate_service_plan(plan, bundle, api)
     nodes: dict[str, Any] = {}
     shared = "\n".join(f"[{rule.id}] {rule.instruction}" for rule in plan.rules)
+    response_context = response_context_prompt(use.tool for stage in plan.stages for use in stage.tools)
     for stage in plan.stages:
         tools = []
         for use in stage.tools:
@@ -453,12 +455,18 @@ def compile_service_workflow(plan: ServicePlan, bundle: BriefBundle, api: ToolAp
                 max_retries=0,
                 pre_process_code=_request_hook(paths, contract.request_content_type)
                 if any(len(path) > 1 for _, path in paths) or contract.request_content_type != "application/json" else "",
+                post_process_code=response_context_hook(use.tool),
             ))
         task = (stage.task_message + "\n\nRead each bank tool result before acting on it. "
                 "Do not claim an operation succeeded without its successful response. "
                 "Call an exit transition only after its prerequisites are met. "
-                "Speak the appropriate reply or goodbye before the exit transition.\n"
-                + plan.closing_instruction)
+                "When those prerequisites are already satisfied, call the transition tool immediately "
+                "in this same turn; do not wait for an unnecessary caller acknowledgment. "
+                "Do not stop after announcing that you will fetch information: perform the required "
+                "fetch or transition now. Speak the appropriate reply or goodbye before the exit transition.\n"
+                + "\n".join(f"transition_to_{edge.target}: {edge.instruction}" for edge in stage.exits)
+                + "\n"
+                + plan.closing_instruction + response_context)
         nodes[stage.name] = {
             "name": stage.name,
             "node_type": "conversation",

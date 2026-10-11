@@ -281,7 +281,8 @@ async def test_generic_service_graph_dry_run_preserves_original_model_prompt_and
     service_source: Any, make_ctx: Any, make_gateway: Any, tmp_dirs: Any,
 ) -> None:
     bundle, api, brief, api_path = service_source
-    gateway = make_gateway(responders={"ServicePlan": lambda call: plan_data()})
+    gateway = make_gateway(responders={"ServicePlan": lambda call: plan_data(),
+                                      "ServicePolicyReview": lambda call: {"issues": []}})
     ctx = make_ctx(llm=gateway)
     start = initial_state(run_id="service-test", slot="elm", started_at="2026-10-11T17:00:00Z", dry_run=True,
                           inputs={"briefs": [str(brief)], "tool_api": str(api_path), "case_folder": str(brief.parent)})
@@ -289,10 +290,12 @@ async def test_generic_service_graph_dry_run_preserves_original_model_prompt_and
     assert state["final"]["status"] == "dry_run", state["final"].get("errors")
     assert state["profile"] == "service" and state["service_mode"] is True
     assert state.get("ir") is None and state.get("ledger") is None
-    assert len(gateway.calls) == 1 and gateway.calls[0].schema == "ServicePlan"
+    assert [call.schema for call in gateway.calls] == ["ServicePlan", "ServicePolicyReview"]
     assert BRIEF.strip() in gateway.calls[0].user
+    assert BRIEF.strip() in gateway.calls[1].user and "CANDIDATE SERVICE PLAN" in gateway.calls[1].user
     receipt = json.loads((tmp_dirs.out / "elm.service-plan.json").read_text(encoding="utf-8"))
     assert receipt["bundle_sha256"] == bundle.sha256 and receipt["tool_api_sha256"] == api.sha256
+    assert receipt["policy_review"] == {"issues": []}
 
 
 async def test_service_planner_failure_counts_attempt_without_retaining_stale_workflow(
@@ -307,6 +310,55 @@ async def test_service_planner_failure_counts_attempt_without_retaining_stale_wo
     assert update["compile_repairs"] == 1 and update["compiled"] == {}
 
 
+async def test_source_policy_review_blocks_missing_consent_and_repairs_through_existing_graph(
+    service_source: Any, make_ctx: Any, make_gateway: Any, tmp_dirs: Any,
+) -> None:
+    _, _, brief, api_path = service_source
+    incomplete = plan_data()
+    incomplete["rules"][0]["instruction"] = "Activate immediately."
+    incomplete["stages"][1]["task_message"] = "Activate immediately; report the result."
+    incomplete["stages"][1]["tools"][0]["when_to_call"] = "Activate immediately with the returned plan ID."
+    plans = iter([incomplete, plan_data()])
+    issue = {"location": "activate task and tool prerequisites",
+             "problem": "The plan activates without the caller's explicit confirmation.",
+             "correction": "Ask for confirmation of the selected returned plan before activating it.",
+             "evidence": {"document": "BRIEF.md",
+                          "quote": "Only activate the caller's selected plan after explicit confirmation."}}
+    reviews = iter([{"issues": [issue]}, {"issues": []}])
+    gateway = make_gateway(responders={"ServicePlan": lambda call: next(plans),
+                                      "ServicePolicyReview": lambda call: next(reviews)})
+    start = initial_state(run_id="review-test", slot="elm-reviewed", started_at="2026-10-11T17:00:00Z",
+                          dry_run=True, inputs={"briefs": [str(brief)], "tool_api": str(api_path),
+                                                "case_folder": str(brief.parent)})
+    state = await build_graph().ainvoke(start, context=make_ctx(llm=gateway))
+    assert state["final"]["status"] == "dry_run", state["final"].get("errors")
+    assert state["service_attempts"] == 2 and state["compile_repairs"] == 1
+    assert [call.schema for call in gateway.calls] == ["ServicePlan", "ServicePolicyReview"] * 2
+    assert issue["problem"] in gateway.calls[2].user and issue["correction"] in gateway.calls[2].user
+    assert BRIEF.strip() in gateway.calls[1].user
+    assert "Activate immediately" not in json.dumps(state["compiled"]["workflow"])
+    receipt = json.loads((tmp_dirs.out / "elm-reviewed.service-plan.json").read_text(encoding="utf-8"))
+    assert receipt["attempt"] == 2 and receipt["policy_review"] == {"issues": []}
+
+
+async def test_source_policy_review_rejects_fabricated_evidence_and_retains_no_workflow(
+    service_source: Any, make_ctx: Any, make_gateway: Any,
+) -> None:
+    bundle, api, *_ = service_source
+    review = {"issues": [{"location": "activate", "problem": "A fabricated source demands no consent.",
+                           "correction": "Activate without asking.", "evidence": {
+                               "document": "BRIEF.md", "quote": "The bank requires immediate activation without consent."}}]}
+    gateway = make_gateway(responders={"ServicePlan": lambda call: plan_data(),
+                                      "ServicePolicyReview": lambda call: review})
+    state = {"slot": "elm", "bundle": bundle.model_dump(mode="json"), "tool_api": api.model_dump(mode="json"),
+             "service_mode": True, "compiled": {"workflow": {"stale": True}}}
+    update = await service_workflow._body(state, make_ctx(llm=gateway))
+    assert update["failed"] == "service_workflow" and update["compiled"] == {}
+    assert "review issue 'activate' is not source-grounded" in update["compile_feedback"]
+    assert "Activate without asking" not in update["compile_feedback"]
+    assert update["service_attempts"] == 1
+
+
 async def test_planner_reads_original_contract_and_reference_without_duplicates(
     service_source: Any, make_ctx: Any, make_gateway: Any, tmp_path: Path,
 ) -> None:
@@ -317,7 +369,8 @@ async def test_planner_reads_original_contract_and_reference_without_duplicates(
     data = plan_data()
     data["rules"].append({"id": "S2", "instruction": "Use a selected plan ID and consent for activation.",
                           "evidence": {"document": contract.name, "quote": "POST /activate requires a selected plan ID and explicit consent."}})
-    gateway = make_gateway(responders={"ServicePlan": lambda call: data})
+    gateway = make_gateway(responders={"ServicePlan": lambda call: data,
+                                      "ServicePolicyReview": lambda call: {"issues": []}})
     state = {"slot": "elm", "bundle": bundle.model_dump(mode="json"), "tool_api": api.model_dump(mode="json"),
              "inputs": {"contracts": [str(contract), str(brief)], "reference": [str(contract)]}}
     update = await service_workflow._body(state, make_ctx(llm=gateway))

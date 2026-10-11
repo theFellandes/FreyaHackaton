@@ -8,7 +8,12 @@ from typing import Any
 
 from langgraph.runtime import Runtime
 
-from builder.compiler.profiles.service import SERVICE_PLANNER_SYSTEM, ServicePlan, compile_service_workflow
+from builder.compiler.profiles.service import (
+    SERVICE_PLANNER_SYSTEM,
+    ServicePlan,
+    compile_service_workflow,
+    validate_service_plan,
+)
 from builder.graph.context import BuilderContext
 from builder.graph.nodes._common import (
     failure,
@@ -18,6 +23,11 @@ from builder.graph.nodes._common import (
     short,
     workflow_file,
     write_json,
+)
+from builder.graph.nodes.service_review import (
+    SERVICE_POLICY_REVIEW_SYSTEM,
+    ServicePolicyReview,
+    require_complete_service_policy,
 )
 from builder.graph.state import BuilderState
 from builder.guardrails import check_inputs
@@ -68,8 +78,10 @@ async def _body(state: BuilderState, ctx: BuilderContext) -> dict[str, Any]:
                         documents=bundle.names, bundle_sha256=bundle.sha256,
                         chars=sum(len(doc.text) for doc in bundle.documents))
         feedback = str(state.get("compile_feedback") or "")
-        user = ("ORIGINAL BANK DOCUMENTS (complete, unabridged):\n" + bundle.combined_text()
-                + "\n\nACTUAL TOOL API CONTRACTS:\n" + json.dumps(api.model_dump(mode="json"), ensure_ascii=False)
+        source_context = ("ORIGINAL BANK DOCUMENTS (complete, unabridged):\n" + bundle.combined_text()
+                          + "\n\nACTUAL TOOL API CONTRACTS:\n"
+                          + json.dumps(api.model_dump(mode="json"), ensure_ascii=False))
+        user = (source_context
                 + ("\n\nREPAIR FEEDBACK: Correct the plan using the same original sources.\n" + feedback if feedback else ""))
         plan = await call_structured(
             ctx.llm,
@@ -79,6 +91,20 @@ async def _body(state: BuilderState, ctx: BuilderContext) -> dict[str, Any]:
             user=user,
             deadline=ctx.budget.deadline(),
         )
+        # Reject inexpensive deterministic errors before spending a policy-review call.
+        validate_service_plan(plan, bundle, api)
+        review = await call_structured(
+            ctx.llm,
+            purpose="review_service_policy",
+            schema=ServicePolicyReview,
+            system=SERVICE_POLICY_REVIEW_SYSTEM,
+            user=source_context + "\n\nCANDIDATE SERVICE PLAN:\n" + plan.model_dump_json(),
+            max_tokens=8192,
+            deadline=ctx.budget.deadline(),
+        )
+        ctx.trace.decision("source-policy review of service plan", attempt=attempt, issues=len(review.issues),
+                           bundle_sha256=bundle.sha256, tool_api_sha256=api.sha256)
+        require_complete_service_policy(review, bundle)
         compiled = compile_service_workflow(plan, bundle, api)
     except Exception as exc:
         ctx.trace.error("service planning/compile failed", attempt=attempt, error=short(exc, 1000))
@@ -89,6 +115,7 @@ async def _body(state: BuilderState, ctx: BuilderContext) -> dict[str, Any]:
         "tool_api_sha256": api.sha256,
         "attempt": attempt,
         "plan": plan_data,
+        "policy_review": review.model_dump(mode="json"),
     })
     ctx.trace.decision(
         "compiled source-grounded service workflow",
