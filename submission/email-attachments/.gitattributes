@@ -1,0 +1,2 @@
+workflow.json -text -filter -diff -merge
+trace.log -text -filter -diff -merge

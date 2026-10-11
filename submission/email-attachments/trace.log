@@ -1,0 +1,101 @@
+2026-10-11T18:23:19.446Z | START  | run e879a9b14f9d started | slot=final-statement | builder 0.1.0, python 3.12.14 | commit 53b5eee+dirty
+2026-10-11T18:23:19.447Z | CONFIG | effective configuration | freya_api_url=https://staging-app.freyavoice.ai freya_api_key=set freya_bank_team_key=set freya_workspace_id=auto llm_providers=[anthropic, openai, claude_code] builder_track=compiled agent_profile=staged self_test=none build_time_budget_s=1200 build_slot=auto dry_run=False tool_base_url=https://freya-hackathon-bank-oguzhan.freya-submission-bank-preparation.workers.dev langfuse=disabled llm_log_content=full langfuse_log_prompts=True
+2026-10-11T18:23:19.448Z | OBS    | langfuse disabled (no keys)
+2026-10-11T18:23:19.449Z | CONFIG | LLM key changer | order=[anthropic, openai, claude_code] key_health_file=.\data\key_health.json
+2026-10-11T18:23:19.498Z | STAGE  | load_inputs | start | budget_left_s=1200
+2026-10-11T18:23:19.498Z | INPUT  | tool base URL: https://freya-hackathon-bank-oguzhan.freya-submission-bank-preparation.workers.dev | tool_base_url=https://freya-hackathon-bank-oguzhan.freya-submission-bank-preparation.workers.dev
+2026-10-11T18:23:19.498Z | INPUT  | 2 test customer file(s) for the mock, kept out of the policy | files=[test-customers.json, test-customers.md]
+2026-10-11T18:23:19.498Z | INPUT  | 4 example conversation(s), read as labelled illustrations (lower priority than the brief) | files=[example-response.json, worker.js, wrangler.toml, example-scenarios.md]
+2026-10-11T18:23:59.455Z | MODEL  | openai/gpt-5.6-terra | key=openai#1(…yRAA) | ok 39.9s in=6805 out=6276 attempt=1 | derive the tool API (OpenAPI) from the service contract (openapi_from_contract.v1)
+2026-10-11T18:23:59.512Z | CONTRACT | tool API derived from 2026-10-01-service-contract.md: 8 operation(s), saved as final-statement.openapi.json | file=.\out\final-statement.openapi.json attempt=1 operations=[POST /oauth2/token (other), POST /cards.list (other), POST /cards.balance (get_account), POST /statement.week.get (o... notes=[The contract says customerNo and newStatementWeek may also be accepted as JSON numbers or strings in certain request...
+2026-10-11T18:23:59.513Z | DECIDE | generic service contract: every supplied operation kept; collections roles are not required | operations={"post_oauth2_token": "POST /oauth2/token", "cards_list": "POST /cards.list", "cards_balance": "POST /cards.balance",...
+2026-10-11T18:23:59.513Z | DECIDE | every tool request goes to https://freya-hackathon-bank-oguzhan.freya-submission-bank-preparation.workers.dev/voice/v1 (paths and methods of the contract kept) | urls={"post_oauth2_token": "POST https://freya-hackathon-bank-oguzhan.freya-submission-bank-preparation.workers.dev/oauth2...
+2026-10-11T18:23:59.515Z | DECIDE | track compiled (requested compiled; agentic fallback off) | profile=staged dry_run=False
+2026-10-11T18:23:59.515Z | INPUT  | 15 brief file(s), tool API with 8 tool(s) | briefs=[BRIEF.md, README.md, README.md, 2025-08-14-cards-faq.md, 2026-09-10-ivr-prompt-sheet.md, 2026-09-24-kickoff-question... chars=119420 brief_sha=7d806e22ba21 tools=[cards_balance, cards_list, contact_email_get, post_oauth2_token, statement_pdf_send, statement_week_change, statemen...
+2026-10-11T18:23:59.515Z | STAGE  | load_inputs | end 40.0s | budget_left_s=1159.9
+2026-10-11T18:23:59.516Z | STAGE  | guard_inputs | start | budget_left_s=1159.9
+2026-10-11T18:23:59.591Z | GUARD  | inputs | ok | 2 violations | blocked=False violations=[WARN injection [2026-10-08-statement-debt-analysis.md:307]: text addressed to the model (ignore_rules): 'ut of its j...
+2026-10-11T18:23:59.592Z | STAGE  | guard_inputs | end 0.1s | budget_left_s=1159.9
+2026-10-11T18:23:59.593Z | STAGE  | service_workflow | start | budget_left_s=1159.9
+2026-10-11T18:23:59.668Z | INPUT  | service planner reads complete original policy and contract documents | documents=[BRIEF.md, README.md, README.md, 2025-08-14-cards-faq.md, 2026-09-10-ivr-prompt-sheet.md, 2026-09-24-kickoff-question... bundle_sha256=ad84a9bf3a84abafbe98c58c10909c22f72fe954693e7099434edda9dc00214f chars=138990
+2026-10-11T18:24:18.880Z | MODEL  | openai/gpt-5.6-terra | key=openai#1(…yRAA) | ok 19.2s in=54106 out=2139 attempt=1 | plan_service_workflow
+2026-10-11T18:24:18.910Z | ERROR  | service planning/compile failed | attempt=1 error=Invalid service plan: outcome human_agent: service evidence is absent from '2026-10-08-statement-debt-analysis.md': '...
+2026-10-11T18:24:18.911Z | STAGE  | service_workflow | failed 19.3s | budget_left_s=1140.5
+2026-10-11T18:24:18.912Z | STAGE  | service_workflow | start | budget_left_s=1140.5
+2026-10-11T18:24:18.992Z | INPUT  | service planner reads complete original policy and contract documents | documents=[BRIEF.md, README.md, README.md, 2025-08-14-cards-faq.md, 2026-09-10-ivr-prompt-sheet.md, 2026-09-24-kickoff-question... bundle_sha256=ad84a9bf3a84abafbe98c58c10909c22f72fe954693e7099434edda9dc00214f chars=138990
+2026-10-11T18:25:04.163Z | MODEL  | openai/gpt-5.6-terra | key=openai#1(…yRAA) | ok 45.2s in=54171 out=5153 attempt=1 | plan_service_workflow
+2026-10-11T18:25:04.198Z | DECIDE | compiled source-grounded service workflow | attempt=2 stages=8 rules=8 call_variables=[customerNumber, now] bundle_sha256=ad84a9bf3a84abafbe98c58c10909c22f72fe954693e7099434edda9dc00214f tool_api_sha256=b2788df88b9c8afd22d4d7eb3def7e4252d618b33f847b870ad5974ffc478d6d
+2026-10-11T18:25:04.198Z | STAGE  | service_workflow | end 45.3s | budget_left_s=1095.2
+2026-10-11T18:25:04.199Z | STAGE  | static_checks | start | budget_left_s=1095.2
+2026-10-11T18:25:04.202Z | LINT   | static checks: 0 errors, 1 warnings (ok) | errors=[] warnings=[L018 warning system_prompt: 6781 characters (> 6000); long prompts dilute the rules]
+2026-10-11T18:25:04.202Z | TEST   | PASS static_checks | 0 errors, 1 warnings
+2026-10-11T18:25:04.202Z | STAGE  | static_checks | end 0.0s | budget_left_s=1095.2
+2026-10-11T18:25:04.202Z | STAGE  | guard_workflow | start | budget_left_s=1095.2
+2026-10-11T18:25:04.210Z | GUARD  | workflow | ok | 0 violations | blocked=False violations=[]
+2026-10-11T18:25:04.210Z | STAGE  | guard_workflow | end 0.0s | budget_left_s=1095.2
+2026-10-11T18:25:04.211Z | STAGE  | remote_validate | start | budget_left_s=1095.2
+2026-10-11T18:25:04.681Z | REQUEST | Freya wrapper attempt completed | service=freya scope=wrapper operation=validate request_id=64c9b7cf686f480fa6542399941c2209 attempt=1 max_attempts=3 ok=True duration_ms=469 method=POST path=/api/v2/workflow retryable=False retry_scheduled=False retry_delay_ms=0
+2026-10-11T18:25:04.681Z | FREYA  | validate | ok=True name=final-statement node_count=12 tool_count=7
+2026-10-11T18:25:04.681Z | TEST   | PASS remote_validate | the platform accepted the workflow (dry run)
+2026-10-11T18:25:04.681Z | STAGE  | remote_validate | end 0.5s | budget_left_s=1094.8
+2026-10-11T18:25:04.682Z | STAGE  | deploy | start | budget_left_s=1094.8
+2026-10-11T18:25:04.889Z | REQUEST | Freya wrapper attempt completed | service=freya scope=wrapper operation=workspace request_id=676c6d8eca164aa28080c9a48a471465 attempt=1 max_attempts=3 ok=True duration_ms=203 retryable=False retry_scheduled=False retry_delay_ms=0
+2026-10-11T18:25:05.819Z | REQUEST | Freya wrapper attempt completed | service=freya scope=wrapper operation=create request_id=297b10298e9147edb95edc490245508f attempt=1 max_attempts=5 ok=True duration_ms=937 method=POST path=/api/v2/workflow retryable=False retry_scheduled=False retry_delay_ms=0
+2026-10-11T18:25:05.820Z | REQUEST | Freya wrapper attempt completed | service=freya scope=wrapper operation=workspace request_id=ed0178961a77457dbbe45068dbdf5d95 attempt=1 max_attempts=3 ok=True duration_ms=0 retryable=False retry_scheduled=False retry_delay_ms=0
+2026-10-11T18:25:06.077Z | REQUEST | Freya wrapper attempt completed | service=freya scope=wrapper operation=get_workflow request_id=f60ac44beb634d26acff3cc5e1cee6ae attempt=1 max_attempts=3 ok=True duration_ms=250 method=GET path=/api/v2/workflow/fd2bd1fc-afa1-407f-a8b8-59d7eb9ba2f1 retryable=False retry_scheduled=False retry_delay_ms=0 workflow_id=fd2bd1fc-afa1-407f-a8b8-59d7eb9ba2f1
+2026-10-11T18:25:06.077Z | REQUEST | Freya wrapper attempt completed | service=freya scope=wrapper operation=workspace request_id=20ebf25a40014dfeb710f4bbafa7b835 attempt=1 max_attempts=3 ok=True duration_ms=0 retryable=False retry_scheduled=False retry_delay_ms=0
+2026-10-11T18:25:06.286Z | REQUEST | Freya wrapper attempt completed | service=freya scope=wrapper operation=versions request_id=26524da51dbc4a37801055523458bfad attempt=1 max_attempts=3 ok=True duration_ms=219 method=GET path=/api/v2/versions/workflow/fd2bd1fc-afa1-407f-a8b8-59d7eb9ba2f1 retryable=False retry_scheduled=False retry_delay_ms=0 workflow_id=fd2bd1fc-afa1-407f-a8b8-59d7eb9ba2f1
+2026-10-11T18:25:06.287Z | FREYA  | save | ok=True state_file=.\.freya-agents.json workflow_id=fd2bd1fc-afa1-407f-a8b8-59d7eb9ba2f1 agent_id=80ed174e-a9b3-420f-8e69-3cd1cea4da00 version=1 created=True node_count=12 tool_count=7 slot=final-statement published=True
+2026-10-11T18:25:06.287Z | REQUEST | Freya wrapper attempt completed | service=freya scope=wrapper operation=workspace request_id=2d0e84a26f19400c8d63ddb417de06f7 attempt=1 max_attempts=3 ok=True duration_ms=0 retryable=False retry_scheduled=False retry_delay_ms=0
+2026-10-11T18:25:06.657Z | REQUEST | Freya wrapper attempt completed | service=freya scope=wrapper operation=get_workflow request_id=84bb81cea7ad4c14821a7e3ffe0992ee attempt=1 max_attempts=3 ok=True duration_ms=360 method=GET path=/api/v2/workflow/fd2bd1fc-afa1-407f-a8b8-59d7eb9ba2f1 retryable=False retry_scheduled=False retry_delay_ms=0 workflow_id=fd2bd1fc-afa1-407f-a8b8-59d7eb9ba2f1
+2026-10-11T18:25:07.913Z | REQUEST | Freya wrapper attempt completed | service=freya scope=wrapper operation=export request_id=8825fd443e6b430d95f745d18625b146 attempt=1 max_attempts=3 ok=True duration_ms=1250 method=GET path=/api/v2/workflow/fd2bd1fc-afa1-407f-a8b8-59d7eb9ba2f1 retryable=False retry_scheduled=False retry_delay_ms=0 workflow_id=fd2bd1fc-afa1-407f-a8b8-59d7eb9ba2f1
+2026-10-11T18:25:07.913Z | FREYA  | export | ok=True workflow_id=fd2bd1fc-afa1-407f-a8b8-59d7eb9ba2f1 path=.\out\final-statement.exported.json.part
+2026-10-11T18:25:07.915Z | STAGE  | deploy | end 3.2s | budget_left_s=1091.5
+2026-10-11T18:25:07.916Z | STAGE  | self_test | start | budget_left_s=1091.5
+2026-10-11T18:25:07.916Z | DECIDE | no self-test ran (mode none, 1092 s left)
+2026-10-11T18:25:07.916Z | STAGE  | self_test | skipped 0.0s | budget_left_s=1091.5
+2026-10-11T18:25:07.917Z | STAGE  | finalize | start | budget_left_s=1091.5
+2026-10-11T18:25:07.917Z | FINAL  | run e879a9b14f9d finished
+====================================================================================================
+BUILD SUMMARY
+run id       : e879a9b14f9d
+slot         : final-statement
+track        : compiled
+status       : deployed
+started      : 2026-10-11T18:23:19.245Z
+ended        : 2026-10-11T18:25:07.917Z
+duration     : 108.7 s (1 min 49 s)
+model calls  : 3 (3 ok, 0 failed)
+  - openai/gpt-5.6-terra: calls=3 (3 ok, 0 failed), tokens in=115082 out=13568
+Freya        :
+  - steps (nodes): 12
+  - tools: 7
+  - workflow id: fd2bd1fc-afa1-407f-a8b8-59d7eb9ba2f1
+  - agent id: 80ed174e-a9b3-420f-8e69-3cd1cea4da00
+  - published version: 1
+  - slot: final-statement
+  - published: True
+  - exported: .\out\final-statement.exported.json
+tests        : 2 (2 passed, 0 failed)
+  - PASS static_checks: 0 errors, 1 warnings
+  - PASS remote_validate: the platform accepted the workflow
+stages       :
+  - load_inputs: end 40.0s
+  - guard_inputs: end 0.1s
+  - service_workflow: failed 19.3s
+  - service_workflow: end 45.3s
+  - static_checks: end 0.0s
+  - guard_workflow: end 0.0s
+  - remote_validate: end 0.5s
+  - deploy: end 3.2s
+  - self_test: skipped 0.0s
+errors       : 1
+profile      : service
+coverage     : 8 source-grounded service rules in system prompt
+notes        : []
+errors_list  : [service_workflow: Invalid service plan: outcome human_agent: service evidence is absent from '2026-10-08-statement-debt-analysis.md': 'Any Freya Bank service failing (error or no answer) goes to an agent, never to the main menu.']
+export_ok    : True
+====================================================================================================
+2026-10-11T18:25:07.918Z | STAGE  | finalize | end 0.0s | budget_left_s=1091.5
+2026-10-11T18:25:07.919Z | END    | run e879a9b14f9d closed after 108.7 s | duration_s=108.672
+{"slot": "final-statement", "track": "compiled", "workflow_id": "fd2bd1fc-afa1-407f-a8b8-59d7eb9ba2f1", "agent_id": "80ed174e-a9b3-420f-8e69-3cd1cea4da00", "version": 1, "exported": "C:\\Users\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\out\\final-statement.exported.json", "export_ok": true, "trace": "C:\\Users\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\traces\\final-statement-20261011T182319Z.log", "status": "deployed", "workflow_file": "C:\\Users\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\out\\final-statement.workflow.json", "tests": {"passed": 2, "total": 2}, "errors": ["service_workflow: Invalid service plan: outcome human_agent: service evidence is absent from '2026-10-08-statement-debt-analysis.md': 'Any Freya Bank service failing (error or no answer) goes to an agent, never to the main menu.'"], "policy_issues": []}

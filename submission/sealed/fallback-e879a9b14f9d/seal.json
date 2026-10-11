@@ -1,0 +1,83 @@
+{
+  "artifacts": {
+    "build_result": {
+      "path": "build-result.json",
+      "sha256": "5362408dfea02b805868b92ced453be225e335e0f94eb73132aacf05a895be6e",
+      "size_bytes": 873
+    },
+    "deployment_receipt": {
+      "path": "deployment-receipt.json",
+      "sha256": "ead9c09cf5c416ef4e0748840b1a1215096608d8189064c69a6cb2f5cf71801d",
+      "size_bytes": 2784
+    },
+    "readiness_report": {
+      "path": "readiness-report.json",
+      "sha256": "5d1df425eb1f57535a20e3be41f0c136a0ffaab19ab63f76fa3223584aa68c3c",
+      "size_bytes": 907
+    },
+    "run_manifest": {
+      "path": "capture.json",
+      "sha256": "ccee389adffeefbaf9d2021d955caf2c0a0f0bac2ec389cb4896501329d5fde0",
+      "size_bytes": 67217
+    },
+    "trace": {
+      "path": "trace.log",
+      "sha256": "6bceb599f3a6b843770bb2a65dede1439b0f10ab21cef1014f67c22b2e4d8d1b",
+      "size_bytes": 13506
+    },
+    "workflow": {
+      "path": "workflow.json",
+      "sha256": "39a0d15f3efc6010bfd39d52e55abc96f5bfcb206890e374849f6c417614599d",
+      "size_bytes": 71437
+    }
+  },
+  "build": {
+    "agent_id": "80ed174e-a9b3-420f-8e69-3cd1cea4da00",
+    "export_ok": true,
+    "run_id": "e879a9b14f9d",
+    "status": "deployed",
+    "version": 1,
+    "workflow_id": "fd2bd1fc-afa1-407f-a8b8-59d7eb9ba2f1"
+  },
+  "capture": {
+    "capture_id": "20261011T182318138531Z-314a8a7a54e34718bf8deacb4c369af5",
+    "ended_at": "2026-10-11T18:25:08.205717Z",
+    "manifest_sha256": "ccee389adffeefbaf9d2021d955caf2c0a0f0bac2ec389cb4896501329d5fde0",
+    "mock_url": "https://freya-hackathon-bank-oguzhan.freya-submission-bank-preparation.workers.dev",
+    "probe": {
+      "checked_at": "2026-10-11T18:23:18.275124Z",
+      "http_status": 200,
+      "metadata": {
+        "bank_ready": true,
+        "bundle_sha256": "3891df0c3f2b38d7da21faf96fb07ae5cc765cd2a4e0603aaad167311489c440",
+        "canonical_card_count": 65,
+        "cloudflare_version_id": "af006baa-a9c0-4dab-bb5a-3b7a0ead0d14",
+        "contract_sha256": "692414a06036911509072d602b6c85bf38cbf2c791d26488d53d28be1cf35470",
+        "customer_count": 34,
+        "customer_fixture_sha256": "009d3609d33a3b001ce04861822cd2592cb5482a7a5b0a5cb69442592889aa65",
+        "ready": true,
+        "storage_backend": "sqlite-durable-object"
+      },
+      "ok": true,
+      "url": "https://freya-hackathon-bank-oguzhan.freya-submission-bank-preparation.workers.dev/__submission_health"
+    },
+    "returncode": 0,
+    "run_id": "e879a9b14f9d",
+    "started_at": "2026-10-11T18:23:18.412204Z"
+  },
+  "format_version": 1,
+  "raw_capture_sha256": "6bceb599f3a6b843770bb2a65dede1439b0f10ab21cef1014f67c22b2e4d8d1b",
+  "sealed_at": "2026-10-11T19:52:08.908566Z",
+  "secret_scan": {
+    "environment_names": [
+      "FREYA_API_KEY",
+      "FREYA_BANK_TEAM_KEY",
+      "FREYA_DASHBOARD_PASSWORD",
+      "FREYA_KEY",
+      "OPENAI_API_KEY"
+    ],
+    "generic_key_shapes": true
+  },
+  "trace_handling": "raw",
+  "trace_vetted": true
+}

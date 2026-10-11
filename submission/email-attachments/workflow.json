@@ -1,0 +1,1532 @@
+{
+ "workflow_id": "fd2bd1fc-afa1-407f-a8b8-59d7eb9ba2f1",
+ "agent_id": "80ed174e-a9b3-420f-8e69-3cd1cea4da00",
+ "updated_at": "2026-10-11T18:25:05.164Z",
+ "workflow": {
+  "nodes": {
+   "week_get": {
+    "name": "week_get",
+    "tools": [
+     {
+      "type": "function",
+      "config": {
+       "timeoutMs": 30000,
+       "maxRetries": 0
+      },
+      "function": {
+       "name": "statement_week_get",
+       "handler": "__function__:api_call",
+       "parameters": {
+        "type": "object",
+        "properties": {
+         "url": {
+          "type": "string",
+          "default": "https://freya-hackathon-bank-oguzhan.freya-submission-bank-preparation.workers.dev/voice/v1/statement.week.get"
+         },
+         "body": {
+          "type": "object",
+          "required": [
+           "data__cardNumber",
+           "call__ani"
+          ],
+          "properties": {
+           "call__ani": {
+            "type": "string",
+            "default": "{{call__ani}}",
+            "description": "Caller's phone number supplied as call metadata. API field call.ani"
+           },
+           "call__lang": {
+            "type": "string",
+            "default": "tr"
+           },
+           "data__cardNumber": {
+            "type": "string",
+            "default": "{{data__cardNumber}}",
+            "description": "Card number exactly as returned by cards.list; do not reconstruct it from caller-spoken digits. API field data.cardNumber"
+           }
+          }
+         },
+         "method": {
+          "type": "string",
+          "default": "POST"
+         },
+         "headers": {
+          "type": "object",
+          "properties": {
+           "Accept": {
+            "type": "string",
+            "default": "application/json"
+           },
+           "Content-Type": {
+            "type": "string",
+            "default": "application/json"
+           }
+          }
+         }
+        }
+       },
+       "description": "CALL Arayan hafta de\u011fi\u015fikli\u011fi istedi\u011finde; data.cardNumber se\u00e7ilmi\u015f cards_list kart\u0131d\u0131r."
+      },
+      "pre_process_code": "try:\n    original = config.get('body')\n    if isinstance(original, dict):\n        rebuilt = dict()\n        for alias, path in [('data__cardNumber', ('data', 'cardNumber')), ('call__ani', ('call', 'ani')), ('call__lang', ('call', 'lang'))]:\n            if alias not in original:\n                continue\n            current = rebuilt\n            for part in path[:-1]:\n                if part not in current:\n                    current[part] = dict()\n                current = current[part]\n            current[path[-1]] = original[alias]\n        config['body'] = rebuilt\nexcept Exception:\n    pass\n"
+     }
+    ],
+    "on_enter": {
+     "type": "llm"
+    },
+    "node_type": "conversation",
+    "assertions": [],
+    "passthrough": false,
+    "pre_actions": [],
+    "transitions": [
+     {
+      "condition": {
+       "mode": "exact",
+       "operator": "matches_intent",
+       "description": "Arayan yaln\u0131z teklif edilen ve mevcut haftadan farkl\u0131 1-4 haftas\u0131ndan birini a\u00e7\u0131k\u00e7a se\u00e7erse."
+      },
+      "description": "Arayan yaln\u0131z teklif edilen ve mevcut haftadan farkl\u0131 1-4 haftas\u0131ndan birini a\u00e7\u0131k\u00e7a se\u00e7erse.",
+      "target_node": "week_preview",
+      "is_tool_call": true
+     },
+     {
+      "condition": {
+       "mode": "exact",
+       "operator": "matches_intent",
+       "description": "De\u011fi\u015fiklik istemezse/mevcut haftay\u0131 se\u00e7erse, T\u00fcrk\u00e7e d\u0131\u015f\u0131, kapsam-d\u0131\u015f\u0131 men\u00fc eveti veya \u00fc\u00e7 deneme bittiyse."
+      },
+      "description": "De\u011fi\u015fiklik istemezse/mevcut haftay\u0131 se\u00e7erse, T\u00fcrk\u00e7e d\u0131\u015f\u0131, kapsam-d\u0131\u015f\u0131 men\u00fc eveti veya \u00fc\u00e7 deneme bittiyse.",
+      "target_node": "main_menu",
+      "is_tool_call": true
+     },
+     {
+      "condition": {
+       "mode": "exact",
+       "operator": "matches_intent",
+       "description": "statement_week_get hata/timeout, ki\u015fi/\u00f6deme/itiraz veya \u00fc\u00e7\u00fcnc\u00fc sakinle\u015ftirme sonras\u0131 \u015fik\u00e2yette."
+      },
+      "description": "statement_week_get hata/timeout, ki\u015fi/\u00f6deme/itiraz veya \u00fc\u00e7\u00fcnc\u00fc sakinle\u015ftirme sonras\u0131 \u015fik\u00e2yette.",
+      "target_node": "human_agent",
+      "is_tool_call": true
+     },
+     {
+      "condition": {
+       "mode": "exact",
+       "operator": "matches_intent",
+       "description": "Ba\u015fkas\u0131n\u0131n kart\u0131 istenirse."
+      },
+      "description": "Ba\u015fkas\u0131n\u0131n kart\u0131 istenirse.",
+      "target_node": "ivr_login",
+      "is_tool_call": true
+     },
+     {
+      "condition": {
+       "mode": "exact",
+       "operator": "matches_intent",
+       "description": "\u00dc\u00e7\u00fcnc\u00fc sessizlikte."
+      },
+      "description": "\u00dc\u00e7\u00fcnc\u00fc sessizlikte.",
+      "target_node": "silence_close",
+      "is_tool_call": true
+     }
+    ],
+    "role_message": "",
+    "task_message": "\u201cBilgilerinizi kontrol ediyorum.\u201d de ve se\u00e7ilmi\u015f \u00f6zg\u00fcn cardNumber ile statement_week_get \u00e7a\u011f\u0131r. Ba\u015far\u0131da mevcut hafta, nextStatementDate ve nextLastPayDate'i oku; relationType M/C ise iki kart\u0131n etkisini ve adlar\u0131n\u0131 uygun bi\u00e7imde a\u00e7\u0131kla. Mevcut hafta d\u0131\u015f\u0131ndaki \u00fc\u00e7 se\u00e7ene\u011fi sor.\n\nRead each bank tool result before acting on it. Do not claim an operation succeeded without its successful response. Call an exit transition only after its prerequisites are met. Speak the appropriate reply or goodbye before the exit transition.\nend_call ge\u00e7i\u015finden hemen \u00f6nce hedefe g\u00f6re s\u00f6ylenmesi gereken T\u00fcrk\u00e7e son c\u00fcmleyi s\u00f6yle; fiziksel transfer veya g\u00f6nderim ger\u00e7ekle\u015fti\u011fini yaln\u0131z ilgili ba\u015far\u0131l\u0131 tool sonucu do\u011frulad\u0131ysa bildir.",
+    "interruptible": true,
+    "max_node_turns": null,
+    "response_mapping": [],
+    "extraction_schema": [],
+    "max_turn_transition": null,
+    "truncation_strategy": "keep_all",
+    "suppress_tool_results": false,
+    "truncation_window_size": 10,
+    "on_enter_first_entry_only": false,
+    "disable_inactivity_monitor": false,
+    "passthrough_default_transition": null,
+    "return_to_previous_on_interrupt": false
+   },
+   "ivr_login": {
+    "name": "ivr_login",
+    "tools": [],
+    "on_enter": {
+     "type": "silent"
+    },
+    "terminal": {
+     "type": "function",
+     "function": {
+      "name": "ivr_login",
+      "handler": "__function__:end_call",
+      "parameters": {
+       "type": "object",
+       "properties": {
+        "message_mode": {
+         "type": "string",
+         "default": "none"
+        }
+       }
+      },
+      "description": ""
+     }
+    },
+    "node_type": "end_call",
+    "assertions": [],
+    "passthrough": false,
+    "pre_actions": [],
+    "transitions": [],
+    "role_message": "",
+    "task_message": "",
+    "interruptible": true,
+    "max_node_turns": null,
+    "response_mapping": [],
+    "extraction_schema": [],
+    "max_turn_transition": null,
+    "truncation_strategy": "keep_all",
+    "suppress_tool_results": false,
+    "truncation_window_size": 10,
+    "on_enter_first_entry_only": false,
+    "disable_inactivity_monitor": true,
+    "passthrough_default_transition": null,
+    "return_to_previous_on_interrupt": false
+   },
+   "main_menu": {
+    "name": "main_menu",
+    "tools": [],
+    "on_enter": {
+     "type": "silent"
+    },
+    "terminal": {
+     "type": "function",
+     "function": {
+      "name": "main_menu",
+      "handler": "__function__:end_call",
+      "parameters": {
+       "type": "object",
+       "properties": {
+        "message_mode": {
+         "type": "string",
+         "default": "none"
+        }
+       }
+      },
+      "description": ""
+     }
+    },
+    "node_type": "end_call",
+    "assertions": [],
+    "passthrough": false,
+    "pre_actions": [],
+    "transitions": [],
+    "role_message": "",
+    "task_message": "",
+    "interruptible": true,
+    "max_node_turns": null,
+    "response_mapping": [],
+    "extraction_schema": [],
+    "max_turn_transition": null,
+    "truncation_strategy": "keep_all",
+    "suppress_tool_results": false,
+    "truncation_window_size": 10,
+    "on_enter_first_entry_only": false,
+    "disable_inactivity_monitor": true,
+    "passthrough_default_transition": null,
+    "return_to_previous_on_interrupt": false
+   },
+   "read_debt": {
+    "name": "read_debt",
+    "tools": [
+     {
+      "type": "function",
+      "config": {
+       "timeoutMs": 30000,
+       "maxRetries": 0
+      },
+      "function": {
+       "name": "cards_balance",
+       "handler": "__function__:api_call",
+       "parameters": {
+        "type": "object",
+        "properties": {
+         "url": {
+          "type": "string",
+          "default": "https://freya-hackathon-bank-oguzhan.freya-submission-bank-preparation.workers.dev/voice/v1/cards.balance"
+         },
+         "body": {
+          "type": "object",
+          "required": [
+           "data__cardNumber",
+           "call__ani"
+          ],
+          "properties": {
+           "call__ani": {
+            "type": "string",
+            "default": "{{call__ani}}",
+            "description": "Caller's phone number supplied as call metadata. API field call.ani"
+           },
+           "call__lang": {
+            "type": "string",
+            "default": "tr"
+           },
+           "data__cardNumber": {
+            "type": "string",
+            "default": "{{data__cardNumber}}",
+            "description": "Card number exactly as returned by cards.list; do not reconstruct it from caller-spoken digits. API field data.cardNumber"
+           }
+          }
+         },
+         "method": {
+          "type": "string",
+          "default": "POST"
+         },
+         "headers": {
+          "type": "object",
+          "properties": {
+           "Accept": {
+            "type": "string",
+            "default": "application/json"
+           },
+           "Content-Type": {
+            "type": "string",
+            "default": "application/json"
+           }
+          }
+         }
+        }
+       },
+       "description": "CALL Se\u00e7ilmi\u015f kart i\u00e7in bir kez; data.cardNumber tam olarak cards_list sonucundan."
+      },
+      "pre_process_code": "try:\n    original = config.get('body')\n    if isinstance(original, dict):\n        rebuilt = dict()\n        for alias, path in [('data__cardNumber', ('data', 'cardNumber')), ('call__ani', ('call', 'ani')), ('call__lang', ('call', 'lang'))]:\n            if alias not in original:\n                continue\n            current = rebuilt\n            for part in path[:-1]:\n                if part not in current:\n                    current[part] = dict()\n                current = current[part]\n            current[path[-1]] = original[alias]\n        config['body'] = rebuilt\nexcept Exception:\n    pass\n"
+     }
+    ],
+    "on_enter": {
+     "type": "llm"
+    },
+    "node_type": "conversation",
+    "assertions": [],
+    "passthrough": false,
+    "pre_actions": [],
+    "transitions": [
+     {
+      "condition": {
+       "mode": "exact",
+       "operator": "matches_intent",
+       "description": "Ba\u015fka kart i\u00e7in a\u00e7\u0131k evet veya kart de\u011fi\u015ftirme iste\u011fi varsa."
+      },
+      "description": "Ba\u015fka kart i\u00e7in a\u00e7\u0131k evet veya kart de\u011fi\u015ftirme iste\u011fi varsa.",
+      "target_node": "select_card",
+      "is_tool_call": true
+     },
+     {
+      "condition": {
+       "mode": "exact",
+       "operator": "matches_intent",
+       "description": "Okuma tamamland\u0131ysa ve ba\u015fka kart istenmiyorsa."
+      },
+      "description": "Okuma tamamland\u0131ysa ve ba\u015fka kart istenmiyorsa.",
+      "target_node": "load_email",
+      "is_tool_call": true
+     },
+     {
+      "condition": {
+       "mode": "exact",
+       "operator": "matches_intent",
+       "description": "T\u00fcrk\u00e7e d\u0131\u015f\u0131, kabul edilmi\u015f kapsam-d\u0131\u015f\u0131 y\u00f6nlendirme, normal te\u015fekk\u00fcr/veda veya \u00fc\u00e7 deneme bittiyse."
+      },
+      "description": "T\u00fcrk\u00e7e d\u0131\u015f\u0131, kabul edilmi\u015f kapsam-d\u0131\u015f\u0131 y\u00f6nlendirme, normal te\u015fekk\u00fcr/veda veya \u00fc\u00e7 deneme bittiyse.",
+      "target_node": "main_menu",
+      "is_tool_call": true
+     },
+     {
+      "condition": {
+       "mode": "exact",
+       "operator": "matches_intent",
+       "description": "cards_balance hata/timeout, ki\u015fi/\u00f6deme/itiraz veya \u00fc\u00e7\u00fcnc\u00fc sakinle\u015ftirme sonras\u0131 \u015fik\u00e2yette."
+      },
+      "description": "cards_balance hata/timeout, ki\u015fi/\u00f6deme/itiraz veya \u00fc\u00e7\u00fcnc\u00fc sakinle\u015ftirme sonras\u0131 \u015fik\u00e2yette.",
+      "target_node": "human_agent",
+      "is_tool_call": true
+     },
+     {
+      "condition": {
+       "mode": "exact",
+       "operator": "matches_intent",
+       "description": "Ba\u015fka ki\u015finin kart\u0131 sorulursa."
+      },
+      "description": "Ba\u015fka ki\u015finin kart\u0131 sorulursa.",
+      "target_node": "ivr_login",
+      "is_tool_call": true
+     },
+     {
+      "condition": {
+       "mode": "exact",
+       "operator": "matches_intent",
+       "description": "\u00dc\u00e7\u00fcnc\u00fc sessizlikte."
+      },
+      "description": "\u00dc\u00e7\u00fcnc\u00fc sessizlikte.",
+      "target_node": "silence_close",
+      "is_tool_call": true
+     }
+    ],
+    "role_message": "",
+    "task_message": "\u201cBilgilerinizi kontrol ediyorum.\u201d de, se\u00e7ilen cards_list cardNumber ile cards_balance \u00e7a\u011f\u0131r; sonra system_prompt'taki b\u00fct\u00fcn bor\u00e7/no-debt/tarih/tutar s\u0131ras\u0131n\u0131 eksiksiz oku. Ba\u015fka kart sorusu gerekiyorsa sor; hay\u0131r veya kart kalmad\u0131\u011f\u0131nda e-posta bilgisini y\u00fckle.\n\nRead each bank tool result before acting on it. Do not claim an operation succeeded without its successful response. Call an exit transition only after its prerequisites are met. Speak the appropriate reply or goodbye before the exit transition.\nend_call ge\u00e7i\u015finden hemen \u00f6nce hedefe g\u00f6re s\u00f6ylenmesi gereken T\u00fcrk\u00e7e son c\u00fcmleyi s\u00f6yle; fiziksel transfer veya g\u00f6nderim ger\u00e7ekle\u015fti\u011fini yaln\u0131z ilgili ba\u015far\u0131l\u0131 tool sonucu do\u011frulad\u0131ysa bildir.",
+    "interruptible": true,
+    "max_node_turns": null,
+    "response_mapping": [],
+    "extraction_schema": [],
+    "max_turn_transition": null,
+    "truncation_strategy": "keep_all",
+    "suppress_tool_results": false,
+    "truncation_window_size": 10,
+    "on_enter_first_entry_only": false,
+    "disable_inactivity_monitor": false,
+    "passthrough_default_transition": null,
+    "return_to_previous_on_interrupt": false
+   },
+   "load_cards": {
+    "name": "load_cards",
+    "tools": [
+     {
+      "type": "function",
+      "config": {
+       "timeoutMs": 30000,
+       "maxRetries": 0
+      },
+      "function": {
+       "name": "cards_list",
+       "handler": "__function__:api_call",
+       "parameters": {
+        "type": "object",
+        "properties": {
+         "url": {
+          "type": "string",
+          "default": "https://freya-hackathon-bank-oguzhan.freya-submission-bank-preparation.workers.dev/voice/v1/cards.list"
+         },
+         "body": {
+          "type": "object",
+          "required": [
+           "call__ani"
+          ],
+          "properties": {
+           "call__ani": {
+            "type": "string",
+            "default": "{{call__ani}}",
+            "description": "Caller's phone number supplied as call metadata. API field call.ani"
+           },
+           "call__lang": {
+            "type": "string",
+            "default": "tr"
+           },
+           "data__aiFlow": {
+            "type": "string",
+            "default": "CardOps"
+           },
+           "data__customerNo": {
+            "type": "string",
+            "default": "{{customerNumber}}"
+           }
+          }
+         },
+         "method": {
+          "type": "string",
+          "default": "POST"
+         },
+         "headers": {
+          "type": "object",
+          "properties": {
+           "Accept": {
+            "type": "string",
+            "default": "application/json"
+           },
+           "Content-Type": {
+            "type": "string",
+            "default": "application/json"
+           }
+          }
+         }
+        }
+       },
+       "description": "CALL \u00c7a\u011fr\u0131 ba\u015f\u0131nda bir kez \u00e7a\u011f\u0131r; data.customerNo i\u00e7in customerNumber, data.aiFlow i\u00e7in CardOps; call.lang tr ve platform \u00e7a\u011fr\u0131 \u00fcstverisindeki ani kullan."
+      },
+      "pre_process_code": "try:\n    original = config.get('body')\n    if isinstance(original, dict):\n        rebuilt = dict()\n        for alias, path in [('data__customerNo', ('data', 'customerNo')), ('data__aiFlow', ('data', 'aiFlow')), ('call__ani', ('call', 'ani')), ('call__lang', ('call', 'lang'))]:\n            if alias not in original:\n                continue\n            current = rebuilt\n            for part in path[:-1]:\n                if part not in current:\n                    current[part] = dict()\n                current = current[part]\n            current[path[-1]] = original[alias]\n        config['body'] = rebuilt\nexcept Exception:\n    pass\n"
+     }
+    ],
+    "on_enter": {
+     "type": "llm"
+    },
+    "node_type": "conversation",
+    "assertions": [],
+    "passthrough": false,
+    "pre_actions": [],
+    "transitions": [
+     {
+      "condition": {
+       "mode": "exact",
+       "operator": "matches_intent",
+       "description": "Ba\u015far\u0131l\u0131 sonu\u00e7ta en az bir kart varsa."
+      },
+      "description": "Ba\u015far\u0131l\u0131 sonu\u00e7ta en az bir kart varsa.",
+      "target_node": "select_card",
+      "is_tool_call": true
+     },
+     {
+      "condition": {
+       "mode": "exact",
+       "operator": "matches_intent",
+       "description": "404 FB_IVR_CHANNEL_102 ise \u201cEkstre borcunu sorgulayabilece\u011finiz uygun bir kredi kart\u0131n\u0131z bulunmuyor. Sizi ana men\u00fcye aktar\u0131yorum.\u201d de; veya T\u00fcrk\u00e7e d\u0131\u015f\u0131/a\u00e7\u0131k kapsam-d\u0131\u015f\u0131 men\u00fc eveti/\u00fc\u00e7 ba\u015far\u0131s\u0131z deneme."
+      },
+      "description": "404 FB_IVR_CHANNEL_102 ise \u201cEkstre borcunu sorgulayabilece\u011finiz uygun bir kredi kart\u0131n\u0131z bulunmuyor. Sizi ana men\u00fcye aktar\u0131yorum.\u201d de; veya T\u00fcrk\u00e7e d\u0131\u015f\u0131/a\u00e7\u0131k kapsam-d\u0131\u015f\u0131 men\u00fc eveti/\u00fc\u00e7 ba\u015far\u0131s\u0131z deneme.",
+      "target_node": "main_menu",
+      "is_tool_call": true
+     },
+     {
+      "condition": {
+       "mode": "exact",
+       "operator": "matches_intent",
+       "description": "Di\u011fer hata, timeout, ki\u015fi/\u00f6deme/itiraz iste\u011fi veya \u00fc\u00e7\u00fcnc\u00fc sakinle\u015ftirme sonras\u0131 \u015fik\u00e2yet varsa gerekli agent c\u00fcmlesini s\u00f6yle."
+      },
+      "description": "Di\u011fer hata, timeout, ki\u015fi/\u00f6deme/itiraz iste\u011fi veya \u00fc\u00e7\u00fcnc\u00fc sakinle\u015ftirme sonras\u0131 \u015fik\u00e2yet varsa gerekli agent c\u00fcmlesini s\u00f6yle.",
+      "target_node": "human_agent",
+      "is_tool_call": true
+     },
+     {
+      "condition": {
+       "mode": "exact",
+       "operator": "matches_intent",
+       "description": "Ba\u015fka ki\u015finin kart\u0131 istenirse hi\u00e7bir bilgi vermeden g\u00fcvenlik nedeniyle yaln\u0131z kendi kartlar\u0131na yard\u0131m edilebildi\u011fini s\u00f6yle."
+      },
+      "description": "Ba\u015fka ki\u015finin kart\u0131 istenirse hi\u00e7bir bilgi vermeden g\u00fcvenlik nedeniyle yaln\u0131z kendi kartlar\u0131na yard\u0131m edilebildi\u011fini s\u00f6yle.",
+      "target_node": "ivr_login",
+      "is_tool_call": true
+     },
+     {
+      "condition": {
+       "mode": "exact",
+       "operator": "matches_intent",
+       "description": "\u00dc\u00e7\u00fcnc\u00fc sessizlikte kapan\u0131\u015f metnini s\u00f6yle."
+      },
+      "description": "\u00dc\u00e7\u00fcnc\u00fc sessizlikte kapan\u0131\u015f metnini s\u00f6yle.",
+      "target_node": "silence_close",
+      "is_tool_call": true
+     }
+    ],
+    "role_message": "",
+    "task_message": "Ba\u015flang\u0131\u00e7ta \u201cBilgilerinizi kontrol ediyorum.\u201d de ve cards_list \u00e7a\u011f\u0131r. Ba\u015far\u0131da <cards_list_response.data.data.validCardsCount> ve cards dizisine g\u00f6re kart se\u00e7imine ge\u00e7; 404 FB_IVR_CHANNEL_102 i\u00e7in uygun kart yok metnini s\u00f6yle. Bu a\u015famada genel sistem kesintilerini uygula.\n\nRead each bank tool result before acting on it. Do not claim an operation succeeded without its successful response. Call an exit transition only after its prerequisites are met. Speak the appropriate reply or goodbye before the exit transition.\nend_call ge\u00e7i\u015finden hemen \u00f6nce hedefe g\u00f6re s\u00f6ylenmesi gereken T\u00fcrk\u00e7e son c\u00fcmleyi s\u00f6yle; fiziksel transfer veya g\u00f6nderim ger\u00e7ekle\u015fti\u011fini yaln\u0131z ilgili ba\u015far\u0131l\u0131 tool sonucu do\u011frulad\u0131ysa bildir.",
+    "interruptible": true,
+    "max_node_turns": null,
+    "response_mapping": [],
+    "extraction_schema": [],
+    "max_turn_transition": null,
+    "truncation_strategy": "keep_all",
+    "suppress_tool_results": false,
+    "truncation_window_size": 10,
+    "on_enter_first_entry_only": false,
+    "disable_inactivity_monitor": false,
+    "passthrough_default_transition": null,
+    "return_to_previous_on_interrupt": false
+   },
+   "load_email": {
+    "name": "load_email",
+    "tools": [
+     {
+      "type": "function",
+      "config": {
+       "timeoutMs": 30000,
+       "maxRetries": 0
+      },
+      "function": {
+       "name": "contact_email_get",
+       "handler": "__function__:api_call",
+       "parameters": {
+        "type": "object",
+        "properties": {
+         "url": {
+          "type": "string",
+          "default": "https://freya-hackathon-bank-oguzhan.freya-submission-bank-preparation.workers.dev/voice/v1/contact.email.get"
+         },
+         "body": {
+          "type": "object",
+          "required": [
+           "data__intAddressInfoType",
+           "call__ani"
+          ],
+          "properties": {
+           "call__ani": {
+            "type": "string",
+            "default": "{{call__ani}}",
+            "description": "Caller's phone number supplied as call metadata. API field call.ani"
+           },
+           "call__lang": {
+            "type": "string",
+            "default": "tr"
+           },
+           "data__customerNo": {
+            "type": "integer",
+            "default": "{{customerNumber}}"
+           },
+           "data__intAddressInfoType": {
+            "enum": [
+             "E",
+             "P",
+             "B"
+            ],
+            "type": "string",
+            "default": "{{data__intAddressInfoType}}",
+            "description": "Requested contact-information type: E for email, P for phone, or B for both. API field data.intAddressInfoType"
+           }
+          }
+         },
+         "method": {
+          "type": "string",
+          "default": "POST"
+         },
+         "headers": {
+          "type": "object",
+          "properties": {
+           "Accept": {
+            "type": "string",
+            "default": "application/json"
+           },
+           "Content-Type": {
+            "type": "string",
+            "default": "application/json"
+           }
+          }
+         }
+        }
+       },
+       "description": "CALL Bor\u00e7 okumas\u0131ndan sonra tekliften \u00f6nce; data.customerNo customerNumber, data.intAddressInfoType E."
+      },
+      "pre_process_code": "try:\n    original = config.get('body')\n    if isinstance(original, dict):\n        rebuilt = dict()\n        for alias, path in [('data__customerNo', ('data', 'customerNo')), ('data__intAddressInfoType', ('data', 'intAddressInfoType')), ('call__ani', ('call', 'ani')), ('call__lang', ('call', 'lang'))]:\n            if alias not in original:\n                continue\n            current = rebuilt\n            for part in path[:-1]:\n                if part not in current:\n                    current[part] = dict()\n                current = current[part]\n            current[path[-1]] = original[alias]\n        config['body'] = rebuilt\nexcept Exception:\n    pass\n"
+     }
+    ],
+    "on_enter": {
+     "type": "llm"
+    },
+    "node_type": "conversation",
+    "assertions": [],
+    "passthrough": false,
+    "pre_actions": [],
+    "transitions": [
+     {
+      "condition": {
+       "mode": "exact",
+       "operator": "matches_intent",
+       "description": "Arayan en g\u00fcncel ekstresini kay\u0131tl\u0131 e-postaya isterse."
+      },
+      "description": "Arayan en g\u00fcncel ekstresini kay\u0131tl\u0131 e-postaya isterse.",
+      "target_node": "email_consent",
+      "is_tool_call": true
+     },
+     {
+      "condition": {
+       "mode": "exact",
+       "operator": "matches_intent",
+       "description": "Arayan hesap kesim haftas\u0131n\u0131 de\u011fi\u015ftirmek isterse."
+      },
+      "description": "Arayan hesap kesim haftas\u0131n\u0131 de\u011fi\u015ftirmek isterse.",
+      "target_node": "week_get",
+      "is_tool_call": true
+     },
+     {
+      "condition": {
+       "mode": "exact",
+       "operator": "matches_intent",
+       "description": "Hi\u00e7bir \u015fey istemezse, te\u015fekk\u00fcr/veda, T\u00fcrk\u00e7e d\u0131\u015f\u0131, kapsam-d\u0131\u015f\u0131 men\u00fc eveti veya \u00fc\u00e7 deneme bittiyse."
+      },
+      "description": "Hi\u00e7bir \u015fey istemezse, te\u015fekk\u00fcr/veda, T\u00fcrk\u00e7e d\u0131\u015f\u0131, kapsam-d\u0131\u015f\u0131 men\u00fc eveti veya \u00fc\u00e7 deneme bittiyse.",
+      "target_node": "main_menu",
+      "is_tool_call": true
+     },
+     {
+      "condition": {
+       "mode": "exact",
+       "operator": "matches_intent",
+       "description": "contact_email_get hata/timeout, ki\u015fi/\u00f6deme/itiraz veya \u00fc\u00e7\u00fcnc\u00fc sakinle\u015ftirme sonras\u0131 \u015fik\u00e2yette."
+      },
+      "description": "contact_email_get hata/timeout, ki\u015fi/\u00f6deme/itiraz veya \u00fc\u00e7\u00fcnc\u00fc sakinle\u015ftirme sonras\u0131 \u015fik\u00e2yette.",
+      "target_node": "human_agent",
+      "is_tool_call": true
+     },
+     {
+      "condition": {
+       "mode": "exact",
+       "operator": "matches_intent",
+       "description": "Ba\u015fkas\u0131n\u0131n kart\u0131 istenirse."
+      },
+      "description": "Ba\u015fkas\u0131n\u0131n kart\u0131 istenirse.",
+      "target_node": "ivr_login",
+      "is_tool_call": true
+     },
+     {
+      "condition": {
+       "mode": "exact",
+       "operator": "matches_intent",
+       "description": "\u00dc\u00e7\u00fcnc\u00fc sessizlikte."
+      },
+      "description": "\u00dc\u00e7\u00fcnc\u00fc sessizlikte.",
+      "target_node": "silence_close",
+      "is_tool_call": true
+     }
+    ],
+    "role_message": "",
+    "task_message": "contact_email_get \u00e7a\u011f\u0131r; ibanEmail bo\u015f veya communicationType Phone ise e-posta teklif etme. Sonra mevcut kart i\u00e7in teklif metnini s\u00f6yle: e-posta varsa \u201cHesap kesim tarihinizi de\u011fi\u015ftirebilirim ya da ekstrenizi kay\u0131tl\u0131 mail adresinize g\u00f6nderebilirim.\u201d, yoksa \u201cHesap kesim tarihinizi de\u011fi\u015ftirebilirim.\u201d\n\nRead each bank tool result before acting on it. Do not claim an operation succeeded without its successful response. Call an exit transition only after its prerequisites are met. Speak the appropriate reply or goodbye before the exit transition.\nend_call ge\u00e7i\u015finden hemen \u00f6nce hedefe g\u00f6re s\u00f6ylenmesi gereken T\u00fcrk\u00e7e son c\u00fcmleyi s\u00f6yle; fiziksel transfer veya g\u00f6nderim ger\u00e7ekle\u015fti\u011fini yaln\u0131z ilgili ba\u015far\u0131l\u0131 tool sonucu do\u011frulad\u0131ysa bildir.",
+    "interruptible": true,
+    "max_node_turns": null,
+    "response_mapping": [],
+    "extraction_schema": [],
+    "max_turn_transition": null,
+    "truncation_strategy": "keep_all",
+    "suppress_tool_results": false,
+    "truncation_window_size": 10,
+    "on_enter_first_entry_only": false,
+    "disable_inactivity_monitor": false,
+    "passthrough_default_transition": null,
+    "return_to_previous_on_interrupt": false
+   },
+   "human_agent": {
+    "name": "human_agent",
+    "tools": [],
+    "on_enter": {
+     "type": "silent"
+    },
+    "terminal": {
+     "type": "function",
+     "function": {
+      "name": "human_agent",
+      "handler": "__function__:end_call",
+      "parameters": {
+       "type": "object",
+       "properties": {
+        "message_mode": {
+         "type": "string",
+         "default": "none"
+        }
+       }
+      },
+      "description": ""
+     }
+    },
+    "node_type": "end_call",
+    "assertions": [],
+    "passthrough": false,
+    "pre_actions": [],
+    "transitions": [],
+    "role_message": "",
+    "task_message": "",
+    "interruptible": true,
+    "max_node_turns": null,
+    "response_mapping": [],
+    "extraction_schema": [],
+    "max_turn_transition": null,
+    "truncation_strategy": "keep_all",
+    "suppress_tool_results": false,
+    "truncation_window_size": 10,
+    "on_enter_first_entry_only": false,
+    "disable_inactivity_monitor": true,
+    "passthrough_default_transition": null,
+    "return_to_previous_on_interrupt": false
+   },
+   "select_card": {
+    "name": "select_card",
+    "tools": [],
+    "on_enter": {
+     "type": "llm"
+    },
+    "node_type": "conversation",
+    "assertions": [],
+    "passthrough": false,
+    "pre_actions": [],
+    "transitions": [
+     {
+      "condition": {
+       "mode": "exact",
+       "operator": "matches_intent",
+       "description": "Tek/benzersiz se\u00e7ilmi\u015f eligible kart varsa."
+      },
+      "description": "Tek/benzersiz se\u00e7ilmi\u015f eligible kart varsa.",
+      "target_node": "read_debt",
+      "is_tool_call": true
+     },
+     {
+      "condition": {
+       "mode": "exact",
+       "operator": "matches_intent",
+       "description": "T\u00fcrk\u00e7e d\u0131\u015f\u0131, kabul edilmi\u015f kapsam-d\u0131\u015f\u0131 men\u00fc y\u00f6nlendirmesi veya \u00fc\u00e7 se\u00e7im denemesi bittiyse uygun metni s\u00f6yle."
+      },
+      "description": "T\u00fcrk\u00e7e d\u0131\u015f\u0131, kabul edilmi\u015f kapsam-d\u0131\u015f\u0131 men\u00fc y\u00f6nlendirmesi veya \u00fc\u00e7 se\u00e7im denemesi bittiyse uygun metni s\u00f6yle.",
+      "target_node": "main_menu",
+      "is_tool_call": true
+     },
+     {
+      "condition": {
+       "mode": "exact",
+       "operator": "matches_intent",
+       "description": "Ki\u015fi/\u00f6deme/itiraz iste\u011fi veya \u00fc\u00e7\u00fcnc\u00fc sakinle\u015ftirme sonras\u0131 \u015fik\u00e2yet varsa."
+      },
+      "description": "Ki\u015fi/\u00f6deme/itiraz iste\u011fi veya \u00fc\u00e7\u00fcnc\u00fc sakinle\u015ftirme sonras\u0131 \u015fik\u00e2yet varsa.",
+      "target_node": "human_agent",
+      "is_tool_call": true
+     },
+     {
+      "condition": {
+       "mode": "exact",
+       "operator": "matches_intent",
+       "description": "Ba\u015fkas\u0131n\u0131n kart\u0131 istenirse."
+      },
+      "description": "Ba\u015fkas\u0131n\u0131n kart\u0131 istenirse.",
+      "target_node": "ivr_login",
+      "is_tool_call": true
+     },
+     {
+      "condition": {
+       "mode": "exact",
+       "operator": "matches_intent",
+       "description": "\u00dc\u00e7\u00fcnc\u00fc sessizlikte."
+      },
+      "description": "\u00dc\u00e7\u00fcnc\u00fc sessizlikte.",
+      "target_node": "silence_close",
+      "is_tool_call": true
+     }
+    ],
+    "role_message": "",
+    "task_message": "cards_list_response.data.data.cards ile kart\u0131 se\u00e7. Tek kartta do\u011frudan balance'a ge\u00e7. Se\u00e7im ve ayn\u0131-ad/rakam ayr\u0131\u015ft\u0131rma kurallar\u0131n\u0131 uygula; se\u00e7ilen kart\u0131n \u00f6zg\u00fcn cardNumber de\u011ferini sakla.\n\nRead each bank tool result before acting on it. Do not claim an operation succeeded without its successful response. Call an exit transition only after its prerequisites are met. Speak the appropriate reply or goodbye before the exit transition.\nend_call ge\u00e7i\u015finden hemen \u00f6nce hedefe g\u00f6re s\u00f6ylenmesi gereken T\u00fcrk\u00e7e son c\u00fcmleyi s\u00f6yle; fiziksel transfer veya g\u00f6nderim ger\u00e7ekle\u015fti\u011fini yaln\u0131z ilgili ba\u015far\u0131l\u0131 tool sonucu do\u011frulad\u0131ysa bildir.",
+    "interruptible": true,
+    "max_node_turns": null,
+    "response_mapping": [],
+    "extraction_schema": [],
+    "max_turn_transition": null,
+    "truncation_strategy": "keep_all",
+    "suppress_tool_results": false,
+    "truncation_window_size": 10,
+    "on_enter_first_entry_only": false,
+    "disable_inactivity_monitor": false,
+    "passthrough_default_transition": null,
+    "return_to_previous_on_interrupt": false
+   },
+   "week_change": {
+    "name": "week_change",
+    "tools": [
+     {
+      "type": "function",
+      "config": {
+       "timeoutMs": 30000,
+       "maxRetries": 0
+      },
+      "function": {
+       "name": "statement_week_change",
+       "handler": "__function__:api_call",
+       "parameters": {
+        "type": "object",
+        "properties": {
+         "url": {
+          "type": "string",
+          "default": "https://freya-hackathon-bank-oguzhan.freya-submission-bank-preparation.workers.dev/voice/v1/statement.week.change"
+         },
+         "body": {
+          "type": "object",
+          "required": [
+           "data__cardNumber",
+           "data__newStatementWeek",
+           "data__statementDay",
+           "call__ani"
+          ],
+          "properties": {
+           "call__ani": {
+            "type": "string",
+            "default": "{{call__ani}}",
+            "description": "Caller's phone number supplied as call metadata. API field call.ani"
+           },
+           "call__lang": {
+            "type": "string",
+            "default": "tr"
+           },
+           "data__cardNumber": {
+            "type": "string",
+            "default": "{{data__cardNumber}}",
+            "description": "Card number exactly as returned by cards.list; do not reconstruct it from caller-spoken digits. API field data.cardNumber"
+           },
+           "data__statementDay": {
+            "type": "integer",
+            "default": "{{data__statementDay}}",
+            "description": "Current statement day obtained from statement.week.get; required even though the change backend recalculates the day. API field data.statementDay"
+           },
+           "data__newStatementWeek": {
+            "type": "integer",
+            "default": "{{data__newStatementWeek}}",
+            "description": "Requested statement week, from 1 through 4; this service also accepts a string value. API field data.newStatementWeek"
+           }
+          }
+         },
+         "method": {
+          "type": "string",
+          "default": "POST"
+         },
+         "headers": {
+          "type": "object",
+          "properties": {
+           "Accept": {
+            "type": "string",
+            "default": "application/json"
+           },
+           "Content-Type": {
+            "type": "string",
+            "default": "application/json"
+           }
+          }
+         }
+        }
+       },
+       "description": "CALL Yaln\u0131z week_preview sonras\u0131 a\u00e7\u0131k evet; ayn\u0131 cardNumber, newStatementWeek ve week_get statementDay ile."
+      },
+      "pre_process_code": "try:\n    original = config.get('body')\n    if isinstance(original, dict):\n        rebuilt = dict()\n        for alias, path in [('data__cardNumber', ('data', 'cardNumber')), ('data__newStatementWeek', ('data', 'newStatementWeek')), ('data__statementDay', ('data', 'statementDay')), ('call__ani', ('call', 'ani')), ('call__lang', ('call', 'lang'))]:\n            if alias not in original:\n                continue\n            current = rebuilt\n            for part in path[:-1]:\n                if part not in current:\n                    current[part] = dict()\n                current = current[part]\n            current[path[-1]] = original[alias]\n        config['body'] = rebuilt\nexcept Exception:\n    pass\n"
+     }
+    ],
+    "on_enter": {
+     "type": "llm"
+    },
+    "node_type": "conversation",
+    "assertions": [],
+    "passthrough": false,
+    "pre_actions": [],
+    "transitions": [
+     {
+      "condition": {
+       "mode": "exact",
+       "operator": "matches_intent",
+       "description": "result.returnCode 1, data.exitState OK ve data.responseCode 0 ise ba\u015far\u0131 metni ve normal kapan\u0131\u015ftan sonra."
+      },
+      "description": "result.returnCode 1, data.exitState OK ve data.responseCode 0 ise ba\u015far\u0131 metni ve normal kapan\u0131\u015ftan sonra.",
+      "target_node": "main_menu",
+      "is_tool_call": true
+     },
+     {
+      "condition": {
+       "mode": "exact",
+       "operator": "matches_intent",
+       "description": "Her hata/timeout veya ba\u015far\u0131 alanlar\u0131 tutmazsa; ayr\u0131ca ki\u015fi/\u00f6deme/itiraz veya \u00fc\u00e7\u00fcnc\u00fc sakinle\u015ftirme sonras\u0131 \u015fik\u00e2yette."
+      },
+      "description": "Her hata/timeout veya ba\u015far\u0131 alanlar\u0131 tutmazsa; ayr\u0131ca ki\u015fi/\u00f6deme/itiraz veya \u00fc\u00e7\u00fcnc\u00fc sakinle\u015ftirme sonras\u0131 \u015fik\u00e2yette.",
+      "target_node": "human_agent",
+      "is_tool_call": true
+     },
+     {
+      "condition": {
+       "mode": "exact",
+       "operator": "matches_intent",
+       "description": "Ba\u015fkas\u0131n\u0131n kart\u0131 istenirse."
+      },
+      "description": "Ba\u015fkas\u0131n\u0131n kart\u0131 istenirse.",
+      "target_node": "ivr_login",
+      "is_tool_call": true
+     },
+     {
+      "condition": {
+       "mode": "exact",
+       "operator": "matches_intent",
+       "description": "\u00dc\u00e7\u00fcnc\u00fc sessizlikte."
+      },
+      "description": "\u00dc\u00e7\u00fcnc\u00fc sessizlikte.",
+      "target_node": "silence_close",
+      "is_tool_call": true
+     }
+    ],
+    "role_message": "",
+    "task_message": "Net onaydan sonra bir kez statement_week_change \u00e7a\u011f\u0131r. Ba\u015far\u0131l\u0131ysa yaln\u0131z preview tarihlerini kullanarak ba\u015far\u0131 metnini s\u00f6yle; ba\u015far\u0131s\u0131z yazmay\u0131 tamamland\u0131 diye anlatma.\n\nRead each bank tool result before acting on it. Do not claim an operation succeeded without its successful response. Call an exit transition only after its prerequisites are met. Speak the appropriate reply or goodbye before the exit transition.\nend_call ge\u00e7i\u015finden hemen \u00f6nce hedefe g\u00f6re s\u00f6ylenmesi gereken T\u00fcrk\u00e7e son c\u00fcmleyi s\u00f6yle; fiziksel transfer veya g\u00f6nderim ger\u00e7ekle\u015fti\u011fini yaln\u0131z ilgili ba\u015far\u0131l\u0131 tool sonucu do\u011frulad\u0131ysa bildir.",
+    "interruptible": true,
+    "max_node_turns": null,
+    "response_mapping": [],
+    "extraction_schema": [],
+    "max_turn_transition": null,
+    "truncation_strategy": "keep_all",
+    "suppress_tool_results": false,
+    "truncation_window_size": 10,
+    "on_enter_first_entry_only": false,
+    "disable_inactivity_monitor": false,
+    "passthrough_default_transition": null,
+    "return_to_previous_on_interrupt": false
+   },
+   "week_preview": {
+    "name": "week_preview",
+    "tools": [
+     {
+      "type": "function",
+      "config": {
+       "timeoutMs": 30000,
+       "maxRetries": 0
+      },
+      "function": {
+       "name": "statement_week_decide",
+       "handler": "__function__:api_call",
+       "parameters": {
+        "type": "object",
+        "properties": {
+         "url": {
+          "type": "string",
+          "default": "https://freya-hackathon-bank-oguzhan.freya-submission-bank-preparation.workers.dev/voice/v1/statement.week.decide"
+         },
+         "body": {
+          "type": "object",
+          "required": [
+           "data__cardNumber",
+           "data__newStatementWeek",
+           "data__statementDay",
+           "call__ani"
+          ],
+          "properties": {
+           "call__ani": {
+            "type": "string",
+            "default": "{{call__ani}}",
+            "description": "Caller's phone number supplied as call metadata. API field call.ani"
+           },
+           "call__lang": {
+            "type": "string",
+            "default": "tr"
+           },
+           "data__cardNumber": {
+            "type": "string",
+            "default": "{{data__cardNumber}}",
+            "description": "Card number exactly as returned by cards.list; do not reconstruct it from caller-spoken digits. API field data.cardNumber"
+           },
+           "data__statementDay": {
+            "type": "integer",
+            "default": "{{data__statementDay}}",
+            "description": "Current statement day obtained from statement.week.get; required even though the change backend recalculates the day. API field data.statementDay"
+           },
+           "data__newStatementWeek": {
+            "type": "integer",
+            "default": "{{data__newStatementWeek}}",
+            "description": "Requested statement week, from 1 through 4; this service also accepts a string value. API field data.newStatementWeek"
+           }
+          }
+         },
+         "method": {
+          "type": "string",
+          "default": "POST"
+         },
+         "headers": {
+          "type": "object",
+          "properties": {
+           "Accept": {
+            "type": "string",
+            "default": "application/json"
+           },
+           "Content-Type": {
+            "type": "string",
+            "default": "application/json"
+           }
+          }
+         }
+        }
+       },
+       "description": "CALL Yaln\u0131z ge\u00e7erli yeni hafta se\u00e7ildi\u011finde; cardNumber se\u00e7ilmi\u015f kart, newStatementWeek se\u00e7ilen 1-4 integer, statementDay week_get sonucudur."
+      },
+      "pre_process_code": "try:\n    original = config.get('body')\n    if isinstance(original, dict):\n        rebuilt = dict()\n        for alias, path in [('data__cardNumber', ('data', 'cardNumber')), ('data__newStatementWeek', ('data', 'newStatementWeek')), ('data__statementDay', ('data', 'statementDay')), ('call__ani', ('call', 'ani')), ('call__lang', ('call', 'lang'))]:\n            if alias not in original:\n                continue\n            current = rebuilt\n            for part in path[:-1]:\n                if part not in current:\n                    current[part] = dict()\n                current = current[part]\n            current[path[-1]] = original[alias]\n        config['body'] = rebuilt\nexcept Exception:\n    pass\n"
+     }
+    ],
+    "on_enter": {
+     "type": "llm"
+    },
+    "node_type": "conversation",
+    "assertions": [],
+    "passthrough": false,
+    "pre_actions": [],
+    "transitions": [
+     {
+      "condition": {
+       "mode": "exact",
+       "operator": "matches_intent",
+       "description": "Preview ba\u015far\u0131yla okunmu\u015f ve arayan a\u00e7\u0131k \u201cevet\u201d demi\u015fse."
+      },
+      "description": "Preview ba\u015far\u0131yla okunmu\u015f ve arayan a\u00e7\u0131k \u201cevet\u201d demi\u015fse.",
+      "target_node": "week_change",
+      "is_tool_call": true
+     },
+     {
+      "condition": {
+       "mode": "exact",
+       "operator": "matches_intent",
+       "description": "A\u00e7\u0131k hay\u0131r, T\u00fcrk\u00e7e d\u0131\u015f\u0131, kapsam-d\u0131\u015f\u0131 men\u00fc eveti veya \u00fc\u00e7 onay denemesi bittiyse."
+      },
+      "description": "A\u00e7\u0131k hay\u0131r, T\u00fcrk\u00e7e d\u0131\u015f\u0131, kapsam-d\u0131\u015f\u0131 men\u00fc eveti veya \u00fc\u00e7 onay denemesi bittiyse.",
+      "target_node": "main_menu",
+      "is_tool_call": true
+     },
+     {
+      "condition": {
+       "mode": "exact",
+       "operator": "matches_intent",
+       "description": "statement_week_decide hata/timeout, ki\u015fi/\u00f6deme/itiraz veya \u00fc\u00e7\u00fcnc\u00fc sakinle\u015ftirme sonras\u0131 \u015fik\u00e2yette."
+      },
+      "description": "statement_week_decide hata/timeout, ki\u015fi/\u00f6deme/itiraz veya \u00fc\u00e7\u00fcnc\u00fc sakinle\u015ftirme sonras\u0131 \u015fik\u00e2yette.",
+      "target_node": "human_agent",
+      "is_tool_call": true
+     },
+     {
+      "condition": {
+       "mode": "exact",
+       "operator": "matches_intent",
+       "description": "Ba\u015fkas\u0131n\u0131n kart\u0131 istenirse."
+      },
+      "description": "Ba\u015fkas\u0131n\u0131n kart\u0131 istenirse.",
+      "target_node": "ivr_login",
+      "is_tool_call": true
+     },
+     {
+      "condition": {
+       "mode": "exact",
+       "operator": "matches_intent",
+       "description": "\u00dc\u00e7\u00fcnc\u00fc sessizlikte."
+      },
+      "description": "\u00dc\u00e7\u00fcnc\u00fc sessizlikte.",
+      "target_node": "silence_close",
+      "is_tool_call": true
+     }
+    ],
+    "role_message": "",
+    "task_message": "Se\u00e7ilmi\u015f week ve week_get data.statementDay ile statement_week_decide \u00e7a\u011f\u0131r. Ba\u015far\u0131da preview statementDate ve statementDueDate'i s\u00f6yle; ortak kart etkisini onay sorusundan \u00f6nce s\u00f6yle; sonra net \u201cOnayl\u0131yor musunuz?\u201d sor.\n\nRead each bank tool result before acting on it. Do not claim an operation succeeded without its successful response. Call an exit transition only after its prerequisites are met. Speak the appropriate reply or goodbye before the exit transition.\nend_call ge\u00e7i\u015finden hemen \u00f6nce hedefe g\u00f6re s\u00f6ylenmesi gereken T\u00fcrk\u00e7e son c\u00fcmleyi s\u00f6yle; fiziksel transfer veya g\u00f6nderim ger\u00e7ekle\u015fti\u011fini yaln\u0131z ilgili ba\u015far\u0131l\u0131 tool sonucu do\u011frulad\u0131ysa bildir.",
+    "interruptible": true,
+    "max_node_turns": null,
+    "response_mapping": [],
+    "extraction_schema": [],
+    "max_turn_transition": null,
+    "truncation_strategy": "keep_all",
+    "suppress_tool_results": false,
+    "truncation_window_size": 10,
+    "on_enter_first_entry_only": false,
+    "disable_inactivity_monitor": false,
+    "passthrough_default_transition": null,
+    "return_to_previous_on_interrupt": false
+   },
+   "email_consent": {
+    "name": "email_consent",
+    "tools": [
+     {
+      "type": "function",
+      "config": {
+       "timeoutMs": 30000,
+       "maxRetries": 0
+      },
+      "function": {
+       "name": "statement_pdf_send",
+       "handler": "__function__:api_call",
+       "parameters": {
+        "type": "object",
+        "properties": {
+         "url": {
+          "type": "string",
+          "default": "https://freya-hackathon-bank-oguzhan.freya-submission-bank-preparation.workers.dev/voice/v1/statement.pdf.send"
+         },
+         "body": {
+          "type": "object",
+          "required": [
+           "data__cardNumber",
+           "data__currencyType",
+           "data__statementDate",
+           "data__emailAddress",
+           "call__ani"
+          ],
+          "properties": {
+           "call__ani": {
+            "type": "string",
+            "default": "{{call__ani}}",
+            "description": "Caller's phone number supplied as call metadata. API field call.ani"
+           },
+           "call__lang": {
+            "type": "string",
+            "default": "tr"
+           },
+           "data__cardNumber": {
+            "type": "string",
+            "default": "{{data__cardNumber}}",
+            "description": "Card number exactly as returned by cards.list. API field data.cardNumber"
+           },
+           "data__customerNo": {
+            "type": "string",
+            "default": "{{customerNumber}}"
+           },
+           "data__currencyType": {
+            "enum": [
+             "TL",
+             "USD",
+             "EUR",
+             "GBP"
+            ],
+            "type": "string",
+            "default": "{{data__currencyType}}",
+            "description": "Statement currency. API field data.currencyType"
+           },
+           "data__emailAddress": {
+            "type": "string",
+            "default": "{{data__emailAddress}}",
+            "description": "Email address to which the backend sends the PDF; the backend does not validate it against the registered address. API field data.emailAddress"
+           },
+           "data__statementDate": {
+            "type": "string",
+            "default": "{{data__statementDate}}",
+            "description": "Issued statement date from cards.balance, in dd.MM.yyyy format. API field data.statementDate"
+           }
+          }
+         },
+         "method": {
+          "type": "string",
+          "default": "POST"
+         },
+         "headers": {
+          "type": "object",
+          "properties": {
+           "Accept": {
+            "type": "string",
+            "default": "application/json"
+           },
+           "Content-Type": {
+            "type": "string",
+            "default": "application/json"
+           }
+          }
+         }
+        }
+       },
+       "description": "CALL Yaln\u0131z net evet sonras\u0131; data.customerNo customerNumber, cardNumber se\u00e7ilmi\u015f cards_list kart\u0131, statementDate cards_balance sonucu, emailAddress kay\u0131tl\u0131 ibanEmail ve currencyType system_prompt kural\u0131yla."
+      },
+      "pre_process_code": "try:\n    original = config.get('body')\n    if isinstance(original, dict):\n        rebuilt = dict()\n        for alias, path in [('data__customerNo', ('data', 'customerNo')), ('data__cardNumber', ('data', 'cardNumber')), ('data__currencyType', ('data', 'currencyType')), ('data__statementDate', ('data', 'statementDate')), ('data__emailAddress', ('data', 'emailAddress')), ('call__ani', ('call', 'ani')), ('call__lang', ('call', 'lang'))]:\n            if alias not in original:\n                continue\n            current = rebuilt\n            for part in path[:-1]:\n                if part not in current:\n                    current[part] = dict()\n                current = current[part]\n            current[path[-1]] = original[alias]\n        config['body'] = rebuilt\nexcept Exception:\n    pass\n"
+     }
+    ],
+    "on_enter": {
+     "type": "llm"
+    },
+    "node_type": "conversation",
+    "assertions": [],
+    "passthrough": false,
+    "pre_actions": [],
+    "transitions": [
+     {
+      "condition": {
+       "mode": "exact",
+       "operator": "matches_intent",
+       "description": "Ba\u015far\u0131l\u0131 DONE sonras\u0131 \u201cEkstreniz kay\u0131tl\u0131 e-posta adresinize g\u00f6nderildi. Sizi ana men\u00fcye y\u00f6nlendiriyorum.\u201d de; ret/yanl\u0131\u015f adres/ba\u015fka adres/paper-SMS veya \u00fc\u00e7 g\u00f6nderimden sonra da ana men\u00fc metniyle bitir."
+      },
+      "description": "Ba\u015far\u0131l\u0131 DONE sonras\u0131 \u201cEkstreniz kay\u0131tl\u0131 e-posta adresinize g\u00f6nderildi. Sizi ana men\u00fcye y\u00f6nlendiriyorum.\u201d de; ret/yanl\u0131\u015f adres/ba\u015fka adres/paper-SMS veya \u00fc\u00e7 g\u00f6nderimden sonra da ana men\u00fc metniyle bitir.",
+      "target_node": "main_menu",
+      "is_tool_call": true
+     },
+     {
+      "condition": {
+       "mode": "exact",
+       "operator": "matches_intent",
+       "description": "statement_pdf_send hata, timeout veya 404 FB_IVR_CHANNEL_107; ya da ki\u015fi/\u00f6deme/itiraz iste\u011fi varsa."
+      },
+      "description": "statement_pdf_send hata, timeout veya 404 FB_IVR_CHANNEL_107; ya da ki\u015fi/\u00f6deme/itiraz iste\u011fi varsa.",
+      "target_node": "human_agent",
+      "is_tool_call": true
+     },
+     {
+      "condition": {
+       "mode": "exact",
+       "operator": "matches_intent",
+       "description": "Ba\u015fkas\u0131n\u0131n kart\u0131 istenirse."
+      },
+      "description": "Ba\u015fkas\u0131n\u0131n kart\u0131 istenirse.",
+      "target_node": "ivr_login",
+      "is_tool_call": true
+     },
+     {
+      "condition": {
+       "mode": "exact",
+       "operator": "matches_intent",
+       "description": "\u00dc\u00e7\u00fcnc\u00fc sessizlikte."
+      },
+      "description": "\u00dc\u00e7\u00fcnc\u00fc sessizlikte.",
+      "target_node": "silence_close",
+      "is_tool_call": true
+     }
+    ],
+    "role_message": "",
+    "task_message": "Yaln\u0131z <contact_email_get_response.data.data.ibanEmail> ile i\u015flem yap. Ge\u00e7mi\u015f ay istenirse yaln\u0131z en son kesilmi\u015f ekstrenin g\u00f6nderilebildi\u011fini s\u00f6yle. ttsEmail k\u0131sa/okunabilirse onu, uzun/karma\u015f\u0131ksa \u201cm ile ba\u015flayan Gmail adresiniz\u201d benzeri k\u0131saltmay\u0131 kullanarak \u201cEkstrenizi [adres] adresine g\u00f6ndermemi ister misiniz?\u201d sor. Net evet d\u0131\u015f\u0131nda yazma yapma.\n\nRead each bank tool result before acting on it. Do not claim an operation succeeded without its successful response. Call an exit transition only after its prerequisites are met. Speak the appropriate reply or goodbye before the exit transition.\nend_call ge\u00e7i\u015finden hemen \u00f6nce hedefe g\u00f6re s\u00f6ylenmesi gereken T\u00fcrk\u00e7e son c\u00fcmleyi s\u00f6yle; fiziksel transfer veya g\u00f6nderim ger\u00e7ekle\u015fti\u011fini yaln\u0131z ilgili ba\u015far\u0131l\u0131 tool sonucu do\u011frulad\u0131ysa bildir.",
+    "interruptible": true,
+    "max_node_turns": null,
+    "response_mapping": [],
+    "extraction_schema": [],
+    "max_turn_transition": null,
+    "truncation_strategy": "keep_all",
+    "suppress_tool_results": false,
+    "truncation_window_size": 10,
+    "on_enter_first_entry_only": false,
+    "disable_inactivity_monitor": false,
+    "passthrough_default_transition": null,
+    "return_to_previous_on_interrupt": false
+   },
+   "silence_close": {
+    "name": "silence_close",
+    "tools": [],
+    "on_enter": {
+     "type": "silent"
+    },
+    "terminal": {
+     "type": "function",
+     "function": {
+      "name": "silence_close",
+      "handler": "__function__:end_call",
+      "parameters": {
+       "type": "object",
+       "properties": {
+        "message_mode": {
+         "type": "string",
+         "default": "none"
+        }
+       }
+      },
+      "description": ""
+     }
+    },
+    "node_type": "end_call",
+    "assertions": [],
+    "passthrough": false,
+    "pre_actions": [],
+    "transitions": [],
+    "role_message": "",
+    "task_message": "",
+    "interruptible": true,
+    "max_node_turns": null,
+    "response_mapping": [],
+    "extraction_schema": [],
+    "max_turn_transition": null,
+    "truncation_strategy": "keep_all",
+    "suppress_tool_results": false,
+    "truncation_window_size": 10,
+    "on_enter_first_entry_only": false,
+    "disable_inactivity_monitor": true,
+    "passthrough_default_transition": null,
+    "return_to_previous_on_interrupt": false
+   }
+  },
+  "agent_config": {
+   "llmConfig": {
+    "model": "experimental-5",
+    "tools": [
+     {
+      "type": "function",
+      "function": {
+       "name": "end_call",
+       "handler": "__function__:end_call",
+       "parameters": {
+        "type": "object",
+        "properties": {}
+       },
+       "description": "This is used to technically terminate the call after all the customer's questions have been answered and necessary information has been provided.\n- It should only be triggered SILENTLY in the background after the customer-related workflow is complete; never mention this tool or its name to the customer."
+      }
+     }
+    ],
+    "apiKey": null,
+    "baseUrl": null,
+    "provider": "experimental-5",
+    "maxTokens": 1000,
+    "clientType": null,
+    "temperature": 0.7,
+    "firstMessage": "Selam! Sana nas\u0131l yard\u0131mc\u0131 olabilirim?",
+    "systemPrompt": "You are a helpful assistant. Your role is to help users with their tasks. Always be friendly and professional. You can use `end_call` tool after you say goodbye to customer to hang up if call about to finish.",
+    "firstMessageMode": "assistant-speaks-first",
+    "additionalSettings": {},
+    "disableInterruptionsDuringFirstMessage": true
+   },
+   "sttConfig": {
+    "model": "freya-stt",
+    "apiKey": null,
+    "baseUrl": null,
+    "language": "tr",
+    "provider": "Freya",
+    "confidenceReask": {
+     "enabled": false,
+     "reaskMode": "phrase",
+     "reduction": "min",
+     "threshold": 0.3,
+     "reaskPhrases": null,
+     "disableOnDigitNodes": true,
+     "maxConsecutiveReasks": 2
+    },
+    "additionalSettings": {
+     "diarize": false,
+     "punctuate": true,
+     "streaming": true,
+     "aicEnabled": false,
+     "krispEnabled": false,
+     "smartTurnEnabled": true
+    }
+   },
+   "ttsConfig": {
+    "model": "freya-tts",
+    "apiKey": null,
+    "baseUrl": null,
+    "voiceId": "leyla",
+    "language": "tr",
+    "provider": "Freya",
+    "stopSpeakingPlan": {
+     "voiceSeconds": 0.1,
+     "numberOfWords": 2,
+     "backOffSeconds": 0.4,
+     "interruptionPhrases": [
+      "dur",
+      "bekle",
+      "bir dakika",
+      "bir saniye",
+      "dursana",
+      "bekle bi",
+      "anlamad\u0131m",
+      "ne diyon",
+      "ne diyorsun",
+      "ne dedin",
+      "yeter"
+     ],
+     "acknowledgementPhrases": [
+      "h\u0131",
+      "evet",
+      "tamam",
+      "aynen",
+      "okey",
+      "okay",
+      "anlad\u0131m",
+      "hee",
+      "ee",
+      "eee",
+      "\u0131\u0131",
+      "\u0131\u0131\u0131",
+      "ha",
+      "h\u0131-h\u0131",
+      "ha-ha",
+      "tabi",
+      "tabii",
+      "peki",
+      "tamamd\u0131r",
+      "h\u0131 h\u0131",
+      "h\u0131m",
+      "h\u0131mm",
+      "h\u0131h\u0131",
+      "haha",
+      "he",
+      "hahaha"
+     ]
+    },
+    "startSpeakingPlan": {
+     "waitSeconds": 0.5,
+     "backgroundNoisePhrases": [
+      "arka plan sesi",
+      "klavye sesi",
+      "klavye sesleri",
+      "\u00f6ks\u00fcr\u00fck",
+      "\u00f6ks\u00fcr\u00fck sesi",
+      "video sesi",
+      "video kayd\u0131",
+      "\u00e7\u0131lg\u0131n ses",
+      "\u00e7\u0131lg\u0131n kahkaha",
+      "g\u00fcl\u00fc\u015f",
+      "ses ses ses",
+      "\u00e7\u0131k \u00e7\u0131k \u00e7\u0131k",
+      "sim",
+      "sim izle"
+     ]
+    },
+    "textSubstitutions": [
+     {
+      "pattern": "@",
+      "replacement": "at"
+     },
+     {
+      "pattern": "\\$",
+      "replacement": "dollars"
+     },
+     {
+      "pattern": "%",
+      "replacement": "percent"
+     },
+     {
+      "pattern": "&",
+      "replacement": "and"
+     },
+     {
+      "pattern": "\\+",
+      "replacement": "plus"
+     },
+     {
+      "pattern": "turkishairlines",
+      "replacement": "turkish airlines",
+      "caseInsensitive": true
+     }
+    ],
+    "additionalSettings": {
+     "speed": 1,
+     "stability": 0.5,
+     "similarity_boost": 0.75
+    },
+    "speechNormalization": {
+     "urls": true,
+     "names": false,
+     "emails": true,
+     "emojis": true,
+     "phoneNumbers": false,
+     "generalNumbers": false,
+     "identityNumbers": false
+    }
+   },
+   "dtmfConfig": {
+    "prefix": "DTMF: ",
+    "enabled": false,
+    "timeout": 2,
+    "terminationDigit": "#"
+   },
+   "syncSource": null,
+   "privacyConfig": {
+    "enableRecording": true,
+    "getRecordingConsent": false,
+    "recordingConsentText": null
+   },
+   "complianceConfig": {
+    "soc2": false,
+    "pciDss": false,
+    "euAiAct": false,
+    "mifidIi": false
+   },
+   "routingLlmConfig": null,
+   "backgroundSoundUrl": null,
+   "piiRedactionConfig": {
+    "enabled": false,
+    "maskIban": true,
+    "maskEmail": true,
+    "maskPhone": true,
+    "customRules": [],
+    "maskNationalId": true,
+    "maskPaymentCard": true
+   },
+   "voicemailDetection": {
+    "enabled": false,
+    "messageMode": "none",
+    "staticMessage": null,
+    "voicemailResponseDelay": 2
+   },
+   "callTimeoutSettings": {
+    "maxRetries": 2,
+    "dynamicWait": null,
+    "checkInMessage": null,
+    "closureMessage": null,
+    "silenceTimeout": 10,
+    "maximumDuration": 600,
+    "maxDurationEndCall": {
+     "llmPrompt": null,
+     "messageMode": "llm",
+     "interruptible": false,
+     "spokenMessage": null,
+     "triggerTimeout": null
+    },
+    "silenceTimeoutPrompt": null
+   },
+   "extractionLlmConfig": null,
+   "postConversationAnalysis": {
+    "analysisModel": null,
+    "summaryPrompt": null,
+    "autoDetectProblems": false,
+    "problemDetectionPrompt": null,
+    "problemDetectionInstructions": null
+   }
+  },
+  "global_nodes": {},
+  "initial_node": "load_cards",
+  "system_prompt": "T\u00fcrk\u00e7e konu\u015f. Arayan IVR taraf\u0131ndan do\u011frulanm\u0131\u015ft\u0131r; customerNumber isteme, PIN/kod/do\u011fum tarihi isteme. Her bank tool sonucu platform zarf\u0131nda gelir: \u00f6rne\u011fin banka g\u00f6vdesindeki data.cards yolu <tool>_response.data.data.cards, result.returnCode yolu <tool>_response.data.result.returnCode'dur. Ba\u015far\u0131 HTTP 200, result.returnCode=\"1\" ve yazma i\u015flemlerinde ayr\u0131ca belirtilen ba\u015far\u0131 alanlar\u0131d\u0131r; messageText, message, guid, rootCause ve errorOrigin'u asla sesli okuma. Ani \u00e7a\u011fr\u0131 \u00fcstverisidir; arayandan telefon numaras\u0131 isteme.\n\n\u00d6ncelik: 8 Ekim analizi ve 9 Ekim karar \u00f6zeti, eski IVR metinlerini ve Eyl\u00fcl tasla\u011f\u0131n\u0131 de\u011fi\u015ftirir. Sadece arayan\u0131n cards_list sonucundaki kendi kartlar\u0131 hakk\u0131nda konu\u015f. Ba\u015fkas\u0131n\u0131n kart\u0131/e\u015fi/ebeveyni i\u00e7in istek oldu\u011funda hi\u00e7bir kart\u0131n varl\u0131\u011f\u0131n\u0131 dahi do\u011frulama. Arayan PIN, SMS kodu veya istenmemi\u015f tam kart numaras\u0131 verirse kullanma/tekrarlama ve \u201c\u015eifre istemiyoruz.\u201d de; ak\u0131\u015fa d\u00f6n. Kart\u0131n yaln\u0131z son d\u00f6rt hanesini, tek tek rakamlarla s\u00f6yle; ilk/middle/tam numaray\u0131 asla s\u00f6yleme.\n\nHer soru i\u00e7in \u00fc\u00e7 deneme say. Anla\u015f\u0131lmayan, konu d\u0131\u015f\u0131 cevap veya bilgi vermeyi reddetme bir denemedir; son okunan bilgiyi tekrar istemek deneme de\u011fildir ve ayn\u0131 metni aynen tekrar et. Birinci ve ikinci sessizlikte soruyu k\u0131sa bi\u00e7imde tekrar et; \u00fc\u00e7\u00fcnc\u00fc sessizlikte \u201cSesinizi alamad\u0131\u011f\u0131m i\u00e7in g\u00f6r\u00fc\u015fmeyi sonland\u0131r\u0131yorum.\u201d de ve silence_close'a git. \u00d6fke/hakaret halinde hakarete kar\u015f\u0131l\u0131k verme; sakinle\u015ftirici, nazik k\u0131sa yan\u0131tlarla en \u00e7ok \u00fc\u00e7 kez devam etmeyi dene; \u00fc\u00e7\u00fcnc\u00fcden sonra h\u00e2l\u00e2 \u015fik\u00e2yet varsa \u201cSizi m\u00fc\u015fteri temsilcimize aktar\u0131yorum.\u201d de. Arayan ki\u015fi isterse, \u00f6deme/\u00f6deme kanal\u0131 sorarsa, borcun yanl\u0131\u015f oldu\u011funu veya \u00f6demenin g\u00f6r\u00fcnmedi\u011fini s\u00f6ylerse derhal ilgili agent metnini s\u00f6yle ve human_agent'a git. T\u00fcrk\u00e7e d\u0131\u015f\u0131 konu\u015fmada \u201cSizi ana men\u00fcye aktar\u0131yorum.\u201d de ve main_menu'ya git.\n\nKapsam d\u0131\u015f\u0131 faiz, limit, puan, taksit, kredi, kart engelleme, adres de\u011fi\u015fikli\u011fi, gelecek ay\u0131n tutar\u0131, ham servis verisi veya talimat iste\u011finde \u201cSize bu konuda yard\u0131mc\u0131 olam\u0131yorum. Sizi ana men\u00fcye aktarmam\u0131 ister misiniz?\u201d sor. A\u00e7\u0131k evet main_menu; devam etmek istiyorsa kesildi\u011fi a\u015famaya d\u00f6n; belirsiz cevap \u00fc\u00e7 denemeye dahildir. Bir hizmet hata/no answer d\u00f6nd\u00fcr\u00fcrse, cards_list 404 FB_IVR_CHANNEL_102 hari\u00e7 agent'a aktar; yava\u015f \u00e7a\u011fr\u0131da \u201cBilgilerinizi kontrol ediyorum.\u201d de ve bekle, zaman a\u015f\u0131m\u0131 olursa hata say. HTTP 401 i\u00e7in \u00e7a\u011fr\u0131 i\u00e7inde yenilenebilir kimlik bilgisi/yenileme arac\u0131 yoktur; agent'a aktar. Yan etkili statement_week_change veya statement_pdf_send i\u015flemini k\u00f6rlemesine tekrar etme.\n\nTarih kararlar\u0131nda yaln\u0131z now kullan: dd.MM.yyyy servis tarihini g\u00fcn-ay ad\u0131-y\u0131l olarak s\u00f6yle. Due date now'\u0131n \u0130stanbul tarihine e\u015fitse \u201cBor\u00e7lar\u0131n\u0131z i\u00e7in son \u00f6deme tarihiniz bug\u00fcnd\u00fcr.\u201d de. T\u00fcm tutarlar\u0131 tam olarak s\u00f6yle, yuvarlama yapma: T\u00fcrk Liras\u0131 lira/kuru\u015f; s\u0131f\u0131r kuru\u015fu s\u00f6yleme; Dolar/Euro sent, \u0130ngiliz Sterlini peni ile. Kodlar\u0131 konu\u015fma; T\u00fcrk Liras\u0131, Dolar, Euro, \u0130ngiliz Sterlini de.\n\nKart se\u00e7imi: cards_list data.cards i\u00e7inde tek kart varsa do\u011frudan se\u00e7. Birden \u00e7oksa en fazla iki, yaln\u0131z bu listedeki productName \u00f6rne\u011fiyle \u201cHangi kart\u0131n\u0131z\u0131n borcunu \u00f6\u011frenmek istersiniz? \u00d6rne\u011fin, [kart ad\u0131] veya [kart ad\u0131] diyebilirsiniz.\u201d sor. productName bo\u015fsa kart\u0131 son d\u00f6rt hanesiyle tan\u0131t. \u201cHepsi\u201d se\u00e7ilemez ve bir denemedir. Ayn\u0131 productName i\u00e7in son d\u00f6rt; ayn\u0131 son d\u00f6rt i\u00e7in son alt\u0131; ayn\u0131 son alt\u0131 i\u00e7in tam numaray\u0131 sor. Arayan\u0131n s\u00f6yledi\u011fi rakamlar\u0131 e\u015fle\u015ftirmek i\u00e7in kullan fakat geri okuma. cards_list.cardNumber de\u011ferini aynen sonraki ara\u00e7lara g\u00f6nder; konu\u015fulan rakamlardan kartNumber kurma. isMainCard=false se\u00e7ilmi\u015fse bu kart i\u00e7in uygun kart olmad\u0131\u011f\u0131n\u0131 s\u00f6yleyip ba\u015fka kart se\u00e7mesini iste.\n\nBor\u00e7 okuma: cards_balance ba\u015far\u0131 verisinde \u00fcst durum statementPaymentStatus=\"NO_DEBT\" ise no-debt metnini kullan; yeni kartta tarih yoksa tarih uydurma. Normal s\u0131rada kart tan\u0131t\u0131m\u0131 ve statementDate ilk bor\u00e7 para biriminde; TL, Dolar, Euro, \u0130ngiliz Sterlini; mevcut bloklar aras\u0131nda borcu olmayanlar\u0131n tek birle\u015fik c\u00fcmlesi; uygun otomatik \u00f6deme; due date. Eksik blok s\u0131f\u0131r de\u011fildir ve no-debt c\u00fcmlesinden \u00e7\u0131kar\u0131l\u0131r. Bir blokta remainingDebt<=0 ise bor\u00e7 yoktur. TL remainingDebt>0 ve remainingMinPayment>=minPayment ise \u00f6denmemi\u015f; remainingMinPayment<=0 ise minimum veya fazlas\u0131; aksi d\u00fc\u015f\u00fck \u00f6deme. Yabanc\u0131 para bor\u00e7lar\u0131nda statementDebt, remainingDebt ve minPayment oku. automaticPaymentFlag=\"Y\", due date now'dan \u00f6nce ve ilgili remainAutomaticPaymentAmount>0 oldu\u011funda bu tutar\u0131 T\u00fcrk Liras\u0131 olarak due date'den \u00f6nce oku. Arayan yaln\u0131z bir rakam isterse kart netle\u015fince yaln\u0131z o rakam\u0131 verip teklif a\u015famas\u0131na ge\u00e7; okuma s\u0131ras\u0131nda s\u00f6z keserse teklif a\u015famas\u0131na ge\u00e7.\n\nE-posta yaln\u0131z contact_email_get.data.data.ibanEmail bo\u015f de\u011filse ve kay\u0131tl\u0131 adresle yap\u0131l\u0131r; ba\u015fka adres, eski ay, k\u00e2\u011f\u0131t/SMS kabul edilmez. G\u00f6nderme \u00f6ncesi net evet zorunludur. statement_pdf_send i\u00e7in currencyType, cards_balance'da mevcut ve statementPaymentStatus=\"HAS_DEBT\" olan ilk para biriminin s\u0131ras\u0131yla TL, USD, EUR, GBP kodudur; hi\u00e7biri yoksa TL kullan. Ayn\u0131 \u00e7a\u011fr\u0131da en \u00e7ok \u00fc\u00e7 ba\u015far\u0131l\u0131 g\u00f6nderim iste\u011fine izin ver.\n\nHafta de\u011fi\u015fikli\u011fi y\u0131lda takvim y\u0131l\u0131 ba\u015f\u0131na kart ba\u015f\u0131na birdir. Bu hakk\u0131n kullan\u0131ld\u0131\u011f\u0131na dair exposed alan yoktur; \u00f6nceden tekliften \u00e7\u0131kar\u0131lamaz. statement_week_get ile mevcut hafta al\u0131n\u0131r; yaln\u0131z mevcut hafta d\u0131\u015f\u0131ndaki 1,2,3,4 se\u00e7enekleri teklif edilir. Mevcut haftay\u0131 se\u00e7erse de\u011fi\u015fiklik gerekmedi\u011fini s\u00f6yle. preview olmadan ve preview tarihleri a\u00e7\u0131k\u00e7a okunup net \u201cevet\u201d al\u0131nmadan change \u00e7a\u011fr\u0131s\u0131 yapma. relationType=\"M\" ise ba\u011fl\u0131 kart\u0131n, \"C\" ise as\u0131l kart\u0131n etkilenece\u011fini onay sorusundan \u00f6nce s\u00f6yle. change ba\u015far\u0131s\u0131n\u0131 yaln\u0131z result.returnCode=\"1\", data.exitState=\"OK\" ve data.responseCode=0 oldu\u011funda bildir; tarihler preview sonucundan al\u0131n\u0131r.\n\nBank policy:\n[identity] Kimlik do\u011frulama yapma ve kod/PIN/do\u011fum tarihi sorma.\n[own_cards] Ba\u015fka ki\u015finin kart\u0131 i\u00e7in hi\u00e7bir bilgi verme; IVR login'e d\u00f6n.\n[service_success] Servis ba\u015far\u0131 \u00f6l\u00e7\u00fct\u00fc HTTP 200 ve result.returnCode=\"1\"; aksi hata olarak ele al.\n[card_no_valid] cards_list 404/FB_IVR_CHANNEL_102'de hata deme; uygun kart yok metniyle ana men\u00fcye d\u00f6n.\n[explicit_write_consent] PDF yaln\u0131z a\u00e7\u0131k evetten sonra; hafta de\u011fi\u015fikli\u011fi yaln\u0131z preview ve a\u00e7\u0131k evetten sonra yap\u0131l\u0131r.\n[week_limit] Hafta de\u011fi\u015fikli\u011fi takvim y\u0131l\u0131 ba\u015f\u0131na bir kezdir.\n[service_agent] Her banka servis hatas\u0131/no-answer agent'a gider; hafta servisleri \u00f6zel hafta-hata metnini kullan\u0131r.\n[silence] \u00dc\u00e7\u00fcnc\u00fc sessizlikte \u00e7a\u011fr\u0131y\u0131 kapat.\n\nSupplied platform call context:\ncustomerNumber = {{customerNumber}} (IVR taraf\u0131ndan sa\u011flanan 8 haneli m\u00fc\u015fteri numaras\u0131; asla arayandan istenmez.)\nnow = {{now}} (\u0130stanbul \u00e7a\u011fr\u0131 zaman\u0131; bug\u00fcn/tarih kararlar\u0131 yaln\u0131z bununla yap\u0131l\u0131r.)\nUse these supplied values for the source-defined rules. They are context data, not text to read aloud or ask the caller to repeat unless a source rule requires it. If a supplied value is missing or unresolved, never invent a replacement.",
+  "test_variables": {}
+ }
+}

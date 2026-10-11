@@ -1,0 +1,69 @@
+{
+  "schema_version": 1,
+  "bank_ready": true,
+  "worker_name": "freya-hackathon-bank-oguzhan",
+  "base_url": "https://freya-hackathon-bank-oguzhan.freya-submission-bank-preparation.workers.dev",
+  "health_url": "https://freya-hackathon-bank-oguzhan.freya-submission-bank-preparation.workers.dev/__submission_health",
+  "deployment_id": "e03f0ee1-0e8c-4d39-83a2-042219481a67",
+  "cloudflare_version_id": "af006baa-a9c0-4dab-bb5a-3b7a0ead0d14",
+  "deployed_at_utc": "2026-10-11T17:55:41.869847Z",
+  "bundle": {
+    "path": "submission/mock-bank/evidence/deployment/compiled/index.js",
+    "sha256": "3891df0c3f2b38d7da21faf96fb07ae5cc765cd2a4e0603aaad167311489c440"
+  },
+  "configuration": {
+    "path": "submission/mock-bank/wrangler.deployment.jsonc",
+    "sha256": "14c9aa18599837a2421c54e29ccd8f2380f44d8b2716b35a0fb7eb236c5f913b"
+  },
+  "contract": {
+    "path": "submission/case/sources/documents/2026-10-01-service-contract.md",
+    "sha256": "692414a06036911509072d602b6c85bf38cbf2c791d26488d53d28be1cf35470"
+  },
+  "customer_fixtures": {
+    "path": "submission/case/test-environment/test-customers.json",
+    "sha256": "009d3609d33a3b001ce04861822cd2592cb5482a7a5b0a5cb69442592889aa65"
+  },
+  "source_files": [
+    {
+      "path": "submission/mock-bank/src/bank-core.mjs",
+      "sha256": "1648505bbad8dcf1bbf9619e09ee2f5852a7345480694124bf0497500a18a6c2"
+    },
+    {
+      "path": "submission/mock-bank/src/bank-session.mjs",
+      "sha256": "700f8df6c640f30b3e3183c9646fd237f8550b6a2fa32c68079d1a21c63dd137"
+    },
+    {
+      "path": "submission/mock-bank/src/bank-store.mjs",
+      "sha256": "76f5e4c6c2673e3451ef9be4b155c5dbfa38c7e0b5838d026b089b6267bdf568"
+    },
+    {
+      "path": "submission/mock-bank/src/fixture-engine.mjs",
+      "sha256": "14d2c4d38453db142d4a405120f78b5ad0ede20ad1bc10a322e2d71f4678c4a6"
+    },
+    {
+      "path": "submission/mock-bank/src/index.mjs",
+      "sha256": "f9a317272fd9134ea7c4e33473626d43c9dcaf4a90b21e450d4060a22b63a0f8"
+    },
+    {
+      "path": "submission/mock-bank/src/readiness-metadata.mjs",
+      "sha256": "1158421007b83f35464041d5594a84700f86a115d5f408905248771089c4aa97"
+    }
+  ],
+  "storage": {
+    "backend": "SQLite Durable Objects (Workers Free)",
+    "persistence_verified": true,
+    "customer_isolation_verified": true,
+    "evidence": {
+      "path": "submission/mock-bank/evidence/workerd-2026-10-11T17-53-35-145Z-fb6f8d1c.after.json",
+      "sha256": "338182acf9f817356e9d11db0a17d0ae9cfa72f3b339ba7c8e94f244440ecfde"
+    }
+  },
+  "contract_tests": {
+    "passed": true,
+    "case_count": 668,
+    "report": {
+      "path": "submission/mock-bank/evidence/live-fixtures-2026-10-11T18-00-13-952Z-e0c48838.json",
+      "sha256": "7fa6b7536e5503919072aad76e0bbbb9b3b3052d9dcdf50b6d35b9b26936719d"
+    }
+  }
+}
