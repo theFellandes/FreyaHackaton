@@ -422,10 +422,8 @@ def with_base_url(api: ToolApi, base_url: str) -> ToolApi:
     (``/v1``) is kept: tool URL = origin + server path + operation path.
     """
     base = base_url.strip().rstrip("/")
-    if urlsplit(base).path.strip("/"):
-        server = base
-    else:
-        server = base + urlsplit(api.base_url).path.rstrip("/") if "://" in api.base_url else base
+    # a bare origin keeps the contract's server path prefix, from an absolute (https://bank/v1) or relative (/v1) URL
+    server = base if urlsplit(base).path.strip("/") else base + urlsplit(api.base_url).path.rstrip("/")
     tools = {}
     for name, contract in api.tools.items():
         path = contract.path or urlsplit(contract.url).path

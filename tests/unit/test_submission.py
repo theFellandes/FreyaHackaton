@@ -374,3 +374,20 @@ def test_the_commit_check_covers_the_install_files_and_the_startup_module(
             report
         )
         committed[required] = b"restored\n"
+
+
+@pytest.mark.parametrize("command", [
+    "python3 builder/build.py {case_folder} {mock_url}",
+    "python3 builder/build.py {case_folder} {mock_url} 2>&1 | tee traces/final.log",
+])
+def test_the_case_folder_run_command_is_accepted(packet: Packet, command: str) -> None:
+    root, manifest, _ = packet
+    manifest["run_command"] = command
+    assert "run_command" not in {issue.field for issue in submission.check_submission(manifest, root=root).issues}
+
+
+@pytest.mark.parametrize("command", ["python3 builder/build.py {case_folder}", "python3 builder/build.py {brief_path}"])
+def test_a_run_command_without_its_input_placeholders_is_reported(packet: Packet, command: str) -> None:
+    root, manifest, _ = packet
+    manifest["run_command"] = command
+    assert "run_command" in {issue.field for issue in submission.check_submission(manifest, root=root).issues}

@@ -96,6 +96,7 @@ async def canonical_tool_api(
     llm: LLMLike | None = None,
     trace: Any = None,
     deadline: float | None = None,
+    require_collection_roles: bool = True,
 ) -> ToolApi:
     """``api`` with its operations renamed to the canonical roles (see the module docstring).
 
@@ -105,11 +106,14 @@ async def canonical_tool_api(
         llm: Gateway for the role-mapping call; ``None`` = no call (missing roles then fail).
         trace: The build trace.
         deadline: ``time.monotonic()`` value after which no model call starts.
+        require_collection_roles: Keep the collections compiler's strict role requirements by default. When false,
+            an API without a complete set of explicit/canonical collections roles keeps every original operation;
+            no model is asked to reinterpret unrelated services as collections tools.
 
     Raises:
         ToolRoleError: When a required role has no operation, or the model's map stays invalid after one repair.
     """
-    if _settled(api):
+    if require_collection_roles and _settled(api):
         return api
     if isinstance(document, Mapping):  # every operation of every path, safely named, so that each can take a role
         with contextlib.suppress(InputError):  # an unparsable document keeps the API as loaded
@@ -121,6 +125,13 @@ async def canonical_tool_api(
         if name not in roles and hint is not None and hint not in taken:
             roles[name] = hint
             taken.add(hint)
+    if not require_collection_roles and any(role not in taken for role in REQUIRED_ROLES):
+        trace_decision(
+            trace,
+            "generic service contract: every supplied operation kept; collections roles are not required",
+            operations={name: f"{contract.method} {contract.path}" for name, contract in api.tools.items()},
+        )
+        return api
     duplicates = _duplicate_roles(roles)
     if duplicates:
         raise ToolRoleError(

@@ -99,3 +99,17 @@ async def test_a_contract_without_the_required_operations_fails_clearly(
     final = await run_build(settings, inputs, llm=llm, trace=trace)
     assert final["status"] == "failed"
     assert any("close_call" in error for error in final["errors"]), final["errors"]
+
+
+async def test_an_unreadable_document_of_a_case_folder_is_skipped_not_fatal(
+    make_settings: Any, tmp_dirs: SimpleNamespace, tmp_path: Path, brief_a_path: Path,
+) -> None:
+    folder = case_folder(tmp_path, brief_a_path, openapi=True)
+    (folder / "duyurular" / "eski-duyuru.pdf").write_bytes(b"%PDF-1.4 broken")
+    settings: Settings = make_settings(dry_run=True)
+    inputs = classify_inputs([folder, MOCK], settings=settings)
+    trace = NullTrace()
+    llm = FixtureGateway(load_ledger("brief_a"), load_ir("brief_a"), trace=trace)
+    final = await run_build(settings, inputs, llm=llm, trace=trace)
+    assert final["status"] == "dry_run", final.get("errors")
+    assert any("eski-duyuru.pdf" in event.get("message", "") for event in trace.of_kind("error"))

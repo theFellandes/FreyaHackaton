@@ -1,0 +1,40 @@
+{
+  "observed_at_utc": "2026-10-11T17:25:40.525996+00:00",
+  "source_url": "https://drive.google.com/drive/folders/1r9KOek3SXiE0mu1wBofezD0bjiAJhcYQ",
+  "source_kind": "User-downloaded originals; live Drive inventory independently observed",
+  "case_folder": "C:\\Users\\Felladien\\Documents\\Projects\\Python\\FreyaHackaton\\submission\\case",
+  "complete": false,
+  "observed_drive_files": [
+    "BRIEF.md",
+    "statement-debt-call-flow.pdf",
+    "test-environment/test-customers.json"
+  ],
+  "files": [
+    {
+      "path": "submission/case/BRIEF.md",
+      "sha256": "9f7a9256a108ff0bddf176688633b8add3c7a05e4c407752b3a2ed208c872ef1",
+      "source": "docs/BRIEF.md"
+    },
+    {
+      "path": "submission/case/statement-debt-call-flow.pdf",
+      "sha256": "1092fe84329911c89477e794ed874f8216aeb31cc4c825931c4e017374eb69ca",
+      "source": "docs/statement-debt-call-flow.pdf"
+    },
+    {
+      "path": "submission/case/test-environment/test-customers.json",
+      "sha256": "009d3609d33a3b001ce04861822cd2592cb5482a7a5b0a5cb69442592889aa65",
+      "source_url": "https://drive.google.com/drive/folders/13xRbeVXpIfj2I9NfKJFKNwsuZVAVgAUD",
+      "download_source": "https://drive.usercontent.google.com/download?id=14mn8kRy1kDrsiWLLBM-joI-iJhCIk4J-&export=download"
+    }
+  ],
+  "missing_inputs": [
+    "README.md",
+    "sources/emails and attachments",
+    "sources/documents integration contract section 6 and remaining documents",
+    "sources/meetings",
+    "example-scenarios.md",
+    "cloudflare-mock instructions",
+    "test-environment rules"
+  ],
+  "blocking_reason": "Original 34-customer fixtures have arrived; integration contract, README and remaining sources are still missing."
+}

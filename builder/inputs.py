@@ -236,6 +236,11 @@ def normalise_base_url(value: str) -> str:
             f"Invalid tool base URL {text!r}: give the mock's address as http(s)://host[:port][/path], "
             "without query or fragment."
         )
+    if parts.path.lower().rstrip("/").endswith((".json", ".yaml", ".yml")):
+        raise InputError(
+            f"Invalid tool base URL {text!r}: it names a file. Pass the base URL of the mock's services "
+            "(every tool request goes there); pass a tool API file as a local path."
+        )
     return f"{parts.scheme.lower()}://{parts.netloc}{parts.path}".rstrip("/")
 
 

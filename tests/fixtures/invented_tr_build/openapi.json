@@ -1,0 +1,432 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Örnek Bank Servis Sözleşmesi",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "https://servis.ornekbank.example/api"
+    }
+  ],
+  "paths": {
+    "/kimlik-dogrula": {
+      "post": {
+        "operationId": "post_kimlik_dogrula",
+        "x-freya-role": "verify_identity",
+        "summary": "Verify one caller security answer",
+        "description": "Checks one security answer for the customer. Call this with either the date-of-birth or last-four-digits security field; two questions must be verified to complete identity verification.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "musteri_no": {
+                    "type": "string",
+                    "description": "Customer number as text."
+                  },
+                  "alan": {
+                    "type": "string",
+                    "enum": [
+                      "dogum_tarihi",
+                      "telefon_son4"
+                    ],
+                    "description": "Security field to verify. Use dogum_tarihi for date of birth or telefon_son4 for the last four phone digits."
+                  },
+                  "cevap": {
+                    "type": "string",
+                    "description": "Security answer. For dogum_tarihi, date as YYYY-MM-DD; for telefon_son4, exactly four digits."
+                  }
+                },
+                "required": [
+                  "musteri_no",
+                  "alan",
+                  "cevap"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Read basarili for processing status, dogrulandi for whether this answer is correct, kalan_hak for wrong-answer allowances remaining, and tamamlandi for full identity verification.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "basarili": {
+                      "type": "boolean",
+                      "description": "True when the operation succeeded."
+                    },
+                    "hata": {
+                      "type": "string",
+                      "description": "Reason for failure when basarili is false."
+                    },
+                    "dogrulandi": {
+                      "type": "boolean",
+                      "description": "True when this security answer is correct."
+                    },
+                    "kalan_hak": {
+                      "type": "integer",
+                      "description": "Number of wrong-answer allowances remaining; initially 3."
+                    },
+                    "tamamlandi": {
+                      "type": "boolean",
+                      "description": "True when all identity questions are verified."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/hesap-ozeti": {
+      "post": {
+        "operationId": "post_hesap_ozeti",
+        "x-freya-role": "get_account",
+        "summary": "Get overdue credit card statement debt",
+        "description": "Returns the customer's overdue credit card statement debt and payment details. The customer must have completed identity verification first or the request is rejected.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "musteri_no": {
+                    "type": "string",
+                    "description": "Customer number as text."
+                  }
+                },
+                "required": [
+                  "musteri_no"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Read basarili for processing status and kartlar for each card's overdue statement and payment details.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "basarili": {
+                      "type": "boolean",
+                      "description": "True when the operation succeeded."
+                    },
+                    "hata": {
+                      "type": "string",
+                      "description": "Reason for failure when basarili is false."
+                    },
+                    "kartlar": {
+                      "type": "array",
+                      "description": "List of the customer's credit cards with overdue statement debt details.",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "kart_no": {
+                            "type": "string",
+                            "description": "Card number as text."
+                          },
+                          "son_dort": {
+                            "type": "string",
+                            "description": "Last four digits of the card."
+                          },
+                          "ekstre_borcu": {
+                            "type": "number",
+                            "description": "Statement debt in TRY, decimal."
+                          },
+                          "asgari_tutar": {
+                            "type": "number",
+                            "description": "Minimum payment amount in TRY, decimal."
+                          },
+                          "gecikme_gunu": {
+                            "type": "integer",
+                            "description": "Number of days overdue."
+                          },
+                          "son_odeme_tarihi": {
+                            "type": "string",
+                            "format": "date",
+                            "description": "Payment due date as YYYY-MM-DD."
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/odeme-sozu": {
+      "post": {
+        "operationId": "post_odeme_sozu",
+        "x-freya-role": "create_promise",
+        "summary": "Record a payment promise",
+        "description": "Records the customer's promise to pay a specified amount for a specified card on the given date.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "musteri_no": {
+                    "type": "string",
+                    "description": "Customer number as text."
+                  },
+                  "kart_no": {
+                    "type": "string",
+                    "description": "Card number as text."
+                  },
+                  "tutar": {
+                    "type": "number",
+                    "description": "Promised payment amount in TRY, decimal."
+                  },
+                  "tarih": {
+                    "type": "string",
+                    "format": "date",
+                    "description": "Promised payment date as YYYY-MM-DD."
+                  }
+                },
+                "required": [
+                  "musteri_no",
+                  "kart_no",
+                  "tutar",
+                  "tarih"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Read basarili for processing status and soz_no for the recorded payment promise identifier.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "basarili": {
+                      "type": "boolean",
+                      "description": "True when the promise was recorded."
+                    },
+                    "hata": {
+                      "type": "string",
+                      "description": "Reason for failure when basarili is false."
+                    },
+                    "soz_no": {
+                      "type": "string",
+                      "description": "Recorded payment promise number as text."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/not-ekle": {
+      "post": {
+        "operationId": "post_not_ekle",
+        "x-freya-role": "add_note",
+        "summary": "Add a customer file note",
+        "description": "Writes the supplied note text to the customer's file.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "musteri_no": {
+                    "type": "string",
+                    "description": "Customer number as text."
+                  },
+                  "metin": {
+                    "type": "string",
+                    "description": "Text of the note to add to the customer file."
+                  }
+                },
+                "required": [
+                  "musteri_no",
+                  "metin"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Read basarili to determine whether the note was written; hata gives the reason when it was not.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "basarili": {
+                      "type": "boolean",
+                      "description": "True when the operation succeeded."
+                    },
+                    "hata": {
+                      "type": "string",
+                      "description": "Reason for failure when basarili is false."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/aktar": {
+      "post": {
+        "operationId": "post_aktar",
+        "x-freya-role": "transfer_to_agent",
+        "summary": "Transfer the call to a customer representative",
+        "description": "Transfers the current conversation to a customer representative for the specified reason.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "musteri_no": {
+                    "type": "string",
+                    "description": "Customer number as text."
+                  },
+                  "neden": {
+                    "type": "string",
+                    "enum": [
+                      "maddi_zorluk",
+                      "sikayet",
+                      "musteri_istegi"
+                    ],
+                    "description": "Reason for transfer: financial hardship, complaint, or customer request."
+                  }
+                },
+                "required": [
+                  "musteri_no",
+                  "neden"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Read basarili to determine whether the call transfer was processed; hata gives the reason when it was not.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "basarili": {
+                      "type": "boolean",
+                      "description": "True when the operation succeeded."
+                    },
+                    "hata": {
+                      "type": "string",
+                      "description": "Reason for failure when basarili is false."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/gorusme-kapat": {
+      "post": {
+        "operationId": "post_gorusme_kapat",
+        "x-freya-role": "close_call",
+        "summary": "Close the conversation and record its outcome",
+        "description": "Ends the conversation and records its result and reason. Call this once, as the final operation in every conversation.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "musteri_no": {
+                    "type": "string",
+                    "description": "Customer number as text."
+                  },
+                  "sonuc": {
+                    "type": "string",
+                    "enum": [
+                      "soz_alindi",
+                      "soz_alinamadi",
+                      "dogrulanamadi",
+                      "ulasilamadi",
+                      "aktarildi"
+                    ],
+                    "description": "Conversation outcome: promise obtained, promise not obtained, identity not verified, customer not reached, or transferred."
+                  },
+                  "neden": {
+                    "type": "string",
+                    "enum": [
+                      "tamam",
+                      "reddetti",
+                      "odedi",
+                      "itiraz",
+                      "basarisiz",
+                      "cevap_vermedi",
+                      "yanlis_numara",
+                      "baskasi_acti",
+                      "maddi_zorluk"
+                    ],
+                    "description": "Reason for the conversation outcome: completed, refused, paid, objection, unsuccessful, no answer, wrong number, another person answered, or financial hardship."
+                  }
+                },
+                "required": [
+                  "musteri_no",
+                  "sonuc",
+                  "neden"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Read basarili to determine whether the conversation was closed and its outcome recorded; hata gives the reason when it was not.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "basarili": {
+                      "type": "boolean",
+                      "description": "True when the operation succeeded."
+                    },
+                    "hata": {
+                      "type": "string",
+                      "description": "Reason for failure when basarili is false."
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "notes": []
+}

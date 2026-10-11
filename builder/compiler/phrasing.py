@@ -28,9 +28,12 @@ from builder.policy.ir import PolicyIR, RuleEntry, RuleLedger
 __all__ = [
     "UnspokenPhrase",
     "content_tokens",
+    "fill_values_note",
+    "fill_values_prompt",
     "intent_fixed_sentence",
     "is_covered",
     "quoted_sentences",
+    "runtime_placeholders",
     "segments_of",
     "speakable",
     "strings_of",
@@ -46,7 +49,15 @@ _STOPWORDS = frozenset({
 _PLACEHOLDER = re.compile(r"\{\{?\s*[A-Za-z_][\w.]*\s*\}?\}")
 _QUOTED = re.compile(r'"([^"\n]{6,}?)"|\u201c([^\u201d\n]{6,}?)\u201d')
 _SEGMENT_SPLIT = re.compile(r"[.!?\n\"\u201c\u201d]+")
-_SPEECH_TOKEN = re.compile(r"(?<!\{)\{[A-Za-z_][A-Za-z0-9_]*\}(?!\})")
+#: a single-brace token in spoken text; the name may be in any script (``{tutar}``, ``{ödeme_tarihi}``)
+_SPEECH_TOKEN = re.compile(r"(?<!\{)\{[^\W\d]\w*\}(?!\})")
+#: a value a prescribed sentence leaves to run time: ``{name}`` (one brace), ``[name]`` or ``<name>``. The name starts
+#: with a letter of any script and has no digits, so rule-id tags such as ``[D1-20a]`` are never taken for one.
+_RUNTIME_TOKEN = re.compile(
+    r"(?<!\{)\{(?P<curly>[^\W\d][\w.]*)\}(?!\})"
+    r"|\[(?P<square>[^\W\d][^\W\d.]*(?: [^\W\d]+){0,3})\]"
+    r"|<(?P<angle>[^\W\d][^\W\d.]*(?: [^\W\d]+){0,3})>"
+)
 #: ``Phrases`` fields and the step their sentence belongs to when no ledger rule tells.
 _PHRASE_FIELDS: dict[str, str] = {
     "opening_sentence": "opening",
@@ -172,14 +183,20 @@ def _linked_rule(ledger: RuleLedger, sentence: str, preferred: list[str]) -> Rul
     return next((rule for rule in order if tokens <= content_tokens(rule.quote)), None)
 
 
-def unspoken_phrases(ir: PolicyIR, ledger: RuleLedger, texts: Iterable[str]) -> list[UnspokenPhrase]:
+def unspoken_phrases(
+    ir: PolicyIR, ledger: RuleLedger, texts: Iterable[str], variables: Iterable[str] = (),
+) -> list[UnspokenPhrase]:
     """Prescribed sentences that no string of ``texts`` (the compiled workflow) contains, in a stable order.
 
     1. A rule the phrases cite (``phrases.rule_ids``) whose quote holds a quoted sentence that is missing: the rule is
        placed verbatim (it carries both the trigger and the sentence).
     2. A ``Phrases`` field or ``phrases.extra`` entry that is still missing: ``say exactly "<sentence>"`` with its key as
        the situation, scoped like the rule that quotes it (else like the field; an unknown ``extra`` key is global).
+
+    A sentence with placeholders that no call variable (``variables``) fills keeps them and gets the instruction to say
+    the real values in their place (:func:`fill_values_note`), so it is never said with a placeholder or without its value.
     """
+    names = list(variables)
     segments = segments_of(texts)
     out: list[UnspokenPhrase] = []
     cited = list(dict.fromkeys(ir.phrases.rule_ids))
@@ -190,6 +207,8 @@ def unspoken_phrases(ir: PolicyIR, ledger: RuleLedger, texts: Iterable[str]) -> 
         missing = [s for s in quoted_sentences(rule.quote) if not is_covered(s, segments)]
         if missing:
             line = _clip(rule.quote)
+            note = fill_values_note(list(dict.fromkeys(p for s in missing for p in runtime_placeholders(s, names))))
+            line = f"{line} {note}" if note else line
             out.append(UnspokenPhrase(rule.id, tuple(rule.scope) or ("global",), line, "rule"))
             segments.extend(segments_of([rule.quote]))
     candidates = [(f"phrases.{name}", name, str(getattr(ir.phrases, name, "") or ""), _PHRASE_FIELDS[name])
@@ -202,8 +221,9 @@ def unspoken_phrases(ir: PolicyIR, ledger: RuleLedger, texts: Iterable[str]) -> 
         rule = _linked_rule(ledger, sentence, cited)
         scopes = tuple(rule.scope) if rule is not None and rule.scope else (default_scope,)
         label = key.replace("_", " ")
-        out.append(UnspokenPhrase(rule.id if rule else "", scopes,
-                                  f'Fixed sentence ({label}): when this applies, say exactly "{sentence}"', source))
+        line = f'Fixed sentence ({label}): when this applies, say exactly "{sentence}"'
+        note = fill_values_note(runtime_placeholders(sentence, names))
+        out.append(UnspokenPhrase(rule.id if rule else "", scopes, f"{line} {note}" if note else line, source))
         segments.extend(segments_of([sentence]))
     return out
 
@@ -226,3 +246,57 @@ def speakable(text: str, variables: Iterable[str], *, spoken: bool) -> tuple[str
     text = re.sub(r"[ \t]{2,}", " ", text)
     text = re.sub(r"\s+([,.;:!?])", r"\1", text)
     return text.strip(), removed
+
+
+def runtime_placeholders(text: str, variables: Iterable[str] = ()) -> list[str]:
+    """The placeholders of a prescribed sentence that no call variable fills, in order and without repeats.
+
+    ``{name}`` (one brace), ``[name]`` and ``<name>`` count, with a name in any language (``{tutar}``, ``[tarih]``,
+    ``<amount>``); a ``{name}`` that is a call variable (it becomes ``{{name}}``), a ``{{reference}}`` and a tag with digits
+    (``[D1-20a]``) do not. Such a placeholder stands for a value of the call (the recorded amount and date of a promise),
+    which the compiler cannot write into the sentence; see :func:`fill_values_note`.
+    """
+    known = set(variables)
+    found: list[str] = []
+    for match in _RUNTIME_TOKEN.finditer(text or ""):
+        if match.group("curly") is not None and match.group("curly") in known:
+            continue
+        if match.group(0) not in found:
+            found.append(match.group(0))
+    return found
+
+
+def _listed(items: list[str]) -> str:
+    return items[0] if len(items) == 1 else ", ".join(items[:-1]) + " and " + items[-1]
+
+
+def fill_values_note(placeholders: list[str]) -> str:
+    """The instruction that goes with a sentence holding ``placeholders``: say the real values, never a placeholder.
+
+    A sentence the brief prescribes is never dropped or emptied because it holds a value only the call knows (the
+    promise confirmation "Your promise of {amount} on {date} is recorded."): it is said with the value in place of each
+    placeholder. ``""`` for no placeholders.
+    """
+    if not placeholders:
+        return ""
+    names = _listed(placeholders)
+    verb = "stands" if len(placeholders) == 1 else "stand"
+    return (f"In that text {names} {verb} for values of this call: say the real value in place of each (an amount or "
+            "a date exactly as agreed with the customer and, once recorded, as recorded; any other value as the facts or "
+            "the customer gave it). Never say a placeholder itself, its brackets or its name instead of the value.")
+
+
+def fill_values_prompt(text: str, placeholders: list[str], language: str = "") -> str:
+    """The ``on_enter`` prompt that says the fixed line ``text`` with the call's values in place of ``placeholders``.
+
+    ``language`` (a human name such as ``Turkish``; empty = English) is the language of a call that is not in English:
+    the line is then said in that language like every other fixed line (:func:`builder.compiler.language.say_in_prompt`).
+    """
+    from builder.compiler.language import say_in_prompt  # language imports context, which imports this module
+
+    note = fill_values_note(placeholders)
+    if language:
+        return f"{say_in_prompt(text, language)} {note}".strip()
+    return ("Say this to the customer word for word, as one natural group of sentences, with the real values in place "
+            "of its placeholders. Add nothing of your own: no extra greeting, explanation or question (ask a question "
+            f'only when the text has one). The text: "{text}" {note}').strip()

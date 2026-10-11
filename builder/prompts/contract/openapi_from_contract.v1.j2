@@ -10,12 +10,17 @@ You turn a bank's service contract (written for people, in any language) into an
 
 Write the document like this:
 - "openapi": "3.0.3"; "info": {"title", "version"} from the contract.
-- "servers": [{"url": "<the base URL the contract states>"}]; when it states none, [{"url": "/"}].
-- "paths": exactly the endpoints the contract defines - the same path strings (path parameters as {name}) and the same HTTP methods. One operation per endpoint. NEVER invent an endpoint, never merge two, never drop one.
+- "servers": [{"url": "<the base URL the contract states>"}], with its path prefix (for example /api or /v1) kept; when it states none, [{"url": "/"}].
+- "paths": exactly the endpoints the contract defines - the same path strings, segment for segment in the contract's order (path parameters as {name}), written after the server's path prefix and never repeating it, and for each path the HTTP method the contract names next to it. One operation per endpoint. NEVER invent an endpoint, never merge, reorder or recombine paths, never drop one.
 - For each operation:
   - "operationId": the contract's own name for the operation if it has one, else snake_case ASCII made from the method and path.
-  - "x-freya-role": what the operation does for a debt-collection call, one of {{ roles | join(", ") }}, or "other":
+  - Optional "x-freya-role": when the operation actually performs one of these jobs, one of {{ roles | join(", ") }}, or "other":
     verify_identity = checks one security answer of the caller; get_account = reads the customer's debt / products / statement; create_promise = records a promise or arrangement to pay; add_note = writes a note or record to the customer's file; schedule_callback = books a call back; transfer_to_agent = hands the call to a human agent or team; close_call = ends the call and records how it ended; other = anything else. Each role except "other" goes to at most one operation; decide by what the operation does, not by its name.
+{% if required %}
+    Collections roles to identify when the contract provides them: {{ required | join(", ") }}. Never invent an operation to satisfy a missing role.
+{% else %}
+    This may be any service workflow. No collections role is required. Leave the hint out or use "other" for unrelated services. A service that changes a setting is not a payment promise; a service response or return to a supervisor is not a call-closing endpoint. Preserve every actual service operation even when it has no collections role.
+{% endif %}
   - "summary" and "description": in English - translate the contract's meaning (when to call it, what it needs first, what it changes).
   - Request: an "application/json" "requestBody" schema (type object, "properties", "required") for body fields; query and path inputs as "parameters". Header inputs only when the contract fixes their value.
   - Responses: "200" with an "application/json" schema of the success response and a one-sentence "description" of how to read it; every documented error status (4xx/5xx) with its description and, when the contract gives one, its error body schema.

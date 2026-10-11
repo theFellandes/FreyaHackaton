@@ -49,12 +49,14 @@ from builder.compiler.roles import (
 from builder.ingest.tool_api import FieldSpec, ToolApi
 from builder.policy.intents import canonical_intent_key
 from builder.policy.ir import (
+    ANY_PRODUCT,
     Band,
     OutcomeRef,
     PolicyIR,
     ProposalDateKind,
     RuleEntry,
     RuleLedger,
+    fold_product_type,
     looks_like_sentence,
     template_fields,
 )
@@ -147,6 +149,10 @@ class ToolVocabulary:
     queues: list[str] | None = None
     queue_field: str = "queue"
     product_types: list[str] | None = None
+    #: the product type field when the products have one (with or without an enum); ``None`` = untyped products
+    product_type_field: str | None = None
+    #: type values the contract's text names for a type field without an enum (quoted in its description)
+    product_type_hints: list[str] = field(default_factory=list)
     product_fields: set[str] = field(default_factory=set)
     request_fields: dict[str, dict[str, FieldSpec]] = field(default_factory=dict)
     field_names: dict[str, str] = field(default_factory=dict)
@@ -176,8 +182,25 @@ class ToolVocabulary:
         add(f"add_note {self.name_of('note_reason', 'reason')} values", self.note_reasons)
         add(f"transfer_to_agent {self.queue_field} values", self.queues)
         add(f"get_account product {self.name_of('product_type', 'type')} values", self.product_types)
+        if self.product_types is None and self.product_type_field:
+            named = f" (the contract names: {' | '.join(self.product_type_hints)})" if self.product_type_hints else ""
+            lines.append(f"- get_account product {self.product_type_field} values: free text, not listed by the "
+                         f"contract{named}; key product_naming, floor_field_by_type and floor_rule_by_type by the type "
+                         f'names the documents use (matched ignoring case and accents), "{ANY_PRODUCT}" = every other '
+                         f"product")
+        elif self.product_types is None and self.product_fields:
+            lines.append(f'- get_account products have no type field: key product_naming, floor_field_by_type and '
+                         f'floor_rule_by_type by "{ANY_PRODUCT}" (= every product)')
         add("get_account product fields", sorted(self.product_fields))
         return "\n".join(lines)
+
+
+#: a value quoted in a field description ('Crédito', "card", or in typographic quotes): an opening quote after a space
+#: or bracket, a closing one before a space or punctuation (so an apostrophe inside a word opens nothing)
+_QUOTED = re.compile(
+    r"(?:^|(?<=[\s(\[,:;/]))['\"\u201c\u2018\u00ab]([^'\"\u201c\u201d\u2018\u2019\u00ab\u00bb\n]{1,60})"
+    r"['\"\u201d\u2019\u00bb](?=$|[\s).,;:/!?\]])"
+)
 
 
 def _request_enum(api: ToolApi, tool: str, name: str) -> list[str] | None:
@@ -339,6 +362,11 @@ def tool_vocabulary(tool_api: ToolApi) -> ToolVocabulary:
     vocab.product_fields = {spec.name for spec in products}
     type_spec = next((spec for spec in products if spec.name == fields["product_type"]), None)
     vocab.product_types = list(type_spec.enum) if type_spec is not None and type_spec.enum else None
+    if type_spec is not None:
+        vocab.product_type_field = type_spec.name
+        if not type_spec.enum:
+            vocab.product_type_hints = list(dict.fromkeys(
+                m.group(1).strip() for m in _QUOTED.finditer(type_spec.description or "") if m.group(1).strip()))
     for name, contract in tool_api.tools.items():
         vocab.request_fields[name] = {spec.name: spec for spec in contract.request_fields}
     return vocab
@@ -698,6 +726,8 @@ class _Checker:
                     reach = after
         types = self.vocab.product_types
         for index, band in enumerate(bands):
+            self.open_type_keys(f"band {band.name!r} product_types", band.product_types,
+                                f"bands[{index}].product_types", band.rule_ids)
             for name in band.product_types:
                 if types is not None and name not in types:
                     self.add("PRODUCT_TYPE", f"band {band.name!r} names product type {name!r}, which is not a "
@@ -749,23 +779,39 @@ class _Checker:
         vocab = self.vocab
         disclosure, amounts = self.ir.disclosure, self.ir.amounts
         types = vocab.product_types
+        if types is None and vocab.product_type_field:  # a type field without an enum: the documents name the values
+            for label, keys in (("product_naming", disclosure.product_naming), ("floor_field_by_type",
+                                amounts.floor_field_by_type), ("floor_rule_by_type", amounts.floor_rule_by_type)):
+                owner = disclosure if label == "product_naming" else amounts
+                self.open_type_keys(f"{label} keys", list(keys),
+                                    f"{'disclosure' if owner is disclosure else 'amounts'}.{label}", owner.rule_ids)
+        elif types is None and vocab.product_fields:  # untyped products: only the wildcard can name them
+            for label, keys in (("product_naming", disclosure.product_naming), ("floor_field_by_type",
+                                amounts.floor_field_by_type), ("floor_rule_by_type", amounts.floor_rule_by_type)):
+                wrong = [name for name in keys if name != ANY_PRODUCT]
+                if wrong:
+                    owner = "disclosure" if label == "product_naming" else "amounts"
+                    self.add("PRODUCT_TYPE", f"{label} keys {', '.join(map(repr, wrong))}: the get_account products "
+                             f"have no type field, so the only key is {ANY_PRODUCT!r} (every product).",
+                             path=f"{owner}.{label}",
+                             rule_ids=(disclosure if owner == "disclosure" else amounts).rule_ids)
         if types is not None:
             for name in disclosure.product_naming:
-                if name not in types:
+                if name not in types and name != ANY_PRODUCT:
                     self.add("PRODUCT_TYPE", f"product_naming key {name!r} is not a get_account product type; allowed: "
                              f"{', '.join(types)}.", path="disclosure.product_naming", rule_ids=disclosure.rule_ids)
             for name in amounts.floor_field_by_type:
-                if name not in types:
+                if name not in types and name != ANY_PRODUCT:
                     self.add("PRODUCT_TYPE", f"floor_field_by_type key {name!r} is not a get_account product type; "
                              f"allowed: {', '.join(types)}.", path="amounts.floor_field_by_type",
                              rule_ids=amounts.rule_ids)
             for name in amounts.floor_rule_by_type:
-                if name not in types:
+                if name not in types and name != ANY_PRODUCT:
                     self.add("PRODUCT_TYPE", f"floor_rule_by_type key {name!r} is not a get_account product type; "
                              f"allowed: {', '.join(types)}.", path="amounts.floor_rule_by_type",
                              rule_ids=amounts.rule_ids)
             for name in types:
-                if name not in disclosure.product_naming:
+                if name not in disclosure.product_naming and ANY_PRODUCT not in disclosure.product_naming:
                     self.add("PRODUCT_TYPE_UNCOVERED", f"product type {name!r} has no spoken name in disclosure.product_naming.",
                              severity="warning", path="disclosure.product_naming", rule_ids=disclosure.rule_ids)
                 if not amounts.has_floor(name):
@@ -790,6 +836,33 @@ class _Checker:
                              f"product field; fields: {', '.join(sorted(fields))}.",
                              path=f"disclosure.product_naming.{name}", rule_ids=disclosure.rule_ids)
 
+
+    def open_type_keys(self, label: str, keys: Iterable[str], path: str, rule_ids: Iterable[str]) -> None:
+        """Product type keys for a type field WITHOUT an enum: never an error (the values come from the documents).
+
+        A key the contract's text does not name (compared ignoring case, accents and separators) is a warning, and so
+        is every key when the contract names no value at all; the compiled agent matches the keys to the data the same
+        way and falls back to the "*" entry for a type without one of its own.
+        """
+        field_name = self.vocab.product_type_field
+        if self.vocab.product_types is not None or not field_name:
+            return
+        typed = [key for key in keys if key != ANY_PRODUCT]
+        if not typed:
+            return
+        hints = self.vocab.product_type_hints
+        known = {fold_product_type(hint) for hint in hints}
+        unlisted = [key for key in typed if fold_product_type(key) not in known]
+        if hints and unlisted:
+            self.add("PRODUCT_TYPE_UNLISTED", f"{label} {', '.join(map(repr, unlisted))}: the contract names the "
+                     f"get_account {field_name} values {', '.join(map(repr, hints))} (matched ignoring case and "
+                     f"accents); check the spelling against the documents.", severity="warning", path=path,
+                     rule_ids=rule_ids)
+        elif not hints:
+            self.add("PRODUCT_TYPE_UNVERIFIED", f"{label} {', '.join(map(repr, typed))}: the get_account {field_name} "
+                     f"field lists no values, so these type names from the documents cannot be checked (they are "
+                     f"matched to the data ignoring case and accents; keep a {ANY_PRODUCT!r} entry for other types).",
+                     severity="warning", path=path, rule_ids=rule_ids)
 
     # ---- floors stated as a computation (AUD-10) -----------------------------------------------------------------------
 

@@ -22,11 +22,14 @@ from builder.compiler.codegen import clock_variable
 from builder.compiler.context import (
     deferred_notes,
     failure_note_reason,
+    free_note_field_text,
+    language_name,
     recording_failure_texts,
     words,
 )
 from builder.compiler.errors import CompileError
 from builder.compiler.hooks import CoerceKind
+from builder.compiler.language import spoken_language
 from builder.compiler.roles import (
     DEFAULT_MINOR_SCALE,
     AccountRoles,
@@ -50,7 +53,7 @@ from builder.compiler.roles import (
 )
 from builder.compiler.tools import guessed_fields, model_tool
 from builder.ingest.tool_api import FieldSpec, ToolApi, ToolContract
-from builder.policy.ir import PolicyIR
+from builder.policy.ir import ANY_PRODUCT, PolicyIR
 
 __all__ = ["ToolSet", "VerifyShape", "build_tools", "field_kinds", "product_types", "success_rule", "verify_shape"]
 
@@ -71,8 +74,9 @@ def success_rule(contract: ToolContract) -> str:
 
 
 def product_types(ir: PolicyIR) -> set[str]:
-    """Product types the policy knows (the keys of the naming and floor tables)."""
-    return set(ir.disclosure.product_naming) | set(ir.amounts.floor_field_by_type) | set(ir.amounts.floor_rule_by_type)
+    """Product types the policy knows (the keys of the naming and floor tables; the every-product key is no type)."""
+    keys = set(ir.disclosure.product_naming) | set(ir.amounts.floor_field_by_type) | set(ir.amounts.floor_rule_by_type)
+    return keys - {ANY_PRODUCT}
 
 
 def field_kinds(
@@ -405,6 +409,29 @@ def build_tools(
             ),
             **base,
         )
+    elif note_name in api.tools and any(a.tool == note_name for i in ir.intents for a in i.actions
+                                        if i.scope != "before_verification"):
+        # ---- add_note (one product, free text) ---------------------------------------------------------------------
+        # A notes tool that takes the note itself ({customer, text}, no reason enum): only the model can write what the
+        # customer said (the date they paid, the amount, why they dispute), so the model calls it (see free_note_text).
+        note = api.tools[note_name]
+        nroles = note_roles(note, customer.field, account.id_key)
+        if nroles.reason is None and nroles.text is not None:
+            result.note_fields = nroles
+            note_ok = hooks.all_of(hooks.envelope_ok(), success_rule(note))
+            again = f"The note was NOT saved. Call {note_name} once more with the same text."
+            result.note = model_tool(
+                note,
+                description=("Write ONE short note to the customer's file about what the customer told you, when a rule "
+                             "of this call says to take a note. CALL it once, before you say goodbye."),
+                field_notes={nroles.text: free_note_field_text(language_name(spoken_language(ir))),
+                             **({nroles.product: "The product id exactly as listed in LATE PRODUCTS."}
+                                if nroles.product else {})},
+                post_process_code=hooks.post_hook(
+                    [(note_ok, "The note is saved. Do not call it again; now finish as the rule says.")],
+                    default=again, error_message=again),
+                **base,
+            )
 
     # ---- schedule_callback -----------------------------------------------------------------------------------------
     # also when an intent books a callback ("call me back later", AUD-08), even if the third-party section has no rule

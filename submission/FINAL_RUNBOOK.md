@@ -2,7 +2,9 @@
 
 The final on Sunday 11 October 2026 is **one Turkish credit card statement debt case**. Submit one phone agent, one matching run trace and the address of your own Cloudflare Workers bank mock. The official [Submit, Rules and FAQ](https://www.freyavoice.ai/hackathon#submit), checked on 11 October, replace the older two-brief procedure in this repository.
 
-Preparation is incomplete. The final kit opens at **17:00 UTC / 20:00 Istanbul** and the deadline is **20:00 UTC / 23:00 Istanbul**. The existing version 3 ZIP in data is practice material.
+Preparation is incomplete. The final opened at **17:00 UTC / 20:00 Istanbul** and the deadline is **20:00 UTC / 23:00 Istanbul**. The existing version 3 ZIP in data is practice material.
+
+At 17:21 UTC the shared [release folder](https://drive.google.com/drive/folders/1r9KOek3SXiE0mu1wBofezD0bjiAJhcYQ) contained only BRIEF.md and statement-debt-call-flow.pdf. Their unchanged copies are in `submission/case`; this is a **partial case**, missing README, the integration contract, customer fixtures and remaining sources. See `submission/evidence/final-case-acquisition.json`. Do not accept a final build or implement guessed bank endpoints from these two documents. Add the remaining original pack files here once available, preserving their bytes and provenance.
 
 ## Before release
 
@@ -13,7 +15,7 @@ Preparation is incomplete. The final kit opens at **17:00 UTC / 20:00 Istanbul**
 - [ ] Confirm Markdown, Word, PDF and Excel extraction on the released inventory. Compare every derived HTTP method/path and request/response field with the original service contract before accepting the run.
 - [ ] Ensure tools use the supplied mock origin and the actual contract authentication. Fixed contract header values are compiled; unspecified credentials and security schemes are not automatically filled from FREYA_BANK_TEAM_KEY. Verify the final contract's intended binding.
 - [ ] Record the builder source snapshot before 17:00. Preserve existing work; never mass-stage unrelated changes.
-- [ ] Confirm the recipient before sending. yavuz@freyavoice.ai is the entrant's candidate; the supplied emails do not explicitly designate the submission address. The user will send the prepared email themselves.
+- [x] The released BRIEF.md confirms yavuz@freyavoice.ai. Attach submission.json, the exported workflow and the trace. The user sends the prepared email themselves.
 
 Unchecked items are readiness blockers. The existing two-brief builder.submission checker must not be used to create the new final form. Use Cloudflare Free services for the mock; this audit has not enabled a paid plan.
 

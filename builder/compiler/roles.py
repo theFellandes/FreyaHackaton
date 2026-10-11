@@ -58,9 +58,12 @@ __all__ = [
 _SUCCESS_NAMES = ("ok", "success", "succeeded", "successful", "is_success", "is_ok")
 _OUTCOME_HINTS = ("outcome", "result", "disposition", "status", "resolution", "state", "code")
 _REASON_HINTS = ("reason", "detail", "details", "why", "cause", "explanation", "comment", "note", "text")
+_NOTE_TEXT_HINTS = ("text", "note", "notes", "comment", "comments", "message", "content", "remark", "remarks", "memo",
+                    "summary", "body")
 _ID_WORDS = ("id", "ref", "code", "number", "no", "key", "reference", "identifier")
 _ID_HINTS = ("product", "item", "account", "loan", "contract", "line")
 _TYPE_HINTS = ("type", "kind", "category", "class")
+_TYPE_WORDS = re.compile(r"\b(?:type|kind|category|class)\b", re.IGNORECASE)
 _AMOUNT_HINTS = ("amount", "sum", "payment", "value", "total")
 _CUSTOMER_HINTS = ("customer", "caller", "client", "user", "subscriber", "member", "holder", "ref", "id")
 _OVERALL_WORDS = ("all", "overall", "fully", "complete", "completed", "every", "both", "entire", "whole")
@@ -500,6 +503,9 @@ class AccountRoles:
     minor_scales: tuple[tuple[str, int], ...] = ()
     #: compile notes about a minor-unit scale that could not be read (100 is used)
     scale_notes: tuple[str, ...] = ()
+    #: the type field is a free string (no enum): its values are known only from the data, so the compiled code
+    #: matches them to the policy's type keys whatever their spelling (case, accents, separators)
+    type_open: bool = False
 
 
 @dataclass(frozen=True)
@@ -513,10 +519,15 @@ class PromiseRoles:
 
 @dataclass(frozen=True)
 class NoteRoles:
-    """Product and reason fields of the notes tool."""
+    """Product, reason and free-text fields of the notes tool.
+
+    ``text`` is set only for a notes tool without a reason enum: a field that takes the note itself (``{customer,
+    text}`` contracts); the note's words then go there.
+    """
 
     product: str | None
     reason: str | None
+    text: str | None = None
 
 
 def _id_like(spec: FieldSpec, *, integer: bool = False) -> bool:
@@ -604,15 +615,20 @@ def account_roles(api: ToolApi, product_types: Iterable[str] = (), customer_fiel
             type_key = enums[0].name
         elif not items:
             type_key = "type" if types else ""
+        elif len(described := [s for s in items if s.type == "string" and not s.enum and s.name != id_key
+                               and _TYPE_WORDS.search(s.description or "")]) == 1:
+            type_key = described[0].name  # a free-text field whose description says it holds the type
         elif types:
             raise CompileError(
                 "get_account returns products without a field that holds the product type "
                 f"(fields: {', '.join(s.name for s in items)}); the policy names its products by type "
                 f"({', '.join(sorted(types))})")
+    type_spec = next((s for s in items if s.name == type_key), None)
     minor = [s for s in items if minor_units(s)]
     scales = tuple((s.name, scale) for s in minor for scale, _ in [minor_scale(s)] if scale != DEFAULT_MINOR_SCALE)
     notes = tuple(note for s in minor for _, note in [minor_scale(s)] if note)
-    return AccountRoles(list_field, id_key, type_key, tuple(s.name for s in minor), scales, notes)
+    return AccountRoles(list_field, id_key, type_key, tuple(s.name for s in minor), scales, notes,
+                        type_open=type_spec is not None and not type_spec.enum)
 
 
 def promise_roles(contract: ToolContract, customer_field: str = "customer_id", id_key: str | None = None) -> PromiseRoles:
@@ -639,11 +655,26 @@ def promise_roles(contract: ToolContract, customer_field: str = "customer_id", i
 
 
 def note_roles(contract: ToolContract, customer_field: str = "customer_id", id_key: str | None = None) -> NoteRoles:
-    """Product and reason fields of the notes tool: the product id field and the (required) enum string field."""
+    """Product and reason fields of the notes tool: the product id field and the (required) enum string field.
+
+    Without a reason enum the tool may take the note as free text: ``text`` is then the field named or described as the
+    note's text, else the only plain string field that is not an id; it is never taken for the product id.
+    """
     enums = [s for s in contract.request_fields if s.type == "string" and s.enum and s.name != customer_field]
     reason = next((s for s in enums if _hits(s.name, _REASON_HINTS)), (sorted(enums, key=lambda s: not s.required) or [None])[0])
-    product = _product_field(contract, customer_field, id_key, exclude=[reason.name] if reason else [])
-    return NoteRoles(product, reason.name if reason else None)
+    text = _note_text_field(contract, customer_field) if reason is None else None
+    exclude = [reason.name] if reason else [text] if text else []
+    product = _product_field(contract, customer_field, id_key, exclude=exclude)
+    return NoteRoles(product, reason.name if reason else None, text)
+
+
+def _note_text_field(contract: ToolContract, customer_field: str) -> str | None:
+    """The free-text field of a notes tool without a reason enum (``None`` when there is none or it is unclear)."""
+    plain = [s for s in _plain_strings(contract, [customer_field]) if not _id_like(s)]
+    named = [s for s in plain if _hits(s.name, _NOTE_TEXT_HINTS) or set(_tokens(s.description)) & set(_NOTE_TEXT_HINTS)]
+    if named:
+        return sorted(named, key=lambda s: not s.required)[0].name
+    return plain[0].name if len(plain) == 1 else None
 
 
 def queue_field(contract: ToolContract, customer_field: str = "customer_id") -> str | None:

@@ -1,12 +1,12 @@
 # Final submission email draft
 
-Recipient: confirm against the latest kit email. Candidate supplied by Oğuzhan: yavuz@freyavoice.ai.
+Recipient: yavuz@freyavoice.ai, explicitly confirmed by the released BRIEF.md.
 
 Subject: Build the Builder submission — Oğuzhan Güngör
 
 Hello,
 
-Please find my Build the Builder submission attached as submission.json. It identifies the exported final phone agent, the corresponding builder run trace, the repository commit and the Cloudflare Workers bank mock.
+Please find submission.json, the exported final phone agent and the corresponding builder run trace attached. The submission identifies the repository commit and the Cloudflare Workers bank mock.
 
 Thank you,
 Oğuzhan Güngör

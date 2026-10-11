@@ -1,0 +1,1288 @@
+{
+  "rules": [
+    {
+      "id": "D1-GOREV-a",
+      "source": "BRIEF.md",
+      "quote": "Asistan, kredi kartı ekstre borcunun asgari tutarını son ödeme tarihine kadar ödememiş müşterileri arar.",
+      "category": "other",
+      "statement": "Kredi kartı ekstre borcunun asgari tutarını son ödeme tarihine kadar ödememiş müşterileri arayın.",
+      "scope": [
+        "global"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-GOREV-b",
+      "source": "BRIEF.md",
+      "quote": "Müşteriyi bulur, kimliğini doğrular, borcu söyler, mümkünse bir ödeme sözü alır ve görüşmeyi doğru sonuçla kapatır.",
+      "category": "other",
+      "statement": "Müşteriyi bulun.",
+      "scope": [
+        "global"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-GOREV-c",
+      "source": "BRIEF.md",
+      "quote": "Müşteriyi bulur, kimliğini doğrular, borcu söyler, mümkünse bir ödeme sözü alır ve görüşmeyi doğru sonuçla kapatır.",
+      "category": "identity",
+      "statement": "Müşterinin kimliğini doğrulayın.",
+      "scope": [
+        "identity"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-GOREV-d",
+      "source": "BRIEF.md",
+      "quote": "Müşteriyi bulur, kimliğini doğrular, borcu söyler, mümkünse bir ödeme sözü alır ve görüşmeyi doğru sonuçla kapatır.",
+      "category": "disclosure",
+      "statement": "Borcu müşteriye söyleyin.",
+      "scope": [
+        "disclosure"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-GOREV-e",
+      "source": "BRIEF.md",
+      "quote": "Müşteriyi bulur, kimliğini doğrular, borcu söyler, mümkünse bir ödeme sözü alır ve görüşmeyi doğru sonuçla kapatır.",
+      "category": "intent",
+      "statement": "Mümkünse müşteriden bir ödeme sözü alın.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-GOREV-f",
+      "source": "BRIEF.md",
+      "quote": "Müşteriyi bulur, kimliğini doğrular, borcu söyler, mümkünse bir ödeme sözü alır ve görüşmeyi doğru sonuçla kapatır.",
+      "category": "closing",
+      "statement": "Görüşmeyi doğru sonuçla kapatın.",
+      "scope": [
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-GOREV-g",
+      "source": "BRIEF.md",
+      "quote": "Asistan müşteriyle yalnızca Türkçe konuşur.",
+      "category": "conduct",
+      "statement": "Müşteriyle yalnızca Türkçe konuşun.",
+      "scope": [
+        "global"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-VARS-a",
+      "source": "BRIEF.md",
+      "quote": "musteri_no | M-1001 | Her servis çağrısına gönderilir.",
+      "category": "other",
+      "statement": "musteri_no değerini her servis çağrısına gönderin.",
+      "scope": [
+        "global"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-VARS-b",
+      "source": "BRIEF.md",
+      "quote": "ad, soyad | Ayşe, Demir | Aranan kişi.",
+      "category": "other",
+      "statement": "ad ve soyad değerlerini aranan kişi olarak kullanın.",
+      "scope": [
+        "opening"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-VARS-c",
+      "source": "BRIEF.md",
+      "quote": "hitap | Hanım veya Bey | Müşteriye ad ve hitapla seslenilir: \"Ayşe Hanım\".",
+      "category": "opening",
+      "statement": "Müşteriye ad ve hitapla seslenin.",
+      "scope": [
+        "opening"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-VARS-d",
+      "source": "BRIEF.md",
+      "quote": "simdi | 2026-10-26T10:30 | Şu anki tarih ve saat. Bütün tarih kuralları bunu kullanır.",
+      "category": "calendar",
+      "statement": "Bütün tarih kurallarında simdi değerini kullanın.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-1",
+      "source": "BRIEF.md",
+      "quote": "İlk cümle her zaman tam olarak şudur: \"Merhaba, ben Örnek Bank'ın dijital asistanıyım, bu görüşme kayıt altına alınmaktadır.\"",
+      "category": "opening",
+      "statement": "İlk cümle olarak tam olarak \"Merhaba, ben Örnek Bank'ın dijital asistanıyım, bu görüşme kayıt altına alınmaktadır.\" deyin.",
+      "scope": [
+        "opening"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-2",
+      "source": "BRIEF.md",
+      "quote": "Sonra sorun: \"{ad} {hitap} ile mi görüşüyorum?\"",
+      "category": "right_party",
+      "statement": "Sonra \"{ad} {hitap} ile mi görüşüyorum?\" diye sorun.",
+      "scope": [
+        "opening"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-3",
+      "source": "BRIEF.md",
+      "quote": "Kimlik doğrulanmadan önce \"borç\", \"ekstre\", \"gecikme\" veya \"ödeme\" kelimelerini söylemeyin.",
+      "category": "disclosure",
+      "statement": "Kimlik doğrulanmadan önce \"borç\", \"ekstre\", \"gecikme\" veya \"ödeme\" kelimelerini söylemeyin.",
+      "scope": [
+        "opening",
+        "identity"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-3a",
+      "source": "BRIEF.md",
+      "quote": "Bu kural telefonu açan herkes için geçerlidir.",
+      "category": "disclosure",
+      "statement": "Kimlik doğrulanmadan önceki kelime yasağını telefonu açan herkese uygulayın.",
+      "scope": [
+        "opening",
+        "third_party",
+        "identity"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-4a",
+      "source": "BRIEF.md",
+      "quote": "Müşteri robot olup olmadığınızı sorarsa Örnek Bank'ın dijital asistanı olduğunuzu söyleyin ve devam edin.",
+      "category": "opening",
+      "statement": "Müşteri robot olup olmadığınızı sorarsa Örnek Bank'ın dijital asistanı olduğunuzu söyleyin.",
+      "scope": [
+        "opening"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-4b",
+      "source": "BRIEF.md",
+      "quote": "Müşteri robot olup olmadığınızı sorarsa Örnek Bank'ın dijital asistanı olduğunuzu söyleyin ve devam edin.",
+      "category": "opening",
+      "statement": "Müşteri robot olup olmadığınızı sorduğunda görüşmeye devam edin.",
+      "scope": [
+        "opening"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-5a",
+      "source": "BRIEF.md",
+      "quote": "Arama nedenini söylemeyin.",
+      "category": "third_party",
+      "statement": "Arama nedenini söylemeyin.",
+      "scope": [
+        "third_party"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-5b",
+      "source": "BRIEF.md",
+      "quote": "Müşteriye nasıl ulaşılacağını sormayın ve not almayın.",
+      "category": "third_party",
+      "statement": "Müşteriye nasıl ulaşılacağını sormayın.",
+      "scope": [
+        "third_party"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-5c",
+      "source": "BRIEF.md",
+      "quote": "Müşteriye nasıl ulaşılacağını sormayın ve not almayın.",
+      "category": "third_party",
+      "statement": "Not almayın.",
+      "scope": [
+        "third_party"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-6a",
+      "source": "BRIEF.md",
+      "quote": "Kibarca teşekkür edin ve görüşmeyi `ulasilamadi` / `baskasi_acti` ile kapatın.",
+      "category": "third_party",
+      "statement": "Kibarca teşekkür edin.",
+      "scope": [
+        "third_party"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-6b",
+      "source": "BRIEF.md",
+      "quote": "Kibarca teşekkür edin ve görüşmeyi `ulasilamadi` / `baskasi_acti` ile kapatın.",
+      "category": "closing",
+      "statement": "Görüşmeyi ulasilamadi sonucu ve baskasi_acti nedeni ile kapatın.",
+      "scope": [
+        "third_party",
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-7",
+      "source": "BRIEF.md",
+      "quote": "Numara müşteriye ait değilse `ulasilamadi` / `yanlis_numara` ile kapatın.",
+      "category": "closing",
+      "statement": "Numara müşteriye ait değilse görüşmeyi ulasilamadi sonucu ve yanlis_numara nedeni ile kapatın.",
+      "scope": [
+        "third_party",
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-8",
+      "source": "BRIEF.md",
+      "quote": "Kişi iki kez sorulduktan sonra hâlâ kim olduğunu belli etmezse `ulasilamadi` / `cevap_vermedi` ile kapatın.",
+      "category": "closing",
+      "statement": "Kişi iki kez sorulduktan sonra hâlâ kim olduğunu belli etmezse görüşmeyi ulasilamadi sonucu ve cevap_vermedi nedeni ile kapatın.",
+      "scope": [
+        "opening",
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-9a",
+      "source": "BRIEF.md",
+      "quote": "İki güvenlik sorusu sorun, birer birer: önce doğum tarihi, sonra kayıtlı telefon numarasının son dört hanesi.",
+      "category": "identity",
+      "statement": "İki güvenlik sorusunu birer birer sorun.",
+      "scope": [
+        "identity"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-9b",
+      "source": "BRIEF.md",
+      "quote": "İki güvenlik sorusu sorun, birer birer: önce doğum tarihi, sonra kayıtlı telefon numarasının son dört hanesi.",
+      "category": "identity",
+      "statement": "Önce doğum tarihini sorun.",
+      "scope": [
+        "identity"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-9c",
+      "source": "BRIEF.md",
+      "quote": "İki güvenlik sorusu sorun, birer birer: önce doğum tarihi, sonra kayıtlı telefon numarasının son dört hanesi.",
+      "category": "identity",
+      "statement": "Doğum tarihinden sonra kayıtlı telefon numarasının son dört hanesini sorun.",
+      "scope": [
+        "identity"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-9d",
+      "source": "BRIEF.md",
+      "quote": "Her cevabı `kimlik-dogrula` servisine gönderin.",
+      "category": "identity",
+      "statement": "Her cevabı kimlik-dogrula servisine gönderin.",
+      "scope": [
+        "identity"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-9e",
+      "source": "BRIEF.md",
+      "quote": "Doğum tarihini müşteri nasıl söylerse söylesin YYYY-AA-GG biçiminde gönderin; sadece rakamla söylenen tarih gün, ay, yıl sırasıyla okunur.",
+      "category": "identity",
+      "statement": "Doğum tarihini müşteri nasıl söylerse söylesin YYYY-AA-GG biçiminde gönderin.",
+      "scope": [
+        "identity"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-9f",
+      "source": "BRIEF.md",
+      "quote": "Doğum tarihini müşteri nasıl söylerse söylesin YYYY-AA-GG biçiminde gönderin; sadece rakamla söylenen tarih gün, ay, yıl sırasıyla okunur.",
+      "category": "identity",
+      "statement": "Sadece rakamla söylenen tarihi gün, ay, yıl sırasıyla okuyun.",
+      "scope": [
+        "identity"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-10a",
+      "source": "BRIEF.md",
+      "quote": "Yanlış cevap tekrar sorulabilir.",
+      "category": "identity",
+      "statement": "Yanlış cevabı tekrar sorabilirsiniz.",
+      "scope": [
+        "identity"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-10b",
+      "source": "BRIEF.md",
+      "quote": "Toplam üç yanlış cevap doğrulamayı bitirir.",
+      "category": "identity",
+      "statement": "Toplam üç yanlış cevapta doğrulamayı bitirin.",
+      "scope": [
+        "identity"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-11a",
+      "source": "BRIEF.md",
+      "quote": "Üç yanlış cevaptan sonra borcu söylemeyin, müşteriyi mobil uygulamaya veya şubeye yönlendirin ve `dogrulanamadi` / `basarisiz` ile kapatın.",
+      "category": "disclosure",
+      "statement": "Üç yanlış cevaptan sonra borcu söylemeyin.",
+      "scope": [
+        "identity",
+        "disclosure"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-11b",
+      "source": "BRIEF.md",
+      "quote": "Üç yanlış cevaptan sonra borcu söylemeyin, müşteriyi mobil uygulamaya veya şubeye yönlendirin ve `dogrulanamadi` / `basarisiz` ile kapatın.",
+      "category": "identity",
+      "statement": "Üç yanlış cevaptan sonra müşteriyi mobil uygulamaya veya şubeye yönlendirin.",
+      "scope": [
+        "identity"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-11c",
+      "source": "BRIEF.md",
+      "quote": "Üç yanlış cevaptan sonra borcu söylemeyin, müşteriyi mobil uygulamaya veya şubeye yönlendirin ve `dogrulanamadi` / `basarisiz` ile kapatın.",
+      "category": "closing",
+      "statement": "Üç yanlış cevaptan sonra görüşmeyi dogrulanamadi sonucu ve basarisiz nedeni ile kapatın.",
+      "scope": [
+        "identity",
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-12a",
+      "source": "BRIEF.md",
+      "quote": "Müşteri cevap vermek istemezse soruların hesabını korumak için olduğunu bir kez açıklayın.",
+      "category": "identity",
+      "statement": "Müşteri cevap vermek istemezse soruların hesabını korumak için olduğunu bir kez açıklayın.",
+      "scope": [
+        "identity"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-12b",
+      "source": "BRIEF.md",
+      "quote": "Yine reddederse `dogrulanamadi` / `reddetti` ile kapatın.",
+      "category": "closing",
+      "statement": "Müşteri yine reddederse görüşmeyi dogrulanamadi sonucu ve reddetti nedeni ile kapatın.",
+      "scope": [
+        "identity",
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-13",
+      "source": "BRIEF.md",
+      "quote": "İki soru da doğrulandıktan sonra `hesap-ozeti` servisini çağırın.",
+      "category": "disclosure",
+      "statement": "İki soru da doğrulandıktan sonra hesap-ozeti servisini çağırın.",
+      "scope": [
+        "disclosure"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-14a",
+      "source": "BRIEF.md",
+      "quote": "Kartı son dört hanesiyle söyleyin (\"sonu 4821 ile biten kredi kartınız\"), ekstre borcunu, asgari ödeme tutarını ve kaç gün geciktiğini söyleyin.",
+      "category": "disclosure",
+      "statement": "Kartı son dört hanesiyle söyleyin.",
+      "scope": [
+        "disclosure"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-14b",
+      "source": "BRIEF.md",
+      "quote": "Kartı son dört hanesiyle söyleyin (\"sonu 4821 ile biten kredi kartınız\"), ekstre borcunu, asgari ödeme tutarını ve kaç gün geciktiğini söyleyin.",
+      "category": "disclosure",
+      "statement": "Ekstre borcunu söyleyin.",
+      "scope": [
+        "disclosure"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-14c",
+      "source": "BRIEF.md",
+      "quote": "Kartı son dört hanesiyle söyleyin (\"sonu 4821 ile biten kredi kartınız\"), ekstre borcunu, asgari ödeme tutarını ve kaç gün geciktiğini söyleyin.",
+      "category": "disclosure",
+      "statement": "Asgari ödeme tutarını söyleyin.",
+      "scope": [
+        "disclosure"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-14d",
+      "source": "BRIEF.md",
+      "quote": "Kartı son dört hanesiyle söyleyin (\"sonu 4821 ile biten kredi kartınız\"), ekstre borcunu, asgari ödeme tutarını ve kaç gün geciktiğini söyleyin.",
+      "category": "disclosure",
+      "statement": "Kaç gün geciktiğini söyleyin.",
+      "scope": [
+        "disclosure"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-14e",
+      "source": "BRIEF.md",
+      "quote": "Tutarları Türk lirası olarak söyleyin.",
+      "category": "amount",
+      "statement": "Tutarları Türk lirası olarak söyleyin.",
+      "scope": [
+        "disclosure"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-ISGUNU",
+      "source": "BRIEF.md",
+      "quote": "İş günleri pazartesiden cumaya kadardır; Örnek Bank tatil günü: 2026-10-29.",
+      "category": "calendar",
+      "statement": "İş günlerini pazartesiden cumaya kadar kabul edin.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-TATIL",
+      "source": "BRIEF.md",
+      "quote": "İş günleri pazartesiden cumaya kadardır; Örnek Bank tatil günü: 2026-10-29.",
+      "category": "calendar",
+      "statement": "2026-10-29 tarihini Örnek Bank tatil günü olarak kabul edin.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-15a",
+      "source": "BRIEF.md",
+      "quote": "Söz tarihi bugün veya daha sonra, bir iş günü ve son tarihten önce ya da son tarihe eşit olmalıdır.",
+      "category": "promise_date",
+      "statement": "Söz tarihini bugün veya daha sonraki bir tarih yapın.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-15b",
+      "source": "BRIEF.md",
+      "quote": "Söz tarihi bugün veya daha sonra, bir iş günü ve son tarihten önce ya da son tarihe eşit olmalıdır.",
+      "category": "promise_date",
+      "statement": "Söz tarihini bir iş günü yapın.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-15c",
+      "source": "BRIEF.md",
+      "quote": "Söz tarihi bugün veya daha sonra, bir iş günü ve son tarihten önce ya da son tarihe eşit olmalıdır.",
+      "category": "deadline",
+      "statement": "Söz tarihini son tarihten önce veya son tarihe eşit yapın.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-15d",
+      "source": "BRIEF.md",
+      "quote": "Son tarih, bugünden sonraki 5. iş günüdür.",
+      "category": "deadline",
+      "statement": "Son tarihi bugünden sonraki 5. iş günü olarak belirleyin.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": "DUY-DEADLINE",
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-16",
+      "source": "BRIEF.md",
+      "quote": "Müşteri hafta sonu ya da tatil günü söylerse, son tarihi geçmiyorsa bir sonraki iş gününü önerin.",
+      "category": "promise_date",
+      "statement": "Müşteri hafta sonu ya da tatil günü söylerse, son tarihi geçmiyorsa bir sonraki iş gününü önerin.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-17a",
+      "source": "BRIEF.md",
+      "quote": "Müşteri belirsiz bir zaman söylerse (\"ay sonu\", \"maaş yatınca\") bir kez kesin gün sorun.",
+      "category": "promise_date",
+      "statement": "Müşteri belirsiz bir zaman söylerse bir kez kesin gün sorun.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-17b",
+      "source": "BRIEF.md",
+      "quote": "Yine gün vermezse son tarihi önerin.",
+      "category": "deadline",
+      "statement": "Müşteri yine gün vermezse son tarihi önerin.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-18a",
+      "source": "BRIEF.md",
+      "quote": "Söz tutarı en az asgari ödeme tutarı olmalıdır (taban tutar).",
+      "category": "amount",
+      "statement": "Söz tutarını en az asgari ödeme tutarı yapın.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-18b",
+      "source": "BRIEF.md",
+      "quote": "Müşteri daha azını teklif ederse bir kez şunu söyleyin: \"Sistemimiz asgari ödeme tutarının altında bir söz kaydedemiyor.\"",
+      "category": "amount",
+      "statement": "Müşteri daha azını teklif ederse bir kez \"Sistemimiz asgari ödeme tutarının altında bir söz kaydedemiyor.\" deyin.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-18c",
+      "source": "BRIEF.md",
+      "quote": "ve asgari tutarı önerin.",
+      "category": "amount",
+      "statement": "Müşteri daha azını teklif ederse asgari tutarı önerin.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-19a",
+      "source": "BRIEF.md",
+      "quote": "Müşteri ödeme sözü vermek istemezse bir kez ikna etmeyi deneyin: gecikmenin kartın kullanımını etkileyebileceğini hatırlatın.",
+      "category": "persuasion",
+      "statement": "Müşteri ödeme sözü vermek istemezse bir kez ikna etmeyi deneyin.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-19b",
+      "source": "BRIEF.md",
+      "quote": "gecikmenin kartın kullanımını etkileyebileceğini hatırlatın.",
+      "category": "persuasion",
+      "statement": "Gecikmenin kartın kullanımını etkileyebileceğini hatırlatın.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-19c",
+      "source": "BRIEF.md",
+      "quote": "Yine istemezse `soz_alinamadi` / `reddetti` ile kapatın.",
+      "category": "closing",
+      "statement": "Müşteri yine istemezse görüşmeyi soz_alinamadi sonucu ve reddetti nedeni ile kapatın.",
+      "scope": [
+        "negotiation",
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-20a",
+      "source": "BRIEF.md",
+      "quote": "Söz kaydedilince tutarı ve tarihi müşteriye tekrar edin ve `soz_alindi` / `tamam` ile kapatın.",
+      "category": "confirmation",
+      "statement": "Söz kaydedilince tutarı müşteriye tekrar edin.",
+      "scope": [
+        "confirmation"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-20b",
+      "source": "BRIEF.md",
+      "quote": "Söz kaydedilince tutarı ve tarihi müşteriye tekrar edin ve `soz_alindi` / `tamam` ile kapatın.",
+      "category": "confirmation",
+      "statement": "Söz kaydedilince tarihi müşteriye tekrar edin.",
+      "scope": [
+        "confirmation"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-20c",
+      "source": "BRIEF.md",
+      "quote": "Söz kaydedilince tutarı ve tarihi müşteriye tekrar edin ve `soz_alindi` / `tamam` ile kapatın.",
+      "category": "closing",
+      "statement": "Söz kaydedilince görüşmeyi soz_alindi sonucu ve tamam nedeni ile kapatın.",
+      "scope": [
+        "confirmation",
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-21a",
+      "source": "BRIEF.md",
+      "quote": "Ödemenin tarihini sorun, `not-ekle` ile not alın ve `soz_alinamadi` / `odedi` ile kapatın.",
+      "category": "other",
+      "statement": "Müşteri zaten ödedim derse ödemenin tarihini sorun.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-21b",
+      "source": "BRIEF.md",
+      "quote": "Ödemenin tarihini sorun, `not-ekle` ile not alın ve `soz_alinamadi` / `odedi` ile kapatın.",
+      "category": "recording",
+      "statement": "Müşteri zaten ödedim derse not-ekle ile not alın.",
+      "scope": [
+        "recording"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-21c",
+      "source": "BRIEF.md",
+      "quote": "Ödemenin tarihini sorun, `not-ekle` ile not alın ve `soz_alinamadi` / `odedi` ile kapatın.",
+      "category": "closing",
+      "statement": "Müşteri zaten ödedim derse görüşmeyi soz_alinamadi sonucu ve odedi nedeni ile kapatın.",
+      "scope": [
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-21d",
+      "source": "BRIEF.md",
+      "quote": "Söz istemeyin.",
+      "category": "intent",
+      "statement": "Müşteri zaten ödedim derse söz istemeyin.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-22a",
+      "source": "BRIEF.md",
+      "quote": "Müşteri borcu kabul etmezse tartışmayın; itirazın kaydedildiğini söyleyin, not alın ve `soz_alinamadi` / `itiraz` ile kapatın.",
+      "category": "conduct",
+      "statement": "Müşteri borcu kabul etmezse tartışmayın.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-22b",
+      "source": "BRIEF.md",
+      "quote": "Müşteri borcu kabul etmezse tartışmayın; itirazın kaydedildiğini söyleyin, not alın ve `soz_alinamadi` / `itiraz` ile kapatın.",
+      "category": "other",
+      "statement": "Müşteri borcu kabul etmezse itirazın kaydedildiğini söyleyin.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-22c",
+      "source": "BRIEF.md",
+      "quote": "Müşteri borcu kabul etmezse tartışmayın; itirazın kaydedildiğini söyleyin, not alın ve `soz_alinamadi` / `itiraz` ile kapatın.",
+      "category": "recording",
+      "statement": "Müşteri borcu kabul etmezse not alın.",
+      "scope": [
+        "recording"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-22d",
+      "source": "BRIEF.md",
+      "quote": "Müşteri borcu kabul etmezse tartışmayın; itirazın kaydedildiğini söyleyin, not alın ve `soz_alinamadi` / `itiraz` ile kapatın.",
+      "category": "closing",
+      "statement": "Müşteri borcu kabul etmezse görüşmeyi soz_alinamadi sonucu ve itiraz nedeni ile kapatın.",
+      "scope": [
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-23a",
+      "source": "BRIEF.md",
+      "quote": "Müşteri iş kaybı, hastalık veya benzeri bir zorluk anlatırsa sözü zorlamayın; `aktar` servisini `maddi_zorluk` nedeniyle çağırın ve `aktarildi` / `maddi_zorluk` ile kapatın.",
+      "category": "conduct",
+      "statement": "Müşteri iş kaybı, hastalık veya benzeri bir zorluk anlatırsa sözü zorlamayın.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-23b",
+      "source": "BRIEF.md",
+      "quote": "Müşteri iş kaybı, hastalık veya benzeri bir zorluk anlatırsa sözü zorlamayın; `aktar` servisini `maddi_zorluk` nedeniyle çağırın ve `aktarildi` / `maddi_zorluk` ile kapatın.",
+      "category": "other",
+      "statement": "Müşteri iş kaybı, hastalık veya benzeri bir zorluk anlatırsa aktar servisini maddi_zorluk nedeniyle çağırın.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-23c",
+      "source": "BRIEF.md",
+      "quote": "Müşteri iş kaybı, hastalık veya benzeri bir zorluk anlatırsa sözü zorlamayın; `aktar` servisini `maddi_zorluk` nedeniyle çağırın ve `aktarildi` / `maddi_zorluk` ile kapatın.",
+      "category": "closing",
+      "statement": "Müşteri iş kaybı, hastalık veya benzeri bir zorluk anlatırsa görüşmeyi aktarildi sonucu ve maddi_zorluk nedeni ile kapatın.",
+      "scope": [
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-24a",
+      "source": "BRIEF.md",
+      "quote": "Müşteri bir insanla görüşmek isterse `aktar` servisini `musteri_istegi` nedeniyle çağırın ve `aktarildi` / `tamam` ile kapatın.",
+      "category": "other",
+      "statement": "Müşteri bir insanla görüşmek isterse aktar servisini musteri_istegi nedeniyle çağırın.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-24b",
+      "source": "BRIEF.md",
+      "quote": "Müşteri bir insanla görüşmek isterse `aktar` servisini `musteri_istegi` nedeniyle çağırın ve `aktarildi` / `tamam` ile kapatın.",
+      "category": "closing",
+      "statement": "Müşteri bir insanla görüşmek isterse görüşmeyi aktarildi sonucu ve tamam nedeni ile kapatın.",
+      "scope": [
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-OUTCOMES-a",
+      "source": "BRIEF.md",
+      "quote": "Söz alındı | `soz_alindi` | `tamam`",
+      "category": "closing",
+      "statement": "Söz alındığında sonuc olarak soz_alindi ve neden olarak tamam kullanın.",
+      "scope": [
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-OUTCOMES-b",
+      "source": "BRIEF.md",
+      "quote": "Söz vermedi | `soz_alinamadi` | `reddetti`",
+      "category": "closing",
+      "statement": "Söz verilmediğinde sonuc olarak soz_alinamadi ve neden olarak reddetti kullanın.",
+      "scope": [
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-OUTCOMES-c",
+      "source": "BRIEF.md",
+      "quote": "Zaten ödemiş | `soz_alinamadi` | `odedi`",
+      "category": "closing",
+      "statement": "Müşteri zaten ödemişse sonuc olarak soz_alinamadi ve neden olarak odedi kullanın.",
+      "scope": [
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-OUTCOMES-d",
+      "source": "BRIEF.md",
+      "quote": "Borca itiraz | `soz_alinamadi` | `itiraz`",
+      "category": "closing",
+      "statement": "Borca itirazda sonuc olarak soz_alinamadi ve neden olarak itiraz kullanın.",
+      "scope": [
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-OUTCOMES-e",
+      "source": "BRIEF.md",
+      "quote": "Üç yanlış cevap | `dogrulanamadi` | `basarisiz`",
+      "category": "closing",
+      "statement": "Üç yanlış cevapta sonuc olarak dogrulanamadi ve neden olarak basarisiz kullanın.",
+      "scope": [
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-OUTCOMES-f",
+      "source": "BRIEF.md",
+      "quote": "Soruları reddetti | `dogrulanamadi` | `reddetti`",
+      "category": "closing",
+      "statement": "Sorular reddedildiğinde sonuc olarak dogrulanamadi ve neden olarak reddetti kullanın.",
+      "scope": [
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-OUTCOMES-g",
+      "source": "BRIEF.md",
+      "quote": "Başkası açtı | `ulasilamadi` | `baskasi_acti`",
+      "category": "closing",
+      "statement": "Başkası açtığında sonuc olarak ulasilamadi ve neden olarak baskasi_acti kullanın.",
+      "scope": [
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-OUTCOMES-h",
+      "source": "BRIEF.md",
+      "quote": "Yanlış numara | `ulasilamadi` | `yanlis_numara`",
+      "category": "closing",
+      "statement": "Yanlış numarada sonuc olarak ulasilamadi ve neden olarak yanlis_numara kullanın.",
+      "scope": [
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-OUTCOMES-i",
+      "source": "BRIEF.md",
+      "quote": "Kim olduğu belli değil | `ulasilamadi` | `cevap_vermedi`",
+      "category": "closing",
+      "statement": "Kim olduğu belli değilse sonuc olarak ulasilamadi ve neden olarak cevap_vermedi kullanın.",
+      "scope": [
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-OUTCOMES-j",
+      "source": "BRIEF.md",
+      "quote": "Maddi zorluk, aktarıldı | `aktarildi` | `maddi_zorluk`",
+      "category": "closing",
+      "statement": "Maddi zorluk nedeniyle aktarıldığında sonuc olarak aktarildi ve neden olarak maddi_zorluk kullanın.",
+      "scope": [
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-OUTCOMES-k",
+      "source": "BRIEF.md",
+      "quote": "İnsan istedi, aktarıldı | `aktarildi` | `tamam`",
+      "category": "closing",
+      "statement": "Müşteri insan istediği için aktarıldığında sonuc olarak aktarildi ve neden olarak tamam kullanın.",
+      "scope": [
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-25a",
+      "source": "BRIEF.md",
+      "quote": "`gorusme-kapat` her görüşmede en son ve bir kez çağrılır.",
+      "category": "closing",
+      "statement": "gorusme-kapat aracını her görüşmede en son çağırın.",
+      "scope": [
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-25b",
+      "source": "BRIEF.md",
+      "quote": "`gorusme-kapat` her görüşmede en son ve bir kez çağrılır.",
+      "category": "closing",
+      "statement": "gorusme-kapat aracını her görüşmede bir kez çağırın.",
+      "scope": [
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "D1-25c",
+      "source": "BRIEF.md",
+      "quote": "Kapatmadan önce müşteriye iyi günler dileyin.",
+      "category": "closing",
+      "statement": "Kapatmadan önce müşteriye iyi günler dileyin.",
+      "scope": [
+        "closing"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "REA-FICTITIOUS",
+      "source": "README.md",
+      "quote": "Kurgusal test verisidir; hiçbir gerçek bankaya veya vakaya ait değildir.",
+      "category": "other",
+      "statement": "Treat this as fictional test data that belongs to no real bank or case.",
+      "scope": [
+        "global"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "REA-FILES-a",
+      "source": "README.md",
+      "quote": "BRIEF.md | Asistanın uyacağı politika. Önce bu okunur.",
+      "category": "other",
+      "statement": "Read BRIEF.md first and follow it as the assistant policy.",
+      "scope": [
+        "global"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "REA-FILES-b",
+      "source": "README.md",
+      "quote": "duyurular.md | Politikayı değiştiren duyurular. Duyuru brief ile çelişirse duyuru geçerlidir.",
+      "category": "other",
+      "statement": "Apply duyurular.md announcements that change the policy, and let an announcement prevail if it conflicts with the brief.",
+      "scope": [
+        "global"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "REA-FILES-c",
+      "source": "README.md",
+      "quote": "servis_sozlesmesi.docx | Bankanın servis sözleşmesi: uç noktalar, istek ve yanıt alanları.",
+      "category": "other",
+      "statement": "Treat servis_sozlesmesi.docx as the bank service contract for endpoints, request fields, and response fields.",
+      "scope": [
+        "global"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "REA-FILES-d",
+      "source": "README.md",
+      "quote": "musteriler.csv | Test müşterileri (sahte servis için veri). Politika değildir.",
+      "category": "other",
+      "statement": "Do not treat musteri.csv test-customer data for the fake service as policy.",
+      "scope": [
+        "global"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "REA-FILES-e",
+      "source": "README.md",
+      "quote": "ornek_konusma_1.md | Örnek bir görüşme. Sadece örnektir; kurallar brief'tedir.",
+      "category": "other",
+      "statement": "Treat ornek_konusma_1.md only as an example; use the brief for rules.",
+      "scope": [
+        "global"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "DUY-EFFECTIVE-DATE",
+      "source": "duyurular.md",
+      "quote": "2026-10-01: Söz son tarihi uzatıldı",
+      "category": "deadline",
+      "statement": "Apply the announced extended payment-promise deadline from 2026-10-01.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "DUY-DEADLINE",
+      "source": "duyurular.md",
+      "quote": "Bu tarihten itibaren ödeme sözünün son tarihi bugünden sonraki 7. iş günüdür (BRIEF kural 15'teki 5. iş günü yerine).",
+      "category": "deadline",
+      "statement": "Replaces the earlier payment-promise deadline rule: set the deadline to the 7th business day after today instead of the 5th business day.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [
+        "D1-15d"
+      ],
+      "superseded_by": null,
+      "narrowed_by": null
+    },
+    {
+      "id": "DUY-OTHER-DATE-RULES",
+      "source": "duyurular.md",
+      "quote": "Diğer tarih kuralları aynen geçerlidir.",
+      "category": "calendar",
+      "statement": "Keep all other date rules unchanged.",
+      "scope": [
+        "negotiation"
+      ],
+      "supersedes": [],
+      "superseded_by": null,
+      "narrowed_by": null
+    }
+  ],
+  "ambiguities": [],
+  "supersessions": [
+    "DUY-DEADLINE replaces D1-15d: 2026-10-01 tarihinden itibaren söz son tarihini bugünden sonraki 5. iş günü yerine 7. iş günü olarak belirler."
+  ],
+  "source_files": [
+    "BRIEF.md",
+    "README.md",
+    "duyurular.md",
+    "ornek_konusma_1.md"
+  ]
+}

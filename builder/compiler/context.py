@@ -42,6 +42,8 @@ __all__ = [
     "exit_bullet",
     "extra_phrase",
     "failure_note_reason",
+    "free_note_field_text",
+    "free_note_sentence",
     "ids_tag",
     "language_name",
     "note_step",
@@ -128,6 +130,32 @@ def failure_note_reason(ir: PolicyIR) -> str:
     reason = ir.recording.failure_outcome.reason or ""
     notes = ir.multi_product.note_reasons
     return reason if reason and (not notes or reason in notes) else ""
+
+
+def free_note_field_text(language: str) -> str:
+    """Description of the free-text field of a notes tool (a ``{customer, text}`` contract): what the model writes there.
+
+    The note is the record of what happened in the call, so only the model can write it, at call time, from what the
+    customer actually said: a note fixed in the workflow could hold neither the date nor the amount they gave.
+    """
+    return (f"The note itself, written by you in {language}: one or two short factual sentences about what happened in "
+            "this call - the situation (for example that the customer says they already paid, disputes the debt or "
+            "cannot pay, and why) and every concrete value the customer gave: the date they paid or will pay, the "
+            "amount, any circumstance they stated. Write only what the customer actually said; never an instruction, "
+            "a question, a template or a placeholder.")
+
+
+def free_note_sentence(note_tool: str, field: str, language: str, prescribed: str = "") -> str:
+    """The prompt sentence of an exit that writes a free-text note first (see :func:`free_note_field_text`).
+
+    ``prescribed`` is the note wording the brief gives (its format); the model then follows it with the real values.
+    """
+    form = (f' Follow the format the brief prescribes, "{prescribed.strip()}", with the real values filled in.'
+            if prescribed.strip() else "")
+    return (f"Once you have the facts (ask first what this rule says to ask), call {note_tool} once, with "
+            f"{field}: a short factual note in {language} of what the customer told you - the situation and every "
+            f"concrete value they gave (the date, the amount, the circumstance), not an instruction.{form} Only after "
+            "it is saved:")
 
 
 def note_step(ir: PolicyIR, note_tool: str, reason: str) -> str:
@@ -402,6 +430,7 @@ def exit_bullet(
     note_tool: str = "add_note",
     redirect: Mapping[str, str] | None = None,
     concessions_forbidden: bool | None = None,
+    free_note: str = "",
 ) -> str | None:
     """One prompt bullet for an intent that leaves the conversation or records a note; ``None`` for guidance-only intents.
 
@@ -414,6 +443,9 @@ def exit_bullet(
 
     ``concessions_forbidden``: whether the brief forbids discounts and waivers (:func:`concessions_forbidden`; ``None`` =
     read from the IR's residual rules only). It decides what the restructuring bullet says about such a request.
+
+    ``free_note``: the sentence that has the model write the intent's note through a free-text notes tool before it
+    leaves (:func:`free_note_sentence`; empty = the intent writes no such note).
     """
     info = naming.intent_exit(ir, intent)
     if info.kind == "info":
@@ -427,6 +459,8 @@ def exit_bullet(
     response = intent_fixed_sentence(ir, canonical_intent_key(intent.key), intent.response)  # AUD-09
     if response:
         parts.append(_sentence(response))
+    if free_note and info.kind != "note":
+        parts.append(free_note)
     if info.kind == "note":
         if deferred_notes(ir):
             parts.append(f'Take no promise for this product; {note_tool} reason "{info.reason}" (do not call {note_tool} '

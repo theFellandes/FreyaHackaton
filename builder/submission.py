@@ -377,8 +377,10 @@ def check_submission(manifest: Mapping[str, Any], *, root: Path | None = None) -
         if not isinstance(manifest.get(name), str) or not manifest[name].strip():
             report.problem(name, "A nonempty form field is required.")
     command = manifest.get("run_command", "")
-    if isinstance(command, str) and ("{brief_path}" not in command or "{tool_api_path}" not in command):
-        report.problem("run_command", "Include both {brief_path} and {tool_api_path} placeholders.")
+    placeholder_sets = (("{brief_path}", "{tool_api_path}"), ("{case_folder}", "{mock_url}"))  # practice / case form
+    if isinstance(command, str) and not any(all(p in command for p in names) for names in placeholder_sets):
+        report.problem("run_command", "Include both {brief_path} and {tool_api_path} placeholders "
+                       "(or, for a case folder, both {case_folder} and {mock_url}).")
     if isinstance(command, str) and re.search(r"--(?:dry-run|fake-llm)(?:[\s=]|$)", command):
         report.problem("run_command", "The final run command must not request dry-run or fixture model answers.")
     for group in ("workflows", "traces", "build_results"):

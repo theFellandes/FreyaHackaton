@@ -37,6 +37,8 @@ from typing import Any, Literal, get_args
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 __all__ = [
+    "ANY_PRODUCT",
+    "PRODUCT_TYPE_FOLD",
     "RULE_CATEGORIES",
     "STAGE_SCOPES",
     "AllowedCallbackDays",
@@ -76,7 +78,9 @@ __all__ = [
     "ThirdParty",
     "ToolAction",
     "fill_template",
+    "fold_product_type",
     "normalise_language",
+    "product_type_entry",
     "template_fields",
 ]
 
@@ -148,6 +152,51 @@ ProposalDateKind = Literal[
 ]
 """The date a persuasion attempt proposes. ``customer`` = the customer names it; ``custom`` = a rule no other kind
 expresses, applied from the step's ``text``. The ``nth_*`` kinds need the step's ``n``."""
+#: Key of the per-product-type maps (``product_naming``, ``floor_field_by_type``, ``floor_rule_by_type``) that applies
+#: to every product without an entry of its own - the only key when the ``get_account`` products carry no type field.
+ANY_PRODUCT = "*"
+#: Letters folded to plain ASCII before product types are compared (lower case first). The compiled ``account_facts``
+#: code carries the same table (no ``unicodedata`` in the code sandbox), so both sides fold a type the same way.
+PRODUCT_TYPE_FOLD: dict[str, str] = {
+    **dict.fromkeys("àáâãäåāăą", "a"), **dict.fromkeys("çćĉċč", "c"), **dict.fromkeys("ďđ", "d"),
+    **dict.fromkeys("èéêëēĕėęě", "e"), **dict.fromkeys("ĝğġģ", "g"), **dict.fromkeys("ĥħ", "h"),
+    **dict.fromkeys("ìíîïĩīĭįı", "i"), **dict.fromkeys("ĵ", "j"), **dict.fromkeys("ķ", "k"),
+    **dict.fromkeys("ĺļľŀł", "l"), **dict.fromkeys("ñńņňŉ", "n"), **dict.fromkeys("òóôõöøōŏő", "o"),
+    **dict.fromkeys("ŕŗř", "r"), **dict.fromkeys("śŝşšș", "s"), **dict.fromkeys("ţťŧț", "t"),
+    **dict.fromkeys("ùúûüũūŭůűų", "u"), **dict.fromkeys("ŵ", "w"), **dict.fromkeys("ýÿŷ", "y"),
+    **dict.fromkeys("źżž", "z"), "ß": "ss", "æ": "ae", "œ": "oe", "\u0307": "",
+}
+
+
+def fold_product_type(value: object) -> str:
+    """A product type reduced to the form two spellings of it share: ``"Crédito Pessoal"`` and ``"credito_pessoal"`` both
+    give ``"credito_pessoal"`` (lower case, accents folded, every run of other characters one ``_``)."""
+    text = "".join(PRODUCT_TYPE_FOLD.get(char, char) for char in str(value or "").lower())
+    words: list[str] = []
+    run = ""
+    for char in text:
+        if char.isalnum():
+            run += char
+        elif run:
+            words.append(run)
+            run = ""
+    if run:
+        words.append(run)
+    return "_".join(words)
+
+
+def product_type_entry(table: Mapping[str, Any], product_type: object) -> Any:
+    """The entry of a per-product-type map for ``product_type``: its exact key, else the key of the same folded
+    spelling (:func:`fold_product_type`), else :data:`ANY_PRODUCT`, else ``None``."""
+    name = str(product_type or "")
+    if name in table:
+        return table[name]
+    folded = fold_product_type(name)
+    if folded:
+        for key, entry in table.items():
+            if key != ANY_PRODUCT and fold_product_type(key) == folded:
+                return entry
+    return table.get(ANY_PRODUCT)
 PROPOSAL_KINDS_WITH_N: tuple[str, ...] = ("nth_business_day_after_today", "nth_calendar_day_after_today")
 PROPOSAL_KINDS_FROM_TEXT: tuple[str, ...] = ("customer", "custom")
 
@@ -528,7 +577,8 @@ class Disclosure(_Traced):
     )
     product_naming: dict[str, str] = Field(
         description="Product type -> spoken name as a bare noun phrase (no verb, no punctuation, no amount or days "
-        "field), e.g. 'loan ending {account_suffix}'."
+        "field), e.g. 'loan ending {account_suffix}'. Key \"*\" = every product without an entry of its own (the only "
+        "key when the get_account products have no type field)."
     )
     state_fields: list[str]
     amount_field: str | None = Field(
@@ -563,10 +613,11 @@ class Disclosure(_Traced):
         days = (self.days_field or "").strip() or next((n for n in names if "day" in n), "")
         return amount, days
 
-    def product_name(self, product: Mapping[str, Any]) -> str:
-        """Spoken name of a ``get_account`` product, falling back to its type with spaces."""
-        product_type = str(product.get("type", ""))
-        template = self.product_naming.get(product_type)
+    def product_name(self, product: Mapping[str, Any], type_key: str = "type") -> str:
+        """Spoken name of a ``get_account`` product (its type read from ``type_key``), falling back to its type with
+        spaces. The type matches its key whatever its spelling (:func:`product_type_entry`)."""
+        product_type = str(product.get(type_key, ""))
+        template = product_type_entry(self.product_naming, product_type)
         if template is None:
             return product_type.replace("_", " ")
         return fill_template(template, product)
@@ -696,7 +747,8 @@ class FloorRule(_IRModel):
 class AmountRules(_Traced):
     """Which amounts the agent proposes and accepts.
 
-    ``floor_field_by_type`` maps a product type to the ``get_account`` field holding its minimum acceptable amount;
+    ``floor_field_by_type`` maps a product type to the ``get_account`` field holding its minimum acceptable amount (key
+    :data:`ANY_PRODUCT` = every product without an entry of its own, the only key when the products carry no type);
     ``floor_rule_by_type`` holds a floor the documents state as a computation (a percentage of the past-due amount, a
     fixed amount, or the larger of those and the field), see :class:`FloorRule`.
     """
@@ -707,7 +759,8 @@ class AmountRules(_Traced):
     floor_rule_by_type: dict[str, FloorRule] = Field(
         default_factory=dict,
         description="Product type -> a floor stated as a computation (percent of the past-due amount and/or a fixed "
-        "amount, combined with the floor field by max or min). Empty when every floor is a plain product field.",
+        "amount, combined with the floor field by max or min). Empty when every floor is a plain product field. "
+        "Key \"*\" = every product without an entry of its own (the only key when the products have no type field).",
     )
     floor_offer_times: int = 1
     floor_note: str = ""
@@ -716,11 +769,12 @@ class AmountRules(_Traced):
 
     def floor_field(self, product_type: str) -> str | None:
         """Name of the floor field for a product type, or ``None`` when the brief defines no floor for it."""
-        return self.floor_field_by_type.get(product_type)
+        return product_type_entry(self.floor_field_by_type, product_type)
 
     def has_floor(self, product_type: str) -> bool:
         """True when the documents define a floor for ``product_type`` (a field, a computed rule or both)."""
-        return product_type in self.floor_field_by_type or product_type in self.floor_rule_by_type
+        return any(product_type_entry(table, product_type) is not None
+                   for table in (self.floor_field_by_type, self.floor_rule_by_type))
 
 
 class PersuasionStep(_IRModel):

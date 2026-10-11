@@ -9,6 +9,9 @@
   "final_language": "Turkish",
   "practice_kit_present": true,
   "final_kit_present": false,
+  "release_inventory_checked_at_utc": "2026-10-11T17:21:22Z",
+  "partial_case_folder": "submission/case",
+  "release_inventory_receipt": "submission/evidence/final-case-acquisition.json",
   "mock_deployed": false,
   "selected_final_run": false,
   "final_export_present": false,
@@ -30,7 +33,7 @@
     },
     {
       "id": "released_contract",
-      "detail": "Final service contract, fixtures and mixed-format documents become available at 17:00 UTC."
+      "detail": "The shared release folder currently contains only BRIEF.md and the flow PDF. The integration contract, test customers and remaining source pack are missing."
     },
     {
       "id": "final_deployment_and_run",
@@ -41,7 +44,7 @@
   "notes": [
     "No final case obtained before release; no final bank contract, workflow, trace or sent email invented.",
     "Cloudflare skills installed globally and MCP registered/authenticated; Wrangler authenticated separately.",
-    "The user sends the email. Member email and recipient confirmation remain unresolved."
+    "The user sends the email. The released BRIEF.md confirms yavuz@freyavoice.ai and requires JSON, workflow and trace attachments. Member email remains unresolved."
   ],
   "release_followup": {
     "intended_time": "2026-10-11T17:00:00Z",
@@ -59,7 +62,9 @@
     "builder_help_passed": true
   },
   "email_delivery": {
-    "recipient_confirmed": false,
+    "recipient_confirmed": true,
+    "confirmation_source": "submission/case/BRIEF.md",
+    "required_attachments": ["submission.json", "exported workflow", "builder run trace"],
     "candidate_recipient": "yavuz@freyavoice.ai",
     "mode": "user_sends",
     "template": "submission/EMAIL_DRAFT.md"

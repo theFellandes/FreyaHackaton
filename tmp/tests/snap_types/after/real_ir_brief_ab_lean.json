@@ -1,0 +1,761 @@
+{
+ "global_nodes": {},
+ "initial_node": "setup",
+ "nodes": {
+  "account_facts": {
+   "disable_inactivity_monitor": true,
+   "name": "account_facts",
+   "node_type": "code",
+   "on_enter": {
+    "type": "silent"
+   },
+   "passthrough": true,
+   "passthrough_default_transition": "negotiate",
+   "pre_actions": [
+    {
+     "function": {
+      "handler": "__function__:code_exec",
+      "name": "code_exec",
+      "parameters": {
+       "properties": {
+        "code": {
+         "default": "import datetime\nimport json\ntry:\n    CFG = json.loads('\\x7b\"holidays\":[\"2026-10-26\",\"2026-11-11\",\"2026-11-26\",\"2026-12-25\",\"2027-01-01\"],\"weekdays\":[0,1,2,3,4],\"bands\":[\\x7b\"name\":\"early\",\"slug\":\"early\",\"min\":1,\"max\":7,\"attempts\":1,\"deadline\":\\x7b\"kind\":\"nth_business_day_after_today\",\"n\":12,\"text\":\"\"\\x7d\\x7d,\\x7b\"name\":\"late\",\"slug\":\"late\",\"min\":8,\"max\":45,\"attempts\":2,\"deadline\":\\x7b\"kind\":\"nth_business_day_after_today\",\"n\":7,\"text\":\"\"\\x7d\\x7d],\"list_field\":\"products\",\"id_key\":\"product_id\",\"type_key\":\"type\",\"horizon\":366,\"list_limit\":30,\"spoken_limit\":90,\"naming\":\\x7b\"credit_card\":\"credit card ending \\x7bcard_last4\\x7d\",\"personal_loan\":\"personal loan\",\"car_loan\":\"car loan\"\\x7d,\"floors\":\\x7b\"credit_card\":\"minimum_payment\",\"personal_loan\":\"instalment_amount\",\"car_loan\":\"instalment_amount\"\\x7d,\"floor_note\":\"The rest stays overdue.\",\"floor_offer\":\"I can offer the \\x7bfloor_label\\x7d of \\x7bfloor_amount\\x7d. The rest stays overdue.\",\"currency\":\"\",\"state_fields\":[\"past_due\",\"days_late\"],\"amount_field\":\"past_due\",\"days_field\":\"days_late\",\"allow_today\":true,\"business_only\":true,\"not_after_deadline\":true,\"offer_deadline\":true,\"shift\":\"next_business_day\",\"skip_groups\":6,\"steps\":[\\x7b\"attempt\":1,\"bands\":[\"early\",\"late\"],\"amount\":\"current\",\"date\":\"last_business_day_next_week_if_today_is_last\",\"text\":\"Propose the last business day of this week. If today is that day, propose the last business day of next week.\"\\x7d,\\x7b\"attempt\":2,\"bands\":[\"late\"],\"amount\":\"floor\",\"date\":\"deadline\",\"text\":\"Propose the floor amount on the deadline.\"\\x7d],\"intro\":\"I am calling from the collections team.\",\"today_question\":\"Can you make this payment today?\",\"today_question_all\":\"Can you pay all of them today?\",\"call_vars\":[\"customer_id\",\"first_name\",\"last_name\",\"title\",\"now\"]\\x7d')\n    raw = str(vars.get('now') or '').strip().replace('Z', '')\n    state = 'ok'\n    try:\n        now = datetime.datetime.fromisoformat(raw[:19])\n    except Exception:\n        try:\n            now = datetime.datetime.fromisoformat(raw[:10] + 'T09:00')\n        except Exception:\n            now = datetime.datetime.now()\n            state = 'now_missing'\n    now = now.replace(tzinfo=None)\n    today = now.date()\n    WD = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']\n    MO = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']\n    hol = set(CFG['holidays'])\n    bw = set(CFG['weekdays'])\n    ONE = datetime.timedelta(days=1)\n    def isbd(d):\n        return d.weekday() in bw and d.isoformat() not in hol\n    def spoken(d):\n        return WD[d.weekday()] + ' ' + str(d.day) + ' ' + MO[d.month - 1] + ' ' + str(d.year)\n    def short(d):\n        return WD[d.weekday()] + ' ' + str(d.day) + ' ' + MO[d.month - 1]\n    def next_bd(d):\n        x = d + ONE\n        for _ in range(400):\n            if isbd(x):\n                break\n            x = x + ONE\n        return x\n    def prev_bd(d):\n        x = d\n        for _ in range(400):\n            if isbd(x):\n                break\n            x = x - ONE\n        return x\n    def nth_bd_after(d, n):\n        x = d\n        for _ in range(int(n)):\n            x = next_bd(x)\n        return x\n    def last_bd_of_week(d, offset):\n        monday = d - datetime.timedelta(days=d.weekday()) + datetime.timedelta(days=7 * offset)\n        x = monday + datetime.timedelta(days=6)\n        while x >= monday and not isbd(x):\n            x = x - ONE\n        return x if x >= monday else None\n    def next_weeks_last(d):\n        for off in range(1, 54):\n            x = last_bd_of_week(d, off)\n            if x is not None:\n                return x\n        return d\n    def dl_of(rule):\n        k = rule.get('kind')\n        n = int(rule.get('n') or 0)\n        if k == 'nth_business_day_after_today':\n            return nth_bd_after(today, n)\n        if k == 'nth_calendar_day_after_today':\n            return today + datetime.timedelta(days=n)\n        if k == 'end_of_month':\n            first = (today.replace(day=28) + datetime.timedelta(days=4)).replace(day=1)\n            return first - ONE\n        if k == 'fixed_date':\n            return datetime.date.fromisoformat(str(rule.get('fixed')))\n        return None\n    def to_cents(x):\n        c = None\n        if x is not None and not isinstance(x, bool):\n            if isinstance(x, int):\n                c = x * 100\n            else:\n                s = repr(x) if isinstance(x, float) else str(x)\n                if isinstance(x, float) and ('e' in s or 'E' in s):\n                    s = '%.6f' % x\n                keep = ''.join(ch for ch in s if ch in '0123456789.,-')\n                neg = keep.startswith('-')\n                if neg:\n                    keep = keep[1:]\n                if '-' not in keep and any(ch in '0123456789' for ch in keep):\n                    if ',' in keep and '.' in keep:\n                        if keep.rfind(',') > keep.rfind('.'):\n                            keep = keep.replace('.', '').replace(',', '.')\n                        else:\n                            keep = keep.replace(',', '')\n                    elif ',' in keep:\n                        tail = keep.rsplit(',', 1)[1]\n                        if keep.count(',') == 1 and 1 <= len(tail) <= 2:\n                            keep = keep.replace(',', '.')\n                        else:\n                            keep = keep.replace(',', '')\n                    elif keep.count('.') > 1:\n                        keep = keep.replace('.', '')\n                    if ',' not in keep and keep.count('.') <= 1:\n                        whole, dot, frac = keep.partition('.')\n                        c = int(whole or '0') * 100 + int((frac + '00')[:2])\n                        if len(frac) > 2 and frac[2] >= '5':\n                            c += 1\n                        if neg:\n                            c = -c\n        return c\n    def fmt_cents(c):\n        return ('-' if c < 0 else '') + str(abs(c) // 100) + '.' + ('0' + str(abs(c) % 100))[-2:]\n    def amt(c):\n        return (fmt_cents(c) if c is not None else 'an unknown amount') + (' ' + CFG['currency'] if CFG['currency'] and c is not None else '')\n    def fill(tpl, p):\n        out = tpl\n        for k in list(p.keys()):\n            if p.get(k) is not None and str(p.get(k)).strip() != '':\n                out = out.replace('{' + str(k) + '}', str(p.get(k)))\n        return out\n    def say(t):\n        out = str(t or '')\n        for k in CFG['call_vars']:\n            v = vars.get(k)\n            if v is not None and str(v).strip() != '':\n                out = out.replace('{' + k + '}', str(v).strip())\n        return out\n    def strip_tokens(t):\n        t = str(t or '')\n        out = ''\n        i = 0\n        while i < len(t):\n            if t[i] == '{' and t[i - 1:i] != '{' and t[i + 1:i + 2] != '{':\n                j = t.find('}', i)\n                head = t[i + 1:j] if j > i else ''\n                if head and not head[0].isdigit() and head.replace('_', 'a').isalnum() and t[j + 1:j + 2] != '}':\n                    i = j + 1\n                    continue\n            out = out + t[i]\n            i = i + 1\n        return out\n    def unbrace(t):\n        out = ' '.join(strip_tokens(t).split())\n        for mark in ('.', ',', '?', '!', ';', ':'):\n            out = out.replace(' ' + mark, mark)\n        return out\n    def load_products():\n        p = vars.get('products')\n        if isinstance(p, str):\n            try:\n                p = json.loads(p)\n            except Exception:\n                p = None\n        if isinstance(p, list) and p:\n            return p\n        found = dict()\n        marker = '.' + CFG['list_field'] + '.'\n        for k in list(vars.keys()):\n            ks = str(k)\n            if marker in ks:\n                tail = ks.split(marker, 1)[1]\n                parts = tail.split('.', 1)\n                if len(parts) == 2 and parts[0].isdigit():\n                    found.setdefault(int(parts[0]), dict())[parts[1]] = vars.get(k)\n        return [found[i] for i in sorted(found)]\n    def band_of(late, ptype=''):\n        own = [b for b in CFG['bands'] if b.get('types') and ptype in b['types']]\n        rest = [b for b in CFG['bands'] if not b.get('types')]\n        for pool in (own, rest):\n            for b in pool:\n                if b['min'] <= late <= b['max']:\n                    return b\n        best = None\n        gap = None\n        for b in (own + rest) or CFG['bands']:\n            g = b['min'] - late if late < b['min'] else late - b['max']\n            if gap is None or g < gap:\n                best = b\n                gap = g\n        return best\n    this_week = last_bd_of_week(today, 0)\n    def proposal(kind, latest, n=None):\n        if kind in ('customer', 'custom'):\n            return None\n        if kind == 'deadline':\n            return latest\n        if kind == 'today':\n            r = today if isbd(today) else next_bd(today)\n        elif kind == 'next_business_day_after_today':\n            r = next_bd(today)\n        elif kind == 'nth_business_day_after_today':\n            r = nth_bd_after(today, n or 0)\n        elif kind == 'nth_calendar_day_after_today':\n            r = today + datetime.timedelta(days=int(n or 0))\n            if not isbd(r):\n                r = next_bd(r)\n        else:\n            strictly = kind == 'last_business_day_next_week_if_today_is_last'\n            usable = this_week is not None and (this_week > today if strictly else this_week >= today)\n            r = this_week if usable else next_weeks_last(today)\n        if latest is not None and r > latest:\n            r = latest\n        return r\n    products = load_products()\n    out = []\n    ids = []\n    stmts = []\n    deadlines = dict()\n    for i, p in enumerate(products):\n        if not isinstance(p, dict):\n            continue\n        pid = str(p.get(CFG['id_key']) or '').strip()\n        if not pid:\n            raise ValueError('a product has no ' + CFG['id_key'] + ': its id cannot be invented')\n        ids.append(pid)\n        ptype = str(p.get(CFG['type_key']) or '') if CFG['type_key'] else ''\n        name = say(fill(CFG['naming'].get(ptype) or ptype.replace('_', ' '), p))\n        if strip_tokens(name) != name or not name.strip():\n            name = ptype.replace('_', ' ').strip() or ('product ' + pid)\n        ffield = CFG['floors'].get(ptype)\n        floor = to_cents(p.get(ffield)) if ffield else None\n        flabel = ffield.replace('_', ' ') if ffield else 'floor'\n        due = to_cents(p.get(CFG['amount_field']))\n        if floor is not None and due is not None and floor > due:\n            floor = due\n        try:\n            late = int(float(p.get(CFG['days_field']) or 0))\n        except Exception:\n            late = 0\n        band = band_of(late, ptype)\n        bname = band['name'] if band else ''\n        attempts = band['attempts'] if band else 1\n        dl = dl_of(band['deadline']) if band else None\n        latest = None\n        if dl is not None:\n            latest = prev_bd(dl) if CFG['business_only'] else dl\n        s = []\n        s.append(pid + ': ' + name + '. Past-due amount ' + amt(due) + ', ' + str(late) + ' days late (' + bname + ' band).')\n        if floor is not None:\n            s.append('   Floor (' + flabel + '): ' + amt(floor) + '.')\n        else:\n            s.append('   Floor: none for this product - only the full past-due amount can be offered.')\n        if latest is not None:\n            extra = '' if dl == latest else ' (the deadline rule gives ' + dl.isoformat() + ', which is not a business day)'\n            s.append('   Deadline (latest promise date): ' + latest.isoformat() + ' = ' + short(latest) + '.' + extra)\n        else:\n            s.append('   Deadline: apply this rule: ' + (band['deadline']['text'] if band else '') + ' (no date could be computed).')\n        offer = ''\n        if floor is not None:\n            offer = fill(CFG['floor_offer'].replace('{floor_label}', flabel).replace('{floor_amount}', amt(floor)), p)\n            offer = say(offer.replace('{name}', name))\n            s.append('   Floor offer - when the customer says the full amount is too much, say exactly: \"' + offer + '\"')\n        steps = [x for x in CFG['steps'] if (not x['bands']) or bname in x['bands']]\n        steps = steps[:attempts]\n        attempts = len(steps)\n        if attempts:\n            s.append('   Persuasion attempts for ' + pid + ': EXACTLY ' + str(attempts) + ' (' + bname + ' band). Make them one at a time, only after a refusal or a non-answer:')\n        else:\n            s.append('   Persuasion attempts for ' + pid + ': NONE (' + bname + ' band): the policy prescribes no persuasion offer for this product.')\n        for n, st in enumerate(steps):\n            d = proposal(st['date'], latest, st.get('n'))\n            if st['date'] == 'deadline' and latest is not None:\n                when = ' by ' + short(latest)\n            elif d is not None:\n                when = ' on ' + short(d)\n            elif st['date'] == 'custom':\n                when = ''\n            else:\n                when = ' on the day the customer names'\n            rule_text = str(st.get('text') or '').strip().rstrip('.') if st['date'] in ('customer', 'custom') else ''\n            note = ' Date rule for this attempt: ' + rule_text + '.' if rule_text else ''\n            if st['amount'] == 'floor' and floor is not None:\n                q = 'Could you pay at least the ' + flabel + ' of ' + amt(floor) + when + '?'\n                if CFG['floor_note']:\n                    q = q + ' ' + CFG['floor_note']\n                s.append('     Attempt ' + str(n + 1) + ' - ask: \"' + q + '\"' + note)\n            else:\n                q = 'Could you pay the ' + amt(due) + ' for your ' + name + when + '?'\n                tail = ''\n                if st['amount'] == 'current' and floor is not None:\n                    tail = ' (if they already said the full amount is too much, ask for the ' + flabel + ' ' + amt(floor) + ' instead)'\n                s.append('     Attempt ' + str(n + 1) + ' - ask: \"' + q + '\"' + tail + '.' + note)\n        if attempts:\n            s.append('     After attempt ' + str(attempts) + ' is refused: make NO further offer for ' + pid + '.')\n        else:\n            s.append('   After a refusal or a non-answer make NO offer for ' + pid + '.')\n        allowed = []\n        allowed_iso = []\n        allowed_say = []\n        d = today if CFG['allow_today'] else today + ONE\n        capped = latest is not None and CFG['not_after_deadline']\n        horizon = today + datetime.timedelta(days=CFG['horizon'])\n        end = horizon\n        until = 'open'\n        if capped:\n            if latest <= horizon:\n                end = latest\n                until = ''\n            else:\n                until = latest.isoformat()\n        for _ in range(CFG['horizon'] + 2):\n            if d > end:\n                break\n            if (not CFG['business_only']) or isbd(d):\n                allowed.append(d.isoformat() + ' ' + WD[d.weekday()])\n                allowed_iso.append(d.isoformat())\n                allowed_say.append(short(d))\n            d = d + ONE\n        if not allowed_iso and until:\n            first = today if CFG['allow_today'] else today + ONE\n            text = 'every ' + ('business day' if CFG['business_only'] else 'day') + ' from ' + first.isoformat()\n            text = text + (' to ' + latest.isoformat() if capped else ' on')\n            if CFG['business_only']:\n                text = text + '; only the configured business weekdays are allowed, excluding bank holidays'\n            s.append('   Allowed promise dates: ' + text + '. No eligible day falls inside the displayed date table.')\n        elif not allowed_iso:\n            s.append('   Allowed promise dates: none - no day is left up to the deadline. Record NO promise for ' + pid + ': say that you cannot record a payment date for it.')\n        elif len(allowed) <= CFG['list_limit']:\n            s.append('   Allowed promise dates: ' + ', '.join(allowed) + '.')\n        else:\n            first = datetime.date.fromisoformat(allowed_iso[0])\n            last_day = latest if capped else datetime.date.fromisoformat(allowed_iso[-1])\n            text = 'every ' + ('business day' if CFG['business_only'] else 'day') + ' from ' + first.isoformat() + ' (' + WD[first.weekday()] + ')'\n            text = text + (' to ' + last_day.isoformat() + ' (' + WD[last_day.weekday()] + ')' if capped else ' on')\n            if CFG['business_only']:\n                text = text + '; weekends and bank holidays are not allowed'\n                inside = [h for h in sorted(hol) if first.isoformat() <= h <= (last_day.isoformat() if capped else allowed_iso[-1]) and datetime.date.fromisoformat(h).weekday() in bw]\n                if inside:\n                    text = text + ' (bank holidays in this range: ' + ', '.join(inside) + ')'\n            s.append('   Allowed promise dates: ' + text + '.')\n        if allowed_iso and capped and CFG['business_only'] and CFG['shift'] in ('next_business_day', 'previous_business_day'):\n            groups = []\n            x = today if CFG['allow_today'] else today + ONE\n            while x <= latest and len(groups) <= CFG['skip_groups']:\n                if not isbd(x):\n                    alt = next_bd(x)\n                    if CFG['shift'] == 'previous_business_day' and prev_bd(x) >= today:\n                        alt = prev_bd(x)\n                    if alt <= latest:\n                        said_x = short(x) + (' (bank holiday)' if x.isoformat() in hol else '')\n                        if groups and groups[-1][1] == alt:\n                            groups[-1][0].append(said_x)\n                        else:\n                            groups.append([[said_x], alt])\n                x = x + ONE\n            if groups:\n                more = '; and so on' if len(groups) > CFG['skip_groups'] else ''\n                said = '; '.join([' and '.join(g[0]) + ' -> offer ' + short(g[1]) + ' (' + g[1].isoformat() + ')' for g in groups[:CFG['skip_groups']]])\n                s.append('   Not business days up to the deadline - if the customer names one, offer the day after the arrow instead: ' + said + more + '.')\n        out.append('\\n'.join(s))\n        parts = []\n        for f in CFG['state_fields']:\n            if f == CFG['amount_field']:\n                parts.append('has a past-due amount of ' + amt(due))\n            elif f == CFG['days_field']:\n                parts.append('is ' + str(late) + (' day late' if late == 1 else ' days late'))\n            elif p.get(f) is not None:\n                parts.append('has ' + f.replace('_', ' ') + ' ' + str(p.get(f)))\n        stmts.append('Your ' + name + ' ' + ' and '.join(parts) + '.' if parts else 'Your ' + name + '.')\n        vars[pid + '_deadline'] = latest.isoformat() if latest is not None else ''\n        vars[pid + '_deadline_spoken'] = short(latest) if latest is not None else ''\n        vars[pid + '_floor'] = fmt_cents(floor) if floor is not None else ''\n        vars[pid + '_past_due'] = fmt_cents(due) if due is not None else ''\n        vars['allowed_' + pid] = ','.join(allowed_iso)\n        vars['allowed_spoken_' + pid] = ','.join(allowed_say[:CFG['spoken_limit']])\n        vars['allowed_count_' + pid] = str(len(allowed_iso))\n        if until:\n            vars['until_' + pid] = until\n        vars[pid + '_band'] = bname\n        vars[pid + '_name'] = name\n        if latest is not None and CFG['not_after_deadline']:\n            deadlines[pid] = latest\n    marked = []\n    for line in str(vars.get('date_table') or '').split('\\n'):\n        try:\n            d0 = datetime.date.fromisoformat(line[:10])\n        except Exception:\n            marked.append(line)\n            continue\n        late_for = [k for k in ids if k in deadlines and d0 > deadlines[k]]\n        if late_for and len(late_for) == len(ids):\n            line = line.split(' -> ', 1)[0] + ' | AFTER THE DEADLINE - not allowed' + (': offer the deadline instead' if CFG['offer_deadline'] else '')\n        elif late_for:\n            if ' -> ' in line:\n                head, tail = line.split(' -> ', 1)\n                line = head + ' -> for ' + ', '.join([k for k in ids if k not in late_for]) + ': ' + tail\n            line = line + ' | after the deadline of ' + ', '.join(late_for) + ' - not allowed for ' + ', '.join(late_for)\n        marked.append(line)\n    vars['date_table'] = '\\n'.join(marked)\n    question =CFG['today_question_all'] if len(stmts) > 1 and CFG['today_question_all'] else CFG['today_question']\n    vars['debt_statement'] = unbrace(say('Thank you. ' + CFG['intro'] + ' ' + ' '.join(stmts) + ' ' + question))\n    vars['product_ids'] = ','.join(ids)\n    vars['product_count'] = str(len(ids))\n    vars['account_facts'] = 'LATE PRODUCTS (discuss them in this order):\\n' + '\\n'.join(out)\n    vars['account_state'] = 'ok' if ids else 'empty'\n    vars['identity_verified'] = 'yes'\nexcept Exception as e:\n    vars['account_state'] = 'error: ' + str(e)[:200]\n    vars['account_facts'] = vars.get('account_facts') or 'The account facts could not be computed. Say you do not have that information.'\n    vars['debt_statement'] = vars.get('debt_statement') or 'Thank you. I am calling from the collections team. Can you make this payment today?'\n    vars['product_ids'] = vars.get('product_ids') or ''\n    vars['product_count'] = vars.get('product_count') or '0'\n    vars['identity_verified'] = 'yes'\n",
+         "type": "string"
+        },
+        "timeout_ms": {
+         "default": 10000,
+         "type": "number"
+        }
+       },
+       "type": "object"
+      }
+     },
+     "type": "function"
+    }
+   ],
+   "transitions": [
+    {
+     "condition": {
+      "operator": "always"
+     },
+     "description": "always",
+     "target_node": "negotiate"
+    }
+   ]
+  },
+  "call": {
+   "max_node_turns": 60,
+   "max_turn_transition": "hangup",
+   "name": "call",
+   "node_type": "conversation",
+   "on_enter": {
+    "text": "I am Freya Bank's digital assistant calling from Freya Bank, and we record this call. Am I speaking with {{title}} {{last_name}}?",
+    "type": "tts"
+   },
+   "on_enter_first_entry_only": true,
+   "task_message": "Find out who answered. Your opening line has already been said: it introduced you and asked: \"Am I speaking with {{title}} {{last_name}}?\"\n- Only \"yes\", \"that's me\", \"speaking\" or \"the customer's own name\" confirms that you are speaking with {{title}} {{last_name}}. \"Hello\", \"go ahead\" and \"who is this\" do not. A reply that is cut off, or that contains \"no\" or says who is speaking (\"this is her ...\", \"this is his ...\"), is NOT a confirmation: let the person finish (\"I understand, go on.\") before you decide.\n- If it is not a confirmation, ask once more exactly: \"Am I speaking with {{title}} {{last_name}}?\" If the person asks a question first, answer it first; the ask that follows is the second ask. If it is still unclear after the second ask, thank them, say goodbye and call close_call with outcome \"not_reached\" and reason \"unclear\".\n- Do not say why you are calling and do not mention an account.\nDecide and act:\n- Confirmed (an explicit, complete confirmation only): go on with the security questions (see IDENTITY below).\n- Someone else answered (a relative, a colleague, anyone who is not the customer): do not say what the call is about and do not mention any account, product, amount, debt or payment. If they ask, say only \"I can only discuss this with {{title}} {{last_name}}.\" Then follow the section IF SOMEONE ELSE ANSWERED below.\n- Requests to speak to a person instead of the assistant: Act only when the person says this twice; before that follow the other rules. Ask once whether you can help first. If they insist: say you will transfer them, say goodbye and call transfer_to_agent with queue \"general\", then close_call with outcome \"transferred\" and reason \"human\". If they let you help, go on; do not offer it again. [A-42a, A-42b, A-42c, A-45c, +1]\n- Says they do not want to talk or wants the call to end: Act only when the person says this twice; before that follow the other rules. Thank them, say goodbye and call close_call with outcome \"no_promise\" and reason \"refused\". [A-45a, A-45b]\n- The person says the number does not belong to the customer: Thank them, say goodbye and call close_call with outcome \"not_reached\" and reason \"wrong_number\".\n- The person says the customer has died: Say \"I am sorry for your loss.\" and ask nothing else. Thank them, say goodbye and call close_call with outcome \"not_reached\" and reason \"deceased\".\n\nOther rules of the brief for this step:\n- [A-1b] Do not say \"collections\", \"debt\", \"payment\" or the product before identity is verified.\n- [A-1c] Apply the pre-verification disclosure restriction to everyone, including relatives.\n- [A-3e] Answer a question from the customer before the follow-up ask.\n- [A-3f] Treat the ask that follows an answer to the customer's question as the second ask.\n\nIF SOMEONE ELSE ANSWERED (not the customer)\nSomeone other than {{title}} {{last_name}} is on the line.\n- Do not say why you are calling. Say nothing beyond your opening sentence: no product, amount, debt or payment, even if they ask or offer to pay.\n- Say nothing beyond the opening sentence except ask when the customer can be reached.\n- A relative may not answer security questions or be told anything about the account, even if they offer to pay.\n- Ask when {{first_name}} {{last_name}} can be reached.\n- If they say they will fetch {{title}} {{last_name}} or put them on the phone: say you will wait, and nothing else. When someone new speaks, ask exactly: \"Am I speaking with {{title}} {{last_name}}?\" Only an explicit confirmation such as \"yes\", \"that's me\", \"speaking\" or \"the customer's own name\" from that person counts; then go on with the security questions (see IDENTITY below). A relative who offers to answer or to pay for them is not the customer coming to the phone.\n- {{callback_facts}}\n- As soon as they give a day and a time inside the allowed callback times, call schedule_callback with the date (YYYY-MM-DD) and time (HH:MM) right away - do not ask them to confirm first. Use the next-business-day date when they say \"tomorrow\" and tomorrow is that day.\n- If the day or the time is outside the allowed times: ask once for another time inside them. If that is also outside, do not book anything: thank them, say goodbye and call close_call with outcome \"not_reached\" and reason \"no_callback\".\n- Call schedule_callback before you tell them anything is booked. When it is booked, thank them, say goodbye and call close_call with outcome \"not_reached\" and reason \"callback\".\n- The person says the number does not belong to the customer: Thank them, say goodbye and call close_call with outcome \"not_reached\" and reason \"wrong_number\".\n- The person says the customer has died: Say \"I am sorry for your loss.\" and ask nothing else. Thank them, say goodbye and call close_call with outcome \"not_reached\" and reason \"deceased\".\n\nOther rules of the brief for this step:\n- [A-1c] Apply the pre-verification disclosure restriction to everyone, including relatives.\n- [A-5b] Say nothing beyond the opening sentence of rule 1 to someone else who answers, except ask when the customer can be reached.\n- [A-9b] If the person says the customer has died, ask nothing else.\n- [A-10a] Do not allow a relative to answer the security questions.\n- [A-10b] Do not tell a relative anything about the account, even if they offer to pay.\n- [A-1b] Do not say \"collections\", \"debt\", \"payment\" or the product before identity is verified.\n\nIDENTITY (only once the customer confirmed who they are)\nVerify the customer's identity before anything else. Ask two security questions, one at a time, in this order:\n1. What is your date of birth?\n2. What are the last four digits of the phone number on file?\n- After each answer call verify_identity with that one answer:\n  - field date_of_birth: Send as YYYY-MM-DD. Read a date given only as numbers as day, then month, then year.\n  - field phone_last4: Send four digits.\n- A COMPLETE answer is checked at once: date_of_birth: a date needs day, month and year; phone_last4: exactly 4 digits (a date or a year said in words is complete when every part is there: a year said in words, such as \"nineteen eighty\", is a whole year, not part of one). As soon as the customer's message holds a complete answer, call verify_identity with it: never hold it back and never ask the customer to repeat or confirm a part they already said.\n- If the customer gives only part (for example only the day and the month or only 2 of the 4 digits), do not call verify_identity yet: ask only for the missing part and combine both parts, then check the whole answer.\n- A complete answer that comes with a complaint, a question or other words is checked FIRST: call verify_identity before you say anything, then do exactly what the what_to_do_next line in the result says, and only then answer the complaint or the question. This holds also when the message is cut off or trails off after the answer (for example a whole date followed by an unfinished complaint): it is an answer, not a cut-off message; never reply to it only with \"I understand, go on.\"\n- Do not say anything about the account or why you are calling during this step. Ask each question plainly, without saying why you ask it: explain why only when the customer refuses or asks.\n- A wrong answer may be asked again. Three wrong answers in total end the check, whichever question they were on; the system counts them and tells you when the check has ended.\n- If the result carries the hint \"day_month_swapped\": Ask the customer to say the month as a word. This does not count as a wrong answer.\n- If the customer does not want to answer, or asks what the call is about instead of answering: explain once that \"These questions protect your account.\" and ask the same question again. The second refusal or such question in a row, with no answer in between: thank them, say goodbye and call close_call with outcome \"not_verified\" and reason \"declined\". Any answer to a security question, right or wrong, starts this count again; a short question back that the customer follows with an answer (for example \"why do you need that?\", then the answer) is not a refusal.\n- Requests to speak to a person instead of the assistant: Act only when the person says this twice; before that follow the other rules. Ask once whether you can help first. If they insist: say you will transfer them, say goodbye and call transfer_to_agent with queue \"general\", then close_call with outcome \"transferred\" and reason \"human\". If they let you help, go on; do not offer it again. [A-42a, A-42b, A-42c, A-45c, +1]\n- Says they do not want to talk or wants the call to end: Act only when the person says this twice; before that follow the other rules. Thank them, say goodbye and call close_call with outcome \"no_promise\" and reason \"refused\". [A-45a, A-45b]\n\nOther rules of the brief for this step:\n- [A-1b] Do not say \"collections\", \"debt\", \"payment\" or the product before identity is verified.\n- [A-1c] Apply the pre-verification disclosure restriction to everyone, including relatives.\n- [A-10a] Do not allow a relative to answer the security questions.\n- [A-12a] A wrong answer may be asked again.\n- [A-14a] Do not state the debt after three wrong answers.\n- [A-15c] Count asking what the call is about instead of answering as declining.\n- [A-15d] A second refusal or a second question asking what the call is about instead of answering closes the call.\n- [A-16] Call get_account after both security questions pass.\n\nCLOSING THE CALL\nEvery call ends with exactly one close_call, as the LAST tool call, after you said goodbye (\"Thank you and goodbye.\"). Choose the outcome and the reason from this table; when several rows fit, the first one in the list wins:\n- A restructuring request transfers the call (identity verified): outcome \"transferred\" and reason \"restructuring\"\n- The customer accepts connection with customer support (identity verified): outcome \"transferred\" and reason \"support\"\n- The customer insists on a human: outcome \"transferred\" and reason \"human\"\n- at least one promise was recorded (identity verified): outcome \"promise\"\n- After three wrong answers (identity not verified): outcome \"not_verified\" and reason \"failed\"\n- After a second refusal or a second question asking what the call is about instead of answering (identity not verified): outcome \"not_verified\" and reason \"declined\"\n- The person says the number does not belong to the customer (identity not verified): outcome \"not_reached\" and reason \"wrong_number\"\n- The person says the customer has died (identity not verified): outcome \"not_reached\" and reason \"deceased\"\n- A callback was scheduled (identity not verified): outcome \"not_reached\" and reason \"callback\"\n- The second offered callback day or time is outside the callback window (identity not verified): outcome \"not_reached\" and reason \"no_callback\"\n- It is still unclear after the second ask (identity not verified): outcome \"not_reached\" and reason \"unclear\"\n- With no promise recorded, every product is noted paid (identity verified): outcome \"paid\"\n- With no promise recorded, the first product in get_account order whose note is not paid has reason refused (identity verified): outcome \"no_promise\" and reason \"refused\"\n- With no promise recorded, the first product in get_account order whose note is not paid has reason hardship (identity verified): outcome \"no_promise\" and reason \"hardship\"\n- With no promise recorded, the first product in get_account order whose note is not paid has reason dispute (identity verified): outcome \"no_promise\" and reason \"dispute\"\n- With no promise recorded, the first product in get_account order whose note is not paid has reason service_error (identity verified): outcome \"no_promise\" and reason \"service_error\"\n- refuse to talk: outcome \"no_promise\" and reason \"refused\"\n- recording failed: outcome \"no_promise\" and reason \"service_error\"\nIf a transfer follows a recorded promise, close with outcome \"transferred\" and the reason of that transfer.\nWith several products and no recorded promise: close with the reason of the first product (in the listed order) whose note is not \"paid\"; if every note is \"paid\", use outcome \"paid\".\nAfter close_call succeeded, say nothing more.",
+   "tools": [
+    {
+     "config": {
+      "maxRetries": 0,
+      "timeoutMs": 12000
+     },
+     "function": {
+      "description": "Check ONE security answer. CALL it every time the customer gives an answer to a security question, with that single answer.",
+      "handler": "__function__:api_call",
+      "name": "verify_identity",
+      "parameters": {
+       "properties": {
+        "body": {
+         "properties": {
+          "answer": {
+           "default": "{{answer}}",
+           "description": "For date_of_birth: the date as YYYY-MM-DD. Callers say dates in words, the agent converts. An unreadable value is rejected with ok=false and is not counted as a wrong answer. For phone_last4: four digits. Never send a partial answer: send it only when it is complete. date_of_birth: Send as YYYY-MM-DD. Read a date given only as numbers as day, then month, then year. phone_last4: Send four digits.",
+           "type": "string"
+          },
+          "customer_id": {
+           "default": "{{customer_id}}",
+           "type": "string"
+          },
+          "field": {
+           "default": "{{field}}",
+           "description": "Which question this answer belongs to: date_of_birth, phone_last4.",
+           "enum": [
+            "date_of_birth",
+            "phone_last4"
+           ],
+           "type": "string"
+          }
+         },
+         "required": [
+          "field",
+          "answer"
+         ],
+         "type": "object"
+        },
+        "headers": {
+         "properties": {
+          "Content-Type": {
+           "default": "application/json",
+           "type": "string"
+          }
+         },
+         "type": "object"
+        },
+        "method": {
+         "default": "POST",
+         "type": "string"
+        },
+        "url": {
+         "default": "https://freya-bank-mock.freyavoice.workers.dev/v1/verify_identity",
+         "type": "string"
+        }
+       },
+       "type": "object"
+      }
+     },
+     "post_process_code": "try:\n    if isinstance(result, dict):\n        result.pop('header', None)\n        d = result.get('data')\n        if isinstance(d, dict):\n            msg = 'This answer is wrong. Do not say what the right answer is. Ask the same question again.'\n            if str(d.get('all_verified')).lower() == 'true':\n                msg = 'All security answers are verified. Say nothing now; the call continues automatically.'\n            elif (str(d.get('ok')).lower() == 'false') and (not str(d.get('hint') or '').strip()):\n                msg = 'The answer could not be read, so it was not checked and does not count as a wrong answer. Ask for the same answer again, complete and said clearly in the same format.'\n            elif str(d.get('hint') or '') == 'day_month_swapped':\n                msg = 'Ask the customer to say the month as a word. This does not count as a wrong answer.'\n            elif str(d.get('verified')).lower() == 'true':\n                msg = 'This answer is correct. Now ask the next security question that has not been answered yet.'\n            elif str(d.get('wrong_answers_left')) in ('0', '0.0'):\n                msg = 'Three wrong answers: the identity check has ended. Please use the mobile app or a branch. Say \"Please use the mobile app or a branch.\", then say goodbye and call close_call with outcome \"not_verified\" and reason \"failed\".'\n            if msg:\n                d['what_to_do_next'] = msg\n        elif result.get('status') != 'success':\n            result['what_to_do_next'] = 'The check service failed. Ask the same question again.'\nexcept Exception:\n    pass\n",
+     "pre_process_code": "try:\n    b = config.get('body')\n    if isinstance(b, dict):\n        kinds = dict([('date_of_birth', 'date_iso'), ('phone_last4', 'digits')])\n        sizes = dict([('phone_last4', 4)])\n        which = str(b.get('field') or '')\n        kind = kinds.get(which, '')\n        a = str(b.get('answer') or '').strip()\n        if a and kind == 'date_iso':\n            parts = ''.join(c if c.isdigit() else ' ' for c in a).split()\n            if len(parts) > 3 and len(parts) % 3 == 0:\n                parts = parts[-3:]\n            if len(parts) == 3 and len(parts[0]) == 4:\n                a = parts[0] + '-' + parts[1].zfill(2) + '-' + parts[2].zfill(2)\n            elif len(parts) == 3 and len(parts[2]) == 4:\n                a = parts[2] + '-' + parts[1].zfill(2) + '-' + parts[0].zfill(2)\n        elif a and kind in ('digits', 'year'):\n            n = int(sizes.get(which) or (4 if kind == 'year' else 0))\n            groups = ''.join(c if c.isdigit() else ' ' for c in a).split()\n            tokens = ''.join(c if c.isalnum() else ' ' for c in a).split()\n            joined = ''.join(groups)\n            lettered = len([c for c in a if c.isalpha()]) > 0\n            fit = [g for g in groups if len(g) == n]\n            if kind == 'digits' and len(tokens) == 1 and lettered and groups:\n                a = tokens[0].upper()\n            elif joined and n and len(joined) == n:\n                a = joined\n            elif fit:\n                a = fit[-1]\n            elif joined and not n and not lettered:\n                a = joined\n        elif a and kind == 'postcode':\n            a = ' '.join(a.upper().split()).strip('.,')\n        if a:\n            b['answer'] = a\nexcept Exception:\n    pass\n",
+     "type": "function"
+    },
+    {
+     "config": {
+      "maxRetries": 0,
+      "timeoutMs": 12000
+     },
+     "function": {
+      "description": "Book a callback for the customer. CALL it only when the person gave a day and time inside the allowed callback times.",
+      "handler": "__function__:api_call",
+      "name": "schedule_callback",
+      "parameters": {
+       "properties": {
+        "body": {
+         "properties": {
+          "customer_id": {
+           "default": "{{customer_id}}",
+           "type": "string"
+          },
+          "date": {
+           "default": "{{date}}",
+           "description": "Format YYYY-MM-DD.",
+           "type": "string"
+          },
+          "time": {
+           "default": "{{time}}",
+           "description": "HH:MM",
+           "type": "string"
+          }
+         },
+         "required": [
+          "date",
+          "time"
+         ],
+         "type": "object"
+        },
+        "headers": {
+         "properties": {
+          "Content-Type": {
+           "default": "application/json",
+           "type": "string"
+          }
+         },
+         "type": "object"
+        },
+        "method": {
+         "default": "POST",
+         "type": "string"
+        },
+        "url": {
+         "default": "https://freya-bank-mock.freyavoice.workers.dev/v1/schedule_callback",
+         "type": "string"
+        }
+       },
+       "type": "object"
+      }
+     },
+     "post_process_code": "try:\n    if isinstance(result, dict):\n        d = result.get('data')\n        if not isinstance(d, dict):\n            d = dict()\n        if str(result.get('status') or '').lower() == 'success' and ((str(result.get('status')) == 'success') and (str(d.get('ok')).lower() == 'true')):\n            vars['callback_acks'] = str(int(float(vars.get('callback_acks') or 0)) + 1)\n            vars['callback_acked'] = 'yes'\nexcept Exception:\n    pass\ntry:\n    if isinstance(result, dict):\n        result.pop('header', None)\n        d = result.get('data')\n        if isinstance(d, dict):\n            msg = 'The callback was NOT booked. Do not say it is booked. Check the date and time against the allowed callback times and ask again.'\n            if str(d.get('ok')).lower() == 'true':\n                msg = 'The callback is booked. Say goodbye and finish the call as instructed.'\n            if msg:\n                d['what_to_do_next'] = msg\n        elif result.get('status') != 'success':\n            result['what_to_do_next'] = 'The callback was NOT booked (service error). Try once more with the same values.'\nexcept Exception:\n    pass\n",
+     "pre_process_code": "try:\n    b = config.get('body')\n    if isinstance(b, dict):\n        v = str(b.get('date') or '').strip()\n        w = v[:10]\n        if len(w) == 10 and w[4] == '-' and w[7] == '-' and (w[:4] + w[5:7] + w[8:]).isdigit():\n            b['date'] = w\n        elif v:\n            parts = ''.join(c if c.isdigit() else ' ' for c in v).split()\n            if len(parts) == 3 and len(parts[0]) == 4 and len(parts[1]) <= 2 and len(parts[2]) <= 2:\n                b['date'] = parts[0] + '-' + parts[1].zfill(2) + '-' + parts[2].zfill(2)\n            elif len(parts) == 3 and len(parts[2]) == 4 and len(parts[0]) <= 2 and len(parts[1]) <= 2 and not [c for c in v if c.isalpha()]:\n                b['date'] = parts[2] + '-' + parts[1].zfill(2) + '-' + parts[0].zfill(2)\n        v = ''.join(str(b.get('time') or '').strip().lower().split())\n        mer = ''\n        for m in ('a.m.', 'p.m.', 'a.m', 'p.m', 'am', 'pm'):\n            if v.endswith(m) and len(v) > len(m):\n                mer = m[0]\n                v = v[:-len(m)]\n                break\n        v = v.replace('.', ':').replace('h', ':').rstrip(':')\n        parts = v.split(':')\n        hh = -1\n        mm = -1\n        if len(parts) == 1 and parts[0].isdigit() and len(parts[0]) <= 2:\n            hh = int(parts[0])\n            mm = 0\n        elif len(parts) == 1 and parts[0].isdigit() and len(parts[0]) in (3, 4):\n            hh = int(parts[0][:-2])\n            mm = int(parts[0][-2:])\n        elif len(parts) in (2, 3) and parts[0].isdigit() and len(parts[0]) <= 2 and parts[1].isdigit() and len(parts[1]) == 2 and (len(parts) == 2 or parts[2].isdigit()):\n            hh = int(parts[0])\n            mm = int(parts[1])\n        if mer and 1 <= hh <= 12:\n            hh = hh % 12 + (12 if mer == 'p' else 0)\n        elif mer:\n            hh = -1\n        if 0 <= hh <= 23 and 0 <= mm <= 59:\n            b['time'] = '%02d:%02d' % (hh, mm)\nexcept Exception:\n    pass\ntry:\n    slots = [s.split('|') for s in str(vars.get('callback_slots') or '').split(';') if s.count('|') >= 4]\n    b = config.get('body')\n    if slots and isinstance(b, dict):\n        dt = str(b.get('date') or '').strip()[:10]\n        tm = str(b.get('time') or '').strip()\n        why = ''\n        days = [s for s in slots if s[0] == dt]\n        shaped = len(tm) == 5 and tm[2] == ':' and tm[:2].isdigit() and tm[3:].isdigit()\n        if not (shaped and int(tm[:2]) <= 23 and int(tm[3:]) <= 59):\n            why = 'the time ' + tm + ' is not a time of day'\n        elif not days:\n            why = 'a callback cannot be booked on ' + dt\n        else:\n            s = days[0]\n            low_ok = tm > s[1] if s[2] == '1' else tm >= s[1]\n            high_ok = tm <= s[3] if s[4] == '1' else tm < s[3]\n            if not (low_ok and high_ok):\n                why = 'the time ' + tm + ' on ' + dt + ' is outside the allowed callback times'\n        if why:\n            vars['callback_guard'] = 'blocked: ' + why\n            vars['callback_guard_blocks'] = str(int(float(vars.get('callback_guard_blocks') or 0)) + 1)\n            if int(vars['callback_guard_blocks']) > 1:\n                vars['callback_guard_stop'] = 'yes'\n            said = []\n            for s in slots:\n                day = s[5] if len(s) > 5 and s[5] else s[0]\n                said.append(day + (' after ' if s[2] == '1' else ' from ') + s[1] + ' to ' + s[3])\n            vars['callback_guard_say'] = 'I am sorry, I cannot book a callback at that time. I can book one ' + ' or '.join(said) + '. Which time would suit?'\n            config['url'] = ''\n        else:\n            vars['callback_guard'] = 'ok'\nexcept Exception:\n    pass\n",
+     "type": "function"
+    },
+    {
+     "config": {
+      "maxRetries": 1,
+      "timeoutMs": 12000
+     },
+     "function": {
+      "description": "Transfer the call to a queue. CALL it only when the instructions say to transfer, with the named queue.",
+      "handler": "__function__:api_call",
+      "name": "transfer_to_agent",
+      "parameters": {
+       "properties": {
+        "body": {
+         "properties": {
+          "customer_id": {
+           "default": "{{customer_id}}",
+           "type": "string"
+          },
+          "queue": {
+           "default": "{{queue}}",
+           "description": "Team that takes over. One of: restructuring, general, support.",
+           "enum": [
+            "restructuring",
+            "general",
+            "support"
+           ],
+           "type": "string"
+          }
+         },
+         "required": [
+          "queue"
+         ],
+         "type": "object"
+        },
+        "headers": {
+         "properties": {
+          "Content-Type": {
+           "default": "application/json",
+           "type": "string"
+          }
+         },
+         "type": "object"
+        },
+        "method": {
+         "default": "POST",
+         "type": "string"
+        },
+        "url": {
+         "default": "https://freya-bank-mock.freyavoice.workers.dev/v1/transfer_to_agent",
+         "type": "string"
+        }
+       },
+       "type": "object"
+      }
+     },
+     "post_process_code": "try:\n    if isinstance(result, dict):\n        result.pop('header', None)\n        d = result.get('data')\n        if isinstance(d, dict):\n            msg = 'The transfer failed. Say so briefly and close the call as instructed.'\n            if str(d.get('ok')).lower() == 'true':\n                msg = 'The transfer is done. Now close the call as instructed.'\n            if msg:\n                d['what_to_do_next'] = msg\n        elif result.get('status') != 'success':\n            result['what_to_do_next'] = 'The transfer failed. Say so briefly and close the call as instructed.'\nexcept Exception:\n    pass\n",
+     "type": "function"
+    },
+    {
+     "config": {
+      "maxRetries": 1,
+      "timeoutMs": 12000
+     },
+     "function": {
+      "description": "Close the call. CALL it exactly once, as your LAST tool call, after you said goodbye, with the outcome and (where the table lists one) the reason.",
+      "handler": "__function__:api_call",
+      "name": "close_call",
+      "parameters": {
+       "properties": {
+        "body": {
+         "properties": {
+          "customer_id": {
+           "default": "{{customer_id}}",
+           "type": "string"
+          },
+          "outcome": {
+           "default": "{{outcome}}",
+           "description": "One of: promise, paid, transferred, no_promise, not_verified, not_reached.",
+           "enum": [
+            "promise",
+            "paid",
+            "transferred",
+            "no_promise",
+            "not_verified",
+            "not_reached"
+           ],
+           "type": "string"
+          },
+          "reason": {
+           "default": "{{reason}}",
+           "description": "Required for every outcome except promise and paid. See the table in the brief.",
+           "type": "string"
+          }
+         },
+         "required": [
+          "outcome"
+         ],
+         "type": "object"
+        },
+        "headers": {
+         "properties": {
+          "Content-Type": {
+           "default": "application/json",
+           "type": "string"
+          }
+         },
+         "type": "object"
+        },
+        "method": {
+         "default": "POST",
+         "type": "string"
+        },
+        "url": {
+         "default": "https://freya-bank-mock.freyavoice.workers.dev/v1/close_call",
+         "type": "string"
+        }
+       },
+       "type": "object"
+      }
+     },
+     "post_process_code": "try:\n    if isinstance(result, dict):\n        result.pop('header', None)\n        d = result.get('data')\n        if isinstance(d, dict):\n            msg = 'Closing failed. Call close_call once more with the same values.'\n            if str(d.get('ok')).lower() == 'true':\n                msg = 'The call is closed. Say nothing more.'\n            if msg:\n                d['what_to_do_next'] = msg\n        elif result.get('status') != 'success':\n            result['what_to_do_next'] = 'Closing failed. Call close_call once more with the same values.'\nexcept Exception:\n    pass\n",
+     "type": "function"
+    }
+   ],
+   "transitions": [
+    {
+     "condition": {
+      "conditions": [
+       {
+        "operand": "true",
+        "operator": "equals",
+        "variable": "verify_identity_response.data.all_verified"
+       },
+       {
+        "operand": "True",
+        "operator": "equals",
+        "variable": "verify_identity_response.data.all_verified"
+       }
+      ],
+      "logic": "or"
+     },
+     "description": "All security answers verified",
+     "target_node": "load_account"
+    },
+    {
+     "condition": {
+      "conditions": [
+       {
+        "operand": 0,
+        "operator": "greater_than",
+        "variable": "close_call_success_count"
+       }
+      ],
+      "logic": "or"
+     },
+     "description": "The call is closed",
+     "target_node": "hangup"
+    }
+   ]
+  },
+  "hangup": {
+   "disable_inactivity_monitor": true,
+   "name": "hangup",
+   "node_type": "end_call",
+   "on_enter": {
+    "type": "silent"
+   },
+   "terminal": {
+    "function": {
+     "handler": "__function__:end_call",
+     "name": "call_closed",
+     "parameters": {
+      "properties": {
+       "message_mode": {
+        "default": "none",
+        "type": "string"
+       }
+      },
+      "type": "object"
+     }
+    },
+    "type": "function"
+   },
+   "transitions": []
+  },
+  "load_account": {
+   "disable_inactivity_monitor": true,
+   "name": "load_account",
+   "node_type": "api_request",
+   "on_enter": {
+    "type": "silent"
+   },
+   "passthrough": true,
+   "passthrough_default_transition": "account_facts",
+   "pre_actions": [
+    {
+     "config": {
+      "maxRetries": 2,
+      "timeoutMs": 12000
+     },
+     "function": {
+      "description": "The late products. Refused until both questions are passed.",
+      "handler": "__function__:api_call",
+      "name": "get_account",
+      "parameters": {
+       "properties": {
+        "body": {
+         "properties": {
+          "customer_id": {
+           "default": "{{customer_id}}",
+           "type": "string"
+          }
+         },
+         "required": [],
+         "type": "object"
+        },
+        "headers": {
+         "properties": {
+          "Content-Type": {
+           "default": "application/json",
+           "type": "string"
+          }
+         },
+         "type": "object"
+        },
+        "method": {
+         "default": "POST",
+         "type": "string"
+        },
+        "url": {
+         "default": "https://freya-bank-mock.freyavoice.workers.dev/v1/get_account",
+         "type": "string"
+        }
+       },
+       "type": "object"
+      }
+     },
+     "type": "function"
+    }
+   ],
+   "response_mapping": [
+    {
+     "path": "data.products",
+     "variable": "products"
+    }
+   ],
+   "transitions": [
+    {
+     "condition": {
+      "operator": "always"
+     },
+     "description": "always",
+     "target_node": "account_facts"
+    }
+   ]
+  },
+  "negotiate": {
+   "max_node_turns": 60,
+   "max_turn_transition": "hangup",
+   "name": "negotiate",
+   "node_type": "conversation",
+   "on_enter": {
+    "text": "{{debt_statement}}",
+    "type": "tts"
+   },
+   "on_enter_first_entry_only": true,
+   "task_message": "The customer is verified. Facts computed by the system - use them exactly and never calculate dates or amounts yourself:\n{{account_facts}}\n\nDATE TABLE - turn what the customer says into a date with it. \"This <weekday>\" is the one marked [this week]; \"next <weekday>\" is the one marked [next week]. A weekday is an exact day: never ask for its date:\n{{date_table}}\n\nGETTING THE PROMISE [A-19, A-20a, A-20b, A-21a, +8] [A-24a, A-24b, A-24c, A-25, +7] [A-26d, A-29a, A-29b, A-30a, +10]\n1. You already stated the debt and asked: \"Can you make this payment today?\" Ask for the full past-due amount first. Never ask how much they can pay: you propose every amount.\n2. A date or an amount the customer proposes is never a refusal: use rules 3 and 4.\n3. Dates. A promise date must be one of the product's allowed promise dates (today or later, a business day, not after its deadline).\n   - A weekend day or bank holiday that is not after the deadline: offer the next business day instead (the DATE TABLE names it). This is NOT the after-deadline case.\n   - A vague period (\"next week\", \"end of the month\"): ask once for the exact day; handle a day they then name like any named day. Only if they name none, propose the deadline.\n   - A date after the deadline: say the latest date you can record is the deadline and offer it for the SAME amount (the full past-due amount unless a lower amount was already agreed). Moving the date is not a persuasion attempt and must not lower the amount. If they refuse the deadline, that is a flat refusal (rule 5).\n4. Amounts. If they say the full amount is too much: offer the floor once, using the product's floor-offer sentence word for word (it is in LATE PRODUCTS). If they refuse the floor: flat refusal (rule 5). An amount they propose from the floor up to the full amount (both included) is accepted. Below the floor: say \"That amount cannot be recorded. I can offer the {floor_label} of {floor_amount}.\" and offer the floor once; if they do not accept it: flat refusal. A product without a floor can only be offered its full amount.\n5. A flat refusal or a non-answer uses one persuasion attempt (\"no\" to paying today with no date and no amount is a flat refusal). Make the product's attempts exactly as scripted in LATE PRODUCTS, in order, one per refusal, never more or fewer. When the attempts are used up, stop: do not repeat an offer they refused. Note the reason \"refused\" for that product (do not call add_note yet) and continue with the next product (rule B8 closes the call).\n\nOTHER THINGS CUSTOMERS SAY (the first matching bullet wins)\n- Mentions illness, a death in the family, or job loss: Say one short sentence of sympathy and make no persuasion attempt. Offer to connect them with the customer support team. Make this offer only once. Make no other offer of any kind (no other transfer, plan or discount) unless the customer explicitly asks for it. If they accept or insist (yes, or any clear agreement): say you will transfer them, say goodbye and call transfer_to_agent with queue \"support\", then close_call with outcome \"transferred\" and reason \"support\". If they clearly decline: do not ask again; add_note reason \"hardship\" for the product (do not call add_note yet - write it only at the very end) and continue. If they ask a question about the offer (for example what it would help with), ask for time, make small talk or say something cut off, it is neither a yes nor a no: answer briefly from the facts you have (say so if you do not know), keep the offer open and wait; do not ask it again. This is not a refusal and not a second offer: do not transfer, add a note or end the call because of it. If the next reply is still neither a clear yes nor a clear no, take it as a decline. Once this applies, it comes before the rules for flat_refusal, restructuring: never make a persuasion attempt and never transfer the customer to the restructuring team in this call. [A-32a, A-32b, A-32c, A-32d, +4]\n- Requests a new payment plan or lower instalments: Do not describe a plan. Say you will transfer them, say goodbye and call transfer_to_agent with queue \"restructuring\", then close_call with outcome \"transferred\" and reason \"restructuring\". A request for a discount or a waiver is not a request for this: say you cannot offer one. [A-41a, A-41b, A-41c, B-10a, +4]\n- Says the past-due amount has already been paid: Payments can take one business day to appear. Take no promise for that product and continue with the others. Take no promise for this product; add_note reason \"paid\" (do not call add_note yet - write it only at the very end); continue with the others. [A-39a, A-39b, A-39c, A-40e, +3]\n- Denies owing the debt or having the product, or says the account was closed or paid off in the past: Do not argue and do not take a promise for that product; continue with the others. Take no promise for this product; add_note reason \"dispute\" (do not call add_note yet - write it only at the very end); continue with the others. [A-40a, A-40b, A-40c, A-40d, +4]\n- Requests to speak to a person instead of the assistant: Act only when the person says this twice; before that follow the other rules. Ask once whether you can help first. If they insist: say you will transfer them, say goodbye and call transfer_to_agent with queue \"general\", then close_call with outcome \"transferred\" and reason \"human\". If they let you help, go on; do not offer it again. [A-42a, A-42b, A-42c, A-45c, +1]\n- Says they do not want to talk or wants the call to end: Act only when the person says this twice; before that follow the other rules. Take no promise for this product or for any product not handled yet (a refusal to pay is not this). Call add_note once for each product without a promise - with the reason already remembered for it, else reason \"refused\" - and wait for the results; then, in your next message, thank them, say goodbye and call close_call with outcome \"no_promise\" and reason \"refused\". [A-45a, A-45b]\n\nSEVERAL PRODUCTS [B-APPLIES, B-1a, B-1b, B-2, +22] (when LATE PRODUCTS lists more than one)\nB1. You already stated every late product, one sentence each, and asked: \"Can you pay all of them today?\"\nB2. If not all today, go through the products one by one in the listed order. Do not ask about today again for each product. Start each product at attempt 1. Persuasion attempts are counted per product, with each product's own deadline. Even if the customer already said they will not pay a product, still make every scripted attempt for that product, one at a time, before you note it as refused.\nB3. If the customer names one date for everything and it is after one product's deadline, record that product on its own deadline and say so in the read-back; the other products keep the date the customer named. B3 comes before B2: that product gets its deadline, not an attempt-1 date, and is not a refusal.\nB4. When EVERY product is agreed or refused: read back all agreed promises together in ONE message (the product, the amount and the date of each, and any date moved to a deadline) and ask \"Do you confirm?\" once. After the yes, call create_promise for each agreed product, one call at a time, without asking again in between. If they change one, check it and read all of them back again.\nB5. The customer may promise some products and refuse others. For EACH product without a promise remember its reason (refused, hardship, dispute, paid, service_error). Call add_note only at the very end, when every product is handled and the call is not being transferred: once for each product without a promise, with that product_id and its reason. This also applies when no product gets a promise.\nB6. A transfer ends the call. Promises already recorded stay; promises agreed but not yet recorded are not recorded. On any transfer add no notes at all.\nB7. If create_promise fails twice for one product, keep the recorded ones and remember the reason \"service_error\" for the failed product (do not call add_note yet).\nB8. Close: when every product is handled and the customer did not ask for a transfer, first call add_note for each product without a promise and wait for the results; then, in your next message, thank them, say goodbye and: if at least one promise was recorded, call close_call with outcome \"promise\"; otherwise call close_call with outcome \"no_promise\" and reason \"refused\" (the system computes the outcome from the notes).\n\nCONFIRMING AND RECORDING [A-34a, A-35a, A-35b, B-6a, +2] [A-34b, A-36a, A-36b, A-36c, +9]\n8. Read back only as in B4: once, for all products together, and ask exactly \"Do you confirm?\". Call create_promise only after a clear yes. If they change the date or the amount, check it with rules 3 and 4 and read back again.\n9. create_promise takes the product_id from LATE PRODUCTS, the amount as a number and the date as YYYY-MM-DD. Say the promise is recorded only after the result says it is recorded. Then say exactly: \"You will receive a text message confirming this promise.\"\n   If it fails, call it once more with the same values. If it fails again, say \"I could not record it.\", then remember the reason \"service_error\" for that product (do not call add_note yet) and continue with the next product (rule B7).\n10. One promise per product. A recorded promise cannot be changed or cancelled in this call; if asked, say \"You can change it in the mobile app.\"\n11. After a promise is recorded, call create_promise for the next product of the joint read-back at once. Say that the promises are recorded and the sentence above once, after the last one. Only when every product is handled, follow B8 to thank the customer, say goodbye and close.\n\nOTHER BRIEF RULES (verbatim)\n- [A-14a] Do not state the debt after three wrong answers.\n- [A-15d] A second refusal or a second question asking what the call is about instead of answering closes the call.\n- [A-16] Call get_account after both security questions pass.\n- [A-17a] Say that you are calling from the collections team about a late payment.\n- [A-17b] Name the product in words as \"credit card ending 4821\", \"personal loan\" or \"car loan\". Amended by [B-2] State every late product, one sentence each, before asking for anything. Where they differ, the amendment applies.\n- [A-17c] State the past-due amount and how many days late it is. Amended by [B-2] State every late product, one sentence each, before asking for anything. Where they differ, the amendment applies.\n- [A-20b] Apply rule 23 if the named day is after the deadline.\n- [A-21a] Ask once for the exact day when the customer gives a vague period such as \"next week\", \"end of the month\", or \"when my salary comes\".\n- [A-23a] Tell the customer that the latest date you can record is the deadline and offer the deadline when they ask for a date after it.\n- [A-24c] The agent proposes every amount.\n- [A-26c] Treat a customer's refusal of the floor as a flat refusal under rule 30.\n- [A-27c] Treat a customer's failure to accept the floor as a flat refusal under rule 30.\n- [A-29a] Never treat a date or amount the customer proposes as a refusal.\n- [A-29b] Handle a date or amount proposed by the customer under sections 7 and 8.\n- [A-30b] A no to paying today with no date and no amount is a flat refusal.\n- [A-30c] Use the full past-due amount for Attempt 1, or use the floor if the customer already said the full amount is too much.\n- [A-31b] Do not repeat an offer the customer already refused.\n- [A-32f] If the customer still names a date or an amount themselves, record the promise under sections 7 and 8.\n- [A-34b] Call create_promise only after a clear yes, except that under the multi-product workflow one confirmation applies to all promises. Amended by [B-10c] Promises agreed but not yet recorded are not recorded. Where they differ, the amendment applies.\n- [A-36b] Do not change or cancel a recorded promise in the same call.\n- [A-37a] Say the promise is recorded only after create_promise returns ok: true.\n- [A-39b] When the customer says \"I already paid\", take no promise for that product.\n- [A-40a] Do not argue when the customer says \"This debt is not mine\" or \"I never had this product\".\n- [A-40b] Do not take a promise when the customer says \"This debt is not mine\" or \"I never had this product\".\n- [A-41a] Do not describe a plan when the customer requests a new payment plan or lower instalments.\n- [A-46a] End every call with exactly one close_call with an outcome and, where the table lists one, a reason.\n- [A-46b] Make close_call the last tool call.\n- [A-TRANSFER-PROMISE] If a transfer follows a recorded promise, close as transferred with that transfer's reason.\n- [B-4b] If the customer cannot pay all products today, go through the products one by one in the order get_account returned them.\n- [B-4c] Do not ask about today again for each product.\n- [B-6a] If the customer names one date for everything and it is after one product's deadline, record that product on its own deadline and say so in the read-back.\n- [B-6b] Keep the date the customer named for the other products.\n- [B-8a] Allow the customer to promise some products and refuse others.\n- [B-8b] For each product without a promise, call add_note with that product_id and a reason of refused, hardship, dispute, paid or service_error, unless a transfer occurs. Amended by [B-10e] On any transfer (restructuring, support, human) add no notes at all, before or after it. Where they differ, the amendment applies.\n- [B-8c] Call add_note for each product without a promise even when no product gets a promise, unless a transfer occurs. Amended by [B-10e] On any transfer (restructuring, support, human) add no notes at all, before or after it. Where they differ, the amendment applies.\n- [B-9a] Do not end the call for a dispute or an \"already paid\" claim on one product.\n- [B-9b] Add a dispute note for a disputed product and a paid note for an already-paid product, then continue with the other products, unless a transfer occurs. Amended by [B-10e] On any transfer (restructuring, support, human) add no notes at all, before or after it. Where they differ, the amendment applies.\n- [B-10b] Keep promises recorded before a restructuring request.\n- [B-10c] Do not record promises agreed but not yet recorded when there is a restructuring request.\n- [B-10e] On any transfer (restructuring, support, human), add no notes at all before or after it.\n- [B-11a] If one create_promise fails twice, keep the promises that were recorded.\n- [B-11b] If one create_promise fails twice, call add_note with reason service_error for the failed product, unless a transfer occurs. Amended by [B-10e] On any transfer (restructuring, support, human) add no notes at all, before or after it. Where they differ, the amendment applies.\n\nCLOSING THE CALL\nEvery call ends with exactly one close_call, as the LAST tool call, after you said goodbye (\"Thank you and goodbye.\"). Choose the outcome and the reason from this table; when several rows fit, the first one in the list wins:\n- A restructuring request transfers the call (identity verified): outcome \"transferred\" and reason \"restructuring\"\n- The customer accepts connection with customer support (identity verified): outcome \"transferred\" and reason \"support\"\n- The customer insists on a human: outcome \"transferred\" and reason \"human\"\n- at least one promise was recorded (identity verified): outcome \"promise\"\n- After three wrong answers (identity not verified): outcome \"not_verified\" and reason \"failed\"\n- After a second refusal or a second question asking what the call is about instead of answering (identity not verified): outcome \"not_verified\" and reason \"declined\"\n- The person says the number does not belong to the customer (identity not verified): outcome \"not_reached\" and reason \"wrong_number\"\n- The person says the customer has died (identity not verified): outcome \"not_reached\" and reason \"deceased\"\n- A callback was scheduled (identity not verified): outcome \"not_reached\" and reason \"callback\"\n- The second offered callback day or time is outside the callback window (identity not verified): outcome \"not_reached\" and reason \"no_callback\"\n- It is still unclear after the second ask (identity not verified): outcome \"not_reached\" and reason \"unclear\"\n- With no promise recorded, every product is noted paid (identity verified): outcome \"paid\"\n- With no promise recorded, the first product in get_account order whose note is not paid has reason refused (identity verified): outcome \"no_promise\" and reason \"refused\"\n- With no promise recorded, the first product in get_account order whose note is not paid has reason hardship (identity verified): outcome \"no_promise\" and reason \"hardship\"\n- With no promise recorded, the first product in get_account order whose note is not paid has reason dispute (identity verified): outcome \"no_promise\" and reason \"dispute\"\n- With no promise recorded, the first product in get_account order whose note is not paid has reason service_error (identity verified): outcome \"no_promise\" and reason \"service_error\"\n- refuse to talk: outcome \"no_promise\" and reason \"refused\"\n- recording failed: outcome \"no_promise\" and reason \"service_error\"\nIf a transfer follows a recorded promise, close with outcome \"transferred\" and the reason of that transfer.\nWith several products and no recorded promise: close with the reason of the first product (in the listed order) whose note is not \"paid\"; if every note is \"paid\", use outcome \"paid\".\nAfter close_call succeeded, say nothing more.",
+   "tools": [
+    {
+     "config": {
+      "maxRetries": 0,
+      "timeoutMs": 12000
+     },
+     "function": {
+      "description": "Record ONE payment promise for ONE product. CALL it only after the one joint read-back of every agreed promise (product, amount, date) and the customer's clear yes; then call it for each agreed product, one call at a time.",
+      "handler": "__function__:api_call",
+      "name": "create_promise",
+      "parameters": {
+       "properties": {
+        "body": {
+         "properties": {
+          "amount": {
+           "default": "{{amount}}",
+           "description": "Promised amount as a number with 2 decimals.",
+           "type": "number"
+          },
+          "customer_id": {
+           "default": "{{customer_id}}",
+           "type": "string"
+          },
+          "date": {
+           "default": "{{date}}",
+           "description": "Promise date YYYY-MM-DD, one of the product's allowed promise dates.",
+           "type": "string"
+          },
+          "product_id": {
+           "default": "{{product_id}}",
+           "description": "The product id exactly as listed in LATE PRODUCTS.",
+           "type": "string"
+          }
+         },
+         "required": [
+          "product_id",
+          "amount",
+          "date"
+         ],
+         "type": "object"
+        },
+        "headers": {
+         "properties": {
+          "Content-Type": {
+           "default": "application/json",
+           "type": "string"
+          }
+         },
+         "type": "object"
+        },
+        "method": {
+         "default": "POST",
+         "type": "string"
+        },
+        "url": {
+         "default": "https://freya-bank-mock.freyavoice.workers.dev/v1/create_promise",
+         "type": "string"
+        }
+       },
+       "type": "object"
+      }
+     },
+     "post_process_code": "try:\n    if isinstance(result, dict):\n        d = result.get('data')\n        if not isinstance(d, dict):\n            d = dict()\n        vars['promise_batch_open'] = '0'\n        staged = [k for k in str(vars.get('promise_pending_product') or '').split(',') if k]\n        if str(result.get('status') or '').lower() == 'success' and ((str(result.get('status')) == 'success') and (str(d.get('ok')).lower() == 'true')):\n            vars['promise_acks'] = str(int(float(vars.get('promise_acks') or 0)) + 1)\n            vars['promise_acked'] = 'yes'\n            got = int(float(vars.get('promise_batch_acks') or 0)) + 1\n            vars['promise_batch_acks'] = str(got)\n            if staged and got >= len(staged) and int(float(vars.get('promise_batch_nacks') or 0)) == 0:\n                keys = [k for k in staged]\n                kept = [k for k in str(vars.get('promise_batch_held') or '').split(',') if k]\n                add = list(staged)\n                if kept and len([k for k in kept if k in keys]) >= int(float(vars.get('promise_batch_held_missing') or 1)):\n                    add = add + [k for k in kept if k not in keys]\n                    vars['promise_batch_held'] = ''\n                    vars['promise_batch_held_missing'] = '0'\n                done = [k for k in str(vars.get('promised_products') or '').split(',') if k]\n                for k in add:\n                    if k != '?' and k not in done:\n                        done.append(k)\n                vars['promised_products'] = ','.join(done)\n                vars['promise_pending_product'] = ''\n                vars['promise_batch_acks'] = '0'\n        else:\n            vars['promise_batch_nacks'] = str(int(float(vars.get('promise_batch_nacks') or 0)) + 1)\nexcept Exception:\n    pass\ntry:\n    if isinstance(result, dict):\n        result.pop('header', None)\n        d = result.get('data')\n        if isinstance(d, dict):\n            msg = 'The promise was NOT recorded. Never say it is recorded. If this is the first failure for this product, call create_promise once more with exactly the same values now. If it already failed once before, say \"I could not record it.\", then remember the reason \"service_error\" for that product (do not call add_note yet) and continue with the next product (rule B7).'\n            if (str(result.get('status')) == 'success') and (str(d.get('ok')).lower() == 'true'):\n                msg = 'The promise IS recorded. If this was the only product, say nothing: the system confirms it. If the customer confirmed other products in the same read-back that are not recorded yet, call create_promise for the next one now, without asking again. Once all of them are recorded, tell the customer they are recorded, say exactly: \"You will receive a text message confirming this promise.\" once, then continue with any product not handled yet, or close the call if every product is handled.'\n            if msg:\n                d['what_to_do_next'] = msg\n        elif 'url' in str(result.get('message') or result.get('error') or '').lower():\n            result['what_to_do_next'] = 'The promise was NOT recorded: the date or amount is not allowed for this product. Do not say it is recorded. Offer an allowed date (for a date after the deadline, offer the deadline for the same amount) or an amount from the floor to the full amount, read back and ask again.'\n        elif result.get('status') != 'success':\n            result['what_to_do_next'] = 'The promise was NOT recorded. Never say it is recorded. If this is the first failure for this product, call create_promise once more with exactly the same values now. If it already failed once before, say \"I could not record it.\", then remember the reason \"service_error\" for that product (do not call add_note yet) and continue with the next product (rule B7).'\nexcept Exception:\n    pass\n",
+     "pre_process_code": "try:\n    b = config.get('body')\n    if isinstance(b, dict):\n        v = str(b.get('product_id') or '').strip().replace(' ', '')\n        if v:\n            ids = [x for x in str(vars.get('product_ids') or '').split(',') if x]\n            low = ''.join(c for c in v.lower() if c.isalnum())\n            hit = v if v in ids else ''\n            if not hit:\n                same = [x for x in ids if ''.join(c for c in x.lower() if c.isalnum()) == low]\n                if len(same) == 1:\n                    hit = same[0]\n                elif not same:\n                    same = [x for x in ids if ''.join(c for c in x.lower() if c.isalnum()).lstrip('abcdefghijklmnopqrstuvwxyz') == low]\n                    hit = same[0] if len(same) == 1 else ''\n            b['product_id'] = hit or v\n        x = b.get('amount')\n        c = None\n        if x is not None and not isinstance(x, bool):\n            if isinstance(x, int):\n                c = x * 100\n            else:\n                s = repr(x) if isinstance(x, float) else str(x)\n                if isinstance(x, float) and ('e' in s or 'E' in s):\n                    s = '%.6f' % x\n                keep = ''.join(ch for ch in s if ch in '0123456789.,-')\n                neg = keep.startswith('-')\n                if neg:\n                    keep = keep[1:]\n                if '-' not in keep and any(ch in '0123456789' for ch in keep):\n                    if ',' in keep and '.' in keep:\n                        if keep.rfind(',') > keep.rfind('.'):\n                            keep = keep.replace('.', '').replace(',', '.')\n                        else:\n                            keep = keep.replace(',', '')\n                    elif ',' in keep:\n                        tail = keep.rsplit(',', 1)[1]\n                        if keep.count(',') == 1 and 1 <= len(tail) <= 2:\n                            keep = keep.replace(',', '.')\n                        else:\n                            keep = keep.replace(',', '')\n                    elif keep.count('.') > 1:\n                        keep = keep.replace('.', '')\n                    if ',' not in keep and keep.count('.') <= 1:\n                        whole, dot, frac = keep.partition('.')\n                        c = int(whole or '0') * 100 + int((frac + '00')[:2])\n                        if len(frac) > 2 and frac[2] >= '5':\n                            c += 1\n                        if neg:\n                            c = -c\n        if c is not None:\n            b['amount'] = c / 100.0\n        v = str(b.get('date') or '').strip()\n        w = v[:10]\n        if len(w) == 10 and w[4] == '-' and w[7] == '-' and (w[:4] + w[5:7] + w[8:]).isdigit():\n            b['date'] = w\n        elif v:\n            parts = ''.join(c if c.isdigit() else ' ' for c in v).split()\n            if len(parts) == 3 and len(parts[0]) == 4 and len(parts[1]) <= 2 and len(parts[2]) <= 2:\n                b['date'] = parts[0] + '-' + parts[1].zfill(2) + '-' + parts[2].zfill(2)\n            elif len(parts) == 3 and len(parts[2]) == 4 and len(parts[0]) <= 2 and len(parts[1]) <= 2 and not [c for c in v if c.isalpha()]:\n                b['date'] = parts[2] + '-' + parts[1].zfill(2) + '-' + parts[0].zfill(2)\nexcept Exception:\n    pass\ntry:\n    import datetime\n    bk = 0\n    try:\n        bk = int(float(vars.get('create_promise_success_count') or 0)) + int(float(vars.get('create_promise_failure_count') or 0)) - int(float(vars.get('promise_guard_blocks') or 0))\n    except Exception:\n        bk = 0\n    if str(vars.get('promise_batch_open') or '') != '1' or bk > int(float(vars.get('promise_batch_key') or 0)):\n        old = [k for k in str(vars.get('promise_pending_product') or '').split(',') if k]\n        got = int(float(vars.get('promise_batch_acks') or 0))\n        if old and got < len(old):\n            vars['promise_batch_held'] = ','.join(old)\n            vars['promise_batch_held_missing'] = str(len(old) - got)\n        vars['promise_pending_product'] = ''\n        vars['promise_batch_acks'] = '0'\n        vars['promise_batch_nacks'] = '0'\n        vars['promise_batch_key'] = str(bk)\n    vars['promise_batch_open'] = '1'\n    b = config.get('body')\n    if isinstance(b, dict):\n        pid = str(b.get('product_id') or '').strip()\n        dt = str(b.get('date') or '').strip()[:10]\n        x = b.get('amount')\n        c = None\n        if x is not None and not isinstance(x, bool):\n            if isinstance(x, int):\n                c = x * 100\n            else:\n                s = repr(x) if isinstance(x, float) else str(x)\n                if isinstance(x, float) and ('e' in s or 'E' in s):\n                    s = '%.6f' % x\n                keep = ''.join(ch for ch in s if ch in '0123456789.,-')\n                neg = keep.startswith('-')\n                if neg:\n                    keep = keep[1:]\n                if '-' not in keep and any(ch in '0123456789' for ch in keep):\n                    if ',' in keep and '.' in keep:\n                        if keep.rfind(',') > keep.rfind('.'):\n                            keep = keep.replace('.', '').replace(',', '.')\n                        else:\n                            keep = keep.replace(',', '')\n                    elif ',' in keep:\n                        tail = keep.rsplit(',', 1)[1]\n                        if keep.count(',') == 1 and 1 <= len(tail) <= 2:\n                            keep = keep.replace(',', '.')\n                        else:\n                            keep = keep.replace(',', '')\n                    elif keep.count('.') > 1:\n                        keep = keep.replace('.', '')\n                    if ',' not in keep and keep.count('.') <= 1:\n                        whole, dot, frac = keep.partition('.')\n                        c = int(whole or '0') * 100 + int((frac + '00')[:2])\n                        if len(frac) > 2 and frac[2] >= '5':\n                            c += 1\n                        if neg:\n                            c = -c\n        amount = c\n        known = [k for k in str(vars.get('product_ids') or '').split(',') if k]\n        if known and pid not in known:\n            same = [k for k in known if k.lower() == pid.lower()]\n            if len(same) == 1:\n                pid = same[0]\n        facts = []\n        for x in (vars.get(pid + '_past_due'), vars.get(pid + '_floor')):\n            c = None\n            if x is not None and not isinstance(x, bool):\n                if isinstance(x, int):\n                    c = x * 100\n                else:\n                    s = repr(x) if isinstance(x, float) else str(x)\n                    if isinstance(x, float) and ('e' in s or 'E' in s):\n                        s = '%.6f' % x\n                    keep = ''.join(ch for ch in s if ch in '0123456789.,-')\n                    neg = keep.startswith('-')\n                    if neg:\n                        keep = keep[1:]\n                    if '-' not in keep and any(ch in '0123456789' for ch in keep):\n                        if ',' in keep and '.' in keep:\n                            if keep.rfind(',') > keep.rfind('.'):\n                                keep = keep.replace('.', '').replace(',', '.')\n                            else:\n                                keep = keep.replace(',', '')\n                        elif ',' in keep:\n                            tail = keep.rsplit(',', 1)[1]\n                            if keep.count(',') == 1 and 1 <= len(tail) <= 2:\n                                keep = keep.replace(',', '.')\n                            else:\n                                keep = keep.replace(',', '')\n                        elif keep.count('.') > 1:\n                            keep = keep.replace('.', '')\n                        if ',' not in keep and keep.count('.') <= 1:\n                            whole, dot, frac = keep.partition('.')\n                            c = int(whole or '0') * 100 + int((frac + '00')[:2])\n                            if len(frac) > 2 and frac[2] >= '5':\n                                c += 1\n                            if neg:\n                                c = -c\n            facts.append(c)\n        full = facts[0]\n        low = facts[1] if facts[1] is not None else full\n        if full is not None and low is not None and low > full:\n            low = full\n        reason = ''\n        why = ''\n        if known and pid not in known:\n            reason = 'unknown product_id ' + pid + '; use one of ' + ','.join(known)\n            why = 'product'\n        if not reason and not known:\n            reason = 'no account facts are loaded'\n            why = 'account'\n        if not reason and pid in [k for k in str(vars.get('promised_products') or '').split(',') if k]:\n            reason = 'a promise for ' + pid + ' is already recorded and cannot be changed or recorded again'\n            why = 'recorded'\n        allowed = [k for k in str(vars.get('allowed_' + pid) or '').split(',') if k]\n        day = None\n        try:\n            if len(dt) == 10 and dt[4:5] == '-' and dt[7:8] == '-':\n                day = datetime.date.fromisoformat(dt)\n        except Exception:\n            pass\n        isiso = day is not None\n        today = None\n        try:\n            today = datetime.date.fromisoformat(str(vars.get('today_iso') or vars.get('now') or '').strip()[:10])\n        except Exception:\n            pass\n        limit = None\n        try:\n            limit = datetime.date.fromisoformat(str(vars.get(pid + '_deadline') or ''))\n        except Exception:\n            pass\n        datebw = [0, 1, 2, 3, 4]\n        datehol = '2026-10-26,2026-11-11,2026-11-26,2026-12-25,2027-01-01'.split(',')\n        after_limit = False\n        def day_allowed(d):\n            return (today is None or d > today or (d == today and True)) and (limit is None or d <= limit) and (False or (d.weekday() in datebw and d.isoformat() not in datehol))\n        if not reason and str(vars.get('allowed_count_' + pid) or '') == '0' and not str(vars.get('until_' + pid) or ''):\n            reason = 'no promise date is left for ' + pid\n            why = 'none'\n        if not reason and not isiso:\n            reason = 'the date ' + dt + ' is not a real calendar date'\n            why = 'date'\n        if not reason and isiso and not day_allowed(day):\n            reason = 'the date ' + dt + ' is not an allowed promise date for ' + pid\n            why = 'date'\n            after_limit = limit is not None and day > limit\n        if not reason and today is None and allowed and dt not in allowed:\n            tail = str(vars.get('until_' + pid) or '')\n            beyond = bool(tail) and isiso and dt > allowed[-1] and (tail == 'open' or dt <= tail)\n            if not beyond:\n                reason = 'the date ' + dt + ' is not an allowed promise date for ' + pid + ' (latest allowed: ' + allowed[-1] + ')'\n                why = 'date'\n                after_limit = dt > allowed[-1]\n        if not reason and amount is not None and full is not None and full > 0:\n            if amount < low or amount > full:\n                reason = 'the amount ' + str(amount // 100) + '.' + ('0' + str(amount % 100))[-2:] + ' is not allowed for ' + pid\n                why = 'amount'\n        if not reason and amount is None and full is not None:\n            reason = 'the amount is not a number'\n            why = 'amount_unread'\n        if reason:\n            vars['promise_guard'] = 'blocked: ' + reason\n            vars['promise_guard_blocks'] = str(int(float(vars.get('promise_guard_blocks') or 0)) + 1)\n            pname = str(vars.get(pid + '_name') or 'this product')\n            cur = ''\n            offer_c = amount if (amount is not None and full is not None and amount >= low and amount <= full) else full\n            offer = ('%d.%02d' % (offer_c // 100, offer_c % 100)) if offer_c is not None else ''\n            say = 'I am sorry, I could not record that. Let me check the details again.'\n            if why == 'recorded':\n                say = 'I am sorry, the payment promise for your ' + pname + ' is already recorded and cannot be changed or recorded again in this call.' + (' ' + 'You can change it in the mobile app.' if 'You can change it in the mobile app.' else '')\n            elif why == 'none':\n                say = 'I am sorry, I cannot record a payment date for your ' + pname + ' in this call.'\n            elif why == 'account':\n                say = 'I am sorry, I cannot open your account details right now, so I cannot record a payment promise in this call.'\n            elif why == 'amount_unread' and full is not None:\n                say = 'I am sorry, I did not catch the amount for your ' + pname + '. The amount due is ' + ('%d.%02d' % (full // 100, full % 100)) + cur + '. Could you pay that?'\n            elif why == 'date':\n                spoken = [k for k in str(vars.get('allowed_spoken_' + pid) or '').split(',') if k]\n                if not isiso:\n                    say = 'I am sorry, I did not catch the day for your ' + pname + '. Which day can you pay?'\n                elif after_limit:\n                    last = str(vars.get(pid + '_deadline_spoken') or '')\n                    if not last:\n                        last = spoken[-1] if spoken and len(spoken) == len(allowed) else (allowed[-1] if allowed else str(limit or ''))\n                    say = 'I am sorry, the latest date I can record for your ' + pname + ' is ' + last + '. Could you pay ' + (offer + cur + ' ' if offer else '') + 'on that day?'\n                else:\n                    tgt = ''\n                    if today is not None:\n                        directions = [1]\n                        for direction in directions:\n                            candidate = day\n                            if direction > 0 and day < today:\n                                candidate = today - datetime.timedelta(days=1) if True else today\n                            for _ in range((len(datehol) + 1) * 7 + 1):\n                                try:\n                                    candidate = candidate + datetime.timedelta(days=direction)\n                                except Exception:\n                                    break\n                                if day_allowed(candidate):\n                                    tgt = candidate.isoformat()\n                                    break\n                                if (direction < 0 and candidate < today) or (direction > 0 and limit is not None and candidate > limit):\n                                    break\n                            if tgt:\n                                break\n                    else:\n                        after = [k for k in allowed if k > dt]\n                        before = [k for k in allowed if k < dt]\n                        tgt = after[0] if after else ''\n                    if tgt:\n                        said = spoken[allowed.index(tgt)] if tgt in allowed and allowed.index(tgt) < len(spoken) else tgt\n                        say = 'I am sorry, I cannot record that day for your ' + pname + '. The next day I can record is ' + said + '. Would that work for you?'\n                    else:\n                        say = 'I am sorry, I cannot record that day for your ' + pname + '. Could you tell me another day?'\n            elif why == 'amount' and full is not None:\n                lo_t = '%d.%02d' % (low // 100, low % 100)\n                hi_t = '%d.%02d' % (full // 100, full % 100)\n                amt_t = ('%d.%02d' % (amount // 100, amount % 100)) if amount is not None else ''\n                if low >= full:\n                    say = 'I am sorry, for your ' + pname + ' I can record only the full amount of ' + hi_t + cur + '. Can you pay that?'\n                elif amount is not None and amount > full:\n                    say = 'I am sorry, the amount due on your ' + pname + ' is ' + hi_t + cur + ', so I cannot record more. Could you pay ' + hi_t + cur + '?'\n                elif amount is not None and amount < low:\n                    say = 'I am sorry, I cannot record ' + amt_t + cur + ' for your ' + pname + '. The lowest amount I can record is ' + lo_t + cur + '. Could you pay ' + lo_t + cur + '?'\n                else:\n                    say = 'I am sorry, for your ' + pname + ' I can record only ' + lo_t + ' or ' + hi_t + cur + '. Which one do you prefer?'\n            vars['promise_guard_say'] = say\n            config['url'] = ''\n        else:\n            vars['promise_guard'] = 'ok'\n            e = pid if pid else '?'\n            staged = [k for k in str(vars.get('promise_pending_product') or '').split(',') if k]\n            if e == '?' or e not in staged:\n                staged.append(e)\n            vars['promise_pending_product'] = ','.join(staged)\nexcept Exception:\n    pass\n",
+     "type": "function"
+    },
+    {
+     "config": {
+      "maxRetries": 0,
+      "timeoutMs": 12000
+     },
+     "function": {
+      "description": "Record why ONE product ended without a promise. CALL it only at the very end of the call, once every product is handled and the call is not being transferred - never before a transfer - once for every product that gets no promise, with that product's id and reason. A second note for a product, or a note for a product with a recorded promise, is refused with an error: do not repeat it.",
+      "handler": "__function__:api_call",
+      "name": "add_note",
+      "parameters": {
+       "properties": {
+        "body": {
+         "properties": {
+          "customer_id": {
+           "default": "{{customer_id}}",
+           "type": "string"
+          },
+          "product_id": {
+           "default": "{{product_id}}",
+           "description": "The product id exactly as listed in LATE PRODUCTS.",
+           "type": "string"
+          },
+          "reason": {
+           "default": "{{reason}}",
+           "description": "Why this product has no promise: refused, hardship, dispute, paid, service_error.",
+           "enum": [
+            "refused",
+            "hardship",
+            "dispute",
+            "paid",
+            "service_error"
+           ],
+           "type": "string"
+          }
+         },
+         "required": [
+          "product_id",
+          "reason"
+         ],
+         "type": "object"
+        },
+        "headers": {
+         "properties": {
+          "Content-Type": {
+           "default": "application/json",
+           "type": "string"
+          }
+         },
+         "type": "object"
+        },
+        "method": {
+         "default": "POST",
+         "type": "string"
+        },
+        "url": {
+         "default": "https://freya-bank-mock.freyavoice.workers.dev/v1/add_note",
+         "type": "string"
+        }
+       },
+       "type": "object"
+      }
+     },
+     "post_process_code": "try:\n    if isinstance(result, dict):\n        d = result.get('data')\n        if not isinstance(d, dict):\n            d = dict()\n        vars['note_batch_open'] = '0'\n        staged = [k for k in str(vars.get('note_pending') or '').split(';') if k]\n        if str(result.get('status') or '').lower() == 'success' and ((str(result.get('status')) == 'success') and (str(d.get('ok')).lower() == 'true')):\n            got = int(float(vars.get('note_batch_acks') or 0)) + 1\n            vars['note_batch_acks'] = str(got)\n            if staged and got >= len(staged) and int(float(vars.get('note_batch_nacks') or 0)) == 0:\n                keys = [k.rsplit(':', 1)[0] for k in staged]\n                kept = [k for k in str(vars.get('note_batch_held') or '').split(';') if k]\n                add = list(staged)\n                if kept and len([k for k in kept if k.rsplit(':', 1)[0] in keys]) >= int(float(vars.get('note_batch_held_missing') or 1)):\n                    add = add + [k for k in kept if k.rsplit(':', 1)[0] not in keys]\n                    vars['note_batch_held'] = ''\n                    vars['note_batch_held_missing'] = '0'\n                log = str(vars.get('notes_log') or '')\n                for k in add:\n                    if ':' in k and not k.startswith('?'):\n                        log = log + k + ';'\n                vars['notes_log'] = log\n                vars['note_pending'] = ''\n                vars['note_batch_acks'] = '0'\n        else:\n            vars['note_batch_nacks'] = str(int(float(vars.get('note_batch_nacks') or 0)) + 1)\nexcept Exception:\n    pass\ntry:\n    if isinstance(result, dict):\n        result.pop('header', None)\n        d = result.get('data')\n        if isinstance(d, dict):\n            msg = 'The note was NOT saved. Call add_note once more with the same values.'\n            if (str(result.get('status')) == 'success') and (str(d.get('ok')).lower() == 'true'):\n                msg = 'The note is saved. Continue with the next product, or close the call if every product is handled.'\n            if msg:\n                d['what_to_do_next'] = msg\n        elif result.get('status') != 'success':\n            result['what_to_do_next'] = 'The note was NOT saved. Call add_note once more with the same values.'\nexcept Exception:\n    pass\n",
+     "pre_process_code": "try:\n    b = config.get('body')\n    if isinstance(b, dict):\n        v = str(b.get('product_id') or '').strip().replace(' ', '')\n        if v:\n            ids = [x for x in str(vars.get('product_ids') or '').split(',') if x]\n            low = ''.join(c for c in v.lower() if c.isalnum())\n            hit = v if v in ids else ''\n            if not hit:\n                same = [x for x in ids if ''.join(c for c in x.lower() if c.isalnum()) == low]\n                if len(same) == 1:\n                    hit = same[0]\n                elif not same:\n                    same = [x for x in ids if ''.join(c for c in x.lower() if c.isalnum()).lstrip('abcdefghijklmnopqrstuvwxyz') == low]\n                    hit = same[0] if len(same) == 1 else ''\n            b['product_id'] = hit or v\n        v = str(b.get('reason') or '').strip()\n        if v:\n            canon = ['refused', 'hardship', 'dispute', 'paid', 'service_error']\n            hit = ''\n            for x in canon:\n                if x == v:\n                    hit = x\n                    break\n            if not hit:\n                low = ''.join(c for c in v.lower() if c.isalnum())\n                for x in canon:\n                    if ''.join(c for c in x.lower() if c.isalnum()) == low:\n                        hit = x\n                        break\n            b['reason'] = hit or v\nexcept Exception:\n    pass\ntry:\n    bk = 0\n    try:\n        bk = int(float(vars.get('add_note_success_count') or 0)) + int(float(vars.get('add_note_failure_count') or 0)) - int(float(vars.get('note_guard_blocks') or 0))\n    except Exception:\n        bk = 0\n    if str(vars.get('note_batch_open') or '') != '1' or bk > int(float(vars.get('note_batch_key') or 0)):\n        old = [k for k in str(vars.get('note_pending') or '').split(';') if k]\n        got = int(float(vars.get('note_batch_acks') or 0))\n        if old and got < len(old):\n            vars['note_batch_held'] = ';'.join(old)\n            vars['note_batch_held_missing'] = str(len(old) - got)\n        vars['note_pending'] = ''\n        vars['note_batch_acks'] = '0'\n        vars['note_batch_nacks'] = '0'\n        vars['note_batch_key'] = str(bk)\n    vars['note_batch_open'] = '1'\n    pid = ''\n    rsn = ''\n    b = config.get('body')\n    if isinstance(b, dict):\n        pid = str(b.get('product_id') or '').strip()\n        rsn = str(b.get('reason') or '').strip()\n    why = ''\n    noted = [k.split(':', 1)[0].strip() for k in str(vars.get('notes_log') or '').split(';') if ':' in k]\n    promised = [k for k in str(vars.get('promised_products') or '').split(',') if k]\n    if pid and pid in noted:\n        why = 'a note for ' + pid + ' is already saved'\n    elif pid and pid in promised:\n        why = 'a promise for ' + pid + ' is recorded, so it gets no note'\n    moved = 0\n    for c in ['transfer_to_agent_success_count', 'transfer_to_agent_failure_count']:\n        moved = moved + int(float(vars.get(c) or 0))\n    if not why and moved > 0:\n        why = 'the call is transferred, so no note is written'\n    if why:\n        vars['note_guard'] = 'blocked: ' + why\n        vars['note_guard_blocks'] = str(int(float(vars.get('note_guard_blocks') or 0)) + 1)\n        config['url'] = ''\n    else:\n        vars['note_guard'] = 'ok'\n        e = (pid + ':' + rsn) if pid and rsn else '?'\n        staged = [k for k in str(vars.get('note_pending') or '').split(';') if k]\n        if e == '?' or e not in staged:\n            staged.append(e)\n        vars['note_pending'] = ';'.join(staged)\nexcept Exception:\n    pass\n",
+     "type": "function"
+    },
+    {
+     "config": {
+      "maxRetries": 1,
+      "timeoutMs": 12000
+     },
+     "function": {
+      "description": "Transfer the call to a queue. CALL it only when the instructions say to transfer, with the named queue.",
+      "handler": "__function__:api_call",
+      "name": "transfer_to_agent",
+      "parameters": {
+       "properties": {
+        "body": {
+         "properties": {
+          "customer_id": {
+           "default": "{{customer_id}}",
+           "type": "string"
+          },
+          "queue": {
+           "default": "{{queue}}",
+           "description": "Team that takes over. One of: restructuring, general, support.",
+           "enum": [
+            "restructuring",
+            "general",
+            "support"
+           ],
+           "type": "string"
+          }
+         },
+         "required": [
+          "queue"
+         ],
+         "type": "object"
+        },
+        "headers": {
+         "properties": {
+          "Content-Type": {
+           "default": "application/json",
+           "type": "string"
+          }
+         },
+         "type": "object"
+        },
+        "method": {
+         "default": "POST",
+         "type": "string"
+        },
+        "url": {
+         "default": "https://freya-bank-mock.freyavoice.workers.dev/v1/transfer_to_agent",
+         "type": "string"
+        }
+       },
+       "type": "object"
+      }
+     },
+     "post_process_code": "try:\n    if isinstance(result, dict):\n        result.pop('header', None)\n        d = result.get('data')\n        if isinstance(d, dict):\n            msg = 'The transfer failed. Say so briefly and close the call as instructed.'\n            if str(d.get('ok')).lower() == 'true':\n                msg = 'The transfer is done. Now close the call as instructed.'\n            if msg:\n                d['what_to_do_next'] = msg\n        elif result.get('status') != 'success':\n            result['what_to_do_next'] = 'The transfer failed. Say so briefly and close the call as instructed.'\nexcept Exception:\n    pass\n",
+     "type": "function"
+    },
+    {
+     "config": {
+      "maxRetries": 1,
+      "timeoutMs": 12000
+     },
+     "function": {
+      "description": "Close the call. CALL it exactly once, as your LAST tool call, after you said goodbye, with the outcome and (where the table lists one) the reason.",
+      "handler": "__function__:api_call",
+      "name": "close_call",
+      "parameters": {
+       "properties": {
+        "body": {
+         "properties": {
+          "customer_id": {
+           "default": "{{customer_id}}",
+           "type": "string"
+          },
+          "outcome": {
+           "default": "{{outcome}}",
+           "description": "One of: promise, paid, transferred, no_promise, not_verified, not_reached.",
+           "enum": [
+            "promise",
+            "paid",
+            "transferred",
+            "no_promise",
+            "not_verified",
+            "not_reached"
+           ],
+           "type": "string"
+          },
+          "reason": {
+           "default": "{{reason}}",
+           "description": "Required for every outcome except promise and paid. See the table in the brief.",
+           "type": "string"
+          }
+         },
+         "required": [
+          "outcome"
+         ],
+         "type": "object"
+        },
+        "headers": {
+         "properties": {
+          "Content-Type": {
+           "default": "application/json",
+           "type": "string"
+          }
+         },
+         "type": "object"
+        },
+        "method": {
+         "default": "POST",
+         "type": "string"
+        },
+        "url": {
+         "default": "https://freya-bank-mock.freyavoice.workers.dev/v1/close_call",
+         "type": "string"
+        }
+       },
+       "type": "object"
+      }
+     },
+     "post_process_code": "try:\n    if isinstance(result, dict):\n        result.pop('header', None)\n        d = result.get('data')\n        if isinstance(d, dict):\n            msg = 'Closing failed. Call close_call once more with the same values.'\n            if str(d.get('ok')).lower() == 'true':\n                msg = 'The call is closed. Say nothing more.'\n            if msg:\n                d['what_to_do_next'] = msg\n        elif result.get('status') != 'success':\n            result['what_to_do_next'] = 'Closing failed. Call close_call once more with the same values.'\nexcept Exception:\n    pass\n",
+     "type": "function"
+    }
+   ],
+   "transitions": [
+    {
+     "condition": {
+      "conditions": [
+       {
+        "operand": 0,
+        "operator": "greater_than",
+        "variable": "close_call_success_count"
+       }
+      ],
+      "logic": "or"
+     },
+     "description": "The call is closed",
+     "target_node": "hangup"
+    }
+   ]
+  },
+  "setup": {
+   "disable_inactivity_monitor": true,
+   "name": "setup",
+   "node_type": "code",
+   "on_enter": {
+    "type": "silent"
+   },
+   "passthrough": true,
+   "passthrough_default_transition": "call",
+   "pre_actions": [
+    {
+     "function": {
+      "handler": "__function__:code_exec",
+      "name": "code_exec",
+      "parameters": {
+       "properties": {
+        "code": {
+         "default": "import datetime\nimport json\ntry:\n    CFG = json.loads('\\x7b\"holidays\":[\"2026-10-26\",\"2026-11-11\",\"2026-11-26\",\"2026-12-25\",\"2027-01-01\"],\"weekdays\":[0,1,2,3,4],\"bands\":[\\x7b\"name\":\"early\",\"slug\":\"early\",\"min\":1,\"max\":7,\"attempts\":1,\"deadline\":\\x7b\"kind\":\"nth_business_day_after_today\",\"n\":12,\"text\":\"\"\\x7d\\x7d,\\x7b\"name\":\"late\",\"slug\":\"late\",\"min\":8,\"max\":45,\"attempts\":2,\"deadline\":\\x7b\"kind\":\"nth_business_day_after_today\",\"n\":7,\"text\":\"\"\\x7d\\x7d],\"table_min_days\":50,\"table_max_days\":70,\"shift\":\"next_business_day\",\"attempt1_kind\":\"last_business_day_next_week_if_today_is_last\",\"callback\":\\x7b\"allowed_days\":\"today_or_next_business_day\",\"start\":\"10:00\",\"end\":\"19:00\",\"inclusive\":true,\"after_now\":true,\"text\":\"\"\\x7d\\x7d')\n    raw = str(vars.get('now') or '').strip().replace('Z', '')\n    state = 'ok'\n    try:\n        now = datetime.datetime.fromisoformat(raw[:19])\n    except Exception:\n        try:\n            now = datetime.datetime.fromisoformat(raw[:10] + 'T09:00')\n        except Exception:\n            now = datetime.datetime.now()\n            state = 'now_missing'\n    now = now.replace(tzinfo=None)\n    today = now.date()\n    WD = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']\n    MO = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']\n    hol = set(CFG['holidays'])\n    bw = set(CFG['weekdays'])\n    ONE = datetime.timedelta(days=1)\n    def isbd(d):\n        return d.weekday() in bw and d.isoformat() not in hol\n    def spoken(d):\n        return WD[d.weekday()] + ' ' + str(d.day) + ' ' + MO[d.month - 1] + ' ' + str(d.year)\n    def short(d):\n        return WD[d.weekday()] + ' ' + str(d.day) + ' ' + MO[d.month - 1]\n    def next_bd(d):\n        x = d + ONE\n        for _ in range(400):\n            if isbd(x):\n                break\n            x = x + ONE\n        return x\n    def prev_bd(d):\n        x = d\n        for _ in range(400):\n            if isbd(x):\n                break\n            x = x - ONE\n        return x\n    def nth_bd_after(d, n):\n        x = d\n        for _ in range(int(n)):\n            x = next_bd(x)\n        return x\n    def last_bd_of_week(d, offset):\n        monday = d - datetime.timedelta(days=d.weekday()) + datetime.timedelta(days=7 * offset)\n        x = monday + datetime.timedelta(days=6)\n        while x >= monday and not isbd(x):\n            x = x - ONE\n        return x if x >= monday else None\n    def next_weeks_last(d):\n        for off in range(1, 54):\n            x = last_bd_of_week(d, off)\n            if x is not None:\n                return x\n        return d\n    def dl_of(rule):\n        k = rule.get('kind')\n        n = int(rule.get('n') or 0)\n        if k == 'nth_business_day_after_today':\n            return nth_bd_after(today, n)\n        if k == 'nth_calendar_day_after_today':\n            return today + datetime.timedelta(days=n)\n        if k == 'end_of_month':\n            first = (today.replace(day=28) + datetime.timedelta(days=4)).replace(day=1)\n            return first - ONE\n        if k == 'fixed_date':\n            return datetime.date.fromisoformat(str(rule.get('fixed')))\n        return None\n    this_monday = today - datetime.timedelta(days=today.weekday())\n    last_needed = today + datetime.timedelta(days=CFG['table_min_days'])\n    for b in CFG['bands']:\n        dl = dl_of(b['deadline'])\n        vars['deadline_' + b['slug']] = dl.isoformat() if dl is not None else ''\n        if dl is not None and dl + datetime.timedelta(days=3) > last_needed:\n            last_needed = dl + datetime.timedelta(days=3)\n    if last_needed > today + datetime.timedelta(days=CFG['table_max_days']):\n        last_needed = today + datetime.timedelta(days=CFG['table_max_days'])\n    lines = []\n    for i in range((last_needed - today).days + 1):\n        d = today + datetime.timedelta(days=i)\n        wk = (d - this_monday).days // 7\n        week = 'this week' if wk == 0 else ('next week' if wk == 1 else 'in ' + str(wk) + ' weeks')\n        if isbd(d):\n            kind = 'business day'\n        elif not CFG.get('business_only', True):\n            kind = ('BANK HOLIDAY' if d.isoformat() in hol else 'weekend') + ' - promise dates are not limited to business days'\n        else:\n            kind = 'BANK HOLIDAY, not a business day' if d.isoformat() in hol else 'weekend, not a business day'\n            alt = None\n            if CFG['shift'] == 'next_business_day':\n                alt = next_bd(d)\n            elif CFG['shift'] == 'previous_business_day':\n                alt = prev_bd(d)\n                if alt < today:\n                    alt = next_bd(d)\n            if alt is not None:\n                kind = kind + ' -> if the customer names this day, offer ' + spoken(alt) + ' (' + alt.isoformat() + ') instead'\n            else:\n                kind = kind + ' -> this day cannot be recorded; ask for another day'\n        rel = ' (today)' if i == 0 else (' (tomorrow)' if i == 1 else '')\n        lines.append(d.isoformat() + ' = ' + spoken(d) + rel + ' [' + week + '] ' + kind)\n    nb = next_bd(today)\n    hhmm = '%02d:%02d' % (now.hour, now.minute)\n    vars['today_iso'] = today.isoformat()\n    vars['today_spoken'] = spoken(today)\n    vars['weekday_name'] = WD[today.weekday()]\n    vars['now_time'] = hhmm\n    vars['today_is_business_day'] = 'yes' if isbd(today) else 'no'\n    vars['next_business_day_iso'] = nb.isoformat()\n    vars['next_business_day_spoken'] = spoken(nb)\n    vars['date_table'] = '\\n'.join(lines)\n    this_week = last_bd_of_week(today, 0)\n    kind1 = CFG.get('attempt1_kind')\n    a1 = None\n    if kind1 == 'today':\n        a1 = today if isbd(today) else nb\n    elif kind1 == 'next_business_day_after_today':\n        a1 = nb\n    elif kind1 == 'nth_business_day_after_today':\n        a1 = nth_bd_after(today, CFG.get('attempt1_n') or 0)\n    elif kind1 == 'nth_calendar_day_after_today':\n        a1 = today + datetime.timedelta(days=int(CFG.get('attempt1_n') or 0))\n        if not isbd(a1):\n            a1 = next_bd(a1)\n    elif kind1 in ('last_business_day_this_week', 'last_business_day_next_week_if_today_is_last'):\n        strictly = kind1 == 'last_business_day_next_week_if_today_is_last'\n        usable = this_week is not None and (this_week > today if strictly else this_week >= today)\n        a1 = this_week if usable else next_weeks_last(today)\n    if a1 is not None:\n        vars['attempt1_date'] = a1.isoformat()\n        vars['attempt1_spoken'] = spoken(a1)\n    vars['promise_acks'] = '0'\n    vars['callback_acks'] = '0'\n    vars['promise_acked'] = 'no'\n    vars['callback_acked'] = 'no'\n    cb = CFG.get('callback')\n    facts = 'Now is ' + spoken(today) + ', ' + hhmm + '.'\n    slots = []\n    if cb is not None:\n        mode = cb['allowed_days']\n        lo = cb['start']\n        hi = cb['end']\n        span = 'from ' + lo + ' to ' + hi + (', both included' if cb['inclusive'] else ', the end time excluded')\n        parts = []\n        if mode == 'custom':\n            facts = facts + ' Callback rule: ' + cb['text']\n        else:\n            days = []\n            if mode == 'today_or_next_business_day':\n                days = [today, nb]\n            elif mode == 'next_business_day':\n                days = [nb]\n            else:\n                x = today\n                for _ in range(14):\n                    if isbd(x):\n                        days.append(x)\n                    x = x + ONE\n            for d in days:\n                if d == today:\n                    if cb['after_now'] and hhmm >= hi:\n                        continue\n                    later = ', but only a time later than ' + hhmm if cb['after_now'] else ''\n                    parts.append('today ' + spoken(today) + ' (' + today.isoformat() + ') ' + span + later)\n                    strict = cb['after_now'] and hhmm >= lo\n                    slots.append(d.isoformat() + '|' + (hhmm if strict else lo) + '|' + ('1' if strict else '0') + '|' + hi + '|' + ('1' if cb['inclusive'] else '0') + '|today ' + short(d))\n                else:\n                    label = 'the next business day ' if d == nb else ''\n                    parts.append(label + spoken(d) + ' (' + d.isoformat() + ') ' + span)\n                    slots.append(d.isoformat() + '|' + lo + '|0|' + hi + '|' + ('1' if cb['inclusive'] else '0') + '|' + short(d))\n            facts = facts + ' A callback can be booked only for: ' + '; or '.join(parts) + '. Nothing else is allowed.'\n            if not parts:\n                facts = 'Now is ' + spoken(today) + ', ' + hhmm + '. No callback time is available today; the person may name another allowed day.'\n        vars['callback_facts'] = facts\n    else:\n        vars['callback_facts'] = facts\n    vars['callback_slots'] = ';'.join(slots)\n    vars['setup_state'] = state\nexcept Exception as e:\n    vars['setup_state'] = 'error: ' + str(e)[:200]\n    vars['promise_acks'] = vars.get('promise_acks') or '0'\n    vars['callback_acks'] = vars.get('callback_acks') or '0'\n    vars['promise_acked'] = vars.get('promise_acked') or 'no'\n    vars['callback_acked'] = vars.get('callback_acked') or 'no'\n    vars['date_table'] = vars.get('date_table') or ''\n    vars['callback_facts'] = vars.get('callback_facts') or ''\n    vars['today_spoken'] = vars.get('today_spoken') or ''\n    vars['today_iso'] = vars.get('today_iso') or ''\n",
+         "type": "string"
+        },
+        "timeout_ms": {
+         "default": 10000,
+         "type": "number"
+        }
+       },
+       "type": "object"
+      }
+     },
+     "type": "function"
+    }
+   ],
+   "transitions": [
+    {
+     "condition": {
+      "operator": "always"
+     },
+     "description": "always",
+     "target_node": "call"
+    }
+   ]
+  }
+ },
+ "system_prompt": "You are Freya Bank's digital assistant on an outbound phone call. Speak English.\nStyle: one or two short sentences per turn. Ask one question at a time.\nIf the customer's message already contains information you need - an answer, a day, a time, a date or an amount - act on it right away (call the tool the step needs), also when the message is cut off, trails off or comes with a complaint or other words. Only when a message is cut off (it stops mid-sentence) or is only small talk, and contains nothing you can act on, reply only with a short acknowledgement such as \"I understand, go on.\" Then do not repeat your question, do not count it as a refusal or a non-answer, and do not end the call because of it. If the cut-off message started a question to you, invite them to finish it.\nNever end a turn with nothing: after every tool result, either speak to the customer or call the next tool.\nBefore identity is verified never say \"collections\", \"debt\", \"payment\" or \"the product\", an amount or a product name, to anyone. This includes relatives and other people who answer.\nIf asked whether you are a robot or an AI: say \"I am Freya Bank's digital assistant.\" and then continue.\nIf asked whether the call is a scam or genuine: say \"You can verify this call by phoning Freya Bank's customer service number.\" and then continue.\nIf asked something you cannot answer from the facts you were given: say \"I do not have that information.\" Never invent figures, dates or reasons.\nCall a tool first and speak about its result afterwards: never say that something is booked, recorded or done before the tool result confirms it.\nIf a tool result is an error instead of a result (for example \"API request failed\" or a service error), nothing was saved or checked: never say it worked, it is not a wrong or refused answer, and do not ask the customer again; call the same tool once more with exactly the same values. If the step's own instructions say how to handle a failure of that tool, follow them instead.\nEvery call must end with a goodbye: thank the customer and say goodbye in the same message in which you call the finishing tool (a tool whose name starts with transition_to_end or transition_to_handoff).\nSay amounts with two decimals, and dates as weekday plus day and month (for example Monday 5 January).\n\nRules that always apply:\n- [A-JOB-a] Call customers who are 1 to 45 days late on one product. Amended by [B-1a] get_account returns one to three products. Where they differ, the amendment applies.\n- [A-33] Never offer a discount, a waiver, an instalment plan, or any term that is not in this brief.\n- [A-45c] Apply rule 42 before and after verification.\n- [A-ADD-NOTE] Never use `add_note` in Brief A. Amended by [B-8b] For each product without a promise call add_note with that product_id and a reason: refused, hardship, dispute, paid or service_error. [B-9b] Note it and continue with the others. [B-11b] and call add_note with reason service_error for the failed product. Where they differ, the amendment applies.\n- [A-M1] Call customers who are 1 to 45 days late on one product. Amended by [B-1a] get_account returns one to three products. Where they differ, the amendment applies.\n\nFixed sentences of the brief (say them word for word when they apply):\n- Fixed sentence (hardship sympathy): when this applies, say exactly \"I am sorry to hear that.\"\n- Fixed sentence (hardship support offer): when this applies, say exactly \"Would you like me to connect you with the customer support team?\""
+}

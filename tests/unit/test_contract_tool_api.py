@@ -96,6 +96,14 @@ def test_a_contract_without_a_server_gets_the_base_url() -> None:
     assert {contract.url for contract in api.tools.values()} == {MOCK + path for path in document["paths"]}
 
 
+def test_a_relative_server_prefix_is_kept_on_the_mock() -> None:
+    document = turkish_api_document()
+    document["servers"] = [{"url": "/api/v2"}]
+    api = with_base_url(parse_tool_api(document, every_operation=True), MOCK)
+    assert api.base_url == MOCK + "/api/v2"
+    assert {contract.url for contract in api.tools.values()} == {MOCK + "/api/v2" + path for path in document["paths"]}
+
+
 @pytest.mark.parametrize("profile", ["staged", "lean"])
 @pytest.mark.parametrize("name", ["brief_a", "brief_ab"])
 def test_the_compiled_agent_calls_only_the_mock(kit_tool_api: ToolApi, profile: str, name: str) -> None:
@@ -260,3 +268,84 @@ def test_a_contract_with_turkish_names_compiles_and_calls_only_the_mock(profile:
     assert hosts_in(workflow) == {urlsplit(MOCK).hostname}
     text = json.dumps(workflow, ensure_ascii=False)
     assert MOCK + "/v1/musteri/kimlik-dogrula" in text and "musteri_no" in text and "tutar" in text
+
+
+def _obj(properties: dict[str, Any], required: list[str] = ()) -> dict[str, Any]:  # type: ignore[assignment]
+    return {"type": "object", "properties": properties, "required": list(required)}
+
+
+def _op(role: str, request: dict[str, Any], response: dict[str, Any], summary: str) -> dict[str, Any]:
+    return {"post": {
+        "operationId": summary.split()[0].lower(), "summary": summary, "x-freya-role": role,
+        "requestBody": {"content": {"application/json": {"schema": request}}},
+        "responses": {"200": {"description": "`basarili` is false when the action was not carried out.",
+                              "content": {"application/json": {"schema": response}}}},
+    }}
+
+
+def fully_turkish_document() -> dict[str, Any]:
+    """Every name Turkish (paths, request AND response fields, enum values), descriptions in English - the shape the
+    derivation prompt asks the model for."""
+    ok = {"type": "boolean", "description": "True when the operation succeeded."}
+    customer = {"type": "string", "description": "Customer number."}
+    return {
+        "openapi": "3.0.3", "info": {"title": "t", "version": "1"}, "servers": [{"url": CONTRACT_SERVER}],
+        "paths": {
+            "/kimlik/dogrula": _op("verify_identity", _obj({
+                "musteri_no": customer,
+                "soru_tipi": {"type": "string", "enum": ["dogum_tarihi", "tckn_son4"],
+                              "description": "Which security question is answered."},
+                "cevap": {"type": "string", "description": "The caller's answer."},
+            }, ["musteri_no", "soru_tipi", "cevap"]), _obj({
+                "basarili": ok,
+                "dogru_mu": {"type": "boolean", "description": "True when this security answer is correct."},
+                "tamamlandi": {"type": "boolean", "description": "True when all identity questions are verified."},
+                "kalan_hak": {"type": "integer", "description": "Number of wrong answers left."},
+            }), "Dogrula checks one security answer."),
+            "/borc/sorgula": _op("get_account", _obj({"musteri_no": customer}, ["musteri_no"]), _obj({
+                "basarili": ok,
+                "urunler": {"type": "array", "items": _obj({
+                    "urun_no": {"type": "string", "description": "Product id."},
+                    "urun_tipi": {"type": "string", "enum": ["kredi_karti", "ihtiyac_kredisi"],
+                                  "description": "Product type."},
+                    "gecikmis_tutar": {"type": "number", "description": "Past-due amount in TRY."},
+                    "asgari_odeme": {"type": "number", "description": "Minimum payment in TRY."},
+                })},
+            }), "Sorgula reads the statement debt."),
+            "/odeme/taahhut": _op("create_promise", _obj({
+                "musteri_no": customer,
+                "urun_no": {"type": "string", "description": "Product id."},
+                "tutar": {"type": "number", "description": "Promised amount in TRY."},
+                "odeme_tarihi": {"type": "string", "format": "date", "description": "Date as YYYY-MM-DD."},
+            }, ["musteri_no", "urun_no", "tutar", "odeme_tarihi"]), _obj({"basarili": ok}),
+                "Taahhut records a payment promise."),
+            "/gorusme/kapat": _op("close_call", _obj({
+                "musteri_no": customer,
+                "sonuc_kodu": {"type": "string", "enum": ["soz_alindi", "red", "dogrulanamadi"],
+                               "description": "How the call ended."},
+                "aciklama": {"type": "string", "description": "Free-text reason / detail."},
+            }, ["musteri_no", "sonuc_kodu"]), _obj({"basarili": ok}), "Kapat ends the call."),
+        },
+    }
+
+
+def test_role_discovery_works_on_a_fully_turkish_contract() -> None:
+    from builder.compiler import roles
+
+    document = fully_turkish_document()
+    assert check_derived_document(document, json.dumps(document, ensure_ascii=False)) == []
+    api = with_base_url(run(canonical_tool_api(parse_tool_api(document), document, trace=NullTrace())), MOCK)
+    assert set(REQUIRED_ROLES) == set(api.tools)
+    binding = roles.customer_binding(api)
+    assert binding.field == "musteri_no"
+    shape = roles.verify_shape(api.tools["verify_identity"])
+    assert (shape.ok, shape.verified, shape.all_verified, shape.left) == ("basarili", "dogru_mu", "tamamlandi",
+                                                                           "kalan_hak")
+    assert roles.verify_roles(api.tools["verify_identity"], "musteri_no") == roles.VerifyRoles("soru_tipi", "cevap")
+    account = roles.account_roles(api, {"kredi_karti"}, "musteri_no")
+    assert (account.list_field, account.id_key, account.type_key) == ("urunler", "urun_no", "urun_tipi")
+    assert roles.promise_roles(api.tools["create_promise"], "musteri_no", "urun_no") == roles.PromiseRoles(
+        "urun_no", "tutar", "odeme_tarihi")
+    assert roles.close_roles(api.tools["close_call"], "musteri_no") == roles.CloseRoles("sonuc_kodu", "aciklama")
+    for name in REQUIRED_ROLES:
+        assert roles.success_flag(api.tools[name]) == "basarili"

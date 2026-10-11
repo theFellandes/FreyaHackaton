@@ -35,7 +35,7 @@ from builder.compiler.hooks import PROMISE_FIX_DEFAULT
 from builder.compiler.phrasing import speakable
 from builder.compiler.pycode import MONEY_FUNCS, assert_safe_code, json_literal, py_literal, strip_code
 from builder.compiler.roles import AccountRoles
-from builder.policy.ir import DeadlineRule, PolicyIR
+from builder.policy.ir import ANY_PRODUCT, PRODUCT_TYPE_FOLD, DeadlineRule, PolicyIR, fold_product_type
 from builder.policy.outcomes import STRUCTURAL_ORDER, Situation
 
 __all__ = [
@@ -902,6 +902,64 @@ def _say_meanings(body: str, language: str, *, own_floor_offer: bool) -> str:
     return body
 
 
+_PER_TYPE_TABLES = ("naming", "floors", "floor_rules")
+
+
+def _any_product_reads(body: str, cfg: dict[str, Any]) -> str:
+    """Per-type lookups that fall back to the every-product entry (``"*"``) when a table of ``cfg`` has one.
+
+    A contract whose products carry no type field gives every product the type ``""``; the policy then names them and
+    sets their floor under :data:`~builder.policy.ir.ANY_PRODUCT`. The code changes only when such a key exists.
+    """
+    for table in _PER_TYPE_TABLES:
+        if ANY_PRODUCT in (cfg.get(table) or {}):
+            lookup = f"CFG['{table}'].get(ptype)"
+            body = body.replace(lookup, f"CFG['{table}'].get(ptype, CFG['{table}'].get({ANY_PRODUCT!r}))")
+    return body
+
+
+_TYPE_LINE = "    ptype = str(p.get(CFG['type_key']) or '') if CFG['type_key'] else ''\n"
+_TYPE_NORM = """def type_norm(t):
+    s = ''.join(CFG['type_fold'].get(c, c) for c in str(t or '').lower())
+    words = []
+    run = ''
+    for c in s:
+        if c.isalnum():
+            run += c
+        elif run:
+            words.append(run)
+            run = ''
+    if run:
+        words.append(run)
+    return '_'.join(words)
+"""
+
+
+def _open_type_cfg(ir: PolicyIR, roles: AccountRoles, cfg: dict[str, Any]) -> bool:
+    """Add the spelling-insensitive type lookup to ``cfg`` when the contract's type field has no enum (``True`` then).
+
+    The values of a free-text type field are known only from the data (``"Crédito Pessoal"``) while the policy keys come
+    from the documents (``"credito_pessoal"``): ``type_alias`` maps each key's folded spelling
+    (:func:`~builder.policy.ir.fold_product_type`) to the key. Nothing changes for an enum type field.
+    """
+    keys = [*ir.disclosure.product_naming, *ir.amounts.floor_field_by_type, *ir.amounts.floor_rule_by_type,
+            *(name for band in ir.bands for name in band.product_types)]
+    alias = {fold_product_type(key): key for key in dict.fromkeys(keys) if key != ANY_PRODUCT and fold_product_type(key)}
+    if not (roles.type_open and roles.type_key and alias):
+        return False
+    cfg["type_alias"] = alias
+    cfg["type_fold"] = dict(PRODUCT_TYPE_FOLD)
+    return True
+
+
+def _open_type_reads(body: str) -> str:
+    """Read a product's type through ``type_alias`` (see :func:`_open_type_cfg`): an unknown type stays as it is."""
+    if body.count(_TYPE_LINE) != 1 or body.count("products = load_products()\n") != 1:
+        raise CompileError("account_facts: cannot add the spelling-insensitive product type lookup")
+    body = body.replace(_TYPE_LINE, _TYPE_LINE + "    ptype = CFG['type_alias'].get(type_norm(ptype), ptype)\n")
+    return body.replace("products = load_products()\n", _TYPE_NORM + "products = load_products()\n")
+
+
 def _floor_rule_code(ir: PolicyIR, cfg: dict[str, Any]) -> str:
     """The floor-rule block of ``account_facts`` (``""`` when no product type has one, so the code stays unchanged)."""
     rules = {
@@ -1050,6 +1108,7 @@ def account_facts_snippet(ir: PolicyIR, roles: AccountRoles | None = None, *, sp
         if roles.minor_scales:  # thousandths, 3 decimals ...: the stated factor instead of 100
             cfg["minor_scale"] = dict(roles.minor_scales)
     floor_code = _floor_rule_code(ir, cfg)  # may add cfg["floor_rules"], so it runs before cfg is serialised
+    open_type = _open_type_cfg(ir, roles, cfg)  # adds cfg["type_alias"] for a type field without an enum
     body = (
         _ACCOUNT_BODY.replace("__CFG__", json_literal(cfg))
         .replace("__PARSE_NOW__", _parse_now(clock_variable(ir)))
@@ -1059,6 +1118,9 @@ def account_facts_snippet(ir: PolicyIR, roles: AccountRoles | None = None, *, sp
     )
     if roles.minor_fields:
         body = _minor_amount_reads(body, scaled=bool(roles.minor_scales))
+    body = _any_product_reads(body, cfg)
+    if open_type:
+        body = _open_type_reads(body)
     if speak_in:
         body = _say_meanings(body, speak_in, own_floor_offer=bool(extra_phrase(ir.phrases.extra, "floor_offer")))
     fallback = _ACCOUNT_FALLBACK.replace("__FALLBACK_STATEMENT__", fallback_statement)

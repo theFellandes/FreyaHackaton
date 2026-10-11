@@ -6,7 +6,9 @@ Every item remains pending until supported by the actual hidden release. Read BR
 - [ ] Identify every operation, request/response schema, method, authentication requirement and exact failure behavior.
 - [ ] Identify how evaluation supplies customer IDs and maps customer/account/identity fixtures.
 - [ ] Implement only the actual contract's state transitions, verification rules, terminal actions and ledger behavior.
-- [ ] Choose persistent storage from required semantics. Provision only needed bindings/resources.
+- [ ] Confirm the account remains on Workers Free and every required storage resource has a free allowance. Do not upgrade or enable paid features.
+- [ ] Choose persistent storage from required semantics. Prefer D1 or SQLite-backed Durable Objects for frequently updated call state; avoid defaulting to Workers KV, whose free allowance is 1,000 writes per day. Provision only needed bindings/resources. See [Workers/storage pricing](https://developers.cloudflare.com/workers/platform/pricing/) and [Durable Objects pricing](https://developers.cloudflare.com/durable-objects/platform/pricing/).
+- [ ] Estimate writes per call and the expected evaluation volume. Run repeated functional tests locally, keep live verification small, and reserve daily storage/request quota for evaluation. Record the estimate and remaining allowance in deployment evidence.
 - [ ] Verify persistence across independent requests/Worker instances and customer isolation; save evidence. Check concurrency where relevant.
 - [ ] Test every operation and supplied customer. Cover malformed/missing fields, unknown customers, auth failures, enums, error shapes, state transitions, retries/duplicates, dates and terminal behavior as the contract requires.
 - [ ] Keep policy decisions in the component the kit assigns them to; do not silently repair the agent's errors.

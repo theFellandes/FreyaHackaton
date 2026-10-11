@@ -52,6 +52,7 @@ from builder.compiler.context import (
     exit_bullet,
     extra_phrase,
     failure_note_reason,
+    free_note_sentence,
     ids_tag,
     language_name,
     ordinal,
@@ -83,7 +84,15 @@ from builder.compiler.nodes import (
     transition,
     tts_node,
 )
-from builder.compiler.phrasing import intent_fixed_sentence, speakable, strings_of, unspoken_phrases
+from builder.compiler.phrasing import (
+    fill_values_note,
+    fill_values_prompt,
+    intent_fixed_sentence,
+    runtime_placeholders,
+    speakable,
+    strings_of,
+    unspoken_phrases,
+)
 from builder.compiler.prompts import render
 from builder.compiler.prose import NodeProse, clean_text
 from builder.compiler.pycode import assert_safe_code, py_literal
@@ -196,6 +205,27 @@ class ProfileBuilder:
         """IR placeholders -> Freya references."""
         return to_freya(text, self.vars)
 
+    def said_with_values(self, name: str, text: str, nxt: str, task_message: str) -> dict[str, Any]:
+        """A passthrough node for a fixed line said after a tool result, such as the promise confirmation.
+
+        A line without placeholders is a ``tts`` line (:func:`builder.compiler.nodes.tts_node`). A line the brief writes
+        with placeholders for values of the call ("Your promise of {amount} on {date} is recorded.", in any language and
+        with ``{x}``, ``[x]`` or ``<x>``) cannot be spoken verbatim, and without its placeholders it loses the amount and
+        the date. It is said through the model instead: the prompt keeps the whole sentence and says to put the real
+        value (as agreed and recorded) in place of each placeholder, in the call's language.
+        """
+        node = tts_node(name, text, nxt, task_message)
+        found = runtime_placeholders(text, self.vars)
+        if not found:
+            return node
+        node["on_enter"] = {"type": "llm",
+                            "prompt": fill_values_prompt(text, found, self.language_label if self.foreign else "")}
+        said_in = f", said in {self.language_label}" if self.foreign else ""
+        node["task_message"] = f"Your only line here is the entry line{said_in}. {task_message}"
+        self.notes.append(f"the fixed line of {name!r} holds {', '.join(found)}, which no call variable fills; it is said "
+                          "through the model with the recorded values in their place")
+        return node
+
     def merge_duplicate_targets(self) -> None:
         """Make every node's transitions point at distinct targets.
 
@@ -237,6 +267,24 @@ class ProfileBuilder:
         self.notes.extend(self.unplaced_actions())
         return self.rule_map
 
+    def free_note_text(self, intent: IntentRule) -> str:
+        """The prompt sentence that has the model write the note of ``intent`` through a free-text notes tool.
+
+        A contract's notes tool may take only the customer and the note itself (no product id, no reason enum). The
+        note then records what the customer said in the call (the date they paid, the amount, why they dispute), so the
+        model writes it at call time with the tool :func:`builder.compiler.toolset.build_tools` gives it; a note fixed
+        in the workflow (the intent's description, or the brief's instruction "ask the payment date") would hold none
+        of it. A note wording the brief prescribes (the action's parameter for the text field) is followed with the
+        real values. ``""`` when the intent writes no such note.
+        """
+        tool = self.ir.multi_product.note_tool or "add_note"
+        roles = self.tools.note_fields
+        if (self.ir.multi_product.enabled or self.tools.note is None or roles is None or roles.text is None
+                or not any(a.tool == tool for a in intent.actions)):
+            return ""
+        prescribed = next((a.params.get(roles.text, "") for a in intent.actions if a.tool == tool), "")
+        return free_note_sentence(tool, roles.text, self.language_label, prescribed)
+
     def unplaced_actions(self) -> list[str]:
         """Notes for intent actions no mechanism carries out (AUD-08): the build must not hide a dropped tool call.
 
@@ -251,7 +299,7 @@ class ProfileBuilder:
             for action in intent.actions:
                 if action.tool in always:
                     continue
-                if action.tool == note_tool and naming.note_reason_of(self.ir, intent) and (
+                if action.tool == note_tool and (naming.note_reason_of(self.ir, intent) or self.free_note_text(intent)) and (
                         intent.scope != "before_verification"):
                     continue
                 out.append(f"intent {intent.key!r} ({intent.scope}) asks for a {action.tool!r} call that no node or "
@@ -321,7 +369,8 @@ class ProfileBuilder:
                 continue
             bullet = exit_bullet(self.ir, intent, style, note_tool=self.ir.multi_product.note_tool,
                                  redirect=self.exit_redirect if stage == "negotiate" else None,
-                                 concessions_forbidden=concessions_forbidden(self.ir, self.ledger))
+                                 concessions_forbidden=concessions_forbidden(self.ir, self.ledger),
+                                 free_note=self.free_note_text(intent) if stage == "negotiate" else "")
             if bullet is None:
                 continue
             out.append(bullet)
@@ -611,6 +660,7 @@ class ProfileBuilder:
             order_text=self._product_order_text(),
             single_confirmation=ir.confirmation.single_confirmation_for_all_products,
             confirm_question=confirm_question(ir),
+            confirm_fill=fill_values_note(runtime_placeholders(confirm_question(ir), self.vars)),
             one_date_mode=mp.one_date_after_deadline,
             note_tool=note_tool,
             refusal_note=self._refusal_note(),
@@ -624,6 +674,8 @@ class ProfileBuilder:
             deferred=deferred_notes(ir),
             readback=readback,
             success_sentence=(ir.recording.success_sentence or ir.phrases.recorded_sentence).strip(),
+            success_fill=fill_values_note(runtime_placeholders(
+                (ir.recording.success_sentence or ir.phrases.recorded_sentence).strip(), self.vars)),
             failure_sentence=ir.recording.failure_sentence.strip(),
             immutable_sentence=ir.recording.immutable_sentence.strip(),
             rules=rules,
@@ -688,7 +740,7 @@ class ProfileBuilder:
         A sentence for every step goes to the system prompt, unless it names a word that is forbidden before
         verification (then to the negotiation step, like :meth:`deferred_global_rules`).
         """
-        found = unspoken_phrases(self.ir, self.ledger, [system_prompt, *strings_of(self.nodes)])
+        found = unspoken_phrases(self.ir, self.ledger, [system_prompt, *strings_of(self.nodes)], self.vars)
         if not found:
             return system_prompt
         leak = self._leak_pattern()
@@ -845,11 +897,12 @@ class _Staged(ProfileBuilder):
         tool = self.ir.multi_product.note_tool or "add_note"
         contract = self.api.tools.get(tool)
         roles = note_roles(contract, self.tools.customer.field, self.tools.account.id_key) if contract else None
-        if roles is None or roles.product is None or roles.reason is None:
+        free_text = roles is not None and roles.reason is None and roles.text is not None
+        if roles is None or (not free_text and (roles.product is None or roles.reason is None)):
             self.notes.append(f"an intent writes a note with reason {reason!r}, but the tool API has no usable {tool!r} "
                               "tool (product id and reason fields); the note is not written")
             return target
-        enum = contract.enum(roles.reason) if contract else []
+        enum = contract.enum(roles.reason) if contract and roles.reason else []
         if enum and reason not in enum:
             self.notes.append(f"note reason {reason!r} is not in the {tool} enum {enum}")
         name = f"note_{naming.slug(situation)}"
@@ -872,10 +925,14 @@ class _Staged(ProfileBuilder):
             guarded = intent.key in self._latched
             if info.kind == "end":
                 target = self.end(info.situation)
-                if info.reason and stage == "negotiate" and not self.ir.multi_product.enabled:
+                # a free-text note is the model's own call (the bullet says so); a note reason goes through the engine
+                if info.reason and stage == "negotiate" and not self.ir.multi_product.enabled and not (
+                        self.free_note_text(intent)):
                     target = self.note_end(info.situation, info.reason)
                     self.rm(intent.rule_ids, f"node:{target}")
                 said = "no callback time could be agreed; you said goodbye." if info.callback else "you said goodbye."
+                if stage == "negotiate" and self.free_note_text(intent):
+                    said = f"the {self.ir.multi_product.note_tool or 'add_note'} note is saved and {said}"
                 add(self.guard(intent, target) if guarded else target, f"{base}; {said}")
                 self.rm(intent.rule_ids, f"node:{naming.end_node(info.situation)}", "code:decide",
                         f"node:{stage}/transitions")
@@ -1230,7 +1287,7 @@ class _Staged(ProfileBuilder):
         text = " ".join(x for x in ("Your promise is recorded.",
                                      (ir.recording.success_sentence or ir.phrases.recorded_sentence).strip(),
                                      ir.phrases.goodbye_sentence.strip()) if x)
-        self.nodes["promise_done"] = tts_node(
+        self.nodes["promise_done"] = self.said_with_values(
             "promise_done", self.freya(text), promise_node,
             "The promise is recorded. Say nothing more. No tool call is allowed in this turn.")
         # Guard recovery: a blocked create_promise call leaves the model with a generic error (the post-hook does not run
@@ -1336,10 +1393,13 @@ class _Staged(ProfileBuilder):
             tool = self.ir.multi_product.note_tool or "add_note"
             contract = self.api.require(tool)
             roles = note_roles(contract, customer.field, self.tools.account.id_key)
-            assert roles.product is not None and roles.reason is not None  # checked by :meth:`note_end`
-            self.nodes[name] = api_request_node(
-                name, engine_call(contract, baked={customer.field: customer.ref, roles.product: "{{product_ids}}",
-                                                   roles.reason: reason}), target)
+            baked = {customer.field: customer.ref}
+            if roles.product is not None:  # a free-text notes tool may take no product id
+                baked[roles.product] = "{{product_ids}}"
+            field = roles.reason or roles.text
+            assert field is not None  # checked by :meth:`note_end`
+            baked[field] = reason
+            self.nodes[name] = api_request_node(name, engine_call(contract, baked=baked), target)
         self.guard_nodes()
         self.nodes["decide"] = code_node(
             "decide",

@@ -731,6 +731,7 @@ def _check_member(
 
 def _check_ir_against_tool_api(ir: PolicyIR, tool_api: ToolApi, report: GuardReport) -> None:
     # AUD-20: read each vocabulary from the field that holds its role (the compiler's view), not the kit's field name
+    from builder.policy.ir import ANY_PRODUCT
     from builder.understand.validate import tool_vocabulary
 
     vocab = tool_vocabulary(tool_api)
@@ -773,11 +774,11 @@ def _check_ir_against_tool_api(ir: PolicyIR, tool_api: ToolApi, report: GuardRep
     fields = _product_fields(tool_api)
     product_types = vocab.product_types
     names = {spec.name for spec in fields}
-    for product_type in ir.disclosure.product_naming:
+    for product_type in [key for key in ir.disclosure.product_naming if key != ANY_PRODUCT]:  # "*" is no type
         _check_member(
             report, product_type, product_types, "Product type", f"disclosure.product_naming.{product_type}"
         )
-    for product_type in ir.amounts.floor_field_by_type:
+    for product_type in [key for key in ir.amounts.floor_field_by_type if key != ANY_PRODUCT]:
         _check_member(
             report, product_type, product_types, "Product type", f"amounts.floor_field_by_type.{product_type}"
         )

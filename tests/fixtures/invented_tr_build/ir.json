@@ -1,0 +1,778 @@
+{
+  "rule_ids": [],
+  "bank_name": "Örnek Bank",
+  "language": "tr",
+  "currency_word": "Türk lirası",
+  "call_variables": [
+    {
+      "name": "musteri_no",
+      "meaning": "Her servis çağrısına gönderilen müşteri numarası.",
+      "example": "M-1001"
+    },
+    {
+      "name": "ad",
+      "meaning": "Aranan kişinin adı.",
+      "example": "Ayşe"
+    },
+    {
+      "name": "soyad",
+      "meaning": "Aranan kişinin soyadı.",
+      "example": "Demir"
+    },
+    {
+      "name": "hitap",
+      "meaning": "Müşteriye adıyla birlikte kullanılan hitap.",
+      "example": "Hanım"
+    },
+    {
+      "name": "simdi",
+      "meaning": "Şu anki tarih ve saat; bütün tarih kuralları bunu kullanır.",
+      "example": "2026-10-26T10:30"
+    }
+  ],
+  "phrases": {
+    "rule_ids": [
+      "D1-1",
+      "D1-2",
+      "D1-4a",
+      "D1-11b",
+      "D1-12a",
+      "D1-18b",
+      "D1-22b",
+      "D1-25c"
+    ],
+    "opening_sentence": "Merhaba, ben Örnek Bank'ın dijital asistanıyım, bu görüşme kayıt altına alınmaktadır.",
+    "right_party_question": "{ad} {hitap} ile mi görüşüyorum?",
+    "robot_answer": "Örnek Bank'ın dijital asistanıyım.",
+    "scam_answer": "",
+    "confirm_question": "",
+    "today_question": "",
+    "recorded_sentence": "",
+    "identity_failed_sentence": "Mobil uygulamaya veya şubeye başvurabilirsiniz.",
+    "deceased_sentence": "",
+    "paid_sentence": "",
+    "goodbye_sentence": "İyi günler dilerim.",
+    "extra": {
+      "below_floor": "Sistemimiz asgari ödeme tutarının altında bir söz kaydedemiyor.",
+      "decline_explanation": "Bu sorular hesabınızı korumak içindir.",
+      "third_party_thanks": "Teşekkür ederim."
+    }
+  },
+  "right_party": {
+    "rule_ids": [
+      "D1-2",
+      "D1-8"
+    ],
+    "confirm_examples": [],
+    "not_confirm_examples": [],
+    "max_asks": 2,
+    "unclear_outcome": {
+      "outcome": "ulasilamadi",
+      "reason": "cevap_vermedi"
+    }
+  },
+  "third_party": {
+    "rule_ids": [
+      "D1-3a",
+      "D1-5a",
+      "D1-5b",
+      "D1-5c",
+      "D1-6a",
+      "D1-6b",
+      "D1-7"
+    ],
+    "disclose_nothing": true,
+    "ask_when_reachable": false,
+    "wrong_number": {
+      "outcome": "ulasilamadi",
+      "reason": "yanlis_numara"
+    },
+    "notes": [
+      "Arama nedenini söylemeyin.",
+      "Not almayın."
+    ]
+  },
+  "identity": {
+    "rule_ids": [
+      "D1-GOREV-c",
+      "D1-9a",
+      "D1-9b",
+      "D1-9c",
+      "D1-9d",
+      "D1-9e",
+      "D1-9f",
+      "D1-10a",
+      "D1-10b",
+      "D1-11b",
+      "D1-12a"
+    ],
+    "questions": [
+      {
+        "field": "dogum_tarihi",
+        "ask": "Doğum tarihinizi söyler misiniz?",
+        "answer_format": "date_iso",
+        "normalisation": "Müşterinin söylediği doğum tarihini YYYY-MM-DD biçiminde gönderin; sadece rakamla söylenen tarihi gün, ay, yıl sırasıyla okuyun."
+      },
+      {
+        "field": "telefon_son4",
+        "ask": "Kayıtlı telefon numaranızın son dört hanesi nedir?",
+        "answer_format": "digits",
+        "digits": 4,
+        "normalisation": "Tam olarak dört rakam gönderin."
+      }
+    ],
+    "one_at_a_time": true,
+    "max_wrong_total": 3,
+    "hints": [],
+    "on_failed": {
+      "outcome": "dogrulanamadi",
+      "reason": "basarisiz"
+    },
+    "failed_instruction": "Mobil uygulamaya veya şubeye başvurabilirsiniz.",
+    "decline_explanation": "Bu sorular hesabınızı korumak içindir.",
+    "decline_max": 2,
+    "on_declined": {
+      "outcome": "dogrulanamadi",
+      "reason": "reddetti"
+    }
+  },
+  "disclosure": {
+    "rule_ids": [
+      "D1-GOREV-d",
+      "D1-13",
+      "D1-14a",
+      "D1-14b",
+      "D1-14c",
+      "D1-14d",
+      "D1-14e"
+    ],
+    "team_phrase": "Örnek Bank",
+    "product_naming": {},
+    "state_fields": [
+      "son_dort",
+      "ekstre_borcu",
+      "asgari_tutar",
+      "gecikme_gunu"
+    ],
+    "amount_field": "ekstre_borcu",
+    "days_field": "gecikme_gunu"
+  },
+  "calendar": {
+    "rule_ids": [
+      "D1-VARS-d",
+      "D1-ISGUNU",
+      "D1-TATIL",
+      "DUY-EFFECTIVE-DATE",
+      "DUY-OTHER-DATE-RULES"
+    ],
+    "business_weekdays": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ],
+    "holidays": [
+      "2026-10-29"
+    ],
+    "date_input_order": "DMY",
+    "notes": [
+      "Bütün tarih kurallarında simdi değerini kullanın."
+    ]
+  },
+  "bands": [
+    {
+      "rule_ids": [
+        "DUY-DEADLINE",
+        "D1-19a"
+      ],
+      "name": "all",
+      "days_late_min": 0,
+      "days_late_max": 999999,
+      "deadline": {
+        "kind": "nth_business_day_after_today",
+        "n": 7,
+        "custom_rule_text": ""
+      },
+      "persuasion_attempts": 1,
+      "product_types": []
+    }
+  ],
+  "promise_dates": {
+    "rule_ids": [
+      "D1-15a",
+      "D1-15b",
+      "D1-15c",
+      "D1-16",
+      "D1-17a",
+      "D1-17b",
+      "DUY-DEADLINE"
+    ],
+    "allow_today": true,
+    "business_days_only": true,
+    "not_after_deadline": true,
+    "non_business_day_shift": "next_business_day",
+    "vague_period": "ask_once_then_deadline",
+    "next_weekday_semantics": "following_calendar_week",
+    "after_deadline": "offer_deadline",
+    "refuse_deadline_is_refusal": false
+  },
+  "amounts": {
+    "rule_ids": [
+      "D1-18a",
+      "D1-18b",
+      "D1-18c"
+    ],
+    "ask_full_first": false,
+    "never_ask_open_amount": false,
+    "floor_field_by_type": {},
+    "floor_rule_by_type": {},
+    "floor_offer_times": 1,
+    "floor_note": "",
+    "accept_between_floor_and_full": true,
+    "below_floor": "offer_floor_once"
+  },
+  "persuasion": {
+    "rule_ids": [
+      "D1-GOREV-e",
+      "D1-19a",
+      "D1-19b",
+      "D1-19c"
+    ],
+    "first_ask": "",
+    "non_answer_counts": false,
+    "steps": [
+      {
+        "attempt": 1,
+        "bands": [],
+        "amount": "current",
+        "date": "custom",
+        "text": "Gecikmenin kartın kullanımını etkileyebileceğini hatırlatın."
+      }
+    ],
+    "stop_outcome": {
+      "outcome": "soz_alinamadi",
+      "reason": "reddetti"
+    }
+  },
+  "intents": [
+    {
+      "rule_ids": [
+        "D1-4a",
+        "D1-4b"
+      ],
+      "key": "robot_question",
+      "description": "Müşteri asistanın robot olup olmadığını sorar.",
+      "examples": [],
+      "scope": "any",
+      "response": "Örnek Bank'ın dijital asistanı olduğunuzu söyleyin ve görüşmeye devam edin.",
+      "actions": [],
+      "precedence": 50,
+      "overrides": [],
+      "offer": "",
+      "min_occurrences": 1
+    },
+    {
+      "rule_ids": [
+        "D1-21a",
+        "D1-21b",
+        "D1-21c",
+        "D1-21d"
+      ],
+      "key": "already_paid",
+      "description": "Müşteri zaten ödediğini söyler.",
+      "examples": [],
+      "scope": "after_verification",
+      "response": "Ödemenin tarihini sorun.",
+      "actions": [
+        {
+          "tool": "add_note",
+          "params": {}
+        }
+      ],
+      "outcome": {
+        "outcome": "soz_alinamadi",
+        "reason": "odedi"
+      },
+      "precedence": 50,
+      "overrides": [],
+      "offer": "",
+      "min_occurrences": 1
+    },
+    {
+      "rule_ids": [
+        "D1-22a",
+        "D1-22b",
+        "D1-22c",
+        "D1-22d"
+      ],
+      "key": "dispute",
+      "description": "Müşteri borcu kabul etmez.",
+      "examples": [],
+      "scope": "after_verification",
+      "response": "Tartışmayın; itirazın kaydedildiğini söyleyin.",
+      "actions": [
+        {
+          "tool": "add_note",
+          "params": {}
+        }
+      ],
+      "outcome": {
+        "outcome": "soz_alinamadi",
+        "reason": "itiraz"
+      },
+      "precedence": 50,
+      "overrides": [],
+      "offer": "",
+      "min_occurrences": 1
+    },
+    {
+      "rule_ids": [
+        "D1-23a",
+        "D1-23b",
+        "D1-23c"
+      ],
+      "key": "hardship",
+      "description": "Müşteri iş kaybı, hastalık veya benzeri bir zorluk anlatır.",
+      "examples": [
+        "iş kaybı",
+        "hastalık"
+      ],
+      "scope": "after_verification",
+      "response": "Sözü zorlamayın.",
+      "actions": [
+        {
+          "tool": "transfer_to_agent",
+          "params": {
+            "neden": "maddi_zorluk"
+          }
+        }
+      ],
+      "outcome": {
+        "outcome": "aktarildi",
+        "reason": "maddi_zorluk"
+      },
+      "precedence": 50,
+      "overrides": [],
+      "offer": "",
+      "min_occurrences": 1
+    },
+    {
+      "rule_ids": [
+        "D1-24a",
+        "D1-24b"
+      ],
+      "key": "human_request",
+      "description": "Müşteri bir insanla görüşmek ister.",
+      "examples": [],
+      "scope": "any",
+      "response": "",
+      "actions": [
+        {
+          "tool": "transfer_to_agent",
+          "params": {
+            "neden": "musteri_istegi"
+          }
+        }
+      ],
+      "outcome": {
+        "outcome": "aktarildi",
+        "reason": "tamam"
+      },
+      "precedence": 50,
+      "overrides": [],
+      "offer": "",
+      "min_occurrences": 1
+    }
+  ],
+  "confirmation": {
+    "rule_ids": [
+      "D1-20a",
+      "D1-20b"
+    ],
+    "readback_fields": [
+      "tutar",
+      "tarih"
+    ],
+    "question": "",
+    "on_change": "",
+    "single_confirmation_for_all_products": false
+  },
+  "recording": {
+    "rule_ids": [
+      "D1-20a",
+      "D1-20b",
+      "D1-20c"
+    ],
+    "one_promise_per_product": false,
+    "retries_on_failure": 0,
+    "failure_outcome": {
+      "outcome": "soz_alinamadi",
+      "reason": "reddetti"
+    },
+    "failure_sentence": "",
+    "success_sentence": "",
+    "immutable_sentence": ""
+  },
+  "multi_product": {
+    "rule_ids": [],
+    "enabled": false,
+    "max_products": 1,
+    "state_all_before_asking": true,
+    "order": "as_returned",
+    "ask_all_today_first": true,
+    "per_product_attempts": true,
+    "one_date_after_deadline": "use_product_deadline",
+    "note_tool": "add_note",
+    "note_reasons": [],
+    "notes_on_transfer": false,
+    "closing_reason_rule": "first_non_paid_note"
+  },
+  "closing": {
+    "rule_ids": [
+      "D1-GOREV-f",
+      "D1-6b",
+      "D1-7",
+      "D1-8",
+      "D1-11c",
+      "D1-12b",
+      "D1-19c",
+      "D1-20c",
+      "D1-21c",
+      "D1-22d",
+      "D1-23c",
+      "D1-24b",
+      "D1-OUTCOMES-a",
+      "D1-OUTCOMES-b",
+      "D1-OUTCOMES-c",
+      "D1-OUTCOMES-d",
+      "D1-OUTCOMES-e",
+      "D1-OUTCOMES-f",
+      "D1-OUTCOMES-g",
+      "D1-OUTCOMES-h",
+      "D1-OUTCOMES-i",
+      "D1-OUTCOMES-j",
+      "D1-OUTCOMES-k",
+      "D1-25a",
+      "D1-25b",
+      "D1-25c"
+    ],
+    "rows": [
+      {
+        "outcome": "soz_alindi",
+        "reason": "tamam",
+        "situation": "promise_recorded",
+        "when": "Söz alındı.",
+        "rule_ids": [
+          "D1-20c",
+          "D1-OUTCOMES-a"
+        ],
+        "requires_verified": true
+      },
+      {
+        "outcome": "soz_alinamadi",
+        "reason": "reddetti",
+        "situation": "flat_refusal",
+        "when": "Söz vermedi.",
+        "rule_ids": [
+          "D1-19c",
+          "D1-OUTCOMES-b"
+        ],
+        "requires_verified": true
+      },
+      {
+        "outcome": "soz_alinamadi",
+        "reason": "odedi",
+        "situation": "already_paid",
+        "when": "Zaten ödemiş.",
+        "rule_ids": [
+          "D1-21c",
+          "D1-OUTCOMES-c"
+        ],
+        "requires_verified": true
+      },
+      {
+        "outcome": "soz_alinamadi",
+        "reason": "itiraz",
+        "situation": "dispute",
+        "when": "Borca itiraz.",
+        "rule_ids": [
+          "D1-22d",
+          "D1-OUTCOMES-d"
+        ],
+        "requires_verified": true
+      },
+      {
+        "outcome": "dogrulanamadi",
+        "reason": "basarisiz",
+        "situation": "identity_failed",
+        "when": "Üç yanlış cevap.",
+        "rule_ids": [
+          "D1-11c",
+          "D1-OUTCOMES-e"
+        ],
+        "requires_verified": false
+      },
+      {
+        "outcome": "dogrulanamadi",
+        "reason": "reddetti",
+        "situation": "identity_declined",
+        "when": "Soruları reddetti.",
+        "rule_ids": [
+          "D1-12b",
+          "D1-OUTCOMES-f"
+        ],
+        "requires_verified": false
+      },
+      {
+        "outcome": "ulasilamadi",
+        "reason": "baskasi_acti",
+        "situation": "third_party",
+        "when": "Başkası açtı.",
+        "rule_ids": [
+          "D1-6b",
+          "D1-OUTCOMES-g"
+        ],
+        "requires_verified": false
+      },
+      {
+        "outcome": "ulasilamadi",
+        "reason": "yanlis_numara",
+        "situation": "wrong_number",
+        "when": "Yanlış numara.",
+        "rule_ids": [
+          "D1-7",
+          "D1-OUTCOMES-h"
+        ],
+        "requires_verified": false
+      },
+      {
+        "outcome": "ulasilamadi",
+        "reason": "cevap_vermedi",
+        "situation": "unclear_party",
+        "when": "Kim olduğu belli değil.",
+        "rule_ids": [
+          "D1-8",
+          "D1-OUTCOMES-i"
+        ],
+        "requires_verified": false
+      },
+      {
+        "outcome": "aktarildi",
+        "reason": "maddi_zorluk",
+        "situation": "transfer:maddi_zorluk",
+        "when": "Maddi zorluk, aktarıldı.",
+        "rule_ids": [
+          "D1-23c",
+          "D1-OUTCOMES-j"
+        ],
+        "requires_verified": true
+      },
+      {
+        "outcome": "aktarildi",
+        "reason": "tamam",
+        "situation": "transfer:musteri_istegi",
+        "when": "İnsan istedi, aktarıldı.",
+        "rule_ids": [
+          "D1-24b",
+          "D1-OUTCOMES-k"
+        ]
+      }
+    ],
+    "precedence": [],
+    "promise_wins": false,
+    "goodbye_before_close": true,
+    "close_last_exactly_once": true
+  },
+  "forbidden_before_verification": [
+    "borç",
+    "ekstre",
+    "gecikme",
+    "ödeme"
+  ],
+  "residual_rules": [
+    {
+      "rule_id": "D1-GOREV-a",
+      "text": "Kredi kartı ekstre borcunun asgari tutarını son ödeme tarihine kadar ödememiş müşterileri arayın.",
+      "scope": [
+        "global"
+      ]
+    },
+    {
+      "rule_id": "D1-GOREV-b",
+      "text": "Müşteriyi bulun.",
+      "scope": [
+        "global"
+      ]
+    },
+    {
+      "rule_id": "D1-GOREV-g",
+      "text": "Müşteriyle yalnızca Türkçe konuşun.",
+      "scope": [
+        "global"
+      ]
+    },
+    {
+      "rule_id": "D1-VARS-a",
+      "text": "musteri_no değerini her servis çağrısına gönderin.",
+      "scope": [
+        "global"
+      ]
+    },
+    {
+      "rule_id": "D1-VARS-b",
+      "text": "ad ve soyad değerlerini aranan kişi olarak kullanın.",
+      "scope": [
+        "opening"
+      ]
+    },
+    {
+      "rule_id": "D1-VARS-c",
+      "text": "Müşteriye ad ve hitapla seslenin.",
+      "scope": [
+        "opening"
+      ]
+    },
+    {
+      "rule_id": "D1-3",
+      "text": "Kimlik doğrulanmadan önce \"borç\", \"ekstre\", \"gecikme\" veya \"ödeme\" kelimelerini söylemeyin.",
+      "scope": [
+        "opening",
+        "identity"
+      ]
+    },
+    {
+      "rule_id": "D1-3a",
+      "text": "Kimlik doğrulanmadan önceki kelime yasağını telefonu açan herkese uygulayın.",
+      "scope": [
+        "opening",
+        "third_party",
+        "identity"
+      ]
+    },
+    {
+      "rule_id": "D1-11a",
+      "text": "Üç yanlış cevaptan sonra borcu söylemeyin.",
+      "scope": [
+        "identity",
+        "disclosure"
+      ]
+    },
+    {
+      "rule_id": "D1-14a",
+      "text": "Kartı son dört hanesiyle söyleyin (\"sonu 4821 ile biten kredi kartınız\").",
+      "scope": [
+        "disclosure"
+      ]
+    },
+    {
+      "rule_id": "D1-14b",
+      "text": "Ekstre borcunu söyleyin.",
+      "scope": [
+        "disclosure"
+      ]
+    },
+    {
+      "rule_id": "D1-14c",
+      "text": "Asgari ödeme tutarını söyleyin.",
+      "scope": [
+        "disclosure"
+      ]
+    },
+    {
+      "rule_id": "D1-14d",
+      "text": "Kaç gün geciktiğini söyleyin.",
+      "scope": [
+        "disclosure"
+      ]
+    },
+    {
+      "rule_id": "D1-14e",
+      "text": "Tutarları Türk lirası olarak söyleyin.",
+      "scope": [
+        "disclosure"
+      ]
+    },
+    {
+      "rule_id": "DUY-DEADLINE",
+      "text": "Ödeme sözünün son tarihi bugünden sonraki 7. iş günüdür.",
+      "scope": [
+        "negotiation"
+      ]
+    },
+    {
+      "rule_id": "D1-16",
+      "text": "Müşteri hafta sonu ya da tatil günü söylerse, son tarihi geçmiyorsa bir sonraki iş gününü önerin.",
+      "scope": [
+        "negotiation"
+      ]
+    },
+    {
+      "rule_id": "D1-17a",
+      "text": "Müşteri belirsiz bir zaman söylerse bir kez kesin gün sorun.",
+      "scope": [
+        "negotiation"
+      ]
+    },
+    {
+      "rule_id": "D1-17b",
+      "text": "Müşteri yine gün vermezse son tarihi önerin.",
+      "scope": [
+        "negotiation"
+      ]
+    },
+    {
+      "rule_id": "D1-18c",
+      "text": "Müşteri daha azını teklif ederse asgari tutarı önerin.",
+      "scope": [
+        "negotiation"
+      ]
+    },
+    {
+      "rule_id": "REA-FICTITIOUS",
+      "text": "Kurgusal test verisidir; hiçbir gerçek bankaya veya vakaya ait değildir.",
+      "scope": [
+        "global"
+      ]
+    },
+    {
+      "rule_id": "REA-FILES-a",
+      "text": "BRIEF.md dosyasını önce okuyun ve asistan politikası olarak izleyin.",
+      "scope": [
+        "global"
+      ]
+    },
+    {
+      "rule_id": "REA-FILES-b",
+      "text": "duyurular.md duyurularını uygulayın; duyuru brief ile çelişirse duyuru geçerlidir.",
+      "scope": [
+        "global"
+      ]
+    },
+    {
+      "rule_id": "REA-FILES-c",
+      "text": "servis_sozlesmesi.docx dosyasını uç noktalar, istek alanları ve yanıt alanları için banka servis sözleşmesi olarak kabul edin.",
+      "scope": [
+        "global"
+      ]
+    },
+    {
+      "rule_id": "REA-FILES-d",
+      "text": "musteriler.csv sahte servis için test müşteri verisidir; politika değildir.",
+      "scope": [
+        "global"
+      ]
+    },
+    {
+      "rule_id": "REA-FILES-e",
+      "text": "ornek_konusma_1.md yalnızca örnektir; kurallar için brief'i kullanın.",
+      "scope": [
+        "global"
+      ]
+    }
+  ],
+  "notes": [
+    "get_account yanıtı kartlar dizisi döndürür; politika kartlar için farklı ürün türü veya gecikme bandı tanımlamaz.",
+    "Ödeme sözü oluşturma işlemi için create_promise aracına musteri_no, kart_no, tutar ve tarih gönderilir."
+  ]
+}

@@ -136,7 +136,8 @@ def test_base_urls_are_normalised(raw: str, expected: str) -> None:
     assert normalise_base_url(raw) == expected
 
 
-@pytest.mark.parametrize("raw", ["https://", "https:///path", "https://mock.example.dev/?x=1", "https://a b.dev"])
+@pytest.mark.parametrize("raw", ["https://", "https:///path", "https://mock.example.dev/?x=1", "https://a b.dev",
+                                 "https://mock.example.dev/openapi.json", "https://mock.example.dev/spec.yaml"])
 def test_bad_base_urls_are_rejected(raw: str) -> None:
     with pytest.raises(InputError, match="base URL"):
         normalise_base_url(raw)

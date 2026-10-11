@@ -63,6 +63,9 @@ class BuilderState(TypedDict, total=False):
     # understanding
     bundle: dict[str, Any]
     tool_api: dict[str, Any]
+    service_mode: bool
+    service_plan: dict[str, Any]
+    service_attempts: int
     ledger: dict[str, Any]
     ir: dict[str, Any]
     policy_issues: list[dict[str, Any]]
@@ -105,7 +108,7 @@ class BuilderState(TypedDict, total=False):
 
 
 #: Keys that hold large Pydantic dumps; never copied into traces.
-HEAVY_KEYS: frozenset[str] = frozenset({"bundle", "tool_api", "ledger", "ir", "prose", "compiled"})
+HEAVY_KEYS: frozenset[str] = frozenset({"bundle", "tool_api", "ledger", "ir", "prose", "compiled", "service_plan"})
 
 
 def initial_state(
