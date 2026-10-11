@@ -66,7 +66,7 @@ _POLICY_WORDS = ("analiz", "analizi", "analysis", "analyse", "duyuru", "duyurula
 
 # --- content cues ----------------------------------------------------------------------------------------------------------
 _ENDPOINT_RE = re.compile(r"\b(GET|POST|PUT|PATCH|DELETE)\b[`*\s]+(?:https?://[^\s/`]+)?(/[\w{}:.\-/]*)")
-_SCHEMA_CUE_RE = re.compile(r'"type"\s*:|\b(?:request|response|istek|yan[ıi]t|body|g[öo]vde|payload|schema)\b',
+_SCHEMA_CUE_RE = re.compile(r'"type"\s*:|\b(?:request|response|istek|yan[\u0131i]t|body|g[\u00f6o]vde|payload|schema)\b',
                             re.IGNORECASE)
 _SPEAKER_RE = re.compile(r"^\s*(?:[-*>]\s*)?\**\s*([^\W\d_][\w .'()-]{0,24}?)\s*\**\s*:\s*\**\s*\S", re.UNICODE)
 _NOT_SPEAKERS = frozenset({
@@ -93,8 +93,8 @@ class ClassifiedDocument:
 
 
 def fold(text: str) -> str:
-    """Lower case without accents (``SÖZLEŞME`` -> ``sozlesme``, dotted / dotless i included)."""
-    text = text.replace("İ", "i").replace("ı", "i").casefold()
+    """Lower case without accents (``SÖZLEŞME`` -> ``sozlesme``; the dotted capital and the dotless small i too)."""
+    text = text.replace("\u0130", "i").replace("\u0131", "i").casefold()
     decomposed = unicodedata.normalize("NFKD", text)
     return "".join(char for char in decomposed if not unicodedata.combining(char))
 
@@ -239,7 +239,9 @@ def _records_in_json(data: object) -> bool:
 
 def _read_text(path: Path) -> str:
     """The converted text of ``path`` for the content cues (empty when it cannot be read)."""
-    from builder.ingest.brief_loader import load_brief  # brief_loader imports builder.inputs, which imports this module
+    from builder.ingest.brief_loader import (
+        load_brief,  # brief_loader imports builder.inputs, which imports this module
+    )
 
     try:
         return load_brief(path).text

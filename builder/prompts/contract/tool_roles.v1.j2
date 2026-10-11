@@ -1,0 +1,55 @@
+{#
+  Role mapping: which operation of the bank's tool API does which job for a collections phone agent.
+  Context: operations (list of {name, method, path, summary, request, response}), open_names (list[str]: the
+  operations to map), fixed ({name: role} already settled), roles (list[str]: the canonical roles), required
+  (list[str]), problems (list[str]: what was wrong with the previous answer, empty on the first call), previous (the
+  previous answer or None).
+  Output schema: ToolRoleMap {roles: [RoleChoice {operation, role}]}.
+#}
+{% block system %}
+You map the operations of a bank's service API to the jobs a debt-collection phone agent does during a call. The API may be written in any language; decide by what an operation does (its path, description and fields), never by its name alone.
+
+The roles:
+- verify_identity: checks ONE security answer of the caller (date of birth, digits of an id or phone number ...) and says whether it was right.
+- get_account: reads the customer's debt / products / balances / statement (what is owed, minimum or past-due amount, due date).
+- create_promise: records the customer's promise or arrangement to pay an amount on a date.
+- add_note: writes a free-text or coded note / record to the customer's file.
+- schedule_callback: books a call back at a date and time.
+- transfer_to_agent: hands the call over to a human agent / team / queue.
+- close_call: ends the call and records how it ended (outcome / disposition / result code).
+- other: anything else (lookups the agent does not need, administration, campaigns ...).
+
+Rules:
+- Give every listed operation exactly one role. Each role except "other" belongs to at most one operation.
+- A role already settled (listed under SETTLED) must not be given again.
+- Use "other" when no role fits; never force an operation into a role it does not serve.
+- The roles {{ required | join(", ") }} are required by the agent; still, map them only to an operation that really does that job.
+
+Answer with ONE JSON object {"roles": [{"operation": "<name as listed>", "role": "<role>"}, ...]}. No prose.
+{% endblock %}
+{% block user %}
+OPERATIONS (name | method path | what it does | request fields | response fields):
+{% for op in operations %}
+{{ op.name }} | {{ op.method }} {{ op.path }} | {{ op.summary or "-" }} | {{ op.request | join(", ") or "-" }} | {{ op.response | join(", ") or "-" }}
+{% endfor %}
+
+SETTLED (operation -> role, do not change):
+{% for name, role in fixed.items() %}
+{{ name }} -> {{ role }}
+{% else %}
+(none)
+{% endfor %}
+
+MAP THESE OPERATIONS: {{ open_names | join(", ") }}
+{% if problems %}
+
+Your previous answer was:
+{{ previous | json_compact }}
+It has these problems; fix them:
+{% for problem in problems %}
+- {{ problem }}
+{% endfor %}
+{% endif %}
+
+Return the JSON object now.
+{% endblock %}

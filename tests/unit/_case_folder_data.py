@@ -1,3 +1,4 @@
+# ruff: noqa: RUF001  (Turkish test data: the dotless i is intended)
 """Invented test data for case-folder inputs: a Turkish-like bank folder, Office files built with ``zipfile``, and a
 contract whose operations and fields carry non-English names.
 

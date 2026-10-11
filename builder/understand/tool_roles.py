@@ -24,6 +24,7 @@ instead of compiling tools that call endpoints the bank does not have.
 
 from __future__ import annotations
 
+import contextlib
 from collections.abc import Mapping, Sequence
 from typing import Any, Literal
 
@@ -111,10 +112,8 @@ async def canonical_tool_api(
     if _settled(api):
         return api
     if isinstance(document, Mapping):  # every operation of every path, safely named, so that each can take a role
-        try:
+        with contextlib.suppress(InputError):  # an unparsable document keeps the API as loaded
             api = parse_tool_api(document, sha256=api.sha256, every_operation=True)
-        except InputError:
-            pass  # keep the API as loaded
     roles = roles_from_document(api, document)
     taken = set(roles.values()) - {OTHER}
     for name, contract in api.tools.items():

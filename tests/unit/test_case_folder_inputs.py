@@ -1,3 +1,4 @@
+# ruff: noqa: RUF001  (Turkish test data: the dotless i is intended)
 """Case-folder inputs: ``build.py {case_folder} {mock_url}`` (invented, Turkish-like data built in ``tmp_path``).
 
 A bank may hand over a folder of its own documents instead of a brief and an OpenAPI file: a brief, a README, an analysis,
@@ -17,7 +18,13 @@ from builder.ingest.brief_loader import load_brief, load_briefs
 from builder.ingest.case_folder import classify_document, fold
 from builder.inputs import InputError, classify_inputs, normalise_base_url
 from builder.settings import Settings
-from tests.unit._case_folder_data import DIALOGUE, make_docx, make_xlsx, turkish_api_document, write_case_folder
+from tests.unit._case_folder_data import (
+    DIALOGUE,
+    make_docx,
+    make_xlsx,
+    turkish_api_document,
+    write_case_folder,
+)
 
 MOCK = "https://banka-mock.ornek.workers.dev"
 

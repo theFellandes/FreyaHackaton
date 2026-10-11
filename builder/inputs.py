@@ -154,7 +154,10 @@ def classify_inputs(
             found, no brief file remains, two different base URLs are given, a URL is malformed, or the explicit slot
             is not a safe label.
     """
-    from builder.ingest.case_folder import classify_by_name, classify_document  # imports nothing of builder.inputs
+    from builder.ingest.case_folder import (  # imports nothing of builder.inputs
+        classify_by_name,
+        classify_document,
+    )
 
     raw_args = [str(arg).strip() for arg in args]
     url_args = [arg for arg in raw_args if _URL_ARG_RE.match(arg)]

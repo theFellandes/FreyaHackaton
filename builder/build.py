@@ -1,12 +1,20 @@
-"""Command-line entry point of the builder: brief(s) + tool API in, a deployed Freya phone agent out.
+"""Command-line entry point of the builder: a bank's documents + tool API in, a deployed Freya phone agent out.
 
-Usage (what the organisers run is ``python3 builder/build.py {brief_path} {tool_api_path}``)::
+Usage (the organisers run ``python3 builder/build.py {case_folder} {mock_url}``; the practice form was
+``python3 builder/build.py {brief_path} {tool_api_path}``)::
 
-    python builder/build.py <brief>... <tool_api> [--slot S] [--dry-run] [--track auto|compiled|agentic]
-        [--profile staged|lean] [--self-test auto|none|smoke|walkthrough|practice] [--budget-s N] [--fake-llm DIR]
+    python builder/build.py <case_folder> <mock_url> [options]
+    python builder/build.py <brief>... <tool_api> [<mock_url>] [options]
+
+    options: [--tool-base-url URL] [--slot S] [--dry-run] [--track auto|compiled|agentic] [--profile staged|lean]
+             [--self-test auto|none|smoke|walkthrough|practice] [--budget-s N] [--fake-llm DIR]
 
 It also runs as ``python -m builder.build`` and as the ``freya-builder`` console script. A directory argument is expanded
-to its files; the tool API is the one file that is an OpenAPI / Swagger document, every other file is brief material.
+to its files (recursively) and every file is classified (:mod:`builder.inputs`): the OpenAPI / Swagger document is the
+tool API; a prose service contract is what the tool API is derived from when there is no OpenAPI file; test customers
+are kept out of the policy; example conversations are labelled brief material; images are skipped; everything else is
+brief material. An ``http(s)`` argument (or ``--tool-base-url``, or ``TOOL_BASE_URL``) is the tool base URL: every
+tool request of the agent goes there, keeping each operation's path and method.
 
 What happens: the inputs are classified (:mod:`builder.inputs`), a trace is opened (``traces/<slot>-<time>.log`` and
 ``.jsonl``; secrets redacted), the LangGraph of :mod:`builder.graph` runs (understand the brief -> policy IR -> compile ->
@@ -120,10 +128,25 @@ def build_parser() -> argparse.ArgumentParser:
     """The command-line parser (see the module docstring for the arguments)."""
     parser = argparse.ArgumentParser(
         prog="build.py",
-        description="Build a Freya phone agent from bank brief(s) and the tool API file.",
+        description=(
+            "Build a Freya phone agent from a bank's case folder (or brief file(s) and the tool API file) and the URL "
+            "of the bank's services (the mock)."
+        ),
     )
     parser.add_argument(
-        "inputs", nargs="+", help="brief file(s) or directories, and the tool API (OpenAPI/Swagger) file"
+        "inputs",
+        nargs="+",
+        help=(
+            "the case folder (or brief file(s) / directories and the tool API OpenAPI/Swagger file), and optionally "
+            "the tool base URL (an http(s) argument: every tool request goes there)"
+        ),
+    )
+    parser.add_argument(
+        "--tool-base-url",
+        dest="tool_base_url",
+        metavar="URL",
+        help="base URL of the bank's services the agent calls (default: a URL argument, else $TOOL_BASE_URL, else "
+        "the contract's own server)",
     )
     parser.add_argument("--slot", help="workflow label (default: derived from the brief file names)")
     parser.add_argument(
@@ -547,7 +570,11 @@ def _main(args: argparse.Namespace, log_redactor: Redactor) -> int:
                 log_redactor.add(secret_values(settings))
             except Exception:  # the key-shaped patterns still apply
                 logger.debug("could not collect the secrets for log redaction", exc_info=True)
-            inputs = classify_inputs(args.inputs, args.slot, settings=settings)
+            inputs = classify_inputs(
+                args.inputs, args.slot, settings=settings, tool_base_url=getattr(args, "tool_base_url", None)
+            )
+            if inputs.tool_base_url and inputs.tool_base_url != settings.tool_base_url:
+                settings = settings.model_copy(update={"tool_base_url": inputs.tool_base_url})
         except (ValueError, OSError) as exc:  # InputError, an invalid environment / .env value, an unreadable file
             message = _describe_error(exc)
             print(log_redactor.text(f"error: {message}"), file=sys.stderr)
