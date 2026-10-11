@@ -107,6 +107,24 @@ implement it; include the conditions and wording themselves in the plan.
 Enumerate EVERY source-defined branch with its field conditions, exact spoken
 outputs and next stage/action. Do not omit required amounts, notices, thanks,
 date cases, linked-product details or source-specific no-data/zero-value endings.
+Before producing the plan, check every operative source branch against a concrete
+runtime instruction and usable exit. Preserve source-specific exceptions BEFORE
+generic completion or offer routes: different branch endings cannot be replaced
+by one unconditional 'after reading, continue' route. For a requested-information
+shortcut, implement its exact next action instead of applying the full-reading
+path. Required notices and date-specific branches must occur in their prescribed
+order, not after an ordinary reading has already contradicted them.
+Write the complete source-required customer-facing sentences for errors, transfers,
+privacy, refusals, confirmation and completion. 'Say the relevant error/security/
+success text' is incomplete when that text is not embedded elsewhere in runtime
+instructions. Evidence quotes are provenance, not runtime instructions.
+If a source requires details of multiple related records, fetch and retain each
+record's actual required fields through the available documented reference and
+tool. Acknowledging the relationship, omitting missing details, or reusing another
+record's figures/dates does not fulfill a requirement to read both records.
+Counted repeat requests need a reachable repeat path and the source-defined stop
+condition. An unconditional success-to-terminal exit cannot also allow another
+request in the same call. Preserve any explicit-consent requirement on each write.
 Every evidence.quote MUST be ONE continuous verbatim span from its named document.
 Copy one short literal sentence or clause, preferably from a single physical line.
 NEVER add ellipses, combine separate spans, paraphrase, omit intervening words, or
@@ -123,6 +141,11 @@ trusted identifier. Every other request field is model-selected from the actual
 tool response or caller answer, with exact API type/enum. Never invent IDs, dates,
 amounts, response fields, or literal test-customer data. Supplied current-time
 variables must be used for date rules; missing data must not be invented.
+For EVERY tool use, account for EVERY required request field in its when_to_call:
+state the documented fixed value, supplied-variable binding, returned source field,
+or permitted caller choice. Include source-fixed constants even when the compiler
+also bakes them from the contract. bindings maps only supplied call variables;
+literal constants and model-selected fields belong in the tool instructions.
 
 Build a small sequence of conversation stages, each with a single purpose, needed
 bank tools, and explicit exits. Tool names MUST be exact keys from ToolApi. Tools
@@ -165,6 +188,10 @@ consent, resolve or ask about relative dates, read relevant values without losin
 information, distinguish errors/empty lists and escalate. Refer to actual API
 fields and permitted enum values, which are supplied separately. Tool responses
 are automatically accessible as '<tool>_response'; arguments as '<tool>_args'.
+Use ONLY the exact allowed response and argument names listed with this request.
+The prefix is the actual ToolApi.tools key, never a stage name, abbreviated alias,
+source operation spelling or invented preview/result label. Do not write an
+unlisted response name even in a negated example or explanatory comparison.
 The platform wraps the HTTP response: its 'data' is the COMPLETE bank JSON body.
 Thus bank-body path payload.items is <tool>_response.data.payload.items; preserve
 every original response envelope layer, rather than dropping a repeated data key.
@@ -190,6 +217,19 @@ Resolve policy precedence from document dates, author authority, amendment scope
 and explicit supersession. Older examples, FAQs and recorded prompts are illustrations
 when newer authoritative requirements disagree; never let them override updates.
 """
+
+
+def service_response_name_instructions(api: ToolApi) -> str:
+    """Enumerate the actual compiler tool namespace for the current service API."""
+    names = "\n".join(f"- {tool}: {tool}_response and {tool}_args" for tool in sorted(api.tools))
+    return (
+        "\n\nEXACT ALLOWED TOOL RESPONSE AND ARGUMENT NAMES:\n" + names
+        + "\nCopy these names exactly in every stage message, tool instruction and exit. "
+        "They identify the actual tool results and arguments; stage names create no response variables. "
+        "The compiler supplies recorded full envelopes and history as JSON data at stage handoff. "
+        "All original bank envelope layers remain present inside each platform result. "
+        "A listed name does not authorize a call without source-required inputs or credentials."
+    )
 
 
 def _normal(text: str) -> str:

@@ -310,7 +310,7 @@ async def test_service_planner_failure_counts_attempt_without_retaining_stale_wo
     assert update["compile_repairs"] == 1 and update["compiled"] == {}
 
 
-async def test_source_policy_review_blocks_missing_consent_and_repairs_through_existing_graph(
+async def test_source_policy_review_can_repair_after_deterministic_repair_budget_was_spent(
     service_source: Any, make_ctx: Any, make_gateway: Any, tmp_dirs: Any,
 ) -> None:
     _, _, brief, api_path = service_source
@@ -318,7 +318,11 @@ async def test_source_policy_review_blocks_missing_consent_and_repairs_through_e
     incomplete["rules"][0]["instruction"] = "Activate immediately."
     incomplete["stages"][1]["task_message"] = "Activate immediately; report the result."
     incomplete["stages"][1]["tools"][0]["when_to_call"] = "Activate immediately with the returned plan ID."
-    plans = iter([incomplete, plan_data()])
+    invalid_quote = plan_data()
+    invalid_quote["rules"][0]["evidence"]["quote"] = "The source never required consent."
+    invalid_tool = plan_data()
+    invalid_tool["stages"][0]["tools"][0]["tool"] = "invented_lookup"
+    plans = iter([invalid_quote, invalid_tool, incomplete, plan_data()])
     issue = {"location": "activate task and tool prerequisites",
              "problem": "The plan activates without the caller's explicit confirmation.",
              "correction": "Ask for confirmation of the selected returned plan before activating it.",
@@ -332,13 +336,67 @@ async def test_source_policy_review_blocks_missing_consent_and_repairs_through_e
                                                 "case_folder": str(brief.parent)})
     state = await build_graph().ainvoke(start, context=make_ctx(llm=gateway))
     assert state["final"]["status"] == "dry_run", state["final"].get("errors")
-    assert state["service_attempts"] == 2 and state["compile_repairs"] == 1
-    assert [call.schema for call in gateway.calls] == ["ServicePlan", "ServicePolicyReview"] * 2
-    assert issue["problem"] in gateway.calls[2].user and issue["correction"] in gateway.calls[2].user
-    assert BRIEF.strip() in gateway.calls[1].user
+    assert state["service_attempts"] == 4 and state["compile_repairs"] == 2
+    assert state["service_policy_repairs"] == 1
+    assert [call.schema for call in gateway.calls] == ["ServicePlan", "ServicePlan", "ServicePlan",
+                                                     "ServicePolicyReview", "ServicePlan", "ServicePolicyReview"]
+    assert issue["problem"] in gateway.calls[4].user and issue["correction"] in gateway.calls[4].user
+    assert "PRIOR CANDIDATE TO REPAIR" in gateway.calls[4].user and "Activate immediately" in gateway.calls[4].user
+    assert BRIEF.strip() in gateway.calls[3].user
     assert "Activate immediately" not in json.dumps(state["compiled"]["workflow"])
     receipt = json.loads((tmp_dirs.out / "elm-reviewed.service-plan.json").read_text(encoding="utf-8"))
-    assert receipt["attempt"] == 2 and receipt["policy_review"] == {"issues": []}
+    assert receipt["attempt"] == 4 and receipt["policy_review"] == {"issues": []}
+    assert receipt["policy_repairs"] == 1 and receipt["compile_repairs"] == 2
+
+
+async def test_policy_reviewer_reads_actual_compiler_fixed_transport_defaults(
+    service_source: Any, make_ctx: Any, make_gateway: Any,
+) -> None:
+    bundle, api, *_ = service_source
+    api.tools["activate"].request_fields.append(
+        FieldSpec(name="service_kind", type="string", required=True, enum=["Savings"], fixed="Savings")
+    )
+
+    def review(call: Any) -> dict[str, Any]:
+        transport = json.loads(call.user.split("ACTUAL COMPILED TRANSPORT INPUTS (defaults supplied by compiler):\n", 1)[1])
+        body = transport["activate"]["activate"]["properties"]["body"]["properties"]
+        assert body["service_kind"]["default"] == "Savings"
+        assert body["member_ref"]["default"] == "{{memberReference}}"
+        assert body["channel"]["enum"] == ["voice", "app"]
+        assert body["channel"]["default"] == "{{channel}}"
+        return {"issues": []}
+
+    gateway = make_gateway(responders={"ServicePlan": lambda call: plan_data(), "ServicePolicyReview": review})
+    state = {"slot": "elm", "bundle": bundle.model_dump(mode="json"), "tool_api": api.model_dump(mode="json"),
+             "service_mode": True}
+    update = await service_workflow._body(state, make_ctx(llm=gateway))
+    assert not update.get("failed"), update.get("errors")
+    assert update["compiled"]["workflow"]["nodes"]["activate"]["tools"][0]["function"]["parameters"][
+        "properties"]["body"]["properties"]["service_kind"]["default"] == "Savings"
+
+
+async def test_grounded_policy_review_stops_at_configured_policy_repair_cap(
+    service_source: Any, make_ctx: Any, make_gateway: Any,
+) -> None:
+    _, _, brief, api_path = service_source
+    incomplete = plan_data()
+    incomplete["rules"][0]["instruction"] = "Activate immediately."
+    incomplete["stages"][1]["task_message"] = "Activate immediately; report the result."
+    incomplete["stages"][1]["tools"][0]["when_to_call"] = "Activate immediately with the returned plan ID."
+    review = {"issues": [{"location": "activate", "problem": "Explicit consent is missing.",
+                           "correction": "Ask for explicit confirmation before activation.", "evidence": {
+                               "document": "BRIEF.md",
+                               "quote": "Only activate the caller's selected plan after explicit confirmation."}}]}
+    gateway = make_gateway(responders={"ServicePlan": lambda call: incomplete,
+                                      "ServicePolicyReview": lambda call: review})
+    start = initial_state(run_id="review-cap-test", slot="elm-review-cap", started_at="2026-10-11T17:00:00Z",
+                          dry_run=True, inputs={"briefs": [str(brief)], "tool_api": str(api_path),
+                                                "case_folder": str(brief.parent)})
+    state = await build_graph().ainvoke(start, context=make_ctx(llm=gateway, max_policy_repairs=1))
+    assert state["final"]["status"] == "failed"
+    assert state["service_attempts"] == 2 and state["service_policy_repairs"] == 1
+    assert state["compile_repairs"] == 0 and state["compiled"] == {}
+    assert [call.schema for call in gateway.calls] == ["ServicePlan", "ServicePolicyReview"] * 2
 
 
 async def test_source_policy_review_rejects_fabricated_evidence_and_retains_no_workflow(
@@ -357,6 +415,7 @@ async def test_source_policy_review_rejects_fabricated_evidence_and_retains_no_w
     assert "review issue 'activate' is not source-grounded" in update["compile_feedback"]
     assert "Activate without asking" not in update["compile_feedback"]
     assert update["service_attempts"] == 1
+    assert update["service_policy_repair_pending"] is False
 
 
 async def test_planner_reads_original_contract_and_reference_without_duplicates(

@@ -173,6 +173,17 @@ def test_agentic_build_routes() -> None:
     assert r.after_agentic_build(state(failed="agentic_build", agentic_attempts=2)) == "finalize"
 
 
+def test_grounded_service_policy_repairs_have_their_own_bounded_budget() -> None:
+    pending = state(service_mode=True, failed="service_workflow", compile_repairs=2,
+                    service_policy_repair_pending=True, service_policy_repairs=0)
+    assert r.after_compile_workflow(pending) == "service_workflow"
+    assert r.after_compile_workflow({**pending, "service_policy_repairs": 1}) == "service_workflow"
+    assert r.after_compile_workflow({**pending, "service_policy_repairs": 2}) == "finalize"
+    assert r.after_compile_workflow({**pending, "service_policy_repair_pending": False}) == "finalize"
+    assert r.after_compile_workflow({**pending, "budget_remaining_s": 300}) == "finalize"
+    assert r.after_compile_workflow({**pending, "deploy": {"workflow_id": "wf"}}) == "finalize"
+
+
 def test_fallback_never_replaces_a_deployed_agent_or_a_blocked_build() -> None:
     assert r.fallback_target(state(deploy={"workflow_id": "wf"})) == "finalize"
     assert r.fallback_target(state(blocked=True)) == "finalize"

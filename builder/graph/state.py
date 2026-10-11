@@ -66,6 +66,8 @@ class BuilderState(TypedDict, total=False):
     service_mode: bool
     service_plan: dict[str, Any]
     service_attempts: int
+    service_policy_repairs: int
+    service_policy_repair_pending: bool
     ledger: dict[str, Any]
     ir: dict[str, Any]
     policy_issues: list[dict[str, Any]]
@@ -122,6 +124,8 @@ def initial_state(
         inputs=inputs,
         dry_run=dry_run,
         policy_repairs=0,
+        service_policy_repairs=0,
+        service_policy_repair_pending=False,
         compile_repairs=0,
         selftest_repairs=0,
         agentic_attempts=0,

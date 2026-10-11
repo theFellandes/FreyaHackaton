@@ -166,6 +166,11 @@ def after_draft_prose(state: State) -> str:
 def after_compile_workflow(state: State) -> str:
     """A compile error is repaired (another profile, no prose) while rounds remain; otherwise the checks run."""
     if state.get("failed"):
+        if state.get("service_mode") and state.get("service_policy_repair_pending"):
+            can_repair = (not state.get("blocked") and not is_deployed(state)
+                          and int(state.get("service_policy_repairs", 0)) < _limit(state, "max_policy_repairs")
+                          and affordable(state, "repair"))
+            return SERVICE_WORKFLOW if can_repair else FINALIZE
         return _compile_repair_target(state) if _can_repair_compile(state) else fallback_target(state)
     return STATIC_CHECKS
 

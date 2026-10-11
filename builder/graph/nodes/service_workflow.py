@@ -12,6 +12,7 @@ from builder.compiler.profiles.service import (
     SERVICE_PLANNER_SYSTEM,
     ServicePlan,
     compile_service_workflow,
+    service_response_name_instructions,
     validate_service_plan,
 )
 from builder.graph.context import BuilderContext
@@ -26,6 +27,7 @@ from builder.graph.nodes._common import (
 )
 from builder.graph.nodes.service_review import (
     SERVICE_POLICY_REVIEW_SYSTEM,
+    ServicePolicyRepairError,
     ServicePolicyReview,
     require_complete_service_policy,
 )
@@ -59,15 +61,19 @@ def source_bundle(state: BuilderState) -> BriefBundle:
 
 async def _body(state: BuilderState, ctx: BuilderContext) -> dict[str, Any]:
     attempt = int(state.get("service_attempts", 0)) + 1
+    policy_repair = bool(state.get("service_policy_repair_pending"))
     base: dict[str, Any] = {
         "service_attempts": attempt,
-        "compile_repairs": max(0, attempt - 1),
+        "compile_repairs": int(state.get("compile_repairs", 0)) + int(attempt > 1 and not policy_repair),
+        "service_policy_repairs": int(state.get("service_policy_repairs", 0)) + int(policy_repair),
+        "service_policy_repair_pending": False,
         "profile": "service",
         "track": "compiled",
         "blocked": False,
         "lint": {},
         "remote_validation": {},
     }
+    plan: ServicePlan | None = None
     try:
         bundle, api = source_bundle(state), get_tool_api(state)
         report = check_inputs(bundle, api)
@@ -81,7 +87,10 @@ async def _body(state: BuilderState, ctx: BuilderContext) -> dict[str, Any]:
         source_context = ("ORIGINAL BANK DOCUMENTS (complete, unabridged):\n" + bundle.combined_text()
                           + "\n\nACTUAL TOOL API CONTRACTS:\n"
                           + json.dumps(api.model_dump(mode="json"), ensure_ascii=False))
-        user = (source_context
+        prior = state.get("service_plan")
+        user = (source_context + "\n\n" + service_response_name_instructions(api)
+                + ("\n\nPRIOR CANDIDATE TO REPAIR (not a source of policy):\n"
+                   + json.dumps(prior, ensure_ascii=False) if prior and feedback else "")
                 + ("\n\nREPAIR FEEDBACK: Correct the plan using the same original sources.\n" + feedback if feedback else ""))
         plan = await call_structured(
             ctx.llm,
@@ -93,27 +102,40 @@ async def _body(state: BuilderState, ctx: BuilderContext) -> dict[str, Any]:
         )
         # Reject inexpensive deterministic errors before spending a policy-review call.
         validate_service_plan(plan, bundle, api)
+        candidate = compile_service_workflow(plan, bundle, api)
+        transport = {
+            name: {tool["function"]["name"]: tool["function"]["parameters"]
+                   for tool in node.get("tools", [])}
+            for name, node in candidate["workflow"]["nodes"].items() if node.get("tools")
+        }
         review = await call_structured(
             ctx.llm,
             purpose="review_service_policy",
             schema=ServicePolicyReview,
             system=SERVICE_POLICY_REVIEW_SYSTEM,
-            user=source_context + "\n\nCANDIDATE SERVICE PLAN:\n" + plan.model_dump_json(),
+            user=(source_context + "\n\nCANDIDATE SERVICE PLAN:\n" + plan.model_dump_json()
+                  + "\n\nACTUAL COMPILED TRANSPORT INPUTS (defaults supplied by compiler):\n"
+                  + json.dumps(transport, ensure_ascii=False)),
             max_tokens=8192,
             deadline=ctx.budget.deadline(),
         )
         ctx.trace.decision("source-policy review of service plan", attempt=attempt, issues=len(review.issues),
                            bundle_sha256=bundle.sha256, tool_api_sha256=api.sha256)
         require_complete_service_policy(review, bundle)
-        compiled = compile_service_workflow(plan, bundle, api)
+        compiled = candidate
     except Exception as exc:
         ctx.trace.error("service planning/compile failed", attempt=attempt, error=short(exc, 1000))
-        return failure(NAME, short(exc), **base, compiled={}, compile_feedback=short(exc, 12000))
+        return failure(NAME, short(exc), **{**base, "service_policy_repair_pending":
+                                           isinstance(exc, ServicePolicyRepairError)},
+                       compiled={}, compile_feedback=short(exc, 12000),
+                       service_plan=plan.model_dump(mode="json") if plan is not None else state.get("service_plan", {}))
     plan_data = plan.model_dump(mode="json")
     write_json(workflow_file(state["slot"], ".service-plan.json"), {
         "bundle_sha256": bundle.sha256,
         "tool_api_sha256": api.sha256,
         "attempt": attempt,
+        "policy_repairs": base["service_policy_repairs"],
+        "compile_repairs": base["compile_repairs"],
         "plan": plan_data,
         "policy_review": review.model_dump(mode="json"),
     })
