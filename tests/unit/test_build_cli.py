@@ -62,6 +62,34 @@ def test_defaults_come_from_the_settings(settings: Any) -> None:
     args = build_parser().parse_args(["b.md", "api.json"])
     assert settings_from_args(args, settings) is settings
     assert args.slot is None and args.fake_llm is None and not args.dry_run
+    assert args.max_policy_repairs is None
+
+
+@pytest.mark.parametrize("limit", [0, 4])
+def test_policy_repair_flag_overrides_only_its_existing_setting(settings: Any, limit: int) -> None:
+    base = settings.model_copy(update={"max_policy_repairs": 7})
+    args = build_parser().parse_args(["b.md", "api.json", "--max-policy-repairs", str(limit)])
+    effective = settings_from_args(args, base)
+    assert effective.max_policy_repairs == limit and base.max_policy_repairs == 7
+    assert effective.max_compile_repairs == base.max_compile_repairs
+    assert effective.build_time_budget_s == base.build_time_budget_s
+    assert settings_from_args(build_parser().parse_args(["b.md", "api.json"]), base) is base
+
+
+def test_negative_policy_repair_flag_is_reported_without_starting_the_builder(
+    capsys: pytest.CaptureFixture[str], tmp_dirs: SimpleNamespace, brief_a_path: Path, kit_openapi_path: Path,
+) -> None:
+    code = main([str(brief_a_path), str(kit_openapi_path), "--max-policy-repairs", "-1", "--dry-run"])
+    summary = last_json_line(capsys.readouterr().out)
+    assert code == 2 and summary["status"] == "failed"
+    assert "--max-policy-repairs must be a non-negative integer" in summary["errors"][0]
+
+
+@pytest.mark.parametrize("value", ["2.5", "many"])
+def test_policy_repair_flag_requires_an_integer(value: str) -> None:
+    with pytest.raises(SystemExit) as exit_info:
+        build_parser().parse_args(["b.md", "api.json", "--max-policy-repairs", value])
+    assert exit_info.value.code == 2
 
 
 def test_the_bare_command_reproduces_the_accepted_live_configuration(

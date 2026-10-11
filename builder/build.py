@@ -7,7 +7,7 @@ Usage (the organisers run ``python3 builder/build.py {case_folder} {mock_url}``;
     python builder/build.py <brief>... <tool_api> [<mock_url>] [options]
 
     options: [--tool-base-url URL] [--slot S] [--dry-run] [--track auto|compiled|agentic] [--profile staged|lean]
-             [--self-test auto|none|smoke|walkthrough|practice] [--budget-s N] [--fake-llm DIR]
+             [--self-test auto|none|smoke|walkthrough|practice] [--budget-s N] [--max-policy-repairs N] [--fake-llm DIR]
 
 It also runs as ``python -m builder.build`` and as the ``freya-builder`` console script. A directory argument is expanded
 to its files (recursively) and every file is classified (:mod:`builder.inputs`): the OpenAPI / Swagger document is the
@@ -163,6 +163,10 @@ def build_parser() -> argparse.ArgumentParser:
         "--budget-s", dest="budget_s", type=float, help="wall-clock budget in seconds (default 1680)"
     )
     parser.add_argument(
+        "--max-policy-repairs", type=int, metavar="N",
+        help="maximum policy repair attempts (non-negative integer; default: configured settings)",
+    )
+    parser.add_argument(
         "--fake-llm", dest="fake_llm", metavar="DIR", help="answer model calls from fixture files in DIR"
     )
     return parser
@@ -184,6 +188,10 @@ def settings_from_args(args: argparse.Namespace, base: Settings | None = None) -
         if args.budget_s <= 0:
             raise InputError("--budget-s must be a positive number of seconds")
         updates["build_time_budget_s"] = float(args.budget_s)
+    if args.max_policy_repairs is not None:
+        if args.max_policy_repairs < 0:
+            raise InputError("--max-policy-repairs must be a non-negative integer")
+        updates["max_policy_repairs"] = args.max_policy_repairs
     if args.fake_llm:
         updates["builder_track"] = "compiled"  # a fixture run must never start a real agentic session
     return settings.model_copy(update=updates) if updates else settings

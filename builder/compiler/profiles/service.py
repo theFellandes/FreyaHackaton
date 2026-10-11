@@ -88,6 +88,19 @@ or unverified: infer direction, identity status, language and all business rules
 from the documents. Documents can include amendments: resolve their precedence.
 Preserve the source language for spoken instructions and mandatory utterances.
 
+Apply the provided EXECUTION CONTEXT and the original sources' explicit waivers
+for that endpoint before deciding whether a tool is executable. When the sources
+explicitly waive authentication, headers or call metadata in the supplied test
+environment, their production-only requirements must not prevent the documented
+customer flow there. Omit unavailable waived metadata; never invent a caller
+phone number, credential, token or other missing integration value, and never
+ask the caller for it. A derived schema or example's mandatory-looking fields do
+not cancel an explicit original-source environment waiver. Do not claim that
+production authentication occurred. Requirements not waived still apply exactly.
+An explicitly unavailable or unresolved eligibility signal cannot become an
+invented predicate, caller attestation or extra integration. Implement the
+documented feasible flow and truthful limitation instead of suppressing the flow.
+
 Extract EVERY operative rule: opening, verification, allowed/forbidden disclosures,
 product selection, information requests, values to read aloud, payment options,
 consent and explicit confirmation before writes, timing, unavailable/empty data,
@@ -107,6 +120,17 @@ implement it; include the conditions and wording themselves in the plan.
 Enumerate EVERY source-defined branch with its field conditions, exact spoken
 outputs and next stage/action. Do not omit required amounts, notices, thanks,
 date cases, linked-product details or source-specific no-data/zero-value endings.
+Build a coverage checklist from EVERY authoritative paragraph, bullet, table row
+and amendment before writing the stages. For each operative branch, determine:
+its exact input/response fields and comparison conditions; whether those values
+are fetched on every incoming path; the full spoken output in its required order;
+and its next action, question or terminal exit. Map each source-relevant API
+response field to that behavior, including combinations of fields, boundaries,
+absent/empty/null values and record relationships. Do not infer a speaking rule
+for diagnostic fields that the sources keep internal. Encode this checklist in
+the actual rules and stage instructions, not a claim that coverage is complete.
+Check the whole source checklist on every repair; retaining previous correct
+branches is required even when the latest feedback discusses different defects.
 Before producing the plan, check every operative source branch against a concrete
 runtime instruction and usable exit. Preserve source-specific exceptions BEFORE
 generic completion or offer routes: different branch endings cannot be replaced
@@ -114,6 +138,20 @@ by one unconditional 'after reading, continue' route. For a requested-informatio
 shortcut, implement its exact next action instead of applying the full-reading
 path. Required notices and date-specific branches must occur in their prescribed
 order, not after an ordinary reading has already contradicted them.
+Evaluate source-defined temporal exceptions against the supplied current time
+and source timezone BEFORE selecting the normal reading. Implement the distinct
+before/after/on-boundary cases, their required total versus individual values,
+and no-issued-record cases as complete standalone utterances and next actions.
+Do not read a normal date/amount sentence first when the applicable exception
+requires a notice followed by a different returned value. A required factual
+notice remains operative when only its final editorial wording is pending: say
+the documented fact concisely, without adding an amount, cause or promise.
+When a caller combines requests, retain that intent across the necessary data
+fetch and enter the source-required consent/action step directly. A shortcut
+must skip an expressly unnecessary offer/question while fetching all needed
+data. Enumerate empty/missing-field alternatives with both their required spoken
+explanation and next available action; a limitation must not erase another
+source-permitted option.
 Write the complete source-required customer-facing sentences for errors, transfers,
 privacy, refusals, confirmation and completion. 'Say the relevant error/security/
 success text' is incomplete when that text is not embedded elsewhere in runtime
@@ -122,9 +160,16 @@ If a source requires details of multiple related records, fetch and retain each
 record's actual required fields through the available documented reference and
 tool. Acknowledging the relationship, omitting missing details, or reusing another
 record's figures/dates does not fulfill a requirement to read both records.
+Preserve the original record's identifiers, values and write prerequisites before
+fetching a related record; distinguish the latest response from earlier retained
+records. Use the documented relationship key and each record's own returned fields.
 Counted repeat requests need a reachable repeat path and the source-defined stop
 condition. An unconditional success-to-terminal exit cannot also allow another
 request in the same call. Preserve any explicit-consent requirement on each write.
+After a repeatable successful action, provide a reachable opportunity for the
+caller to request the permitted repeat and retain its counter and required input
+values. Stop at the source limit and require fresh consent for every permitted
+write; do not merely mention a counter beside an unconditional terminal exit.
 Every evidence.quote MUST be ONE continuous verbatim span from its named document.
 Copy one short literal sentence or clause, preferably from a single physical line.
 NEVER add ellipses, combine separate spans, paraphrase, omit intervening words, or

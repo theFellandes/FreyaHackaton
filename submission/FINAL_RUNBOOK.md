@@ -18,7 +18,7 @@ Wrangler is authenticated. No paid Cloudflare upgrade was enabled. Keep this Wor
 
 Use the healthy Windows interpreter `.venv-playground/Scripts/python.exe` (Python 3.12.14). The builder's portable final command is:
 
-    python3 -B builder/build.py {case_folder} {mock_url} --slot final-statement --track compiled --self-test none --budget-s 1200
+    python3 -B builder/build.py {case_folder} {mock_url} --slot final-statement --track compiled --self-test none --budget-s 1200 --max-policy-repairs 4
 
 The supplied case folder and mock URL are the only placeholders. The generic service path reads the original policy and contract, validates source evidence and response dependencies, and requires an independent source-policy review before deployment. The deterministic compiler constructs the platform workflow and actual API requests. Preserve every failed and successful capture; never edit generated plans, prompts, workflows or exports to repair a final agent.
 

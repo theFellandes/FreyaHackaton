@@ -30,7 +30,7 @@ Write the document like this:
   - Every property has a "type" and an English "description" that translates its meaning and states format and unit (for example "Promised amount in TRY, decimal", "Amount in kurus (minor units)", "Date as YYYY-MM-DD").
   - Dates are "type": "string". Use "format": "date" ONLY when the contract specifies ISO / RFC3339 full-date (YYYY-MM-DD). For every other stated date format, copy the exact format into the description and an appropriate "pattern", leaving "format" absent. Never normalize or translate date values. Preserve the stated time format in the description; money is "type": "number" unless the contract uses integer minor units.
   - A boolean result says in plain English what true means, as "True when ...": "True when the operation succeeded.", "True when this security answer is correct.", "True when all identity questions are verified.", "True when the promise was recorded.". A counter of attempts says whether it counts the wrong answers made or the wrong answers left.
-  - Mark "required" exactly as the contract does.
+  - Mark "required" exactly as the contract does. A field's presence in an example request/response or a fields table does not by itself make it mandatory. Preserve explicitly optional, omitted, nullable and unavailable-field cases. Do not infer that an enclosing metadata object or all its child properties are required merely because an example shows them. Record any unresolved requiredness in notes rather than turning it into a mandatory caller input.
 - "notes": short English notes on anything of the contract you could not express (empty list when none).
 
 Answer with ONE JSON object {"document": {...the OpenAPI document...}, "notes": [...]}. No prose, no Markdown.

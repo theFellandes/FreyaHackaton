@@ -53,6 +53,18 @@ documented customer flow to compensate for an explicitly unavailable signal.
 
 Read each operative source branch and locate its IMPLEMENTATION in the candidate
 system prompt, rule instructions, stage messages, tool descriptions and exits.
+First build an internal coverage inventory of EVERY authoritative obligation in
+EVERY original source, including conditions embedded in prose, tables, amendments
+and exception paragraphs. Do not review only the most prominent flow or the last
+repair's defects. For each policy-referenced response field, enumerate every
+source-defined predicate and its consequence: positive/zero/negative thresholds,
+strict versus inclusive boundaries, equality cases, flags, absent or empty values,
+partial data, and date/time boundaries. Check the required figures, notice or
+acknowledgment, spoken wording, ordering, next question/action and terminal route
+for each predicate separately. Do not invent obligations for fields the policy
+does not use. A source-defined conditional notice remains mandatory even when
+all visible examples or fixtures leave its triggering field at zero or never
+exercise that branch. Examples and successful samples cannot prove completeness.
 The deployed agent cannot access the original sources. A source quote in evidence,
 a branch name, or 'use the source wording/conditions' does NOT implement a branch.
 Its actual field conditions, complete spoken utterance/template and next action
@@ -73,6 +85,12 @@ exit is insufficient. Ensure required information is fetched on every applicable
 path before it is used, including shortcuts that combine requests. Never assume
 an optional branch has run. Distinguish the platform's response wrapper from all
 bank response-envelope layers and use only actual documented fields.
+Trace each exceptional branch through its actual exits before accepting a generic
+completion/offer path. A narrow requested-information shortcut, no-data/empty
+result, zero-value result, refusal or combined request may require a different
+next action; the usual route must not silently replace that source-specific
+ending. Check date/time-specific notices and figures before an ordinary reading
+can contradict them, and check that the next action preserves the branch's scope.
 
 Flag imaginary executable actions, tokens, credentials, retry mechanisms, APIs,
 customer identifiers or eligibility facts. An action must have an exposed tool
@@ -103,6 +121,12 @@ omitted. No ellipses, paraphrased evidence, merged spans or wrong-file attributi
 Aggregate all substantive defects in one review. Do not flag matters already
 implemented elsewhere in the standalone runtime instructions. Do not propose
 case-specific test values, undocumented behavior, or cosmetic changes.
+There is no artificial issue-count limit: do not stop after the first few defects.
+Report all substantive defects supported by the sources within the output budget;
+consolidate related defects only when their concrete conditions and corrections
+remain explicit. Corrections must be surgical: retain all unaffected implemented
+branches, wording, prerequisites and routes rather than replacing a complete
+section with a narrower description of only the latest reported defect.
 """
 
 
