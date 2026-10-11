@@ -25,11 +25,13 @@ from builder.graph.nodes._common import (
     workflow_file,
     write_json,
 )
+from builder.graph.nodes.service_evidence import repair_service_evidence
 from builder.graph.nodes.service_review import (
     SERVICE_POLICY_REVIEW_SYSTEM,
     ServicePolicyRepairError,
     ServicePolicyReview,
     require_complete_service_policy,
+    service_execution_context,
 )
 from builder.graph.state import BuilderState
 from builder.guardrails import check_inputs
@@ -86,12 +88,18 @@ async def _body(state: BuilderState, ctx: BuilderContext) -> dict[str, Any]:
         feedback = str(state.get("compile_feedback") or "")
         source_context = ("ORIGINAL BANK DOCUMENTS (complete, unabridged):\n" + bundle.combined_text()
                           + "\n\nACTUAL TOOL API CONTRACTS:\n"
-                          + json.dumps(api.model_dump(mode="json"), ensure_ascii=False))
+                          + json.dumps(api.model_dump(mode="json"), ensure_ascii=False)
+                          + "\n\nEXECUTION CONTEXT:\n"
+                          + json.dumps(service_execution_context(state.get("inputs") or {}), ensure_ascii=False))
         prior = state.get("service_plan")
         user = (source_context + "\n\n" + service_response_name_instructions(api)
                 + ("\n\nPRIOR CANDIDATE TO REPAIR (not a source of policy):\n"
                    + json.dumps(prior, ensure_ascii=False) if prior and feedback else "")
-                + ("\n\nREPAIR FEEDBACK: Correct the plan using the same original sources.\n" + feedback if feedback else ""))
+                + ("\n\nREPAIR FEEDBACK: Use the prior candidate as the base and fix ALL reported defects "
+                   "using the original sources. Make surgical corrections. Retain all previously implemented "
+                   "operative branches, amounts, wording and routing unless the sources or this feedback "
+                   "require changing them. Do not condense or rewrite unaffected policy while repairing.\n"
+                   + feedback if feedback else ""))
         plan = await call_structured(
             ctx.llm,
             purpose="plan_service_workflow",
@@ -100,6 +108,7 @@ async def _body(state: BuilderState, ctx: BuilderContext) -> dict[str, Any]:
             user=user,
             deadline=ctx.budget.deadline(),
         )
+        plan = await repair_service_evidence(plan, bundle, ctx.llm, deadline=ctx.budget.deadline())
         # Reject inexpensive deterministic errors before spending a policy-review call.
         validate_service_plan(plan, bundle, api)
         candidate = compile_service_workflow(plan, bundle, api)
@@ -119,6 +128,7 @@ async def _body(state: BuilderState, ctx: BuilderContext) -> dict[str, Any]:
             max_tokens=8192,
             deadline=ctx.budget.deadline(),
         )
+        review = await repair_service_evidence(review, bundle, ctx.llm, deadline=ctx.budget.deadline())
         ctx.trace.decision("source-policy review of service plan", attempt=attempt, issues=len(review.issues),
                            bundle_sha256=bundle.sha256, tool_api_sha256=api.sha256)
         require_complete_service_policy(review, bundle)

@@ -38,6 +38,18 @@ only the resulting authoritative operative policy. Older examples, FAQs, recorde
 prompts and implementation samples must not override later authoritative updates.
 Do not turn test data, mock setup, submission/admin instructions or unresolved
 historical suggestions into new phone-agent obligations.
+Judge the provided EXECUTION CONTEXT, not an imagined production integration.
+Explicit original-source waivers for that test/mock environment are binding:
+do not demand production authentication, credentials or metadata when those are
+explicitly waived for the supplied endpoint. A waiver is not permission to claim
+that production authentication was performed. Use contract requirements for any
+behavior that the source does not waive.
+When sources explicitly declare a field, eligibility signal or integration
+unavailable or unresolved, do not require inventing it as a plan correction.
+Do not create new eligibility predicates, caller attestations, credential inputs,
+API operations or hidden facts. Check the source's documented feasible behavior
+and truthful handling of the limitation instead; do not unilaterally suppress a
+documented customer flow to compensate for an explicitly unavailable signal.
 
 Read each operative source branch and locate its IMPLEMENTATION in the candidate
 system prompt, rule instructions, stage messages, tool descriptions and exits.
@@ -84,6 +96,18 @@ Aggregate all substantive defects in one review. Do not flag matters already
 implemented elsewhere in the standalone runtime instructions. Do not propose
 case-specific test values, undocumented behavior, or cosmetic changes.
 """
+
+
+def service_execution_context(inputs: dict[str, object]) -> dict[str, object]:
+    """Make the existing mock-server override explicit without inventing policy waivers."""
+    override = inputs.get("tool_base_url")
+    return {
+        "target": "supplied mock endpoint" if override else "original contract servers",
+        "tool_server_override_supplied": bool(override),
+        "tool_base_url": override or "",
+        "waivers": "Apply only explicit original-source waivers relevant to this target; invent none.",
+        "unavailable_inputs": "Never invent credentials, eligibility fields, customer facts or API operations.",
+    }
 
 
 def require_complete_service_policy(review: ServicePolicyReview, bundle: BriefBundle) -> None:

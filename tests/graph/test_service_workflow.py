@@ -318,11 +318,11 @@ async def test_source_policy_review_can_repair_after_deterministic_repair_budget
     incomplete["rules"][0]["instruction"] = "Activate immediately."
     incomplete["stages"][1]["task_message"] = "Activate immediately; report the result."
     incomplete["stages"][1]["tools"][0]["when_to_call"] = "Activate immediately with the returned plan ID."
-    invalid_quote = plan_data()
-    invalid_quote["rules"][0]["evidence"]["quote"] = "The source never required consent."
+    invalid_target = plan_data()
+    invalid_target["stages"][0]["exits"][0]["target"] = "nonexistent_stage"
     invalid_tool = plan_data()
     invalid_tool["stages"][0]["tools"][0]["tool"] = "invented_lookup"
-    plans = iter([invalid_quote, invalid_tool, incomplete, plan_data()])
+    plans = iter([invalid_target, invalid_tool, incomplete, plan_data()])
     issue = {"location": "activate task and tool prerequisites",
              "problem": "The plan activates without the caller's explicit confirmation.",
              "correction": "Ask for confirmation of the selected returned plan before activating it.",
@@ -407,15 +407,52 @@ async def test_source_policy_review_rejects_fabricated_evidence_and_retains_no_w
                            "correction": "Activate without asking.", "evidence": {
                                "document": "BRIEF.md", "quote": "The bank requires immediate activation without consent."}}]}
     gateway = make_gateway(responders={"ServicePlan": lambda call: plan_data(),
-                                      "ServicePolicyReview": lambda call: review})
+                                      "ServicePolicyReview": lambda call: review,
+                                      "EvidenceSelections": lambda call: {"selections": []}})
     state = {"slot": "elm", "bundle": bundle.model_dump(mode="json"), "tool_api": api.model_dump(mode="json"),
              "service_mode": True, "compiled": {"workflow": {"stale": True}}}
     update = await service_workflow._body(state, make_ctx(llm=gateway))
     assert update["failed"] == "service_workflow" and update["compiled"] == {}
-    assert "review issue 'activate' is not source-grounded" in update["compile_feedback"]
+    assert "Evidence selections must cover every invalid location" in update["compile_feedback"]
     assert "Activate without asking" not in update["compile_feedback"]
     assert update["service_attempts"] == 1
     assert update["service_policy_repair_pending"] is False
+
+
+async def test_node_repairs_plan_and_review_citations_without_changing_runtime_instructions(
+    service_source: Any, make_ctx: Any, make_gateway: Any,
+) -> None:
+    bundle, api, *_ = service_source
+    plan = plan_data()
+    plan["rules"][0]["evidence"]["quote"] = "Only activate ... after explicit confirmation."
+    plan["stages"][1]["task_message"] = "Activate immediately; report the result."
+    review = {"issues": [{"location": "activate.task_message",
+                           "problem": "The stage's immediate activation instruction conflicts with required consent.",
+                           "correction": "Ask for explicit confirmation before activation.",
+                           "evidence": {"document": "BRIEF.md",
+                                        "quote": "Only activate ... after explicit confirmation."}}]}
+
+    def select(call: Any) -> dict[str, Any]:
+        data = json.loads(call.user)
+        span = next(span for span in data["indexed_original_source_spans"]
+                    if "Only activate the caller's selected plan after explicit confirmation." in span["text"])
+        return {"selections": [{"location": item["location"], "span_id": span["span_id"]}
+                               for item in data["invalid_items"]]}
+
+    gateway = make_gateway(responders={"ServicePlan": lambda call: plan, "ServicePolicyReview": lambda call: review,
+                                      "EvidenceSelections": select})
+    state = {"slot": "elm", "bundle": bundle.model_dump(mode="json"), "tool_api": api.model_dump(mode="json"),
+             "service_mode": True, "inputs": {"tool_base_url": "https://elm-mock.example"}}
+    update = await service_workflow._body(state, make_ctx(llm=gateway))
+    assert update["failed"] == "service_workflow" and update["service_policy_repair_pending"] is True
+    assert update["compiled"] == {} and update["compile_repairs"] == 0
+    assert [call.schema for call in gateway.calls] == ["ServicePlan", "EvidenceSelections",
+                                                     "ServicePolicyReview", "EvidenceSelections"]
+    assert update["service_plan"]["stages"] == plan["stages"]
+    assert update["service_plan"]["rules"][0]["instruction"] == plan["rules"][0]["instruction"]
+    assert update["service_plan"]["rules"][0]["evidence"]["quote"] in BRIEF
+    assert review["issues"][0]["problem"] in update["compile_feedback"]
+    assert '"target": "supplied mock endpoint"' in gateway.calls[2].user
 
 
 async def test_planner_reads_original_contract_and_reference_without_duplicates(
